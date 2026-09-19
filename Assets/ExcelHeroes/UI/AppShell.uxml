@@ -1,58 +1,51 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:Style src="App.uss" />
     <!--
-      The web build is not a game with a spreadsheet theme; it is a spreadsheet that happens to be a
-      game, and that is the whole premise — it has to survive being looked at over your shoulder at
-      work. So the shell is Excel's, in Excel's order: title bar, ribbon tabs, ribbon, formula bar,
-      the sheet, and the sheet tabs along the bottom. The sheet tabs ARE the navigation.
+      Excel for Android, not desktop Excel shrunk down.
 
-      On a phone the ribbon and the sheet tabs scroll sideways rather than wrap, which is what
-      Excel Mobile itself does, so nothing about the disguise looks invented.
+      The phone app throws the ribbon away: there is a slim green app bar, then the grid starts
+      immediately, and every control lives along the BOTTOM where a thumb reaches — formula bar,
+      then a command bar whose "홈 ▲" slides the ribbon up as a sheet over the grid. Stacking a
+      title bar, ribbon tabs, a ribbon and a formula bar above the content, the way the desktop
+      does, spends a third of a phone screen on chrome before the game gets any.
+
+      Order here is top to bottom, and it is the order the phone app uses.
     -->
     <ui:VisualElement name="root" class="root">
 
-        <ui:VisualElement name="titlebar" class="titlebar">
+        <ui:VisualElement name="appbar" class="appbar">
             <ui:Label text="X" class="app-icon" />
-            <ui:Label text="통합 문서1 - Excel" class="title-text" />
+            <ui:Label name="docTitle" text="통합 문서1" class="appbar__title" />
             <ui:VisualElement class="spacer" />
-            <ui:Label name="autosave" text="자동 저장 켬" class="autosave" />
-            <!-- The stealth switch is pinned here because it has to be reachable in one thumb
-                 movement without looking; on the desktop build it was Esc, which a phone has not got. -->
-            <ui:Button name="stealthToggle" class="tb-btn tb-btn--stealth" text="⛶" />
+            <ui:Label name="autosave" text="저장됨" class="appbar__save" />
+            <!-- The disguise has to be reachable without looking, so it is pinned, not in the overflow. -->
+            <ui:Button name="stealthToggle" class="appbar__btn" text="⛶" />
+            <ui:Button name="overflowBtn" class="appbar__btn" text="⋯" />
         </ui:VisualElement>
 
-        <ui:VisualElement name="ribbonTabs" class="ribbon-tabs">
-            <ui:Button name="rtFile" text="파일" class="ribbon-tab ribbon-tab--file" />
-            <ui:Button name="rtHome" text="홈" class="ribbon-tab ribbon-tab--active" />
-            <ui:Button name="rtInsert" text="삽입" class="ribbon-tab" />
-            <ui:Button name="rtData" text="데이터" class="ribbon-tab" />
-            <ui:Button name="rtReview" text="검토" class="ribbon-tab">
-                <ui:Label name="questDot" text="" class="ribbon-dot hidden" />
-            </ui:Button>
-            <ui:Button name="rtView" text="보기" class="ribbon-tab" />
+        <!-- Column letters. With the ribbon gone this is what says "spreadsheet" at a glance. -->
+        <ui:VisualElement name="colHeaders" class="ws-cols">
+            <ui:Label text="" class="ws-corner" />
+            <ui:Label text="A" class="ws-col" />
+            <ui:Label text="B" class="ws-col" />
+            <ui:Label text="C" class="ws-col" />
+            <ui:Label text="D" class="ws-col" />
+            <ui:Label text="E" class="ws-col" />
+            <ui:Label text="F" class="ws-col" />
         </ui:VisualElement>
 
-        <ui:VisualElement name="ribbon" class="ribbon" />
+        <ui:VisualElement name="sheetRow" class="sheet-row">
+            <ui:VisualElement name="rowGutter" class="ws-rows" />
+            <ui:VisualElement name="content" class="sheet" />
+        </ui:VisualElement>
+
+        <!-- Slides up over the grid when 홈 ▲ is tapped; collapsed is the resting state. -->
+        <ui:VisualElement name="ribbon" class="ribbon hidden" />
 
         <ui:VisualElement name="formulaBar" class="formula-bar">
             <ui:Label name="nameBox" text="A1" class="name-box" />
             <ui:Label text="fx" class="fx" />
             <ui:Label name="formula" text="=SUM(Hero_ATK)" class="formula" />
-        </ui:VisualElement>
-
-        <ui:VisualElement name="content" class="sheet" />
-
-        <ui:VisualElement name="statusbar" class="statusbar">
-            <ui:Label name="statusText" text="준비" class="status-text" />
-            <ui:VisualElement class="spacer" />
-            <ui:VisualElement name="gemChip" class="cell-stat">
-                <ui:Label text="◈" class="cell-stat__icon" />
-                <ui:Label name="gemValue" text="0" class="cell-stat__value" />
-            </ui:VisualElement>
-            <ui:VisualElement name="goldChip" class="cell-stat">
-                <ui:Label text="₩" class="cell-stat__icon" />
-                <ui:Label name="goldValue" text="0" class="cell-stat__value" />
-            </ui:VisualElement>
         </ui:VisualElement>
 
         <ui:ScrollView name="sheetTabsScroll" mode="Horizontal" class="sheet-tabs-scroll">
@@ -69,6 +62,20 @@
                 <ui:Button name="tabChart" text="통계_차트" class="sheet-tab" />
             </ui:VisualElement>
         </ui:ScrollView>
+
+        <ui:VisualElement name="commandbar" class="commandbar">
+            <ui:Button name="ribbonToggle" text="홈 ▲" class="cmd-tab" />
+            <ui:VisualElement class="spacer" />
+            <ui:VisualElement name="gemChip" class="cell-stat">
+                <ui:Label text="◈" class="cell-stat__icon" />
+                <ui:Label name="gemValue" text="0" class="cell-stat__value" />
+            </ui:VisualElement>
+            <ui:VisualElement name="goldChip" class="cell-stat">
+                <ui:Label text="₩" class="cell-stat__icon" />
+                <ui:Label name="goldValue" text="0" class="cell-stat__value" />
+            </ui:VisualElement>
+            <ui:Label name="statusText" text="준비" class="status-text" />
+        </ui:VisualElement>
 
         <ui:VisualElement name="overlay" class="overlay hidden" />
     </ui:VisualElement>

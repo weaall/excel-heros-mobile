@@ -91,7 +91,13 @@ namespace ExcelHeroes.UI
 
         void AddFighterView(Combatant c)
         {
-            var el = UiKit.Div("fighter " + (c.side == Side.Hero ? "fighter--hero" : "fighter--monster"), _stage);
+            // 보스는 3배, 일반 몬스터는 2배 (CLAUDE.md 픽셀 아트 규칙). A boss drawn at wave-enemy
+            // size is just a monster with a long health bar; the size is how the fight announces it.
+            var classes = "fighter " + (c.side == Side.Hero ? "fighter--hero" : "fighter--monster");
+            if (c.boss != null) classes += " fighter--boss";
+            else if (c.elite) classes += " fighter--elite";
+
+            var el = UiKit.Div(classes, _stage);
             var bodyEl = UiKit.Div("fighter__body", el);
 
             if (c.side == Side.Hero)
@@ -191,8 +197,8 @@ namespace ExcelHeroes.UI
 
         // Kept in step with .fighter / .fighter__body in App.uss: a 16x28 sprite at 4x, on rows tall
         // enough to clear it.
-        const float FighterWidth = 110f;
-        const float RowHeight = 136f;
+        const float FighterWidth = 160f;
+        const float RowHeight = 210f;
 
         void LayoutFighters()
         {

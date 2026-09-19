@@ -53,7 +53,8 @@ namespace ExcelHeroes.UI
         public VisualElement Overlay { get; private set; }
 
         UIDocument _doc;
-        VisualElement _content, _ribbon;
+        VisualElement _content, _ribbon, _gutter;
+        Button _ribbonToggle;
         Label _nameBox, _formula, _gems, _gold, _dailyBadge, _status;
         Button _stealth;
         readonly Dictionary<Sheet, IScreen> _screens = new();
@@ -104,6 +105,11 @@ namespace ExcelHeroes.UI
 
             _stealth = root.Q<Button>("stealthToggle");
             if (_stealth != null) _stealth.clicked += ToggleStealth;
+
+            // On a phone the ribbon is summoned, not resident: 홈 ▲ slides it up over the grid.
+            _gutter = root.Q<VisualElement>("rowGutter");
+            _ribbonToggle = root.Q<Button>("ribbonToggle");
+            if (_ribbonToggle != null) _ribbonToggle.clicked += ToggleRibbon;
 
             Game.Changed += OnGameChanged;
             ApplyStealth();
@@ -161,10 +167,30 @@ namespace ExcelHeroes.UI
             _nameBox.text = _current.Cell;
             _formula.text = _current.Formula;
             BuildRibbon();
+            BuildGutter();
             UpdateStatus();
 
             foreach (var pair in _tabs)
                 pair.Value.EnableInClassList("sheet-tab--active", pair.Key == sheet);
+        }
+
+        /// <summary>
+        /// Row numbers down the left edge. They are decoration, but they are the decoration that
+        /// does the most work: with the ribbon gone, the column letters and these numbers are what
+        /// someone glancing over your shoulder actually reads.
+        /// </summary>
+        void BuildGutter()
+        {
+            if (_gutter == null) return;
+            _gutter.Clear();
+            for (var i = 1; i <= 20; i++) UiKit.Text(i.ToString(), "ws-row-num", _gutter);
+        }
+
+        void ToggleRibbon()
+        {
+            var open = _ribbon.ClassListContains("hidden");
+            _ribbon.EnableInClassList("hidden", !open);
+            _ribbonToggle.text = open ? "홈 ▼" : "홈 ▲";
         }
 
         void BuildRibbon()
@@ -239,6 +265,12 @@ namespace ExcelHeroes.UI
 
             foreach (var pair in _tabs)
                 pair.Value.text = on ? StealthLabels.Tab(pair.Key) : _tabNames[pair.Key];
+
+            // 위장 중에는 통화를 라벨까지 감춘다. 숫자만 바꾸면 ◈ 와 ₩ 아이콘이 남고,
+            // 스프레드시트 상태 표시줄에 그런 기호가 있을 이유가 없다.
+            var root = _doc.rootVisualElement;
+            foreach (var name in new[] { "gemChip", "goldChip" })
+                root.Q<VisualElement>(name)?.EnableInClassList("hidden", on);
         }
 
         public bool Stealth => Game.Player != null && Game.Player.stealth;
