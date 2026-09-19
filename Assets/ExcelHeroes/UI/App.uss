@@ -1783,7 +1783,9 @@
 
 /* ---------------------------------------------------------------- 프롤로그 */
 
-/* Full bleed, chrome included. A story beat framed by a ribbon and a formula bar is not one. */
+/* Letterboxed, not full bleed: the illustration sits in a band with black above and below, which
+   is how the web build frames it. Filling a 9:16 phone with a 16:9 picture means cropping most of
+   it away, and the crop always takes the part with the character in it. */
 .prologue {
     position: absolute;
     left: 0;
@@ -1797,23 +1799,23 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 0;
-    bottom: 0;
+    top: 14%;
+    height: 56%;
     -unity-background-scale-mode: scale-and-crop;
 }
 
 /* The narration sits over the lower third, so that part is darkened and the art is not — in four
    bands, because one box of flat alpha cuts a visible line across the picture. */
 .prologue__scrim { position: absolute; left: 0; right: 0; }
-.prologue__scrim--0 { bottom: 40%; height: 9%; background-color: rgba(8, 10, 16, 0.18); }
-.prologue__scrim--1 { bottom: 28%; height: 12%; background-color: rgba(8, 10, 16, 0.42); }
-.prologue__scrim--2 { bottom: 16%; height: 12%; background-color: rgba(8, 10, 16, 0.62); }
-.prologue__scrim--3 { bottom: 0; height: 16%; background-color: rgba(8, 10, 16, 0.78); }
+.prologue__scrim--0 { top: 52%; height: 6%; background-color: rgba(8, 10, 16, 0.22); }
+.prologue__scrim--1 { top: 58%; height: 6%; background-color: rgba(8, 10, 16, 0.48); }
+.prologue__scrim--2 { top: 64%; height: 6%; background-color: rgba(8, 10, 16, 0.72); }
+.prologue__scrim--3 { top: 70%; bottom: 0; background-color: rgb(8, 10, 16); }
 
 .prologue__head {
     position: absolute;
     left: 48px;
-    top: 72px;
+    top: 15%;
     flex-direction: row;
     align-items: center;
 }
@@ -1835,7 +1837,7 @@
     position: absolute;
     left: 48px;
     right: 48px;
-    bottom: 200px;
+    top: 73%;
     font-size: 40px;
     color: rgb(240, 242, 248);
     white-space: normal;
