@@ -218,9 +218,19 @@ namespace ExcelHeroes.UI
             name.style.color = grade?.Color ?? Color.white;
             UiKit.Text($"{def.nick} · {def.dept}", "detail__nick", head);
 
-            var body = UiKit.Scroll("detail__body", right);
+            // Pill tabs, as the reference puts them on its own card sheet. Everything this
+            // modal knows about a hero — stats, levelling, the skill, the trait, the bond, the
+            // record — is four screens of reading, and held sideways there is no scroll to put it
+            // in. Three tabs is how it fits, and it is also how a player actually reads it: they
+            // came here to level someone, or to check a skill, not to read all of it.
+            var tabs = UiKit.Div("dtabs", right);
+            Tab(tabs, "info", "정보", heroId, onClose);
+            Tab(tabs, "power", "강화", heroId, onClose);
+            Tab(tabs, "bond", "호감도", heroId, onClose);
 
-            if (owned != null)
+            var body = UiKit.Div("detail__body", right);
+
+            if (owned != null && _tab == "info")
             {
                 UiKit.Text(UiKit.Stars(owned.star), "reveal__grade", body);
                 UiKit.StatRow("공격력", StatMath.Atk(owned).ToString("N0"), body);
@@ -229,7 +239,10 @@ namespace ExcelHeroes.UI
                 UiKit.StatRow("레벨", $"{owned.level} / {StatMath.LevelCap(owned.star)}", body);
                 var need = GachaService.PromoteCost(owned);
                 UiKit.StatRow("승급", need > 0 ? $"중복 {owned.copies} / {need}장" : "최대 ★", body);
+            }
 
+            if (owned != null && _tab == "power")
+            {
                 // 강화 — the gold sink. ★ raises the ceiling, gold walks the hero up to it.
                 var levelPanel = UiKit.Div("panel", body);
                 UiKit.Text("강화", "section-title", levelPanel);
@@ -266,15 +279,18 @@ namespace ExcelHeroes.UI
                     max.SetEnabled(Game.Player.gold >= cost);
                 }
             }
-            else
-            {
+            if (owned == null)
                 UiKit.Text("아직 모집하지 않은 사원입니다.", "muted", body);
+
+            if (_tab == "info")
+            {
+                UiKit.StatRow("등급", $"{def.grade} · {grade?.label}", body);
+                UiKit.StatRow("역할", UiKit.RoleName(def.role), body);
+                UiKit.StatRow("부문", division?.name ?? def.division, body);
             }
 
-            UiKit.StatRow("등급", $"{def.grade} · {grade?.label}", body);
-            UiKit.StatRow("역할", UiKit.RoleName(def.role), body);
-            UiKit.StatRow("부문", division?.name ?? def.division, body);
-
+            if (_tab == "power")
+            {
             var skillPanel = UiKit.Div("panel", body);
             UiKit.Text($"스킬 · {def.skillName}", "section-title", skillPanel);
             var skillText = UiKit.Text(GameData.SkillText(def), null, skillPanel);
@@ -290,10 +306,11 @@ namespace ExcelHeroes.UI
                 var td = UiKit.Text(trait.desc, null, traitPanel);
                 td.style.whiteSpace = WhiteSpace.Normal;
             }
+            }
 
             // 호감도 — the bond, and the text it buys. The locked rows stay visible on purpose:
             // knowing there IS a private message at Lv5 is what makes Lv4 worth reaching.
-            if (owned != null)
+            if (owned != null && _tab == "bond")
             {
                 var bond = UiKit.Div("panel", body);
                 var b = GameData.Balance;
@@ -340,30 +357,47 @@ namespace ExcelHeroes.UI
                 }, bond);
             }
 
-            var bioPanel = UiKit.Div("panel", body);
-            UiKit.Text("인사 기록", "section-title", bioPanel);
-            var bio = UiKit.Text(def.bio, null, bioPanel);
-            bio.style.whiteSpace = WhiteSpace.Normal;
-            if (!string.IsNullOrEmpty(def.ult))
+            if (_tab == "info")
             {
-                var ult = UiKit.Text($"“{def.ult}”", "muted", bioPanel);
-                ult.style.whiteSpace = WhiteSpace.Normal;
+                var bioPanel = UiKit.Div("panel", body);
+                UiKit.Text("인사 기록", "section-title", bioPanel);
+                var bio = UiKit.Text(def.bio, null, bioPanel);
+                bio.style.whiteSpace = WhiteSpace.Normal;
+                if (!string.IsNullOrEmpty(def.ult))
+                {
+                    var ult = UiKit.Text($"“{def.ult}”", "muted", bioPanel);
+                    ult.style.whiteSpace = WhiteSpace.Normal;
+                }
             }
 
+            // 편성 is the one action that belongs to the whole sheet rather than to a tab, so it
+            // sits on its own row at the foot, where the reference keeps 확인.
             if (owned != null)
             {
+                var foot = UiKit.Div("detail__foot", right);
                 var inParty = Game.Player.party.Contains(heroId);
-                UiKit.Btn(inParty ? "편성에서 빼기" : "편성에 넣기", "btn", () =>
+                UiKit.Btn(inParty ? "편성에서 빼기" : "편성에 넣기",
+                    inParty ? "btn" : "btn btn--primary", () =>
                 {
                     if (inParty) Game.Player.RemoveFromParty(heroId);
                     else Game.Player.AddToParty(heroId);
                     Game.Touch();
                     Close(onClose);
-                }, body);
+                }, foot);
             }
 
             UiKit.Btn(Icons.Close, "detail__close icon", () => Close(onClose), view);
             return view;
+        }
+
+        /// <summary>Which of the three pages is open. Kept across a reopen so levelling a hero
+        /// does not throw you back to the stat page you levelled them from.</summary>
+        string _tab = "info";
+
+        void Tab(VisualElement parent, string id, string label, string heroId, System.Action onClose)
+        {
+            var b = UiKit.Btn(label, "dtab", () => { _tab = id; Reopen(heroId, onClose); }, parent);
+            b.EnableInClassList("dtab--on", _tab == id);
         }
 
         /// <summary>Rebuilds the sheet in place so levelling shows the new numbers immediately.</summary>

@@ -184,11 +184,49 @@ namespace ExcelHeroes.Core
                 if (a > 0.005f) Blend(px, 0, y, CanvasW, 1, Color.black, a);
             }
 
-            // faded centre line, with some dashes missing
-            for (var i = 0; i <= CanvasW / 128 + 1; i++)
+            // The road recedes.
+            //
+            // It used to be a flat band with one dashed line across the middle, which is a
+            // side-view brawler's floor: nothing about it said which way was "further away", so
+            // the fight read as figures pinned to a wall. Drawing it in perspective — lane lines
+            // fanning out of a vanishing point, cross-marks that bunch up towards the horizon —
+            // turns the same band into a plane the cast can stand on at different depths.
+            var vpx = CanvasW * 0.5f;
+            var vpy = (float)Horizon;
+
+            // Lane lines. Each one leaves the vanishing point and reaches the bottom edge at a
+            // different offset, so they splay apart as they come towards the viewer.
+            for (var i = -3; i <= 3; i++)
             {
-                if (Hash(i * 13) < 0.25f) continue;
-                Blend(px, i * 128, 372, 64, 5, new Color(230 / 255f, 200 / 255f, 90 / 255f), 0.45f);
+                if (i == 0) continue;
+                var bottomX = vpx + i * 210f;
+                var lit = Mathf.Abs(i) == 1 ? 0.5f : 0.28f;
+                Line(px, vpx, vpy, bottomX, CanvasH, new Color(228 / 255f, 214 / 255f, 176 / 255f), lit);
+            }
+
+            // Cross-marks, spaced by a squared term so they crowd towards the horizon the way
+            // evenly spaced lines on a real road do.
+            for (var i = 1; i <= 7; i++)
+            {
+                var k = i / 7f;
+                var y = Mathf.Lerp(Sidewalk + 6, CanvasH, k * k);
+                var half = Mathf.Lerp(40f, CanvasW * 0.5f, k * k);
+                Blend(px, Mathf.RoundToInt(vpx - half), Mathf.RoundToInt(y),
+                      Mathf.RoundToInt(half * 2f), Mathf.Max(1, Mathf.RoundToInt(1 + k * 4)),
+                      Color.black, 0.16f);
+            }
+
+            // The centre dashes ride the same perspective: longer and fatter as they approach.
+            for (var i = 1; i <= 6; i++)
+            {
+                if (Hash(i * 13) < 0.2f) continue;
+                var k = i / 6f;
+                var y = Mathf.Lerp(Sidewalk + 10, CanvasH - 8, k * k);
+                var len = Mathf.Lerp(10f, 76f, k);
+                var thick = Mathf.Max(1, Mathf.RoundToInt(Mathf.Lerp(1f, 6f, k)));
+                Blend(px, Mathf.RoundToInt(vpx - len * 0.5f), Mathf.RoundToInt(y),
+                      Mathf.RoundToInt(len), thick,
+                      new Color(230 / 255f, 200 / 255f, 90 / 255f), 0.5f);
             }
 
             // cracks in the asphalt

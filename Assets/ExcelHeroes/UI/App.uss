@@ -830,14 +830,20 @@
 }
 
 .card__plate {
-    padding: 8px 10px;
-    background-color: rgb(248, 248, 248);
-    border-top-width: 1px;
-    border-top-color: rgb(226, 226, 226);
+    flex-shrink: 0;
+    padding: 6px 10px 8px 10px;
+    background-color: var(--ex-navy);
 }
 
-.card__name { font-size: 25px; -unity-font-style: bold; overflow: hidden; }
-.card__sub { font-size: 20px; color: rgb(31, 111, 235); }
+.card__name {
+    font-size: var(--ex-text-xs);
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.card__sub { font-size: 21px; color: rgba(255, 255, 255, 0.6); }
 /* Dimmed, not erased. At 0.25 an unowned card was a white rectangle, which defeats the point of
    listing it — the shelf is there so a player sees who they do not have yet. */
 .card--locked .card__art { opacity: 0.55; }
@@ -1039,11 +1045,11 @@
 .fighter--dead { opacity: 0.25; }
 
 .fighter__hpbar {
-    width: 112px;
-    height: 16px;
-    margin-top: 4px;
+    width: 96px;
+    height: 14px;
+    margin-top: 2px;
     background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 8px;
+    border-radius: 7px;
     overflow: hidden;
 }
 
@@ -1072,22 +1078,24 @@
 
 .battle__hud {
     position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    height: 104px;
+    right: var(--ex-space-2);
+    top: var(--ex-space-2);
     flex-direction: row;
     align-items: center;
+    height: 80px;
     padding-left: var(--ex-space-3);
-    padding-right: var(--ex-space-3);
-    background-color: rgba(12, 18, 32, 0.55);
+    padding-right: var(--ex-space-1);
+    background-color: rgba(12, 18, 32, 0.72);
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.18);
+    border-radius: 40px;
 }
 
 .battle__wave {
-    flex-grow: 1;
-    font-size: var(--ex-text-lg);
+    font-size: var(--ex-text-sm);
     -unity-font-style: bold;
     color: rgb(255, 255, 255);
+    margin-right: var(--ex-space-2);
     transition-duration: 0.3s;
 }
 
@@ -1938,8 +1946,8 @@
 .battle-log {
     position: absolute;
     left: var(--ex-space-3);
-    top: 216px;
-    width: 40%;
+    top: var(--ex-space-2);
+    width: 36%;
     height: 132px;
 }
 
@@ -2024,16 +2032,15 @@
    so its state reads from across the room without anyone having to parse ON / OFF. */
 .auto-toggle {
     flex-shrink: 0;
-    min-width: 132px;
-    height: 68px;
-    margin-left: 12px;
-    font-size: 30px;
+    min-width: 116px;
+    height: 60px;
+    font-size: var(--ex-text-xs);
     -unity-font-style: bold;
-    color: rgb(150, 156, 170);
-    background-color: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.12);
     border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.22);
-    border-radius: 8px;
+    border-color: rgba(255, 255, 255, 0.28);
+    border-radius: 30px;
 }
 
 .auto-toggle--on {
@@ -2046,23 +2053,22 @@
    spreadsheet, and a row of bordered boxes with a number in each is what one looks like. */
 .upgrades {
     position: absolute;
-    left: var(--ex-space-2);
     right: var(--ex-space-2);
     bottom: var(--ex-space-2);
     flex-direction: row;
-    height: 136px;
+    height: 146px;
 }
 
 .upgrade {
-    flex-grow: 1;
-    flex-basis: 0;
-    margin-left: 6px;
-    margin-right: 6px;
+    width: 260px;
+    margin-left: 8px;
     padding-left: var(--ex-space-1);
     padding-right: var(--ex-space-1);
-    background-color: rgba(18, 20, 26, 0.82);
-    border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(18, 24, 38, 0.86);
+    border-width: 3px;
+    border-color: rgba(255, 255, 255, 0.2);
+    border-bottom-width: 7px;
+    border-bottom-color: rgba(0, 0, 0, 0.5);
     border-radius: var(--ex-rad-md);
     align-items: center;
     justify-content: center;
@@ -2070,8 +2076,9 @@
 
 /* Affordable is the only state worth colouring: everything else is just a price you cannot pay. */
 .upgrade--ready {
-    background-color: rgba(33, 115, 70, 0.92);
-    border-color: rgb(126, 214, 168);
+    background-color: rgba(56, 124, 214, 0.94);
+    border-color: rgb(146, 196, 255);
+    border-bottom-color: rgb(32, 86, 164);
 }
 
 .upgrade--ready .upgrade__name { color: rgba(255, 255, 255, 0.85); }
@@ -2092,11 +2099,7 @@
     margin-top: 4px;
 }
 
-.upgrade__cost {
-    font-size: var(--ex-text-xs);
-    color: var(--ex-gold);
-    margin-top: 2px;
-}
+.upgrade__cost { font-size: 22px; color: var(--ex-gold); margin-top: 2px; }
 
 .result__auto {
     font-size: 26px;
@@ -2786,7 +2789,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 148px;
+    top: 118px;
     font-size: 52px;
     -unity-font-style: bold;
     -unity-text-align: upper-center;
@@ -2803,11 +2806,11 @@
    cards and the shared budget bar that used to sit under the field: every skill fires itself, so a
    card you cannot press only tells you the game is thinking. */
 .fighter__skillbar {
-    width: 112px;
-    height: 10px;
-    margin-top: 3px;
+    width: 96px;
+    height: 8px;
+    margin-top: 2px;
     background-color: rgba(255, 255, 255, 0.28);
-    border-radius: 6px;
+    border-radius: 4px;
     overflow: hidden;
 }
 
@@ -3090,3 +3093,70 @@
 /* The cards half of the 모집 column; the rates block sits under it and is not its child, so a
    rebuild of the cards cannot take the odds with it. */
 .gacha__cards { flex-grow: 1; min-height: 0; }
+
+/* The contact shadow under each fighter. Inset rather than sized, so it stays centred under a
+   sprite whose box is a different width per kind, and flat rather than soft because USS has no
+   blur — an ellipse at a third opacity reads as ground contact anyway. */
+.fighter__shadow {
+    position: absolute;
+    left: 46px;
+    right: 46px;
+    top: 126px;
+    height: 22px;
+    border-radius: 11px;
+    background-color: rgba(0, 0, 0, 0.45);
+}
+
+.fighter--monster .fighter__shadow { top: 170px; }
+.fighter--elite .fighter__shadow { left: 38px; right: 38px; top: 206px; }
+
+.fighter--boss .fighter__shadow {
+    left: 140px;
+    right: 140px;
+    top: 262px;
+    height: 32px;
+    border-radius: 16px;
+}
+
+/* ---------------------------------------------------------------- card sheet tabs
+
+   The reference splits its own student sheet into 기본 정보 / 레벨 업 / 신비 해방 rather than
+   running them down one scroll. Everything this modal knows is four screens of reading, and held
+   sideways there is no scroll to put it in. */
+
+.dtabs {
+    flex-direction: row;
+    flex-shrink: 0;
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
+    padding-top: var(--ex-space-1);
+}
+
+.dtab {
+    flex-grow: 1;
+    flex-basis: 0;
+    height: 80px;
+    margin-right: 8px;
+    font-size: var(--ex-text-sm);
+    color: var(--ex-ink-muted);
+    background-color: var(--ex-surface-sunken);
+    border-width: 2px;
+    border-color: var(--ex-line);
+    border-radius: var(--ex-rad-sm);
+}
+
+.dtab--on {
+    background-color: var(--ex-accent);
+    border-color: var(--ex-accent-deep);
+    color: var(--ex-accent-ink);
+    -unity-font-style: bold;
+}
+
+.detail__body { flex-grow: 1; min-height: 0; overflow: hidden; padding: var(--ex-space-2); }
+
+.detail__foot {
+    flex-shrink: 0;
+    padding: var(--ex-space-2);
+    border-top-width: 2px;
+    border-top-color: var(--ex-line);
+}

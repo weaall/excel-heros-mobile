@@ -242,6 +242,10 @@ namespace ExcelHeroes.UI
                     UiKit.SetArt(bodyEl, mon);
                 }
             }
+            // The contact shadow. A sprite without one is a sticker on the picture; with one it
+            // is standing on the floor, and on a plane that recedes that is most of the effect.
+            UiKit.Div("fighter__shadow", el);
+
             var bar = UiKit.Div("fighter__hpbar", el);
             UiKit.Div("fighter__hpfill", bar);
 
@@ -251,6 +255,7 @@ namespace ExcelHeroes.UI
                 UiKit.Div("fighter__skillfill", UiKit.Div("fighter__skillbar", el));
             UiKit.Text(c.name, "fighter__name", el);
             _views[c] = el;
+            _depthDirty = true;
         }
 
         /// <summary>Gold changed somewhere else, so the prices on the upgrade strip did too.</summary>
@@ -421,7 +426,7 @@ namespace ExcelHeroes.UI
         // stands on the road however tall the sheet happens to be.
         // Up from 0.84: the gold strip is anchored along the bottom now, and at the old line
         // the party stood behind it.
-        const float GroundAnchor = 0.60f;
+        const float GroundAnchor = 0.56f;
 
         // The window on the field, in the simulation's own units.
         //
@@ -437,7 +442,25 @@ namespace ExcelHeroes.UI
         // five-stack still reads as five people. Rows were readable but they turned a side-view
         // brawl into a spreadsheet of duels.
         const float GroundFraction = CityBackdrop.GroundY / (float)CityBackdrop.CanvasH;
-        const float StaggerY = 9f;
+
+        // The party used to stand on a single line with a nine-pixel stagger, which is a side-view
+        // brawler: distance was x and nothing else, and every fighter was the same size wherever
+        // they stood. The reference reads as three dimensions because its floor recedes — the
+        // figures at the back are higher up the frame, smaller, and closer to the centre.
+        //
+        // So: three depth rows across a plane 64 canvas units deep. Discrete rows rather than a
+        // continuous z, because the sprites are pixel art and a continuous scale would resample
+        // them at a different ratio every frame.
+        static readonly float[] DepthRows = { 0f, 0.5f, 1f };
+
+        /// <summary>How deep the standing plane is, in the backdrop's own units.</summary>
+        const float DepthSpread = 42f;
+
+        /// <summary>Sprite scale at the back of the plane; the front row is drawn at 1.</summary>
+        const float DepthScaleFar = 0.74f;
+
+        /// <summary>How much the back row pulls in towards the centre of the frame.</summary>
+        const float DepthConverge = 0.13f;
 
         Texture2D _backdrop;
         int _backdropStage = -1;
@@ -539,6 +562,7 @@ namespace ExcelHeroes.UI
                 {
                     el.RemoveFromHierarchy();
                     _views.Remove(c);
+                    _depthDirty = true;
                     continue;
                 }
 
@@ -563,25 +587,57 @@ namespace ExcelHeroes.UI
                     _knock[c] = Mathf.MoveTowards(knock, 0f, dt * 60f);
                 }
 
+                // Which row of the plane this one stands on. It is the lane index, so a
+                // fighter never changes depth mid-fight — a sprite that walked towards the camera
+                // while it fought would be a different animation problem entirely.
+                var lane = Mathf.Max(0, c.side == Side.Hero ? _sim.Heroes.IndexOf(c) : _sim.Monsters.IndexOf(c));
+                var z = DepthRows[lane % DepthRows.Length];
+
+                // Near the front: full size, low in the frame, out at the edges. At the back:
+                // smaller, higher, pulled towards the middle.
+                var depth = Mathf.Lerp(DepthScaleFar, 1f, z);
+                el.style.scale = new Scale(new Vector2(depth, depth));
+
+                var centre = width * 0.5f;
+                var px = _camX + drawX * _scale;
+                px = centre + (px - centre) * Mathf.Lerp(1f - DepthConverge, 1f, z);
+
                 var w = el.resolvedStyle.width;
                 if (float.IsNaN(w) || w <= 1f) w = FighterWidth;
-                el.style.left = Mathf.Clamp(_camX + drawX * _scale - w * 0.5f,
-                    -w * 0.5f, Mathf.Max(0f, width - w * 0.5f));
+                el.style.left = Mathf.Clamp(px - w * 0.5f, -w * 0.5f, Mathf.Max(0f, width - w * 0.5f));
 
-                // One fighter per worksheet row. The first version staggered them by 34px, which is
-                // a fifth of a sprite's height, so a five-hero party read as one smear — and once
-                // the monsters closed in, nine sprites shared the same spot. Rows also mean the
-                // side-view line stays a line: x is still distance, y is only identity.
-                var lane = Mathf.Max(0, c.side == Side.Hero ? _sim.Heroes.IndexOf(c) : _sim.Monsters.IndexOf(c));
                 // The sprite is anchored by its feet, so subtract its height to sit ON the ground.
-                var feet = _groundY + (lane % 2 == 0 ? -StaggerY : StaggerY);
+                var feet = _groundY + (z - 0.5f) * DepthSpread * _scale;
                 el.style.top = feet - (c.boss != null ? 138f : 92f);
 
                 var fill = el.Q(className: "fighter__hpfill");
                 if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);
                 el.EnableInClassList("fighter--dead", !c.Alive);
             }
+
+            SortByDepth();
         }
+
+        /// <summary>
+        /// Front row last, so a figure at the front of the plane overlaps one behind it. Without
+        /// this the whole illusion collapses the moment two fighters share a column: a small,
+        /// high, distant sprite drawn over a large near one reads as a floating doll.
+        ///
+        /// Only when the cast changes — a monster died, a wave spawned. Reordering the tree every
+        /// frame for ten elements that have not moved is work for nothing.
+        /// </summary>
+        void SortByDepth()
+        {
+            if (!_depthDirty) return;
+            _depthDirty = false;
+
+            foreach (var pair in _views.OrderBy(p =>
+                     DepthRows[Mathf.Max(0, (p.Key.side == Side.Hero
+                         ? _sim.Heroes.IndexOf(p.Key) : _sim.Monsters.IndexOf(p.Key))) % DepthRows.Length]))
+                pair.Value.BringToFront();
+        }
+
+        bool _depthDirty = true;
 
         /// <summary>
         /// The blue gauge under each hero's health, filling towards their next skill.
