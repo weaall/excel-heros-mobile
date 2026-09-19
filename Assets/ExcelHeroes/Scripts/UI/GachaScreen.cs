@@ -358,8 +358,10 @@ namespace ExcelHeroes.UI
 
         VisualElement BuildSummary(List<PullResult> results, System.Action onClose)
         {
+            // Laid out the way the reference lays a ten-pull out: five across and two down on a
+            // pale field, each card a portrait over a dark plate of stars, NEW called out in the
+            // corner, one wide confirm underneath and the pity points in the corner opposite.
             var view = UiKit.Div("reveal");
-            UiKit.Text("모집 결과", "reveal__grade", view);
 
             var grid = UiKit.Div("reveal-grid", view);
             foreach (var r in results)
@@ -370,13 +372,21 @@ namespace ExcelHeroes.UI
                     cell.style.borderLeftColor = cell.style.borderRightColor = grade?.Color ?? Color.gray;
 
                 UiKit.SetArt(UiKit.Div("reveal-grid__art", cell), GameData.CardArt(r.hero.id));
+
+                if (r.isNew) UiKit.Text("NEW", "reveal-grid__new", cell);
+
                 var plate = UiKit.Div("reveal-grid__plate", cell);
-                var g = UiKit.Text(r.grade, "reveal-grid__grade", plate);
-                g.style.color = grade?.Color ?? Color.white;
+                var stars = UiKit.Text(UiKit.Stars(r.starAfter), "reveal-grid__stars", plate);
+                stars.style.color = grade?.Color ?? Color.white;
                 UiKit.Text(r.hero.name, "reveal-grid__name", plate);
             }
 
-            UiKit.Btn("확인", "btn btn--primary", onClose, view);
+            var foot = UiKit.Div("reveal-foot", view);
+            UiKit.Btn("확인", "btn btn--primary reveal-foot__ok", onClose, foot);
+
+            var points = UiKit.Div("reveal-points", view);
+            UiKit.Text("모집 포인트", "reveal-points__label", points);
+            UiKit.Text(Game.Player.sparkPoints.ToString("N0"), "reveal-points__value", points);
             return view;
         }
     }

@@ -47,7 +47,7 @@ namespace ExcelHeroes.UI
             UiKit.Text("출현", "xl-cell xl-cell--num", header);
 
             // Eight rows is what the frame holds without a scroll; the rest is a page away.
-            _pages = new Pages<Entry>(_root, "xl-body", 8).Empty("아직 만난 오류가 없습니다");
+            _pages = new Pages<Entry>(_root, "xl-body", 6).Empty("아직 만난 오류가 없습니다");
             Refresh();
             return _root;
         }

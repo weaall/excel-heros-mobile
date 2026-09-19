@@ -25,26 +25,24 @@
     flex-grow: 1;
     background-color: var(--ex-surface);
 
-    --ex-surface: rgb(244, 247, 251);
+    --ex-surface: rgb(238, 244, 250);
     --ex-surface-raised: rgb(255, 255, 255);
-    --ex-surface-sunken: rgb(233, 238, 245);
+    --ex-surface-sunken: rgb(224, 234, 244);
 
-    --ex-ink: rgb(30, 38, 54);
-    --ex-ink-muted: rgb(120, 132, 152);
+    --ex-ink: rgb(34, 44, 62);
+    --ex-ink-muted: rgb(126, 140, 162);
 
-    --ex-line: rgb(214, 222, 233);
-    --ex-line-strong: rgb(183, 194, 210);
+    --ex-line: rgb(208, 220, 234);
+    --ex-line-strong: rgb(176, 192, 212);
 
-    /* The chrome: a deep navy plate, the colour the reference puts behind its top bar. */
-    --ex-navy: rgb(26, 40, 66);
-    --ex-navy-deep: rgb(18, 28, 48);
-    --ex-navy-line: rgb(52, 72, 108);
+    --ex-navy: rgb(30, 46, 74);
+    --ex-navy-deep: rgb(20, 32, 54);
+    --ex-navy-line: rgb(58, 82, 122);
 
-    /* The primary: the blue its confirm buttons and its lit tabs are. */
-    --ex-accent: rgb(56, 124, 214);
-    --ex-accent-deep: rgb(32, 86, 164);
+    --ex-accent: rgb(77, 166, 232);
+    --ex-accent-deep: rgb(42, 118, 186);
     --ex-accent-ink: rgb(255, 255, 255);
-    --ex-accent-wash: rgb(226, 238, 253);
+    --ex-accent-wash: rgb(226, 240, 253);
 
     --ex-danger: rgb(226, 62, 74);
     --ex-gold: rgb(247, 181, 41);
@@ -166,6 +164,31 @@
     font-size: 46px;
 }
 
+/* The back arrow and the screen's name. A round dark button at the far left is how the reference
+   marks "you are inside something" on 부대 편성 and 현상수배 alike.
+   ---------------------------------------------------------------------------------- */
+.navback { flex-direction: row; align-items: center; }
+
+.navback__btn {
+    width: 84px;
+    height: 84px;
+    background-color: var(--ex-navy);
+    border-width: 3px;
+    border-color: var(--ex-navy-line);
+    border-radius: 42px;
+    color: rgb(255, 255, 255);
+    font-size: 42px;
+}
+
+.navback__btn:hover { background-color: var(--ex-navy-line); }
+
+.navback__title {
+    font-size: var(--ex-text-base);
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    margin-left: var(--ex-space-2);
+}
+
 /* The player plate: a dark badge with the phase on a coloured tab, top left, where the reference
    puts the sensei's level. It is the one place on the chrome that says who is playing.
    ---------------------------------------------------------------------------------- */
@@ -203,12 +226,12 @@
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-    height: 112px;
+    height: 116px;
     padding-left: var(--ex-space-2);
     padding-right: var(--ex-space-2);
-    background-color: var(--ex-navy);
+    background-color: var(--ex-surface-raised);
     border-bottom-width: 3px;
-    border-bottom-color: var(--ex-navy-deep);
+    border-bottom-color: var(--ex-line);
 }
 
 .topbar__title {
@@ -218,36 +241,40 @@
 }
 
 .topbar__btn {
-    width: 84px;
-    height: 84px;
-    margin-left: var(--ex-space-2);
-    background-color: rgba(255, 255, 255, 0.12);
-    border-width: 2px;
-    border-color: rgba(255, 255, 255, 0.24);
+    width: 82px;
+    height: 82px;
+    margin-left: var(--ex-space-1);
+    background-color: var(--ex-surface-sunken);
+    border-width: 3px;
+    border-color: var(--ex-line);
     border-radius: var(--ex-rad-sm);
-    color: rgb(255, 255, 255);
-    font-size: 40px;
+    color: var(--ex-navy);
+    font-size: 38px;
 }
 
-.topbar__btn:hover { background-color: rgba(255, 255, 255, 0.14); }
+.topbar__btn:hover { background-color: var(--ex-accent-wash); }
 
 /* A currency reads as a coin and a number, not as a spreadsheet cell called 합계. */
 .chip {
     flex-direction: row;
     align-items: center;
-    height: 72px;
+    height: 74px;
     margin-left: var(--ex-space-2);
     padding-left: var(--ex-space-1);
-    padding-right: var(--ex-space-3);
-    background-color: rgb(255, 255, 255);
+    background-color: var(--ex-surface-sunken);
     border-width: 3px;
-    border-color: rgb(214, 226, 242);
-    border-radius: 36px;
+    border-color: var(--ex-line);
+    border-radius: 37px;
 }
 
 .chip__icon { font-size: 40px; height: 64px; width: 64px; color: var(--ex-gold); margin-right: var(--ex-space-1); }
 .chip__icon--gem { color: rgb(64, 156, 236); }
-.chip__value { font-size: var(--ex-text-sm); -unity-font-style: bold; color: var(--ex-ink); }
+.chip__value {
+    font-size: var(--ex-text-sm);
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    margin-right: var(--ex-space-2);
+}
 
 /* ---------------------------------------------------------------- navigation rail
 
@@ -278,9 +305,9 @@
     height: 158px;
     padding-left: var(--ex-space-2);
     padding-right: var(--ex-space-2);
-    background-color: var(--ex-navy);
+    background-color: var(--ex-surface-raised);
     border-top-width: 3px;
-    border-top-color: var(--ex-navy-line);
+    border-top-color: var(--ex-line);
 }
 
 .navtab {
@@ -289,22 +316,26 @@
     margin-right: 6px;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
-    border-radius: var(--ex-rad-sm);
+    border-radius: var(--ex-rad-md);
     align-items: center;
     justify-content: center;
 }
 
-.navtab:hover { background-color: rgba(255, 255, 255, 0.08); }
+.navtab:hover { background-color: var(--ex-accent-wash); }
 
 /* The lit tab, the way the reference lights one: a filled plate, not a hairline. */
-.navtab--active { background-color: var(--ex-accent); }
+.navtab--active {
+    background-color: var(--ex-accent);
+    border-bottom-width: 6px;
+    border-bottom-color: var(--ex-accent-deep);
+}
 
-.navtab__icon { font-size: 54px; height: 68px; color: rgba(255, 255, 255, 0.66); }
+.navtab__icon { font-size: 54px; height: 68px; color: var(--ex-ink-muted); }
 .navtab--active .navtab__icon { color: rgb(255, 255, 255); }
 
 .navtab__label {
     font-size: var(--ex-text-xs);
-    color: rgba(255, 255, 255, 0.66);
+    color: var(--ex-ink-muted);
     margin-top: 2px;
 }
 
@@ -366,8 +397,8 @@
     height: 44px;
     padding-left: var(--ex-space-3);
     font-size: 24px;
-    color: rgba(255, 255, 255, 0.72);
-    background-color: var(--ex-navy-deep);
+    color: var(--ex-ink-muted);
+    background-color: var(--ex-surface-sunken);
     -unity-text-align: middle-left;
 }
 
@@ -433,10 +464,10 @@
     height: var(--ex-tap);
     padding-left: var(--ex-space-4);
     padding-right: var(--ex-space-4);
-    background-color: var(--ex-surface);
-    border-radius: var(--ex-rad-md);
-    border-width: 2px;
-    border-bottom-width: 8px;
+    background-color: var(--ex-surface-raised);
+    border-radius: var(--ex-rad-lg);
+    border-width: 3px;
+    border-bottom-width: 9px;
     border-color: var(--ex-line);
     border-bottom-color: var(--ex-line-strong);
     color: var(--ex-ink);
@@ -459,7 +490,7 @@
    player is meant to press and the chrome it hides behind are deliberately the same colour. */
 .btn--primary {
     background-color: var(--ex-accent);
-    border-color: var(--ex-accent);
+    border-color: rgb(146, 200, 244);
     border-bottom-color: var(--ex-accent-deep);
     color: var(--ex-accent-ink);
 }
@@ -593,7 +624,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.94);
+    background-color: rgba(228, 241, 253, 0.97);
     align-items: center;
     justify-content: center;
 }
@@ -720,15 +751,18 @@
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    width: 100%;
+    align-content: center;
+    width: 86%;
+    height: 72%;
 }
 
 .reveal-grid__cell {
-    width: 304px;
-    height: 422px;
-    margin: 10px;
-    border-radius: 19px;
-    border-width: 3px;
+    width: 17.5%;
+    height: 46%;
+    margin: 0.6%;
+    border-radius: var(--ex-rad-md);
+    border-width: 4px;
+    background-color: var(--ex-surface-raised);
     overflow: hidden;
     justify-content: flex-end;
 }
@@ -743,13 +777,20 @@
 }
 
 .reveal-grid__plate {
-    background-color: rgba(255, 255, 255, 0.86);
+    flex-shrink: 0;
     padding-top: 6px;
-    padding-bottom: 6px;
+    padding-bottom: 8px;
+    background-color: var(--ex-navy);
     align-items: center;
 }
 
-.reveal-grid__name { font-size: 29px; }
+.reveal-grid__name {
+    font-size: 24px;
+    color: rgb(255, 255, 255);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .reveal-grid__grade { font-size: 32px; -unity-font-style: bold; }
 
 /* ---------------------------------------------------------------- roster */
@@ -776,12 +817,16 @@
 /* Portrait proportions, cropped from the TOP — the face identifies the card, and a centred crop
    on a 2:3 illustration lands on the chest. */
 .card__art {
-    flex-grow: 1;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
     background-color: rgb(238, 238, 238);
     -unity-background-scale-mode: scale-and-crop;
-    /* Anchored to the top: the face is what identifies a card, and a centred crop on a 2:3
-       illustration in a cell this wide lands squarely on the chest. */
-    background-position-y: top;
+    /* A tenth of the way down rather than flush with the top edge: these illustrations carry a
+       halo above the head, so a crop pinned to the very top spends its first rows on empty ring. */
+    background-position-y: top 8%;
 }
 
 .card__grade {
@@ -828,9 +873,12 @@
 }
 
 .card__plate {
-    flex-shrink: 0;
-    padding: 6px 10px 8px 10px;
-    background-color: var(--ex-navy);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 4px 10px 6px 10px;
+    background-color: rgba(30, 46, 74, 0.92);
 }
 
 .card__name {
@@ -1988,23 +2036,22 @@
 
 /* Chips, not dropdowns: a select on a phone is two taps and a modal, and these lists are short. */
 .filter-chip {
-    height: 62px;
-    min-width: 86px;
+    height: 56px;
     margin-right: 8px;
     padding-left: 18px;
     padding-right: 18px;
-    background-color: rgb(255, 255, 255);
-    border-width: 1px;
-    border-color: rgb(200, 200, 200);
-    border-radius: 31px;
-    color: rgb(70, 70, 70);
-    font-size: 24px;
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
+    background-color: var(--ex-surface-raised);
+    border-width: 3px;
+    border-color: var(--ex-line);
+    border-radius: 28px;
 }
 
 .filter-chip--on {
-    background-color: rgb(226, 239, 218);
-    border-color: rgb(33, 115, 70);
-    color: rgb(24, 92, 55);
+    background-color: var(--ex-accent);
+    border-color: var(--ex-accent-deep);
+    color: rgb(255, 255, 255);
     -unity-font-style: bold;
 }
 
@@ -2996,14 +3043,16 @@
 }
 
 .pager__btn {
-    width: 96px;
-    height: 72px;
+    width: 104px;
+    height: 78px;
     font-size: var(--ex-text-sm);
-    color: var(--ex-ink);
-    background-color: var(--ex-surface-sunken);
-    border-width: 2px;
+    color: var(--ex-navy);
+    background-color: var(--ex-surface-raised);
+    border-width: 3px;
     border-color: var(--ex-line);
-    border-radius: var(--ex-rad-sm);
+    border-bottom-width: 7px;
+    border-bottom-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-md);
 }
 
 .pager__btn:disabled { opacity: 0.35; }
@@ -3134,20 +3183,22 @@
 .dtab {
     flex-grow: 1;
     flex-basis: 0;
-    height: 80px;
+    height: 84px;
     margin-right: 8px;
     font-size: var(--ex-text-sm);
     color: var(--ex-ink-muted);
     background-color: var(--ex-surface-sunken);
-    border-width: 2px;
+    border-width: 3px;
     border-color: var(--ex-line);
-    border-radius: var(--ex-rad-sm);
+    border-radius: var(--ex-rad-md);
 }
 
 .dtab--on {
-    background-color: var(--ex-accent);
-    border-color: var(--ex-accent-deep);
-    color: var(--ex-accent-ink);
+    background-color: var(--ex-surface-raised);
+    border-color: var(--ex-accent);
+    border-bottom-width: 7px;
+    border-bottom-color: var(--ex-accent);
+    color: var(--ex-ink);
     -unity-font-style: bold;
 }
 
@@ -3159,3 +3210,58 @@
     border-top-width: 2px;
     border-top-color: var(--ex-line);
 }
+
+/* The hairline and the + that close every currency pill in the reference. */
+.chip__rule {
+    width: 3px;
+    height: 44px;
+    background-color: var(--ex-line);
+}
+
+.chip__plus {
+    width: 58px;
+    font-size: 40px;
+    -unity-font-style: bold;
+    color: var(--ex-accent);
+    -unity-text-align: middle-center;
+}
+
+/* The star row on the plate, and the corner flag on a card the player did not already own —
+   both straight off the reference's ten-pull. */
+.reveal-grid__stars { font-size: 28px; -unity-font-style: bold; }
+
+.reveal-grid__new {
+    position: absolute;
+    left: 0;
+    top: 12px;
+    padding-left: 14px;
+    padding-right: 14px;
+    height: 46px;
+    font-size: 26px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: rgb(72, 44, 0);
+    background-color: var(--ex-gold);
+    border-top-right-radius: var(--ex-rad-sm);
+    border-bottom-right-radius: var(--ex-rad-sm);
+}
+
+.reveal-foot { align-items: center; margin-top: var(--ex-space-3); }
+.reveal-foot__ok { min-width: 520px; }
+
+/* The pity total, in the corner the reference keeps it in. */
+.reveal-points {
+    position: absolute;
+    right: var(--ex-space-4);
+    bottom: var(--ex-space-4);
+    flex-direction: row;
+    align-items: center;
+    height: 80px;
+    padding-left: var(--ex-space-3);
+    padding-right: var(--ex-space-3);
+    background-color: var(--ex-navy);
+    border-radius: var(--ex-rad-md);
+}
+
+.reveal-points__label { font-size: var(--ex-text-xs); color: rgba(255, 255, 255, 0.7); margin-right: var(--ex-space-2); }
+.reveal-points__value { font-size: var(--ex-text-sm); -unity-font-style: bold; color: rgb(255, 255, 255); }

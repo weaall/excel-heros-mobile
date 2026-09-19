@@ -3,14 +3,17 @@
     <!--
       A landscape mobile game, held sideways, laid out against how Blue Archive lays its own out.
 
-      What that reference actually settles, looking at its lobby and its formation screen:
+      Copied from its screens rather than approximated from memory:
 
-        * The top strip is a dark plate carrying who you are on the left and what you have on the
-          right. The currencies are WHITE pills — a coloured icon, a bold dark number, a + — not
-          pale text on a dark bar.
-        * Navigation is a row of large icon-over-label buttons along the BOTTOM, and every screen
-          is on it. There is no overflow menu; a screen you cannot see is a screen players forget.
-          (This build had four tabs down a rail and the other four behind 더보기.)
+        * A light top bar. On the main screen it carries the player plate — the dark badge with the
+          rank on a coloured tab that it puts in this exact corner. On every other screen that
+          plate is replaced by a round back arrow and the screen's name, which is what its 부대 편성
+          and 현상수배 screens do.
+        * Currencies are white pills with a coloured icon, a bold dark number and a + to buy more,
+          and the settings and home buttons sit to their right.
+        * Navigation is a row of icon-over-label buttons along the bottom, every screen on it, with
+          one loud call to action in the corner. No overflow menu: a screen behind a menu is a
+          screen players never learn exists.
         * Everything between is the scene, full bleed, with the readouts floating on it.
 
       The Excel disguise this file used to carry — a green app bar, a formula bar, column letters,
@@ -19,7 +22,7 @@
     <ui:VisualElement name="root" class="root">
 
         <ui:VisualElement name="topbar" class="topbar">
-            <!-- The player plate: the slanted dark badge Blue Archive puts in this exact corner. -->
+            <!-- 메인 only: who is playing and how far they have got. -->
             <ui:VisualElement name="playerPlate" class="plate">
                 <ui:VisualElement class="plate__rank">
                     <ui:Label text="Ph" class="plate__rank-word" />
@@ -31,23 +34,33 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
+            <!-- Every other screen: back to 메인, and the screen's name. -->
+            <ui:VisualElement name="navBack" class="navback hidden">
+                <ui:Button name="backBtn" class="navback__btn icon" />
+                <ui:Label name="screenTitle" text="" class="navback__title" />
+            </ui:VisualElement>
+
             <ui:VisualElement class="spacer" />
 
             <ui:VisualElement name="goldChip" class="chip">
                 <ui:Label name="goldIcon" text="" class="chip__icon icon" />
                 <ui:Label name="goldValue" text="0" class="chip__value" />
+                <ui:VisualElement class="chip__rule" />
+                <ui:Label text="+" class="chip__plus" />
             </ui:VisualElement>
             <ui:VisualElement name="gemChip" class="chip">
                 <ui:Label name="gemIcon" text="" class="chip__icon icon chip__icon--gem" />
                 <ui:Label name="gemValue" text="0" class="chip__value" />
+                <ui:VisualElement class="chip__rule" />
+                <ui:Label text="+" class="chip__plus" />
             </ui:VisualElement>
 
             <ui:Button name="overflowBtn" class="topbar__btn icon" />
+            <ui:Button name="homeBtn" class="topbar__btn icon" />
         </ui:VisualElement>
 
         <ui:VisualElement name="content" class="sheet" />
 
-        <!-- Every screen, on one row, the way the reference does it. -->
         <ui:VisualElement name="navbar" class="navbar">
             <ui:Button name="tabHome" class="navtab navtab--active">
                 <ui:Label name="tabHomeIcon" text="" class="navtab__icon icon" />
@@ -81,7 +94,6 @@
 
             <ui:VisualElement class="spacer" />
 
-            <!-- The one big call to action, bottom right, as the reference puts 업무 there. -->
             <ui:Button name="tabGacha" class="navcta">
                 <ui:Label name="tabGachaIcon" text="" class="navcta__icon icon" />
                 <ui:Label text="모집" class="navcta__label" />

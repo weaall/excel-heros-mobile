@@ -49,5 +49,9 @@ namespace ExcelHeroes.UI
         public const string Shield = "";      // shield, the tank
         public const string Refresh = "";     // refresh
         public const string Upgrade = "";     // upgrade
+
+        /// <summary>The lobby, which is where the reference puts its own home button.</summary>
+        public const string Home = "";        // home
+        public const string Settings = "";    // settings
     }
 }

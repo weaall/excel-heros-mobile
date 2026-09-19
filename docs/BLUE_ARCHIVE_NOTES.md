@@ -54,3 +54,36 @@ Attack/armour typing (six attack types against six armours) and terrain affinity
 depth, but they are a second and third stat axis on top of grade, role, star and division, and this
 game's fights are ten seconds long — the player would never see the difference. Revisit only if
 fights get long enough to plan.
+
+## What its screens actually look like (2026-09-20, from screenshots)
+
+Read off the lobby, the 부대 편성 sheet, the 학생 sheet, the 청휘석 shop modal, a ten-pull result
+and a combat frame — not from memory. This build now copies the following deliberately, and they
+should not be "improved" back into something else without a reason:
+
+**Chrome is light.** Every screen puts its bar on white or a pale translucent panel. The only dark
+things in the chrome are the player's own plate and the name plates on cards. A navy slab under a
+white app was this build's invention.
+
+**Navigation is a row along the bottom, and every screen is on it.** 카페 스케줄 학생 편성 서클
+제조 상점 모집 — eight, all visible, icon over label. There is no overflow menu. One loud call to
+action sits in the bottom-right corner (업무 there, 모집 here).
+
+**The top-left corner is either the player or the way back.** On the lobby it is a dark plate with
+the level on a coloured tab. On every screen inside, that plate is replaced by a round dark back
+arrow and the screen's name. The settings and home buttons sit at the far right.
+
+**Currencies are white pills**: a coloured icon, a bold dark number, a hairline, a `+`.
+
+**Sheets split into pill tabs rather than scrolling.** 학생 is 기본 정보 / 레벨 업 / 신비 해방; the
+formation modal is STRIKER / SPECIAL. The lit tab is white with a blue rule under it, not a blue
+fill. Held sideways there is no scroll anywhere, so a sheet that does not fit becomes tabs or pages.
+
+**Buttons** are wide, heavily rounded, with a darker lip along the bottom edge. Confirm is the light
+blue; cancel is the pale one beside it, same shape.
+
+**Combat** puts the run's counters in a small dark pill top-right, the skill hand bottom-right, and
+gives the rest of the frame to the scene. The floor recedes — that is what makes it read as three
+dimensions rather than as figures pinned to a wall, and it is worth more than any amount of sprite
+detail. This build gets the same effect from a drawn perspective road plus three discrete depth
+rows with contact shadows; the sprites stay 2D.

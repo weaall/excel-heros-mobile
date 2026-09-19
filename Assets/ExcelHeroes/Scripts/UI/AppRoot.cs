@@ -54,7 +54,8 @@ namespace ExcelHeroes.UI
 
         UIDocument _doc;
         VisualElement _content;
-        Label _gems, _gold, _dailyBadge, _status, _stage, _plateSub;
+        Label _gems, _gold, _dailyBadge, _status, _stage, _plateSub, _screenTitle;
+        VisualElement _plate, _navBack;
         readonly Dictionary<Sheet, IScreen> _screens = new();
         readonly Dictionary<Sheet, Button> _tabs = new();
         readonly Dictionary<Sheet, string> _tabNames = new();
@@ -80,6 +81,9 @@ namespace ExcelHeroes.UI
             _dailyBadge = root.Q<Label>("dailyBadge");
             _stage = root.Q<Label>("stageValue");
             _plateSub = root.Q<Label>("plateSub");
+            _plate = root.Q<VisualElement>("playerPlate");
+            _navBack = root.Q<VisualElement>("navBack");
+            _screenTitle = root.Q<Label>("screenTitle");
 
             _screens[Sheet.Home] = new BattleScreen(this);
             _screens[Sheet.Roster] = new RosterScreen(this);
@@ -106,7 +110,16 @@ namespace ExcelHeroes.UI
 
             // Glyphs come from the Material Symbols font rather than from PNGs, so an icon that
             // has to be white here and grey there is one character rather than two images.
-            Glyph("overflowBtn", Icons.Overflow);
+            Glyph("overflowBtn", Icons.Settings);
+            Glyph("homeBtn", Icons.Home);
+            Glyph("backBtn", Icons.Back);
+
+            // Back and home both mean 메인: the main screen is the one every other screen is
+            // entered from, the way the reference's lobby is.
+            var back = root.Q<Button>("backBtn");
+            if (back != null) back.clicked += () => { AudioService.Play("nav", 0.5f); Show(Sheet.Home); };
+            var home = root.Q<Button>("homeBtn");
+            if (home != null) home.clicked += () => { AudioService.Play("nav", 0.5f); Show(Sheet.Home); };
             Glyph("goldIcon", Icons.Gold);
             Glyph("gemIcon", Icons.Gem);
             Glyph("tabHomeIcon", Icons.Battle);
@@ -209,7 +222,26 @@ namespace ExcelHeroes.UI
             foreach (var pair in _tabs)
                 pair.Value.EnableInClassList("navtab--active",
                     pair.Key == sheet && !pair.Value.ClassListContains("navcta"));
+
+            // The plate on 메인, the back arrow and the screen's name everywhere else — which is
+            // the arrangement the reference uses between its lobby and everything inside it.
+            var home = sheet == Sheet.Home;
+            _plate?.EnableInClassList("hidden", !home);
+            _navBack?.EnableInClassList("hidden", home);
+            if (_screenTitle != null) _screenTitle.text = TitleOf(sheet);
         }
+
+        static string TitleOf(Sheet sheet) => sheet switch
+        {
+            Sheet.Roster => "인사 명단",
+            Sheet.Gacha => "모집",
+            Sheet.Quests => "일일 업무",
+            Sheet.Story => "사내 메신저",
+            Sheet.Album => "사원 앨범",
+            Sheet.Codex => "오류 도감",
+            Sheet.Chart => "통계",
+            _ => "메인 전투",
+        };
 
         /// <summary>Locked while a reveal is playing so a sheet change cannot strand the overlay.</summary>
         public void SetNavEnabled(bool enabled)
