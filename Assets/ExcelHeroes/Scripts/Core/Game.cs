@@ -16,10 +16,29 @@ namespace ExcelHeroes.Core
 
         static float _saveDue;
 
+        /// <summary>
+        /// What the party earned while the game was shut, worked out once at boot and held for
+        /// whoever shows it. It has to be taken here: the timestamp it reads is overwritten the
+        /// first time anything saves, and the first save happens well before a screen exists.
+        /// </summary>
+        public static IdleService.Report Idle { get; private set; }
+
         public static void Boot()
         {
             GameData.Load();
-            Player ??= SaveService.Load();
+            if (Player == null)
+            {
+                Player = SaveService.Load();
+                Idle = IdleService.SinceLastSeen(Player);
+            }
+        }
+
+        /// <summary>Takes the boot report, so it is paid once and never offered twice.</summary>
+        public static IdleService.Report TakeIdle()
+        {
+            var r = Idle;
+            Idle = default;
+            return r;
         }
 
         /// <summary>Call after mutating Player. Marks the save dirty and refreshes the UI.</summary>

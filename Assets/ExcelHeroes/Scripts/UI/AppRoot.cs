@@ -170,7 +170,43 @@ namespace ExcelHeroes.UI
 
         void ShowOnboardingIfNeeded()
         {
-            if (Onboarding.Needed(Game.Player)) new Onboarding(this).Show();
+            if (Onboarding.Needed(Game.Player)) { new Onboarding(this).Show(); return; }
+            ShowIdleIfAny();
+        }
+
+        /// <summary>
+        /// 백그라운드 정산 — what the run earned while the game was shut. After the tips rather
+        /// than before them: on a first launch there is nothing to report anyway, and a returning
+        /// player should see this before anything else.
+        /// </summary>
+        void ShowIdleIfAny()
+        {
+            var report = Game.TakeIdle();
+            if (!report.Worth) return;
+
+            var pane = UiKit.Div("onboard__card idle");
+            UiKit.Text("백그라운드 정산", "onboard__title", pane);
+            UiKit.Text($"{IdleService.Duration(report.Seconds)} 동안 자리를 비웠습니다.", "muted", pane);
+
+            var value = UiKit.Div("power-readout", pane);
+            UiKit.Text($"₩{report.Gold:N0}", "power-readout__value", value);
+            UiKit.Text("골드", "power-readout__label", value);
+
+            if (report.Capped)
+                UiKit.Text($"정산은 최대 {IdleService.CapSeconds / 3600}시간까지 쌓입니다.", "muted", pane);
+
+            UiKit.Btn("수령", "btn btn--primary", () =>
+            {
+                if (IdleService.Grant(Game.Player, report))
+                {
+                    AudioService.Play("victory", 0.6f);
+                    SetStatus($"백그라운드 정산 · 골드 +{report.Gold:N0}");
+                    Game.Touch();
+                }
+                CloseOverlay();
+            }, pane);
+
+            OpenOverlay(pane);
         }
 
         void OnDisable()
