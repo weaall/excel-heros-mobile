@@ -785,6 +785,16 @@
     -unity-background-scale-mode: scale-and-crop;
 }
 
+/* A real chibi needs no circle to hide the crop, and wants to stand rather than fill. */
+.fighter__body--chibi {
+    width: 132px;
+    height: 132px;
+    border-radius: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+    -unity-background-scale-mode: scale-to-fit;
+}
+
 .fighter--hero .fighter__body { border-color: rgb(126, 198, 255); }
 .fighter--monster .fighter__body {
     border-color: rgb(226, 108, 108);

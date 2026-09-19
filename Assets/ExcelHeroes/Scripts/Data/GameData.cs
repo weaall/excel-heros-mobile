@@ -168,6 +168,13 @@ namespace ExcelHeroes.Data
             return s != null ? s : Resources.Load<Sprite>("Art/Cards/_placeholder");
         }
 
+        /// <summary>
+        /// The chibi the lane battle draws. Null until that hero's sprite has been generated, which
+        /// the battle screen falls back from — a half-finished sprite set must not blank the fight.
+        /// </summary>
+        public static Sprite BattleSprite(string heroId) =>
+            Resources.Load<Sprite>($"Art/Sprites/{heroId}");
+
         /// <summary>The extra frames used to make a card breathe/blink on the detail screen. May be empty.</summary>
         public static List<Sprite> CardMotion(string heroId)
         {

@@ -9,7 +9,7 @@ import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { genImage, refFromFile, writeOut, pool } from './gemini.mjs';
-import { cardPrompt, posePrompt, framePrompt, POSES, UI_PIECES } from './art-prompts.mjs';
+import { cardPrompt, posePrompt, spritePrompt, framePrompt, POSES, UI_PIECES } from './art-prompts.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -79,6 +79,24 @@ async function poses() {
   summarise(await pool(jobs, CONC, report('pose')));
 }
 
+/** Chibi battle sprites on a flat magenta key, cut to alpha by the Unity importer. */
+async function sprites() {
+  let list = heroes.filter((h) => !ONLY || ONLY.has(h.id));
+  list = list.filter((h) => FORCE || !existsSync(join(ART, 'Sprites', `${h.id}.png`)));
+  list = list.slice(0, LIMIT);
+  console.log(`sprites: ${list.length} to generate (concurrency ${CONC})`);
+  const jobs = list.map((h) => async () => {
+    const ref = webRef(h.id) ?? (existsSync(join(ART, 'Cards', `${h.id}.png`))
+      ? refFromFile(join(ART, 'Cards', `${h.id}.png`)) : null);
+    const [img] = await genImage(spritePrompt(h, { hasRef: !!ref }), {
+      model: 'gemini-3-pro-image', refs: ref ? [ref] : [], aspectRatio: '1:1', temperature: 0.8,
+    });
+    writeOut(join(ART, 'Sprites', `${h.id}.png`), img.buffer);
+    return `${h.id} (${h.grade}) ${(img.buffer.length / 1024).toFixed(0)}KB`;
+  });
+  summarise(await pool(jobs, CONC, report('sprite')));
+}
+
 async function frames() {
   const jobs = grades.filter((g) => FORCE || !existsSync(join(ART, 'UI', `frame_${g.id}.png`))).map((g) => async () => {
     const [img] = await genImage(framePrompt(g.id, g.color), { model: 'gemini-3-pro-image', aspectRatio: '3:4' });
@@ -108,7 +126,8 @@ function summarise(res) {
 }
 
 mkdirSync(join(ART, 'Cards'), { recursive: true });
+mkdirSync(join(ART, 'Sprites'), { recursive: true });
 mkdirSync(join(ART, 'UI'), { recursive: true });
-const table = { cards, poses, frames, ui };
+const table = { cards, poses, sprites, frames, ui };
 if (!table[cmd]) { console.log('usage: node tools/gen-art.mjs <cards|poses|frames|ui> [--only ids] [--limit N] [--force]'); process.exit(1); }
 await table[cmd]();

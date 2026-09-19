@@ -110,6 +110,36 @@ export function posePrompt(h, poseKey) {
   ].join('\n');
 }
 
+/**
+ * Battle sprite. The lane battle currently draws cropped card portraits in circles, which reads as
+ * placeholder art the moment anything moves. A chibi standing on a flat key colour can be cut to
+ * alpha at import and put on the lane properly.
+ *
+ * The key colour has to be one that never appears in the character: pure magenta is the standard
+ * choice because no skin, hair or office wear lands near it.
+ */
+export function spritePrompt(h, { hasRef }) {
+  const who = GENDER[h.gender] ?? 'a Korean office worker';
+  const identity = hasRef
+    ? 'Redraw the character from the reference image as a chibi. Keep the identity readable: same hair colour and shape, same outfit colours, same accessories and the same halo.'
+    : 'Design a chibi character matching the description below.';
+  return [
+    identity,
+    '',
+    'CHIBI GAME SPRITE. Two-heads-tall proportions, big head, small body, simple readable shapes.',
+    'Full body including both feet. Standing battle-ready pose, three-quarter view facing RIGHT.',
+    `SUBJECT: ${who}, ${h.nick}. Department: ${h.dept}. Modern Korean office attire.`,
+    `Keep the floating halo above the head, small and simple.`,
+    '',
+    'BACKGROUND: the entire background is one FLAT PURE MAGENTA (#FF00FF) with absolutely no',
+    'gradient, texture, shadow, glow or vignette. The character must not use magenta anywhere.',
+    'No ground shadow, no platform, no base — the character floats on flat magenta.',
+    '',
+    'Clean thick outlines, flat cel shading, bright saturated colours, readable at 120 pixels tall.',
+    NEGATIVE,
+  ].join('\n');
+}
+
 /** Rarity card frame - flat black interior so it can be cut to alpha at import time. */
 export function framePrompt(grade, colour) {
   return [

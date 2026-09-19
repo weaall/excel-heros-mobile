@@ -83,7 +83,19 @@ namespace ExcelHeroes.UI
         {
             var el = UiKit.Div("fighter " + (c.side == Side.Hero ? "fighter--hero" : "fighter--monster"), _stage);
             var bodyEl = UiKit.Div("fighter__body", el);
-            if (c.side == Side.Hero) UiKit.SetArt(bodyEl, GameData.CardArt(c.heroId));
+
+            if (c.side == Side.Hero)
+            {
+                // A chibi if one exists, otherwise the card art in a circle. The fallback keeps the
+                // fight readable while the sprite set is still being filled in.
+                var sprite = GameData.BattleSprite(c.heroId);
+                if (sprite != null)
+                {
+                    bodyEl.AddToClassList("fighter__body--chibi");
+                    UiKit.SetArt(bodyEl, sprite);
+                }
+                else UiKit.SetArt(bodyEl, GameData.CardArt(c.heroId));
+            }
             var bar = UiKit.Div("fighter__hpbar", el);
             UiKit.Div("fighter__hpfill", bar);
             UiKit.Text(c.name, "fighter__name", el);

@@ -38,12 +38,13 @@ Game 뷰는 세로 비율(예: 1080×1920)로 맞춰 두세요. 다시 세팅이
 Assets/ExcelHeroes/
   Resources/Data/*.json     웹 빌드에서 뽑아낸 게임 DB (직접 수정하지 말 것)
   Resources/Art/Cards/*.png 캐릭터 카드 일러 55종 (Gemini 생성)
+  Resources/Art/Sprites/*.png 전투용 치비 스프라이트 (마젠타 배경, 임포트 시 알파로 잘림)
   Resources/Art/UI/*.png    배경 3종 · 등급 프레임 5종 · 로고
   Scripts/Data/             JSON 미러 정의 + GameData 로더
   Scripts/Core/             PlayerState · SaveService · GachaService · AffectionService · QuestService
                             AudioService · StatMath · BattleSim · Game
   Scripts/UI/               AppRoot + 화면 7종 + HeroDetail + UiKit
-  Scripts/Editor/           ProjectBootstrap · ArtImportSettings
+  Scripts/Editor/           ProjectBootstrap · ArtImportSettings · SpriteChromaKey · SelfTest
   UI/                       AppShell.uxml · App.uss · ExcelHeroesTheme.tss · PanelSettings.asset
 tools/                      데이터 익스포터 · Gemini 아트 파이프라인
 ```
@@ -99,6 +100,7 @@ tools/                      데이터 익스포터 · Gemini 아트 파이프라
 node tools/export-data.mjs                      # 웹 빌드 → Resources/Data/*.json
 node tools/gen-art.mjs cards                    # 카드 일러 (없는 것만)
 node tools/gen-art.mjs poses --only ceo,ai_lead # 모션 프레임 (숨쉬기/깜빡임/말하기/미소)
+node tools/gen-art.mjs sprites                  # 전투용 치비 (마젠타 배경 → 임포트 시 알파)
 node tools/gen-art.mjs frames                   # 등급별 카드 프레임
 node tools/gen-art.mjs ui                       # 배경 · 로고
 ```
@@ -116,6 +118,9 @@ node tools/gen-art.mjs ui                       # 배경 · 로고
 2. **헤일로가 시그니처** — 7개 부문마다 다른 링(경영지원=클립, 기술=회로, 재무=금화, 임원=왕관 …).
    등급은 배경이 아니라 **헤일로의 크기와 빛**으로 표현합니다.
 3. **디자인은 하나** — 움직임은 같은 포즈의 변형 프레임으로만 만듭니다. 리디자인 금지(크로스페이드가 깨집니다).
+4. **전투 스프라이트는 마젠타 위에** — 이미지 모델은 알파를 못 만듭니다. `#FF00FF` 배경에 그리게 하고
+   `SpriteChromaKey` 가 임포트 시 잘라냅니다. 캐릭터에 마젠타가 들어가면 구멍이 뚫리니 주의하세요.
+   경계 픽셀은 부분 알파를 주고 마젠타 성분을 빼냅니다 — 단순 임계값으로 자르면 분홍 테두리가 남습니다.
 
 프롬프트는 `tools/art-prompts.mjs` 한 곳에 모여 있습니다.
 
