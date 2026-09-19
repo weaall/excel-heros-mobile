@@ -55,35 +55,77 @@ namespace ExcelHeroes.UI
         {
             _root = UiKit.Div("screen-body");
 
-            var head = UiKit.Div("panel", _root);
-            _counter = UiKit.Text("", "section-title", head);
-            UiKit.Text("카드를 누르면 상세 정보가 열립니다. 같은 카드를 또 뽑으면 ★가 오릅니다.", "muted", head);
+            var head = UiKit.Div("sheet-head", _root);
+            _counter = UiKit.Text("", "sheet-head__stat", head);
+
+            // ▼ 필터 — the web build's filter bar. Fifty-five cards in one scroll is a haystack:
+            // the question a player actually asks is "who is my B-grade healer", and without this
+            // the only way to answer it is to read every card.
+            var bar = UiKit.Div("filter-bar", _root);
+            UiKit.Text("▼ 필터", "filter-bar__label", bar);
+            Chips(bar, "등급", new[] { ("", "전체"), ("S", "S"), ("A", "A"), ("B", "B"), ("C", "C"), ("D", "D") },
+                  () => _grade, v => _grade = v);
+            Chips(bar, "역할", new[] { ("", "전체"), ("tank", "탱커"), ("melee", "근접"), ("ranged", "원거리"), ("healer", "힐러") },
+                  () => _role, v => _role = v);
+            Chips(bar, "보유", new[] { ("", "전체"), ("1", "보유만"), ("0", "미보유"), ("party", "편성") },
+                  () => _owned, v => _owned = v);
 
             _scroll = UiKit.Scroll(null, _root);
             Refresh();
             return _root;
         }
 
+        string _grade = "", _role = "", _owned = "";
+
+        /// <summary>One row of the filter bar. Chips rather than dropdowns: a select on a phone is
+        /// two taps and a modal, and these are all short lists.</summary>
+        void Chips(VisualElement parent, string label, (string Value, string Text)[] options,
+                   System.Func<string> get, System.Action<string> set)
+        {
+            var row = UiKit.Div("filter-row", parent);
+            UiKit.Text(label, "filter-row__label", row);
+            foreach (var (value, text) in options)
+            {
+                var v = value;
+                var chip = UiKit.Btn(text, "filter-chip", () => { set(v); Rebuild(); }, row);
+                chip.EnableInClassList("filter-chip--on", get() == v);
+            }
+        }
+
+        /// <summary>The filter bar is part of the sheet, so a change rebuilds the whole thing.</summary>
+        void Rebuild() => _app.Rebuild();
+
         public void Refresh()
         {
             var p = Game.Player;
-            var ownedCount = p.owned.Count;
-            _counter.text = $"도감 {ownedCount} / {GameData.Heroes.Count}";
+
+            var shown = GameData.Heroes.Where(h =>
+                (_grade == "" || h.grade == _grade) &&
+                (_role == "" || h.role == _role) &&
+                (_owned switch
+                {
+                    "1" => p.Owns(h.id),
+                    "0" => !p.Owns(h.id),
+                    "party" => p.party.Contains(h.id),
+                    _ => true,
+                })).ToList();
+
+            _counter.text = _grade == "" && _role == "" && _owned == ""
+                ? $"도감 {p.owned.Count} / {GameData.Heroes.Count}"
+                : $"{shown.Count}명 · 도감 {p.owned.Count} / {GameData.Heroes.Count}";
 
             _scroll.Clear();
             var grid = UiKit.Div("roster-grid", _scroll);
 
             // Owned first, strongest grade first — the shelf the player actually browses.
-            var ordered = GameData.Heroes
-                .OrderByDescending(h => p.Owns(h.id))
-                .ThenByDescending(h => GameData.GradeRank(h.grade))
-                .ThenBy(h => h.name);
+            foreach (var def in shown
+                         .OrderByDescending(h => p.Owns(h.id))
+                         .ThenByDescending(h => GameData.GradeRank(h.grade))
+                         .ThenBy(h => h.name))
+                grid.Add(UiKit.Card(def, p.Find(def.id), () => _app.OpenDetail(def.id)));
 
-            foreach (var def in ordered)
-            {
-                var owned = p.Find(def.id);
-                grid.Add(UiKit.Card(def, owned, () => _app.OpenDetail(def.id)));
-            }
+            if (shown.Count == 0)
+                UiKit.Text("조건에 맞는 사원이 없습니다.", "muted filter-empty", _scroll);
         }
     }
 
