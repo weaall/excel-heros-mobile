@@ -58,6 +58,11 @@ namespace ExcelHeroes.EditorTools
             Check(GameData.Roles.Count == 4, $"4 roles");
             Check(GameData.Episodes.Count > 0, $"{GameData.Episodes.Count} story episodes");
             Check(GameData.Balance != null && GameData.Balance.partySize > 0, "balance loaded");
+            Check(GameData.MonsterTypes.Count > 0, $"{GameData.MonsterTypes.Count} monster types");
+            Check(GameData.Bosses.Count > 0, $"{GameData.Bosses.Count} bosses");
+            Check(GameData.Bosses.All(b => b.specials.Count > 0), "every boss has at least one scripted move");
+            Check(GameData.BossForStage(1)?.id != GameData.BossForStage(11)?.id,
+                $"boss rotates per phase (1: {GameData.BossForStage(1)?.name}, 11: {GameData.BossForStage(11)?.name})");
 
             var rateSum = GameData.Grades.Sum(g => g.rate);
             Check(Mathf.Abs(rateSum - 1f) < 0.02f, $"gacha rates sum to ~1 (got {rateSum:F3})");
@@ -184,6 +189,19 @@ namespace ExcelHeroes.EditorTools
             Check(sim.Finished, $"battle reached a conclusion in {steps / 60f:F1}s");
             Check(sim.Won, $"a maxed party clears stage 1 (won={sim.Won})");
             Check(sim.GoldEarned > 0, $"gold awarded ({sim.GoldEarned})");
+
+            // Every boss must be survivable to fight: run one wave of each phase's boss against a
+            // maxed party and confirm it resolves rather than stalling (a self-healing boss that
+            // out-heals the party would hang here, which is exactly the bug worth catching).
+            for (var phase = 0; phase < GameData.Bosses.Count; phase++)
+            {
+                var stage = phase * 10 + 1;
+                var name = GameData.BossForStage(stage)?.name;
+                var s = new BattleSim(p, stage, waves: 1) { AutoSkill = true };
+                var n = 0;
+                while (!s.Finished && n < 60 * 120) { s.Tick(1f / 60f); s.Events.Clear(); n++; }
+                Check(s.Finished, $"boss resolves: {name} (phase {phase + 1}, {n / 60f:F0}s)");
+            }
 
             var weak = PlayerState.New();
             var d = GameData.Heroes.First(h => h.grade == "D");

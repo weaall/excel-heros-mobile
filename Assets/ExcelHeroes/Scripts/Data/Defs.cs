@@ -153,6 +153,48 @@ namespace ExcelHeroes.Data
         public List<StoryLine> lines = new();
     }
 
+    /// <summary>A regular wave enemy — a spreadsheet error given a shape and a face.</summary>
+    [Serializable]
+    public class MonsterTypeDef
+    {
+        public string id;
+        public string name;
+        public string shape;
+    }
+
+    /// <summary>
+    /// A boss's scripted move. `every` counts that boss's own basic attacks: every 2nd attack from
+    /// 인사팀 채용 공고 calls in reinforcements, and so on. This is what makes each phase's boss feel
+    /// like a puzzle rather than a bigger health bar.
+    /// </summary>
+    [Serializable]
+    public class BossSpecialDef
+    {
+        public int every;
+        public string kind;   // volley sweep stomp throw slow summon heal shield
+        public string name;   // shouted on screen when it fires
+        public string desc;
+    }
+
+    [Serializable]
+    public class BossDef
+    {
+        public string id;
+        public string name;
+        public string desc;
+        public float hp;        // multipliers on the stage's baseline monster stats
+        public float atk;
+        public float interval;
+        public List<BossSpecialDef> specials = new();
+    }
+
+    [Serializable]
+    public class MonsterFile
+    {
+        public List<MonsterTypeDef> items = new();
+        public List<BossDef> bosses = new();
+    }
+
     [Serializable]
     public class BalanceDef
     {

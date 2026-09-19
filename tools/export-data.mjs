@@ -76,6 +76,15 @@ const files = {
                       pairAtk: SYNERGY.pair.atk, pairHp: SYNERGY.pair.hp,
                       trioAtk: SYNERGY.trio.atk, trioHp: SYNERGY.trio.hp,
                       balancedHp: SYNERGY.balanced.hp },
+  // 몬스터는 스프레드시트 오류다. 페이즈마다 다른 3종을 뽑아 쓰고, 10스테이지마다 보스가 돌아온다.
+  'monsters.json': {
+    items: (monsters.MONSTER_TYPES ?? []).map((m) => ({ id: m.id, name: m.name, shape: m.shape })),
+    bosses: (monsters.BOSSES ?? []).map((b) => ({
+      id: b.id, name: b.name, desc: b.desc ?? '',
+      hp: b.hp ?? 1, atk: b.atk ?? 1, interval: b.interval ?? 2,
+      specials: (b.specials ?? []).map((s) => ({ every: s.every, kind: s.kind, name: s.name, desc: s.desc ?? '' })),
+    })),
+  },
   'story.json':     wrap((story.EPISODES ?? []).map((e) => ({
                       id: e.id, phase: e.phase, title: e.title, room: e.room,
                       lines: e.lines.map(([who, text]) => ({ who, text })),

@@ -1,1 +1,419 @@
-[]
+{
+ "items": [
+  {
+   "id": "circ",
+   "name": "순환 참조",
+   "shape": "blob"
+  },
+  {
+   "id": "merged",
+   "name": "병합된 셀",
+   "shape": "cube"
+  },
+  {
+   "id": "ref",
+   "name": "#REF! 오류",
+   "shape": "diamond"
+  },
+  {
+   "id": "virus",
+   "name": "매크로 바이러스",
+   "shape": "spike"
+  },
+  {
+   "id": "copier",
+   "name": "복사기 괴물",
+   "shape": "cube"
+  },
+  {
+   "id": "shredder",
+   "name": "문서 파쇄기",
+   "shape": "cube"
+  },
+  {
+   "id": "ceo_chair",
+   "name": "사장님 의자",
+   "shape": "blob"
+  },
+  {
+   "id": "slide",
+   "name": "발표 자료",
+   "shape": "sheet"
+  },
+  {
+   "id": "stapler",
+   "name": "스테이플러",
+   "shape": "cube"
+  },
+  {
+   "id": "ghost",
+   "name": "유령 참조",
+   "shape": "ghost"
+  },
+  {
+   "id": "sheet",
+   "name": "손상된 시트",
+   "shape": "sheet"
+  },
+  {
+   "id": "chart",
+   "name": "폭주 차트",
+   "shape": "chart"
+  },
+  {
+   "id": "hourglass",
+   "name": "응답 없음",
+   "shape": "hourglass"
+  },
+  {
+   "id": "lock",
+   "name": "잠긴 문서",
+   "shape": "lock"
+  },
+  {
+   "id": "bug",
+   "name": "런타임 버그",
+   "shape": "bug"
+  },
+  {
+   "id": "cloud",
+   "name": "동기화 충돌",
+   "shape": "cloud"
+  },
+  {
+   "id": "cursor",
+   "name": "커서 도둑",
+   "shape": "cursor"
+  },
+  {
+   "id": "monkey",
+   "name": "복사 클립보드",
+   "shape": "monkey"
+  },
+  {
+   "id": "bull",
+   "name": "마감 알람",
+   "shape": "bull"
+  },
+  {
+   "id": "mushroom",
+   "name": "스팸 메일함",
+   "shape": "blob"
+  },
+  {
+   "id": "eyeball",
+   "name": "감시 카메라",
+   "shape": "blob"
+  },
+  {
+   "id": "hand",
+   "name": "키보드 괴물",
+   "shape": "blob"
+  },
+  {
+   "id": "golem",
+   "name": "서버 랙",
+   "shape": "cube"
+  },
+  {
+   "id": "flame",
+   "name": "과열 노트북",
+   "shape": "spike"
+  },
+  {
+   "id": "orb",
+   "name": "로딩 커서",
+   "shape": "blob"
+  },
+  {
+   "id": "rabbit",
+   "name": "마감 달력",
+   "shape": "blob"
+  },
+  {
+   "id": "chicken",
+   "name": "커피 머신",
+   "shape": "blob"
+  },
+  {
+   "id": "cat",
+   "name": "야근 램프",
+   "shape": "blob"
+  },
+  {
+   "id": "rat",
+   "name": "버그 마우스",
+   "shape": "blob"
+  },
+  {
+   "id": "snake",
+   "name": "엉킨 전선",
+   "shape": "blob"
+  },
+  {
+   "id": "robot",
+   "name": "고장난 프린터",
+   "shape": "cube"
+  }
+ ],
+ "bosses": [
+  {
+   "id": "boss",
+   "name": "긴급 티켓",
+   "desc": "35% 확률로 무작위 영웅에게 불덩이 · 2번째 공격마다 불덩이 3연발",
+   "hp": 1,
+   "atk": 1,
+   "interval": 2,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "volley",
+     "name": "티켓 폭주!",
+     "desc": "2번째 공격: 불덩이 3연발 (각 60%)"
+    }
+   ]
+  },
+  {
+   "id": "boss_zombie",
+   "name": "야근 좀비 부장",
+   "desc": "2번째 공격마다 앞 두 명 휩쓸기 · 4번째 공격은 파티를 4초간 느리게",
+   "hp": 1.25,
+   "atk": 0.9,
+   "interval": 2.4,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "sweep",
+     "name": "야근 지시!",
+     "desc": "2번째 공격: 앞 두 명 휩쓸기 (90%)"
+    },
+    {
+     "every": 4,
+     "kind": "slow",
+     "name": "야근 강요!",
+     "desc": "4번째 공격: 4초간 파티 공격 속도 -30%"
+    }
+   ]
+  },
+  {
+   "id": "boss_ogre",
+   "name": "갑질 거래처 오우거",
+   "desc": "2번째 공격은 전원 발구르기(50%) · 4번째 공격은 맨 뒤 영웅에게 서류 투척(140%)",
+   "hp": 1,
+   "atk": 1.15,
+   "interval": 2.2,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "stomp",
+     "name": "갑질 발구르기!",
+     "desc": "2번째 공격: 전원 50%"
+    },
+    {
+     "every": 4,
+     "kind": "throw",
+     "name": "서류 투척!",
+     "desc": "4번째 공격: 맨 뒤 영웅에게 140%"
+    }
+   ]
+  },
+  {
+   "id": "boss_audit",
+   "name": "감사 스캐너",
+   "desc": "2번째 공격마다 전수 감사(불덩이 3연발) · 5번째 공격은 소명 요구로 파티를 느리게",
+   "hp": 1.15,
+   "atk": 1.05,
+   "interval": 2.1,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "volley",
+     "name": "전수 감사!",
+     "desc": "2번째 공격: 불덩이 3연발 (각 60%)"
+    },
+    {
+     "every": 5,
+     "kind": "slow",
+     "name": "소명 요구!",
+     "desc": "5번째 공격: 4초간 파티 공격 속도 -30%"
+    }
+   ]
+  },
+  {
+   "id": "boss_target",
+   "name": "실적 대시보드",
+   "desc": "2번째 공격마다 전원 발구르기 · 4번째 공격은 앞 두 명 휩쓸기",
+   "hp": 1.3,
+   "atk": 1.1,
+   "interval": 2.5,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "stomp",
+     "name": "실적 압박!",
+     "desc": "2번째 공격: 전원 50%"
+    },
+    {
+     "every": 4,
+     "kind": "sweep",
+     "name": "목표 상향!",
+     "desc": "4번째 공격: 앞 두 명 휩쓸기 (90%)"
+    }
+   ]
+  },
+  {
+   "id": "boss_approval",
+   "name": "결재 도장기",
+   "desc": "느리지만 단단하다 · 2번째 공격은 맨 뒤로 서류 반려 · 4번째는 전원 재상신",
+   "hp": 1.5,
+   "atk": 0.95,
+   "interval": 2.8,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "throw",
+     "name": "반려!",
+     "desc": "2번째 공격: 맨 뒤 영웅에게 140%"
+    },
+    {
+     "every": 4,
+     "kind": "stomp",
+     "name": "재상신 요구!",
+     "desc": "4번째 공격: 전원 50%"
+    }
+   ]
+  },
+  {
+   "id": "boss_copier",
+   "name": "대형 복합기",
+   "desc": "2번째 공격마다 전량 인쇄(불덩이 3연발) · 4번째는 용지 걸림으로 앞 두 명 휩쓸기",
+   "hp": 1.2,
+   "atk": 1,
+   "interval": 2,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "volley",
+     "name": "전량 인쇄!",
+     "desc": "2번째 공격: 불덩이 3연발 (각 60%)"
+    },
+    {
+     "every": 4,
+     "kind": "sweep",
+     "name": "용지 걸림!",
+     "desc": "4번째 공격: 앞 두 명 휩쓸기 (90%)"
+    }
+   ]
+  },
+  {
+   "id": "boss_cabinet",
+   "name": "문서 캐비닛",
+   "desc": "가장 단단하고 가장 느리다 · 2번째는 서류 더미로 전원 · 4번째는 맨 뒤로 캐비닛 투척",
+   "hp": 1.6,
+   "atk": 0.9,
+   "interval": 2.9,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "stomp",
+     "name": "서류 더미!",
+     "desc": "2번째 공격: 전원 50%"
+    },
+    {
+     "every": 4,
+     "kind": "throw",
+     "name": "캐비닛 투척!",
+     "desc": "4번째 공격: 맨 뒤 영웅에게 140%"
+    }
+   ]
+  },
+  {
+   "id": "boss_elevator",
+   "name": "임원용 엘리베이터",
+   "desc": "가장 빠르다 · 2번째는 정원 초과로 파티를 느리게 · 4번째는 급강하로 전원 타격",
+   "hp": 1.1,
+   "atk": 1.2,
+   "interval": 1.9,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "slow",
+     "name": "정원 초과!",
+     "desc": "2번째 공격: 4초간 파티 공격 속도 -30%"
+    },
+    {
+     "every": 4,
+     "kind": "stomp",
+     "name": "급강하!",
+     "desc": "4번째 공격: 전원 50%"
+    }
+   ]
+  },
+  {
+   "id": "boss_hr",
+   "name": "인사팀 채용 공고",
+   "desc": "2번째 공격마다 증원을 부른다 — 광역이 없으면 숫자에 밀린다 · 4번째는 단체 면접",
+   "hp": 1.35,
+   "atk": 0.95,
+   "interval": 2.4,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "summon",
+     "name": "증원 요청!",
+     "desc": "2번째 공격: 졸개 2명 호출 (검산하면 1명)"
+    },
+    {
+     "every": 4,
+     "kind": "sweep",
+     "name": "단체 면접!",
+     "desc": "4번째 공격: 앞 두 명 휩쓸기 (90%)"
+    }
+   ]
+  },
+  {
+   "id": "boss_ledger",
+   "name": "회계팀 정산 로봇",
+   "desc": "2번째 공격마다 스스로 회복한다 — 화력이 모자라면 영영 못 잡는다 · 4번째는 영수증 폭탄",
+   "hp": 1.2,
+   "atk": 1,
+   "interval": 2.2,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "heal",
+     "name": "자가 결재!",
+     "desc": "2번째 공격: 최대 체력 12% 회복 (검산하면 절반 이하)"
+    },
+    {
+     "every": 4,
+     "kind": "volley",
+     "name": "영수증 폭탄!",
+     "desc": "4번째 공격: 불덩이 3연발 (각 60%)"
+    }
+   ]
+  },
+  {
+   "id": "boss_legal",
+   "name": "법무팀 반려 도장",
+   "desc": "2번째 공격마다 방어막을 두른다 — 몰아칠 때를 고르게 만든다 · 4번째는 맨 뒤로 소송 예고",
+   "hp": 1.45,
+   "atk": 1.05,
+   "interval": 2.6,
+   "specials": [
+    {
+     "every": 2,
+     "kind": "shield",
+     "name": "반려 방어막!",
+     "desc": "2번째 공격: 4초간 받는 피해 45% 감소 (검산하면 짧아진다)"
+    },
+    {
+     "every": 4,
+     "kind": "throw",
+     "name": "소송 예고!",
+     "desc": "4번째 공격: 맨 뒤 영웅에게 140%"
+    }
+   ]
+  }
+ ]
+}

@@ -25,11 +25,17 @@ namespace ExcelHeroes.Core
         public float skillCooldown;    // 0 = this fighter has no skill
         public bool Alive => hp > 0;
 
+        // boss script state
+        public BossDef boss;            // null for everything that is not a boss
+        public int attackCount;
+
         // transient combat state
         public float burnLeft, burnPerSec;
         public float shield;
         public float hasteLeft, hasteAmount;
+        public float slowLeft, slowAmount;
         public float tauntLeft;
+        public float guardLeft;         // timed damage reduction (보스 방어막, 총대 메기)
         public float dmgReduction;
 
         public bool SkillReady => skillCooldown > 0f && skillTimer <= 0f && Alive;
@@ -120,32 +126,57 @@ namespace ExcelHeroes.Core
         void SpawnWave()
         {
             Wave++;
-            var hp = StatMath.MonsterHp(Stage);
-            var atk = StatMath.MonsterAtk(Stage);
-            var isBoss = Wave == WaveCount;
-
-            var count = isBoss ? 1 : _perWave;
-            for (var i = 0; i < count; i++)
-            {
-                var m = new Combatant
-                {
-                    side = Side.Monster,
-                    name = isBoss ? "긴급 티켓" : MonsterName(i),
-                    role = "melee",
-                    maxHp = isBoss ? hp * 6 : hp,
-                    hp = isBoss ? hp * 6 : hp,
-                    atk = isBoss ? (int)(atk * 1.6f) : atk,
-                    interval = isBoss ? 1.4f : 1.1f,
-                    range = 1.1f,
-                    x = LaneCells + i * 1.1f,
-                };
-                Monsters.Add(m);
-                Events.Enqueue(new BattleEvent { kind = EventKind.Spawn, actor = m });
-            }
+            if (Wave == WaveCount) SpawnBoss();
+            else for (var i = 0; i < _perWave; i++) Spawn(NewMinion(i), LaneCells + i * 1.1f);
         }
 
-        static readonly string[] MonsterNames = { "순환 참조", "#N/A 오류", "깨진 수식", "중복 행", "미믹 상자" };
-        static string MonsterName(int i) => MonsterNames[i % MonsterNames.Length];
+        Combatant NewMinion(int slot)
+        {
+            var hp = StatMath.MonsterHp(Stage);
+            return new Combatant
+            {
+                side = Side.Monster,
+                name = GameData.MonsterForStage(Stage, slot)?.name ?? "스프레드시트 오류",
+                role = "melee",
+                maxHp = hp, hp = hp,
+                atk = StatMath.MonsterAtk(Stage),
+                interval = 1.1f,
+                range = 1.1f,
+            };
+        }
+
+        /// <summary>
+        /// Each phase has its own boss with its own script — 채용 공고 calls in reinforcements,
+        /// 정산 로봇 heals itself, 반려 도장 shields. The stat multipliers and the move list both come
+        /// from the web build, so a phase feels the same in both clients.
+        /// </summary>
+        void SpawnBoss()
+        {
+            var def = GameData.BossForStage(Stage);
+            var hp = StatMath.MonsterHp(Stage);
+            var atk = StatMath.MonsterAtk(Stage);
+
+            var b = new Combatant
+            {
+                side = Side.Monster,
+                name = def?.name ?? "긴급 티켓",
+                role = "melee",
+                maxHp = (int)(hp * 6 * (def?.hp ?? 1f)),
+                atk = (int)(atk * 1.6f * (def?.atk ?? 1f)),
+                interval = def?.interval ?? 2f,
+                range = 1.1f,
+                boss = def,
+            };
+            b.hp = b.maxHp;
+            Spawn(b, LaneCells);
+        }
+
+        void Spawn(Combatant m, float x)
+        {
+            m.x = x;
+            Monsters.Add(m);
+            Events.Enqueue(new BattleEvent { kind = EventKind.Spawn, actor = m });
+        }
 
         public void Tick(float dt)
         {
@@ -160,7 +191,8 @@ namespace ExcelHeroes.Core
                 StepAttack(h, dt, Monsters);
             }
 
-            foreach (var m in Monsters.Where(m => m.Alive))
+            // Snapshotted: a boss's 증원 요청 adds to Monsters from inside this loop.
+            foreach (var m in Monsters.Where(m => m.Alive).ToList())
             {
                 var target = FrontHero();
                 if (target == null) continue;
@@ -198,9 +230,12 @@ namespace ExcelHeroes.Core
                 Damage(null, c, (int)(c.burnPerSec * dt), silent: true);
             }
             if (c.hasteLeft > 0f) c.hasteLeft -= dt;
+            if (c.slowLeft > 0f) c.slowLeft -= dt;
             if (c.tauntLeft > 0f) c.tauntLeft -= dt;
+            if (c.guardLeft > 0f) c.guardLeft -= dt;
             if (c.hasteLeft <= 0f) c.hasteAmount = 0f;
-            if (c.tauntLeft <= 0f) c.dmgReduction = 0f;
+            if (c.slowLeft <= 0f) c.slowAmount = 0f;
+            if (c.tauntLeft <= 0f && c.guardLeft <= 0f) c.dmgReduction = 0f;
 
             // The ops perk keeps a slow trickle of health going so a healer-less party is not doomed.
             if (c.side == Side.Hero && Perk("regen") > 0f && c.hp < c.maxHp)
@@ -213,7 +248,7 @@ namespace ExcelHeroes.Core
             if (target == null) return;
             if (Math.Abs(target.x - a.x) > a.range) return;
 
-            a.attackTimer -= dt * (1f + a.hasteAmount);
+            a.attackTimer -= dt * Math.Max(0.2f, 1f + a.hasteAmount - a.slowAmount);
             if (a.attackTimer > 0f) return;
             a.attackTimer = a.interval;
 
@@ -221,9 +256,63 @@ namespace ExcelHeroes.Core
             if (a.side == Side.Hero)
             {
                 if (Random.value < Perk("crit")) dmg *= 2;
-                if (target.maxHp > StatMath.MonsterHp(Stage) * 3) dmg = (int)(dmg * (1f + Perk("boss")));
+                if (target.boss != null) dmg = (int)(dmg * (1f + Perk("boss")));
             }
             Damage(a, target, dmg);
+
+            // A boss's script is counted in its own swings, so slowing it also delays its specials.
+            if (a.boss != null) BossTurn(a);
+        }
+
+        /// <summary>Runs whichever scripted moves are due on this boss's Nth attack.</summary>
+        void BossTurn(Combatant b)
+        {
+            b.attackCount++;
+            foreach (var s in b.boss.specials)
+            {
+                if (s.every <= 0 || b.attackCount % s.every != 0) continue;
+                Events.Enqueue(new BattleEvent { kind = EventKind.Skill, actor = b, text = s.name });
+                FireBossMove(b, s.kind);
+            }
+        }
+
+        void FireBossMove(Combatant b, string kind)
+        {
+            var alive = Heroes.Where(h => h.Alive).ToList();
+            if (alive.Count == 0) return;
+
+            switch (kind)
+            {
+                case "volley":   // three fireballs at random heroes, 60% each
+                    for (var i = 0; i < 3; i++) Damage(b, alive[Random.Range(0, alive.Count)], (int)(b.atk * 0.6f));
+                    break;
+                case "sweep":    // the front two take 90%
+                    foreach (var h in alive.OrderByDescending(h => h.x).Take(2)) Damage(b, h, (int)(b.atk * 0.9f));
+                    break;
+                case "stomp":    // everyone takes 50%
+                    foreach (var h in alive) Damage(b, h, (int)(b.atk * 0.5f));
+                    break;
+                case "throw":    // the backmost hero takes 140% — punishes parking the healer behind
+                    Damage(b, alive.OrderBy(h => h.x).First(), (int)(b.atk * 1.4f));
+                    break;
+                case "slow":
+                    foreach (var h in alive) { h.slowLeft = 4f; h.slowAmount = 0.3f; }
+                    break;
+                case "shield":
+                    b.guardLeft = 4f;
+                    b.dmgReduction = 0.45f;
+                    break;
+                case "heal":
+                {
+                    var before = b.hp;
+                    b.hp = Math.Min(b.maxHp, b.hp + (int)(b.maxHp * 0.12f));
+                    if (b.hp > before) Events.Enqueue(new BattleEvent { kind = EventKind.Heal, target = b, amount = b.hp - before });
+                    break;
+                }
+                case "summon":   // adds, which is the fight asking whether the party brought any AoE
+                    for (var i = 0; i < 2; i++) Spawn(NewMinion(i), Math.Min(LaneCells, b.x + 1f + i * 0.9f));
+                    break;
+            }
         }
 
         Combatant FrontHero() => Heroes.Where(h => h.Alive).OrderByDescending(h => h.tauntLeft).ThenByDescending(h => h.x).FirstOrDefault();
@@ -325,7 +414,13 @@ namespace ExcelHeroes.Core
                     foreach (var a in allies) Heal(a, (int)((a.maxHp - a.hp) * power / 100f));
                     break;
                 case "cleanse":
-                    foreach (var a in allies) { Heal(a, (int)(a.maxHp * power / 100f)); a.hasteLeft = 5f; a.hasteAmount = 0.35f; }
+                    // 스트레스 해소 — heals, clears the boss's slow, and hastens. The answer to 정원 초과.
+                    foreach (var a in allies)
+                    {
+                        Heal(a, (int)(a.maxHp * power / 100f));
+                        a.slowLeft = 0f; a.slowAmount = 0f;
+                        a.hasteLeft = 5f; a.hasteAmount = 0.35f;
+                    }
                     break;
                 case "buff":
                     foreach (var a in allies) { a.hasteLeft = 5f; a.hasteAmount = Math.Max(a.hasteAmount, power / 100f); }
