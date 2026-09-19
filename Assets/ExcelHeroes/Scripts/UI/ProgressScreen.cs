@@ -128,6 +128,11 @@ namespace ExcelHeroes.UI
             var bonus = PrestigeService.Bonus(p);
             UiKit.Text($"현재 지분 효과 · 공격력 +{bonus:P0} 골드 +{bonus:P0}", "synergy-line", panel);
 
+            // The stage time is the signal this decision is actually made on: when a stage starts
+            // taking minutes, pushing further stops being worth it and a reset is the faster route.
+            var f = ForecastService.For(p, p.stage);
+            UiKit.Text($"현재 스테이지 예상 소요 {ForecastService.Eta(f.Eta)}", "muted", panel);
+
             var gain = PrestigeService.Gain(p);
             if (gain <= 0)
             {
@@ -265,22 +270,14 @@ namespace ExcelHeroes.UI
                 }, panel);
             }
 
-            // What is next, per kind. A list of only what has been passed says nothing about where
-            // the run is going.
-            var next = UiKit.Div("panel", parent);
-            UiKit.Text("다음 목표", "section-title", next);
+            // What is next, inside the same panel rather than a second one. A list of only what
+            // has been passed says nothing about where the run is going, but the column already
+            // carries 회사 이전 and 출장 above this and has no room for another box.
             var upcoming = ProgressService.Upcoming(p);
-            if (upcoming.Count == 0)
-            {
-                UiKit.Text("모든 마일스톤을 지났습니다.", "muted", next);
-            }
-            else
-            {
-                // One, not three: the column carries 회사 이전, 출장 and the milestone list above
-                // this, and each extra row lands past the bottom of the frame.
-                foreach (var m in upcoming.Take(1))
-                    UiKit.StatRow(m.name, $"{ProgressService.Value(p, m):N0} / {m.target:N0}", next);
-            }
+            var soon = upcoming.FirstOrDefault();
+            if (soon != null)
+                UiKit.Text($"다음 · {soon.name}　{ProgressService.Value(p, soon):N0} / {soon.target:N0}",
+                    "muted", panel);
 
         }
     }

@@ -3435,3 +3435,12 @@
     color: var(--ex-ink-muted);
     margin-left: var(--ex-space-1);
 }
+
+/* 승산, in the HUD pill beside the wave counter. Quiet until the fight is actually in doubt. */
+.forecast {
+    font-size: var(--ex-text-xs);
+    color: rgba(255, 255, 255, 0.66);
+    margin-right: var(--ex-space-2);
+}
+
+.forecast--hard { color: rgb(255, 150, 130); -unity-font-style: bold; }

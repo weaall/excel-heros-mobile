@@ -295,6 +295,7 @@ namespace ExcelHeroes.Data
         public float offlineEfficiency;
         public long offlineMinSec;
         public int adPerDay;
+        public float forecastBossLo, forecastBossHi, forecastEtaBoss, safeAdvanceMin;
         public List<string> shardCardGrades = new();
         public List<int> shardCardValues = new();
         public int dismissCardBonus;

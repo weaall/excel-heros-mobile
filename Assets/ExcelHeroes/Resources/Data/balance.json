@@ -106,6 +106,10 @@
  "offlineEfficiency": 0.6,
  "offlineMinSec": 60,
  "adPerDay": 9,
+ "forecastBossLo": 3,
+ "forecastBossHi": 15,
+ "forecastEtaBoss": 0.81,
+ "safeAdvanceMin": 0.35,
  "shardCardGrades": [
   "D",
   "C",

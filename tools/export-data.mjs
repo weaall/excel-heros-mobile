@@ -225,6 +225,12 @@ const files = {
     // paying gems per kill. The per-kill value rises with phase on purpose: deeper stages take
     // longer per body, so without it a once-a-day reward shrinks as the run progresses.
     // 회사 이전 — the reset that trades the run for permanent shares.
+    // 승산 — the ratio at which the win chance reads 0% and 100%, calibrated in the web build
+    // against headless runs. The ETA coefficients correct a pure calculation against measured runs.
+    forecastBossLo: BALANCE.FORECAST?.boss?.[0] ?? 3,
+    forecastBossHi: BALANCE.FORECAST?.boss?.[1] ?? 15,
+    forecastEtaBoss: BALANCE.FORECAST?.etaBoss ?? 0.81,
+    safeAdvanceMin: BALANCE.SAFE_ADVANCE?.min ?? 0.35,
     // 방출 — cards paid per shard by grade, plus a flat bonus for the card itself.
     shardCardGrades: Object.keys(BALANCE.SHARD_CARD_VALUE ?? {}),
     shardCardValues: Object.values(BALANCE.SHARD_CARD_VALUE ?? {}),

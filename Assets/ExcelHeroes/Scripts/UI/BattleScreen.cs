@@ -24,6 +24,7 @@ namespace ExcelHeroes.UI
         readonly AppRoot _app;
         VisualElement _root, _stage, _resultView, _upgradeBar, _backdropView;
         Button _overtimeButton;
+        Label _forecastLabel;
         BattleFx _fx;
         Label _comboLabel;
         Label _waveLabel;
@@ -101,6 +102,7 @@ namespace ExcelHeroes.UI
             _waveLabel = UiKit.Text("", "battle__wave", hud);
             // One toggle, called what it is. The ×1–3 speed control went with it: the run now keeps
             // going while you are on another sheet, so the reason to fast-forward was gone.
+            _forecastLabel = UiKit.Text("", "forecast", hud);
             _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
 
             // 야근 — the one fight in this game a player chooses to start. Everything else runs
@@ -397,6 +399,15 @@ namespace ExcelHeroes.UI
                     : $"Phase {_sim.Stage} · 웨이브 {_sim.Wave}/{_sim.WaveCount}";
             if (OvertimeService.Active != null) { UpdateOvertimeLabel(); return; }
             _waveLabel.EnableInClassList("battle__wave--enraged", !_sim.Finished && _sim.Enraged);
+
+            // 승산 — the ETA rather than the odds. A stage's time grows continuously and that
+            // growth is the wall; the win chance reads 유리 almost always and says nothing.
+            if (_forecastLabel != null)
+            {
+                var f = ForecastService.For(Game.Player, _sim.Stage);
+                _forecastLabel.text = $"예상 {ForecastService.Eta(f.Eta)} · {f.Label}";
+                _forecastLabel.EnableInClassList("forecast--hard", f.Prob < GameData.Balance.safeAdvanceMin);
+            }
 
             if (_sim.Finished && _resultView == null) ShowResult();
             Finish(dt);
