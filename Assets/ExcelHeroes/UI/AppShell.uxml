@@ -109,7 +109,7 @@
             </ui:Button>
         </ui:VisualElement>
 
-        <ui:Label name="statusText" text="" class="statusbar" />
+        <ui:Label name="statusText" text="" class="statusbar hidden" />
         <ui:VisualElement name="overlay" class="overlay hidden" />
     </ui:VisualElement>
 </ui:UXML>

@@ -44,6 +44,21 @@
     --ex-accent-ink: rgb(255, 255, 255);
     --ex-accent-wash: rgb(226, 240, 253);
 
+    /* Buttons get their own fill, and it is deliberately NOT white.
+       The reference never puts a white button on a white panel: every button there is filled and
+       outlined, so it reads as a raised thing rather than as a rectangle someone drew a hairline
+       around. This build did the opposite - .btn was --ex-surface-raised, the same colour as the
+       sheet behind it, with only a 3px --ex-line between them. On the card sheet you saw the
+       panel straight through the button. */
+    --ex-btn: rgb(223, 233, 245);
+    --ex-btn-line: rgb(165, 188, 214);
+    --ex-btn-edge: rgb(134, 162, 194);
+    --ex-btn-down: rgb(205, 220, 238);
+
+    --ex-btn-off: rgb(211, 217, 226);
+    --ex-btn-off-line: rgb(168, 178, 192);
+    --ex-btn-off-ink: rgb(118, 129, 146);
+
     --ex-danger: rgb(226, 62, 74);
     --ex-gold: rgb(247, 181, 41);
 
@@ -330,12 +345,13 @@
     border-bottom-color: var(--ex-accent-deep);
 }
 
-.navtab__icon { font-size: 54px; height: 76px; flex-shrink: 0; color: var(--ex-ink-muted); }
+.navtab__icon { font-size: 54px; height: 76px; flex-shrink: 0; color: rgb(88, 106, 134); }
 .navtab--active .navtab__icon { color: rgb(255, 255, 255); }
 
 .navtab__label {
     font-size: var(--ex-text-xs);
-    color: var(--ex-ink-muted);
+    -unity-font-style: bold;
+    color: rgb(88, 106, 134);
     margin-top: 2px;
 }
 
@@ -363,8 +379,8 @@
     justify-content: center;
     background-color: var(--ex-gold);
     border-width: 3px;
-    border-color: rgb(255, 214, 122);
-    border-bottom-width: 8px;
+    border-color: rgb(250, 200, 92);
+    border-bottom-width: 5px;
     border-bottom-color: rgb(196, 136, 18);
     border-radius: var(--ex-rad-md);
 }
@@ -392,13 +408,20 @@
 .screen-body { flex-grow: 1; min-height: 0; }
 
 /* A thin line along the bottom for whatever just happened — a reward collected, a run finished. */
+/* The status line only exists when it has something to say.
+   It used to hold a 44px band of --ex-surface-sunken under the tab bar at all times, so every
+   screen ended in a stray blue-grey strip below the navigation with nothing in it. USS has no
+   :empty selector, so AppRoot toggles `hidden` from SetStatus. */
 .statusbar {
     flex-shrink: 0;
     height: 44px;
     padding-left: var(--ex-space-3);
     font-size: 24px;
-    color: var(--ex-ink-muted);
-    background-color: var(--ex-surface-sunken);
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    background-color: var(--ex-accent-wash);
+    border-top-width: 2px;
+    border-top-color: var(--ex-btn-line);
     -unity-text-align: middle-left;
 }
 
@@ -408,7 +431,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.55);
+    background-color: rgba(10, 18, 32, 0.72);
     align-items: center;
     justify-content: center;
 }
@@ -460,16 +483,19 @@
 /* The game's button. It is .ex-btn with a different name — every call site already says
    `btn`, and renaming three hundred of them buys nothing that keeping the values in one place
    does not. Anything that wants to look like a button gets these values, not its own. */
+/* The bevel is 5px, not 9px. A thick lip reads as a toy; the reference's buttons are nearly
+   flat, with just enough of a darker bottom edge to sit above the panel. The radius drops from
+   24px to 16px for the same reason - those are rounded rectangles, not pills. */
 .btn {
     height: var(--ex-tap);
     padding-left: var(--ex-space-4);
     padding-right: var(--ex-space-4);
-    background-color: var(--ex-surface-raised);
-    border-radius: var(--ex-rad-lg);
+    background-color: var(--ex-btn);
+    border-radius: var(--ex-rad-md);
     border-width: 3px;
-    border-bottom-width: 9px;
-    border-color: var(--ex-line);
-    border-bottom-color: var(--ex-line-strong);
+    border-bottom-width: 5px;
+    border-color: var(--ex-btn-line);
+    border-bottom-color: var(--ex-btn-edge);
     color: var(--ex-ink);
     font-size: var(--ex-text-base);
     -unity-font-style: bold;
@@ -477,20 +503,22 @@
     transition-duration: 0.2s;
 }
 
-.btn:hover { background-color: var(--ex-accent-wash); }
+.btn:hover { background-color: var(--ex-btn-down); }
 
+/* Off, not absent. A disabled button in the reference keeps its outline and its shape - it is a
+   thing you cannot press yet, not a hole in the layout. */
 .btn:disabled {
-    background-color: var(--ex-surface-sunken);
-    border-color: var(--ex-line);
-    border-bottom-color: var(--ex-line);
-    color: rgb(160, 165, 174);
+    background-color: var(--ex-btn-off);
+    border-color: var(--ex-btn-off-line);
+    border-bottom-color: var(--ex-btn-off-line);
+    color: var(--ex-btn-off-ink);
 }
 
 /* Primary is the Excel green, not the old mustard. The disguise is the premise, so the thing the
    player is meant to press and the chrome it hides behind are deliberately the same colour. */
 .btn--primary {
     background-color: var(--ex-accent);
-    border-color: rgb(146, 200, 244);
+    border-color: rgb(126, 190, 240);
     border-bottom-color: var(--ex-accent-deep);
     color: var(--ex-accent-ink);
 }
@@ -498,18 +526,22 @@
 .btn--primary:hover { background-color: var(--ex-accent-deep); }
 
 .btn--primary:disabled {
-    background-color: var(--ex-surface-sunken);
-    border-color: var(--ex-line);
-    border-bottom-color: var(--ex-line);
-    color: rgb(160, 165, 174);
+    background-color: var(--ex-btn-off);
+    border-color: var(--ex-btn-off-line);
+    border-bottom-color: var(--ex-btn-off-line);
+    color: var(--ex-btn-off-ink);
 }
 
+/* The quiet one - 닫기, 해제, 대표 사원. White fill, but the SAME strong outline as every other
+   button, so "quiet" means lower contrast rather than "barely there". */
 .btn--ghost {
-    background-color: var(--ex-surface-sunken);
-    border-color: var(--ex-line);
-    border-bottom-color: var(--ex-line-strong);
-    color: var(--ex-ink-muted);
+    background-color: var(--ex-surface-raised);
+    border-color: var(--ex-btn-line);
+    border-bottom-color: var(--ex-btn-edge);
+    color: var(--ex-ink);
 }
+
+.btn--ghost:hover { background-color: var(--ex-btn); }
 
 /* ---------------------------------------------------------------- home */
 
@@ -907,8 +939,27 @@
 .card__sub { font-size: 21px; color: rgba(255, 255, 255, 0.6); }
 /* Dimmed, not erased. At 0.25 an unowned card was a white rectangle, which defeats the point of
    listing it — the shelf is there so a player sees who they do not have yet. */
-.card--locked .card__art { opacity: 0.55; }
-.card--locked .card__name { color: var(--ex-ink-muted); }
+/* An unowned card is DARK, not faint.
+
+   `opacity: 0.55` composites the art against whatever is behind it, and behind it was a white
+   card — so every card the player does not own bleached towards white and the grid read as a page
+   of blank rectangles. The reference silhouettes what you have not got: still legible, clearly
+   locked. A deep navy behind the art makes the same fade go the other way. The plate and the
+   badges sit on top and are untouched. */
+.card--locked { background-color: rgb(38, 50, 72); }
+
+/* Over the art, under the badges — it is added before them, and UI Toolkit has no z-index, so
+   build order is what decides. Deep navy rather than black: the reference's locked entries are
+   cold, not grimy. */
+.card__scrim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(16, 26, 46, 0.58);
+}
+.card--locked .card__name { color: rgb(196, 207, 222); }
 
 /* A modal, not a second full screen. Tapping a card is a look at one card — taking over the whole
    display for it loses where you were in a list of fifty-five, and on the way back the scroll
@@ -1646,7 +1697,8 @@
 
 .mcard__unknown { font-size: 64px; -unity-font-style: bold; color: rgb(198, 202, 210); }
 
-.mcard--locked { background-color: var(--ex-surface-sunken); }
+/* Same reasoning as .card--locked: dark, not washed out. */
+.mcard--locked { background-color: rgb(38, 50, 72); }
 .mcard--locked .mcard__name { color: rgb(166, 170, 178); }
 
 /* A boss is the one entry in its phase you had to beat, so it gets the border that says so. */
@@ -1686,18 +1738,26 @@
     color: var(--ex-accent-deep);
 }
 
+/* The 강화 panel's buttons. These were --ex-surface on a white sheet behind a 2px --ex-line,
+   so a row of four of them read as faint smudges rather than as the only things on the panel a
+   player can press. Same fill and outline as every other button now, just smaller. */
 .skin-row__btn {
     flex-shrink: 0;
     min-width: 200px;
     height: 62px;
     font-size: 24px;
+    -unity-font-style: bold;
     -unity-text-align: middle-center;
     color: var(--ex-ink);
-    background-color: var(--ex-surface);
+    background-color: var(--ex-btn);
     border-width: 2px;
-    border-color: var(--ex-line);
-    border-radius: var(--ex-rad-md);
+    border-bottom-width: 4px;
+    border-color: var(--ex-btn-line);
+    border-bottom-color: var(--ex-btn-edge);
+    border-radius: var(--ex-rad-sm);
 }
+
+.skin-row__btn:hover { background-color: var(--ex-btn-down); }
 
 /* Two buttons on one row need the first of them to stop claiming 200px. */
 .skin-row__btn--narrow { min-width: 90px; margin-right: var(--ex-space-1); }
@@ -1705,7 +1765,8 @@
 .skin-row__btn--buy {
     color: var(--ex-accent-ink);
     background-color: var(--ex-accent);
-    border-color: var(--ex-accent);
+    border-color: rgb(126, 190, 240);
+    border-bottom-color: var(--ex-accent-deep);
     -unity-font-style: bold;
 }
 
@@ -1766,9 +1827,10 @@
 .promo-cond--met .promo-cond__num { color: var(--ex-ink); -unity-font-style: bold; }
 
 .skin-row__btn:disabled {
-    background-color: var(--ex-surface-sunken);
-    border-color: var(--ex-line);
-    color: rgb(160, 165, 174);
+    background-color: var(--ex-btn-off);
+    border-color: var(--ex-btn-off-line);
+    border-bottom-color: var(--ex-btn-off-line);
+    color: var(--ex-btn-off-ink);
 }
 
 /* ---------------------------------------------------------------- album */
@@ -3249,26 +3311,39 @@
     height: 96px;
 }
 
+/* The pager carried the same fault as .btn: a white fill behind a pale hairline, on a white
+   sheet. These are the only way to reach pages 2 to 4 of the roster. */
 .pager__btn {
     width: 104px;
     height: 78px;
     font-size: var(--ex-text-sm);
+    -unity-font-style: bold;
     color: var(--ex-navy);
-    background-color: var(--ex-surface-raised);
+    background-color: var(--ex-btn);
     border-width: 3px;
-    border-color: var(--ex-line);
-    border-bottom-width: 7px;
-    border-bottom-color: var(--ex-line-strong);
+    border-color: var(--ex-btn-line);
+    border-bottom-width: 5px;
+    border-bottom-color: var(--ex-btn-edge);
     border-radius: var(--ex-rad-md);
 }
 
-.pager__btn:disabled { opacity: 0.35; }
+.pager__btn:hover { background-color: var(--ex-btn-down); }
+
+/* At the first or last page. Dimmed, but still a button with an edge — opacity 0.35 left a
+   smudge where a control had been. */
+.pager__btn:disabled {
+    background-color: var(--ex-btn-off);
+    border-color: var(--ex-btn-off-line);
+    border-bottom-color: var(--ex-btn-off-line);
+    color: var(--ex-btn-off-ink);
+}
 
 .pager__label {
     min-width: 260px;
     font-size: var(--ex-text-sm);
+    -unity-font-style: bold;
     -unity-text-align: middle-center;
-    color: var(--ex-ink-muted);
+    color: var(--ex-ink);
 }
 
 /* ---------------------------------------------------------------- landscape column layouts
@@ -3395,21 +3470,27 @@
     height: 84px;
     margin-right: 8px;
     font-size: var(--ex-text-sm);
-    color: var(--ex-ink-muted);
-    background-color: var(--ex-surface-sunken);
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    background-color: var(--ex-btn);
     border-width: 3px;
-    border-color: var(--ex-line);
+    border-bottom-width: 4px;
+    border-color: var(--ex-btn-line);
+    border-bottom-color: var(--ex-btn-edge);
     border-radius: var(--ex-rad-md);
 }
 
+.dtab:hover { background-color: var(--ex-btn-down); }
+
 .dtab--on {
-    background-color: var(--ex-surface-raised);
-    border-color: var(--ex-accent);
-    border-bottom-width: 7px;
-    border-bottom-color: var(--ex-accent);
-    color: var(--ex-ink);
-    -unity-font-style: bold;
+    background-color: var(--ex-accent);
+    border-color: rgb(126, 190, 240);
+    border-bottom-width: 5px;
+    border-bottom-color: var(--ex-accent-deep);
+    color: var(--ex-accent-ink);
 }
+
+.dtab--on:hover { background-color: var(--ex-accent); }
 
 .detail__body { flex-grow: 1; min-height: 0; overflow: hidden; padding: var(--ex-space-2); }
 
@@ -3586,11 +3667,12 @@
    filter is on" — an action has to be told apart from a state at a glance. Outlined: accent
    ink on the surface, so it is clearly pressable and clearly not a chip. */
 .head-btn--quiet {
-    color: var(--ex-accent);
-    background-color: var(--ex-surface);
+    color: var(--ex-accent-deep);
+    background-color: var(--ex-btn);
+    border-color: var(--ex-btn-line);
 }
 
-.head-btn--quiet:hover { background-color: var(--ex-surface-sunken); }
+.head-btn--quiet:hover { background-color: var(--ex-btn-down); }
 
 .head-btn--quiet:disabled { color: var(--ex-ink-muted); border-color: var(--ex-line); }
 

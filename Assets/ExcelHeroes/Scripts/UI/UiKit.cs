@@ -97,6 +97,17 @@ namespace ExcelHeroes.UI
             // and falls straight through to the base art.
             SetArt(art, owned == null ? GameData.CardArt(def.id) : GameData.WornCardArt(def.id));
 
+            // A card you do not own is DARKENED, by a scrim laid over the art.
+            //
+            // It used to be `opacity: 0.55` on the art, which composites against whatever is
+            // behind — and behind was a white card, so every unowned card bleached TOWARDS WHITE
+            // and two thirds of the grid read as blank rectangles. Putting a dark colour on the
+            // card and keeping the opacity did not fix it either; measured on a capture the art
+            // came back at 207 grey when the arithmetic said 143, so the blend is not the simple
+            // lerp it looks like. A scrim needs no theory about compositing: it is a dark rectangle
+            // on top of the picture, and it darkens.
+            if (owned == null) Div("card__scrim", art);
+
             // Badges sit on the art, in the corners, as they do in the source.
             var badge = Text(def.grade, "card__grade", art);
             badge.style.backgroundColor = grade?.Color ?? Color.gray;

@@ -304,7 +304,19 @@ namespace ExcelHeroes.UI
             foreach (var pair in _tabs) pair.Value.SetEnabled(enabled);
         }
 
-        public void SetStatus(string text) { if (_status != null) _status.text = text; }
+        /// <summary>
+        /// The status line, which is hidden when there is nothing to say.
+        ///
+        /// It used to be a permanent 44px band under the tab bar, empty on every screen that had
+        /// not set it - a strip of background with nothing in it, below the navigation, on every
+        /// single sheet. USS has no :empty, so the toggle lives here.
+        /// </summary>
+        public void SetStatus(string text)
+        {
+            if (_status == null) return;
+            _status.text = text ?? "";
+            _status.EnableInClassList("hidden", string.IsNullOrEmpty(_status.text));
+        }
 
         public void Rebuild() => Show(_sheet);
 

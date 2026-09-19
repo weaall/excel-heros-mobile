@@ -120,6 +120,19 @@ saving towards. **The fix is a balance decision and is deliberately not made her
 to `long`, re-curve the scout price for this build, or stop offering 스카우트 above ★2. The same
 ceiling applies to anything else late-game that the web prices off the levelling curve.
 
+**And it is not only gold.** The stage curves end in the same cast. `MonsterHp` is
+`base × 1.18^(phase-1)` floored into an `int`, and `(int)` on a float past `int.MaxValue` is
+undefined in C# — in practice it lands on `int.MinValue`. The monster curve passed `int.MaxValue`
+at **Phase 108**, which is reachable play, and from there monsters spawned with NEGATIVE health:
+every fight won the instant it started, every forecast reporting a negative ETA. Nothing failed and
+nothing looked wrong; the player simply won.
+
+The curves are clamped now, so they saturate instead of wrapping, and `CheckCurves` walks all three
+to Phase 1000 and asserts they never go non-positive and never dip. But saturating means the curve
+is FLAT past Phase 108 and the game is beatable for ever, which is not a balance anyone would
+choose — it is only strictly better than wrapping. Widening the combat numbers is the same decision
+as widening gold, and it is one decision, not two.
+
 ### The "everything is ported" claim was wrong
 
 An audit of the web's `GameManager` API against this build found **18 missing features**, not zero.
@@ -370,6 +383,45 @@ than trusting that a port of it works.
 - **강화 환급이 청구의 1/5만 돌려주고 있었다.** `StatMath.LevelUpCost` charges `base × tier × growth^(l-1)`, where tier is 1 for a D and 5 for an S; `DismissService.LevelRefund` paid back `base × growth^(l-1)`. Nothing threw, no screen looked wrong, and the number on the button was a plausible amount of gold — the player was simply short. A refund and the charge it undoes have to be read against each other, because either one alone always looks reasonable. `CheckRefund` now levels a D, an A and an S twenty times each and compares the two sums.
 - **Ten labels were squeezing their own line height by 2–9px.** Nothing looked wrong in a capture;
   the audit measured `MeasureTextSize` against `contentRect` and named all ten.
+
+## The button pass, and what a hairline is worth
+
+Feedback after the landscape build: "버튼디자인이라던가 버튼뒤에 스리슬쩍 배경이나 이런게 보인다던가
+너무 구려". All of it was one fault with several faces.
+
+`.btn` was `--ex-surface-raised` — pure white — and the panels it sat on were also pure white. The
+only thing between a button and its background was a 3px `--ex-line`. It did not look like a button
+in front of a background; it looked like a background with a hairline drawn on it. The same shape
+turned up everywhere it had been copied: `.skin-row__btn` (the 강화 page, where four of the five
+things you can press are disabled early on and all of them vanished), `.pager__btn` (the only way
+to reach pages 2–4 of the roster), and `.dtab--on` — the selected tab, white-on-white, the one
+element whose whole job is to say where you are.
+
+The reference never puts a white button on a white panel. Every button in it is filled and
+outlined. So:
+
+- **A button fill that is not white**, as `--ex-btn` / `--ex-btn-line` / `--ex-btn-edge`, used by
+  every button family in the file.
+- **The bevel drops from 9px to 5px and the radius from 24px to 16px.** A thick lip reads as a toy;
+  those are rounded rectangles, not pills.
+- **Disabled is off, not absent** — darker fill, visible outline, readable text. It was a shade
+  off white.
+- **The active tab is filled accent with white text**, the way the reference fills its active tab.
+
+Two stray backgrounds, both real:
+
+- **`statusText` was a permanent 44px band** of `--ex-surface-sunken` under the tab bar, empty on
+  every screen that had not set it. USS has no `:empty`, so `AppRoot.SetStatus` toggles `hidden`.
+- **The modal dim measured ~30%, not the 55% it asked for.** Now navy at 0.72, because under a
+  dialog the reference switches the background off rather than tinting it.
+
+And the one that took two tries: **an unowned card bleached towards white.** `opacity: 0.55` on the
+art composites against what is behind it, and what was behind it was a white card, so two thirds of
+the roster read as blank rectangles. Putting a deep navy on the card and keeping the opacity did
+NOT fix it — measured on a capture the art came back at 207 grey where the arithmetic said 143, so
+whatever UI Toolkit does there is not the lerp it looks like. A `card__scrim` element needs no
+theory about compositing: it is a dark rectangle on top of the picture, and it darkens. Locked art
+measures 155 against an owned card's 231 now.
 
 ## What the audit still cannot see
 
