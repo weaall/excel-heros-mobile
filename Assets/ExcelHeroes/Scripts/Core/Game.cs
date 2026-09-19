@@ -14,11 +14,15 @@ namespace ExcelHeroes.Core
         public static PlayerState Player { get; private set; }
 
         /// <summary>
-        /// Replaces the live save IN MEMORY. Only the screenshot driver uses this, so a capture run
-        /// can build a known state instead of photographing whatever the last run left behind, and
-        /// it deliberately does not mark the save dirty — nothing here is ever written to disk.
+        /// Swaps the live save IN MEMORY, without writing anything.
+        ///
+        /// Two callers, both of which genuinely replace the whole state rather than change part of
+        /// it: the screenshot driver, so a capture run photographs a known state instead of
+        /// whatever the last run left behind, and 세이브 불러오기, which then writes the result
+        /// itself. Nothing here touches the disk, so a caller that wants the swap to persist has
+        /// to say so.
         /// </summary>
-        public static void UseStateForCapture(PlayerState state) => Player = state;
+        public static void ReplaceState(PlayerState state) => Player = state;
         public static event Action Changed;
 
         static float _saveDue;

@@ -109,10 +109,67 @@ namespace ExcelHeroes.EditorTools
             CheckQuests();
             CheckBattle();
             CheckGatesAreReachable();
+            CheckSaveTransfer();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
             if (_failures == 0) Debug.Log(Log.ToString());
             else Debug.LogError(Log.ToString());
+        }
+
+        /// <summary>
+        /// 세이브 이동 — a round trip, and the ways a bad string can arrive.
+        ///
+        /// None of this is visible in a screenshot: an export that silently drops a field and an
+        /// import that silently half-loads both look like a working button. With cloud sync blocked
+        /// this is the only way a save leaves a device, so losing a roster here loses it for good.
+        /// </summary>
+        static void CheckSaveTransfer()
+        {
+            Line("\n-- save transfer --");
+
+            var before = PlayerState.New();
+            before.gold = 12345;
+            before.gems = 678;
+            before.cards = 90;
+            before.stage = 42;
+            before.maxCleared = 41;
+            before.mainJob = "staff";
+            var hero = GameData.Heroes.Count > 0 ? GameData.Heroes[0].id : null;
+            if (hero != null)
+                before.owned.Add(new OwnedHero(hero) { star = 3, level = 77, copies = 5, awakened = true, skillLv = 2 });
+
+            var code = SaveService.Export(before);
+            Check(code.Length > 0, $"export produces a code ({code.Length} chars)");
+
+            var round = SaveService.Import(code);
+            Check(round.Ok, "a code this build wrote imports back" + (round.Ok ? "" : ": " + round.Error));
+            if (!round.Ok) return;
+
+            var after = round.State;
+            Check(after.gold == before.gold && after.gems == before.gems && after.cards == before.cards,
+                  "currencies survive the round trip");
+            Check(after.stage == before.stage && after.maxCleared == before.maxCleared,
+                  "progress survives the round trip");
+            Check(after.mainJob == before.mainJob, $"승진 survives ({after.mainJob})");
+
+            if (hero != null)
+            {
+                var h = after.Find(hero);
+                Check(h != null && h.star == 3 && h.level == 77 && h.copies == 5
+                      && h.awakened && h.skillLv == 2,
+                      "a hero keeps ★, level, 중복, 각성 and 스킬 레벨");
+            }
+
+            // The ways a bad string arrives. Each has to fail with a message, never with a
+            // half-loaded save — an import that half-works destroys the device's real one.
+            Check(!SaveService.Import(null).Ok, "null is refused");
+            Check(!SaveService.Import("   ").Ok, "blank is refused");
+            Check(!SaveService.Import("not base64 at all !!").Ok, "junk is refused");
+            Check(!SaveService.Import(System.Convert.ToBase64String(
+                      System.Text.Encoding.UTF8.GetBytes("{\"hello\":1}"))).Ok,
+                  "valid base64 that is not a save is refused");
+            Check(!SaveService.Import(code.Substring(0, code.Length / 2)).Ok,
+                  "a truncated code is refused");
         }
 
         /// <summary>

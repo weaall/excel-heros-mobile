@@ -369,7 +369,71 @@ namespace ExcelHeroes.UI
                 OpenAdMenu();
             }, codeRow);
 
+            BuildSaveTransfer(pane);
+
             UiKit.Btn("닫기", "btn btn--ghost", CloseOverlay, pane);
+            OpenOverlay(pane);
+        }
+
+        /// <summary>
+        /// 세이브 이동 — export to a string, import from one.
+        ///
+        /// It sits on this sheet because this is where everything that is not playing the game
+        /// lives, and it matters more than it looks: cloud sync is blocked on a mobile OAuth
+        /// decision, so this is the only way a save reaches another device at all.
+        ///
+        /// Importing is the one destructive thing in the menu, so it asks first. There is no undo
+        /// — the roster, the stage and every card go at once — and the confirm says that rather
+        /// than assuming a player who pasted a code meant to overwrite everything.
+        /// </summary>
+        void BuildSaveTransfer(VisualElement pane)
+        {
+            var row = UiKit.Div("arow", pane);
+            var text = UiKit.Div("arow__text", row);
+            UiKit.Text("세이브 이동", "arow__name", text);
+            UiKit.Text("코드를 복사해 두면 다른 기기에서 불러올 수 있습니다", "arow__meta", text);
+
+            var field = new TextField { value = "", isReadOnly = false };
+            field.AddToClassList("code-field");
+            text.Add(field);
+
+            UiKit.Btn("내보내기", "arow__claim", () =>
+            {
+                var code = SaveService.Export(Game.Player);
+                if (code.Length == 0) { SetStatus("세이브를 내보내지 못했습니다"); return; }
+                field.value = code;
+                GUIUtility.systemCopyBuffer = code;
+                SetStatus("세이브 코드를 복사했습니다");
+            }, row);
+
+            UiKit.Btn("불러오기", "arow__claim", () =>
+            {
+                var result = SaveService.Import(field.value);
+                if (!result.Ok) { SetStatus(result.Error); return; }
+                ConfirmImport(result.State);
+            }, row);
+        }
+
+        /// <summary>The one confirm in this menu, because this is the one action that destroys
+        /// something and cannot be taken back.</summary>
+        void ConfirmImport(PlayerState incoming)
+        {
+            var pane = UiKit.Div("onboard__card idle");
+            UiKit.Text("세이브 불러오기", "onboard__title", pane);
+            UiKit.Text($"불러올 세이브 · Phase {incoming.stage} · 사원 {incoming.owned.Count}명", "muted", pane);
+            UiKit.Text("이 기기의 진행은 모두 사라집니다. 되돌릴 수 없습니다.", "muted", pane);
+
+            var row = UiKit.Div("party-actions", pane);
+            UiKit.Btn("취소", "btn", CloseOverlay, row);
+            UiKit.Btn("불러오기", "btn btn--primary", () =>
+            {
+                SaveService.Apply(incoming);
+                AudioService.Play("victory", 0.6f);
+                SetStatus("세이브를 불러왔습니다");
+                CloseOverlay();
+                Rebuild();
+            }, row);
+
             OpenOverlay(pane);
         }
 

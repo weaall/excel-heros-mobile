@@ -95,6 +95,7 @@ rather than rebuilt from the data:
 | 각성 | `awaken` + `BALANCE.AWAKEN` | ★5 only, costs 강화 카드 once, +25% ATK/HP, trait x1.5, skill x1.25, cap +50 |
 | 스킬 레벨 | `upgradeSkill` / `skillLevelInfo` | five levels, +10% power and -3% charge each |
 | 스카우트 · 조각 변환 | `scoutShard` / `scoutInfo` / `convertShards` | gold buys a duplicate 3x a day; spares become 강화 카드 |
+| 세이브 이동 | `exportSave` / `importSave` | base64, same format as the web, so a code crosses between them |
 
 ### Gold is an `int` here and a double in the web — decide what to do about it
 
@@ -126,8 +127,6 @@ of how much they matter:
 - **되돌리기**: 레벨·강화 환급 (`resetHeroLevel`, `downgradeHero`, `downgradeEnhance`,
   `reclaimBenchLevels`)
 - **설정**: 자동 진행 (`setAutoAdvance`/`setSafeAdvance`), 자동 강화 (`setAutoUpgrade`)
-- **이동**: 세이브 내보내기/불러오기 (`exportSave`/`importSave`) — with cloud sync blocked this is
-  the only way a save moves between devices
 - **기타**: 괄호 수식 미니게임 (`submitBraceFormula`), 캐릭터 대사 (`sayLine`)
 
 Correctly absent: `toggleExcel` and `setGridlines` belong to the disguise; the 도전 mode is

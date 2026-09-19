@@ -60,7 +60,7 @@ namespace ExcelHeroes.Core
                 // meaningless.
                 //
                 // Nothing is written back — the driver quits without ever marking the save dirty.
-                Game.UseStateForCapture(PlayerState.New());
+                Game.ReplaceState(PlayerState.New());
                 var p = Game.Player;
                 if (p == null) return;
 
