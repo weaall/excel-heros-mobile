@@ -13,6 +13,11 @@ namespace ExcelHeroes.EditorTools
     /// pixels wide that a hard threshold leaves behind and which reads as a cheap cut-out. Those
     /// pixels get partial alpha AND their magenta contribution removed, which is what makes the edge
     /// look drawn rather than keyed.
+    ///
+    /// Keying happens on the texture Unity hands the postprocessor, which is before the final format
+    /// is chosen — so the sprite can still ship compressed and non-readable. An earlier version of
+    /// this file forced Uncompressed and isReadable purely to "make the key work", and the art audit
+    /// caught the cost: those two lines alone were worth tens of megabytes of runtime memory.
     /// </summary>
     public class SpriteChromaKey : AssetPostprocessor
     {
@@ -26,15 +31,17 @@ namespace ExcelHeroes.EditorTools
         {
             if (!assetPath.StartsWith(SpriteRoot)) return;
             var importer = (TextureImporter)assetImporter;
+            if (importer.userData == ArtImportSettings.Stamp) return;
+
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.alphaIsTransparency = true;
             importer.mipmapEnabled = false;
-            importer.maxTextureSize = 512;
-            // The key has to be read before compression mangles it, so keep this one uncompressed.
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
-            importer.isReadable = true;
-            importer.userData = "excel-heroes-sprite";
+            importer.isReadable = false;
+
+            // The battle draws these about 130 px tall, so 256 is already generous.
+            ArtImportSettings.Apply(importer, 256);
+            importer.userData = ArtImportSettings.Stamp;
         }
 
         void OnPostprocessTexture(Texture2D texture)
