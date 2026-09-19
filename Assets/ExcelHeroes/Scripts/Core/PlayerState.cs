@@ -118,6 +118,12 @@ namespace ExcelHeroes.Core
 
         public EquipItem Item(int id) => items.FirstOrDefault(it => it.id == id);
 
+        /// <summary>
+        /// Codes already used. Local only: the web records this per account on the Worker, and
+        /// this build has no account, so it is the same fallback the web uses when signed out.
+        /// </summary>
+        public List<string> redeemedCodes = new();
+
         /// <summary>지분 — permanent, never reset. Each one adds to attack and to gold.</summary>
         public int prestigeShares;
         public int prestigeCount;

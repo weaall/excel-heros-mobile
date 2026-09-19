@@ -24,6 +24,7 @@ const monsters  = await load('src/data/monsters.js').catch(() => ({}));
 const achieve   = await load('src/data/achievements.js');
 const milestone = await load('src/data/milestones.js');
 const equipment = await load('src/data/equipment.js').catch(() => ({}));
+const codesMod  = await load('src/data/codes.js').catch(() => ({}));
 
 const { GRADES, ROLES, SKILLS, TRAITS, HEROES, MAIN_JOBS, MAIN_ID } = heroes;
 const { PROFILES } = profiles;
@@ -160,6 +161,13 @@ const files = {
       heroes.GRADE_ORDER.map((grade) => ({ slot, grade, name: equipment.itemName(slot, grade) }))),
     basePct: heroes.GRADE_ORDER.map((grade) => ({ grade, pct: equipment.itemBasePct(grade) })),
   },
+
+  // 보석 코드 — coupons the game chooses to publish, never secrets; the web build's own note
+  // says so. Shipping the table in the client is the design, not a leak.
+  'codes.json': wrap(Object.entries(codesMod.CODES ?? {}).map(([id, c]) => ({
+    id, label: c.label ?? '', gems: c.gems ?? 0, cards: c.cards ?? 0, gold: c.gold ?? 0,
+    until: c.until ?? '',
+  }))),
 
   'balance.json': {
     upgradeCostBase: BALANCE.UPGRADE_COST_BASE, upgradeCostGrowth: BALANCE.UPGRADE_COST_GROWTH,

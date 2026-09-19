@@ -348,6 +348,27 @@ namespace ExcelHeroes.UI
             }
 
             UiKit.Text("광고 1편 = 보상 1개 · 모든 보상은 고정 지급 (방치 배율 없음)", "muted", pane);
+
+            // 보석 코드 — a field and a button, on the same sheet as the ads because both are
+            // "get something without fighting for it" and a player looks for them in one place.
+            var codeRow = UiKit.Div("arow", pane);
+            var codeText = UiKit.Div("arow__text", codeRow);
+            UiKit.Text("보석 코드", "arow__name", codeText);
+            var field = new TextField { value = "" };
+            field.AddToClassList("code-field");
+            codeText.Add(field);
+
+            UiKit.Btn("등록", "arow__claim", () =>
+            {
+                var r = CodeService.Redeem(Game.Player, field.value);
+                if (!r.Ok) { SetStatus(r.Message); return; }
+                AudioService.Play("victory", 0.6f);
+                SetStatus($"{r.Message} · {CodeService.Paid(r)}");
+                Game.Touch();
+                CloseOverlay();
+                OpenAdMenu();
+            }, codeRow);
+
             UiKit.Btn("닫기", "btn btn--ghost", CloseOverlay, pane);
             OpenOverlay(pane);
         }

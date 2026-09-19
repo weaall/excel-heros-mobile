@@ -320,6 +320,19 @@ namespace ExcelHeroes.Data
         public List<AdOfferDef> adOffers = new();
     }
 
+    /// <summary>
+    /// A promo code. The table ships with the game on purpose — the web build's own note says to
+    /// treat a code as a coupon you chose to publish, never as a secret.
+    /// </summary>
+    [Serializable]
+    public class CodeDef
+    {
+        public string id;
+        public string label;
+        public int gems, cards, gold;
+        public string until;    // ISO date, inclusive; empty means no expiry
+    }
+
     /// <summary>비품 슬롯 — one per stat, so a full set reads as "this one is built for attack".</summary>
     [Serializable]
     public class EquipSlotDef

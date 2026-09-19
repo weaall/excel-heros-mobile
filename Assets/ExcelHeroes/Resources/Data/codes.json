@@ -1,0 +1,20 @@
+{
+ "items": [
+  {
+   "id": "HELLOHEROS",
+   "label": "입사 축하",
+   "gems": 3000,
+   "cards": 0,
+   "gold": 0,
+   "until": ""
+  },
+  {
+   "id": "REF!",
+   "label": "참조 오류 복구",
+   "gems": 3000,
+   "cards": 0,
+   "gold": 0,
+   "until": ""
+  }
+ ]
+}

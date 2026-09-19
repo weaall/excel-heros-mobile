@@ -3444,3 +3444,20 @@
 }
 
 .forecast--hard { color: rgb(255, 150, 130); -unity-font-style: bold; }
+
+/* The code field. Typed by hand, so it is as tall as a tap target and as wide as a code. */
+.code-field {
+    margin-top: 6px;
+    margin-right: var(--ex-space-3);
+}
+
+.code-field > .unity-base-text-field__input {
+    height: 68px;
+    font-size: var(--ex-text-sm);
+    color: var(--ex-ink);
+    background-color: var(--ex-surface-raised);
+    border-width: 3px;
+    border-color: var(--ex-line);
+    border-radius: var(--ex-rad-sm);
+    padding-left: var(--ex-space-2);
+}
