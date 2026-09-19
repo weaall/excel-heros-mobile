@@ -10,8 +10,8 @@ namespace ExcelHeroes.Core
     /// by hashing the column index, exactly as in the original, which is what lets the layers scroll
     /// at different rates and never pop.
     ///
-    /// This is the first layer: banded sky, sun, sidewalk and road. Buildings, rubble and smoke are
-    /// separate passes — they need a polygon fill and belong on their own parallax layer anyway.
+    /// Sky, sun, skyline, buildings and street. Rubble, wrecked cars and drifting smoke are still to
+    /// come; they are props rather than structure and can land later without changing anything here.
     ///
     /// It draws into a Texture2D once per phase rather than per frame. The web can afford to
     /// repaint a canvas every frame; a phone cannot, and none of this layer moves except the road
@@ -83,8 +83,12 @@ namespace ExcelHeroes.Core
             var theme = ThemeFor(stage);
             var px = new Color32[CanvasW * CanvasH];
 
+            // Back to front, the way the web build layers it: sky, sun, the far silhouettes, the
+            // damaged buildings, then the street they all stand on.
             DrawSky(px, theme);
             DrawSun(px, theme);
+            CityBuildings.DrawSkyline(px, theme.Far, 0.55f);
+            CityBuildings.DrawBuildings(px, theme);
             DrawRoad(px, theme);
 
             var tex = new Texture2D(CanvasW, CanvasH, TextureFormat.RGBA32, false)
