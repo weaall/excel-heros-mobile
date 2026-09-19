@@ -37,3 +37,6 @@ Build/
 
 # Generation scratch — the tool is committed, its logs are not.
 tools/gen/*.log
+
+# Verification builds, so a screenshot pass can run while a copy is being played.
+Build/Verify/

@@ -18,7 +18,9 @@ namespace ExcelHeroes.EditorTools
     /// </summary>
     public static class BuildGame
     {
-        const string OutDir = "Build/Windows";
+        // BUILD_OUT lets a verification build go somewhere else, so the screenshot pass can check
+        // new work while a copy the user is playing still holds the usual exe open.
+        static string OutDir => System.Environment.GetEnvironmentVariable("BUILD_OUT") ?? "Build/Windows";
         const string Exe = "ExcelHeroes.exe";
 
         /// <summary>
