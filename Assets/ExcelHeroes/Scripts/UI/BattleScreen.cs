@@ -907,7 +907,16 @@ namespace ExcelHeroes.UI
             if (_sim.Won)
             {
                 Game.Player.gems += 5 + _sim.GemBonus;   // 행운의 셀 holders pay out here
+
+                // 비품 — the one growth axis that comes out of playing rather than out of a
+                // currency. The first clear of a stage is the boss's first clear too, which is why
+                // the deepest stage reached is checked before it is advanced.
+                var firstClear = _sim.Stage > Game.Player.maxCleared;
+                var drop = EquipService.Drop(Game.Player, _sim.Stage, boss: true, firstBoss: firstClear);
+                if (drop != null) Log($"비품 획득 — {EquipService.Label(drop)}");
+
                 if (_sim.Stage >= Game.Player.stage) Game.Player.stage++;
+                if (_sim.Stage > Game.Player.maxCleared) Game.Player.maxCleared = _sim.Stage;
                 AffectionService.AwardBattle(Game.Player, _sim.Kills, clearedBoss: true);
                 QuestService.Note(Game.Player, "clears");
                 QuestService.Note(Game.Player, "boss");

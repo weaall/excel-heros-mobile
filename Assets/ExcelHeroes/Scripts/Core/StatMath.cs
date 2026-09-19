@@ -48,9 +48,18 @@ namespace ExcelHeroes.Core
             var v = grade.baseAtk * role.atk
                     * MathF.Pow(b.heroAtkGrowth, Math.Max(1, o.level) - 1)
                     * StarMult(o.star)
-                    * (1f + o.affection * GameData.Balance.affectionBonusPerLevel);
+                    * (1f + o.affection * GameData.Balance.affectionBonusPerLevel)
+                    * (1f + EquipPct(o.id).Atk / 100f);
             return Math.Max(1, (int)MathF.Floor(v));
         }
+
+        /// <summary>
+        /// 비품's contribution, read off whoever is playing. It is looked up rather than passed in
+        /// because every caller of Atk/Hp already has the hero and none of them has the save — and
+        /// a stat that silently ignores equipment is worse than no equipment at all.
+        /// </summary>
+        static EquipService.Bonus EquipPct(string heroId) =>
+            Game.Player == null ? default : EquipService.Stats(Game.Player, heroId);
 
         public static int Hp(OwnedHero o)
         {
@@ -62,7 +71,8 @@ namespace ExcelHeroes.Core
             var v = grade.baseHp * role.hp
                     * MathF.Pow(b.heroHpGrowth, Math.Max(1, o.level) - 1)
                     * StarMult(o.star)
-                    * (1f + o.affection * GameData.Balance.affectionBonusPerLevel);
+                    * (1f + o.affection * GameData.Balance.affectionBonusPerLevel)
+                    * (1f + EquipPct(o.id).Hp / 100f);
             return Math.Max(1, (int)MathF.Floor(v));
         }
 
@@ -83,7 +93,7 @@ namespace ExcelHeroes.Core
             var def = GameData.Hero(o.id);
             if (def == null || !SkillUnlocked(o)) return 0f;
             var boosted = o.star >= GameData.Balance.skillBoostStar;
-            return def.skillPower * (boosted ? 1.5f : 1f);
+            return def.skillPower * (boosted ? 1.5f : 1f) * (1f + EquipPct(o.id).Skill / 100f);
         }
 
         /// <summary>Total power, the single number the roster sorts and the party header shows.</summary>

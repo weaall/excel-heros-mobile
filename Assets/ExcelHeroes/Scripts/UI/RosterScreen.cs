@@ -204,6 +204,7 @@ namespace ExcelHeroes.UI
             Tab(tabs, "info", "정보", heroId, onClose);
             Tab(tabs, "power", "강화", heroId, onClose);
             Tab(tabs, "bond", "호감도", heroId, onClose);
+            Tab(tabs, "equip", "비품", heroId, onClose);
 
             var body = UiKit.Div("detail__body", right);
 
@@ -349,6 +350,8 @@ namespace ExcelHeroes.UI
                 }
             }
 
+            if (owned != null && _tab == "equip") BuildEquip(body, heroId, onClose);
+
             // 편성 is the one action that belongs to the whole sheet rather than to a tab, so it
             // sits on its own row at the foot, where the reference keeps 확인.
             if (owned != null)
@@ -367,6 +370,131 @@ namespace ExcelHeroes.UI
 
             UiKit.Btn(Icons.Close, "detail__close icon", () => Close(onClose), view);
             return view;
+        }
+
+        /// <summary>
+        /// 비품 — four slots and what is in them. Each row is one slot: what is worn, what it
+        /// gives, and the two things that can be done to it. The set bonus is printed at the top
+        /// because filling all four is worth more than any one piece, and a player who cannot see
+        /// that will never chase it.
+        /// </summary>
+        void BuildEquip(VisualElement body, string heroId, System.Action onClose)
+        {
+            var p = Game.Player;
+            var bonus = EquipService.Stats(p, heroId);
+
+            var head = UiKit.Div("prog-head", body);
+            UiKit.Text(string.IsNullOrEmpty(bonus.SetName) ? "세트 없음" : bonus.SetName,
+                "section-title", head);
+            UiKit.Div("spacer", head);
+            UiKit.Text($"공{bonus.Atk:0.#}% 체{bonus.Hp:0.#}% 스킬{bonus.Skill:0.#}% 속도{bonus.Speed:0.#}%",
+                "muted", head);
+
+            foreach (var slot in EquipService.Slots)
+            {
+                var row = UiKit.Div("arow", body);
+                var text = UiKit.Div("arow__text", row);
+
+                var worn = EquipService.Worn(p, heroId, slot.id);
+                if (worn == null)
+                {
+                    UiKit.Text($"{slot.name} — 비어 있음", "arow__name", text);
+                    UiKit.Text(slot.label, "arow__meta", text);
+                }
+                else
+                {
+                    var name = UiKit.Text(EquipService.Label(worn), "arow__name", text);
+                    var grade = GameData.Grade(worn.grade);
+                    if (grade != null) name.style.color = grade.Color;
+                    UiKit.Text($"{slot.label} +{EquipService.Pct(worn):0.#}%　·　" +
+                               (worn.lv >= GameData.Balance.equipMaxLevel
+                                   ? "최대 강화"
+                                   : $"강화 ₩{EquipService.UpgradeCost(p, worn):N0}"),
+                        "arow__meta", text);
+                }
+
+                var slotId = slot.id;
+
+                if (worn != null && worn.lv < GameData.Balance.equipMaxLevel)
+                {
+                    var cost = EquipService.UpgradeCost(p, worn);
+                    var up = UiKit.Btn("강화", "arow__claim", () =>
+                    {
+                        if (!EquipService.Upgrade(Game.Player, worn.id)) return;
+                        AudioService.Play("upgrade", 0.6f);
+                        Game.Touch();
+                        Reopen(heroId, onClose);
+                    }, row);
+                    up.SetEnabled(p.gold >= cost);
+                }
+
+                UiKit.Btn(worn == null ? "장착" : "교체", "arow__claim", () =>
+                    OpenItemPicker(heroId, slotId, onClose), row);
+            }
+        }
+
+        /// <summary>The bag, filtered to one slot. Anything on someone else's desk is not offered:
+        /// an item is one object, and lending it out silently is how the numbers stop adding up.</summary>
+        void OpenItemPicker(string heroId, string slotId, System.Action onClose)
+        {
+            var p = Game.Player;
+            var slot = EquipService.Slot(slotId);
+            var pane = UiKit.Div("picker ad-menu");
+
+            var head = UiKit.Div("prog-head", pane);
+            UiKit.Text($"{slot?.name} 선택", "section-title", head);
+            UiKit.Div("spacer", head);
+            UiKit.Text($"보관 {p.items.Count} / {GameData.Balance.equipInventoryMax}", "muted", head);
+
+            var free = EquipService.Free(p, slotId);
+            if (free.Count == 0) UiKit.Text("보관 중인 비품이 없습니다.", "muted", pane);
+
+            foreach (var it in free.Take(5))
+            {
+                var row = UiKit.Div("arow", pane);
+                var text = UiKit.Div("arow__text", row);
+                var name = UiKit.Text(EquipService.Label(it), "arow__name", text);
+                var g = GameData.Grade(it.grade);
+                if (g != null) name.style.color = g.Color;
+                UiKit.Text($"{slot?.label} +{EquipService.Pct(it):0.#}%　·　분해 ₩{EquipService.DismantleGold(p, it):N0}",
+                    "arow__meta", text);
+
+                var id = it.id;
+                UiKit.Btn("장착", "arow__claim", () =>
+                {
+                    EquipService.Equip(Game.Player, heroId, id);
+                    AudioService.Play("tap", 0.6f);
+                    Game.Touch();
+                    _app.CloseOverlay();
+                    Reopen(heroId, onClose);
+                }, row);
+
+                UiKit.Btn("분해", "arow__claim arow__claim--ghost", () =>
+                {
+                    var gold = EquipService.Dismantle(Game.Player, id);
+                    if (gold <= 0) return;
+                    AudioService.Play("tap", 0.5f);
+                    _app.SetStatus($"비품 분해 · 골드 +{gold:N0}");
+                    Game.Touch();
+                    _app.CloseOverlay();
+                    OpenItemPicker(heroId, slotId, onClose);
+                }, row);
+            }
+
+            if (free.Count > 5) UiKit.Text($"외 {free.Count - 5}개", "muted", pane);
+
+            var current = EquipService.Worn(p, heroId, slotId);
+            if (current != null)
+                UiKit.Btn("해제", "btn btn--ghost", () =>
+                {
+                    EquipService.Unequip(Game.Player, heroId, slotId);
+                    Game.Touch();
+                    _app.CloseOverlay();
+                    Reopen(heroId, onClose);
+                }, pane);
+
+            UiKit.Btn("닫기", "btn btn--ghost", _app.CloseOverlay, pane);
+            _app.OpenOverlay(pane);
         }
 
         /// <summary>Which of the three pages is open. Kept across a reopen so levelling a hero

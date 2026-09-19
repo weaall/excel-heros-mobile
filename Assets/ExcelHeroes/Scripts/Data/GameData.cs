@@ -30,6 +30,7 @@ namespace ExcelHeroes.Data
         public static QuestFile Quests { get; private set; }
         public static List<AchievementDef> Achievements { get; private set; } = new();
         public static List<MilestoneDef> Milestones { get; private set; } = new();
+        public static EquipmentFile Equipment { get; private set; } = new();
 
         static Dictionary<string, AffectionText> _affection = new();
         static Dictionary<string, QuestDef> _quests = new();
@@ -69,6 +70,7 @@ namespace ExcelHeroes.Data
             Quests = Read<QuestFile>("quests");
             Achievements = Read<Wrapper<AchievementDef>>("achievements").items;
             Milestones = Read<Wrapper<MilestoneDef>>("milestones").items;
+            Equipment = Read<EquipmentFile>("equipment");
             _quests = Quests.items.ToDictionary(q => q.id);
             _affection = Read<Wrapper<AffectionText>>("affection").items.ToDictionary(a => a.id);
 

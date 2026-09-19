@@ -295,6 +295,14 @@ namespace ExcelHeroes.Data
         public float offlineEfficiency;
         public long offlineMinSec;
         public int adPerDay;
+        public float equipDropChance, equipBossDropChance, equipPctPerLevel, equipUpgradeGrowth;
+        public int equipBossRolls, equipBossFirstRolls, equipMaxLevel, equipUpgradeGoldKills;
+        public int equipInventoryMax, equipSetAny;
+        public string equipBossFirstMinGrade;
+        public List<string> equipDismantleGrades = new();
+        public List<int> equipDismantleKills = new();
+        public List<string> equipSetSameGrades = new();
+        public List<int> equipSetSameValues = new();
         public float overtimeDuration, overtimeElite, overtimeHpMult, overtimeGemsPerPhase;
         public int overtimeStageOffset, overtimeCount, overtimeGemsPerKill, overtimeGemsPerElite;
         public int overtimeMaxGems, overtimeCardsPerPhase;
@@ -304,6 +312,41 @@ namespace ExcelHeroes.Data
         public List<int> dispatchGemValues = new();
         public int bossEvery;
         public List<AdOfferDef> adOffers = new();
+    }
+
+    /// <summary>비품 슬롯 — one per stat, so a full set reads as "this one is built for attack".</summary>
+    [Serializable]
+    public class EquipSlotDef
+    {
+        public string id;       // keyboard chair monitor badge
+        public string name;
+        public string stat;     // atk hp skill speed
+        public string label;
+        public string desc;
+    }
+
+    /// <summary>The item's name for a slot at a grade — the same object, one rung up the ladder.</summary>
+    [Serializable]
+    public class EquipNameDef
+    {
+        public string slot;
+        public string grade;
+        public string name;
+    }
+
+    [Serializable]
+    public class EquipBaseDef
+    {
+        public string grade;
+        public float pct;
+    }
+
+    [Serializable]
+    public class EquipmentFile
+    {
+        public List<EquipSlotDef> slots = new();
+        public List<EquipNameDef> names = new();
+        public List<EquipBaseDef> basePct = new();
     }
 
     /// <summary>

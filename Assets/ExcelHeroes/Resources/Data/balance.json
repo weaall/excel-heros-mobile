@@ -106,6 +106,45 @@
  "offlineEfficiency": 0.6,
  "offlineMinSec": 60,
  "adPerDay": 9,
+ "equipDropChance": 0.35,
+ "equipBossDropChance": 1,
+ "equipBossRolls": 2,
+ "equipBossFirstRolls": 4,
+ "equipBossFirstMinGrade": "B",
+ "equipMaxLevel": 10,
+ "equipPctPerLevel": 0.12,
+ "equipUpgradeGoldKills": 12,
+ "equipUpgradeGrowth": 1.35,
+ "equipInventoryMax": 120,
+ "equipSetAny": 3,
+ "equipDismantleGrades": [
+  "D",
+  "C",
+  "B",
+  "A",
+  "S"
+ ],
+ "equipDismantleKills": [
+  2,
+  4,
+  8,
+  16,
+  32
+ ],
+ "equipSetSameGrades": [
+  "D",
+  "C",
+  "B",
+  "A",
+  "S"
+ ],
+ "equipSetSameValues": [
+  4,
+  7,
+  11,
+  16,
+  24
+ ],
  "overtimeDuration": 60,
  "overtimeStageOffset": 3,
  "overtimeCount": 7,

@@ -148,6 +148,19 @@ const files = {
     gems: m.reward.gems ?? 0, cards: m.reward.cards ?? 0,
   }))),
 
+  // 비품 — the one growth axis that comes from PLAYING stages rather than from spending a
+  // currency, and where the endless late-game gold finally goes. Slots, names and base values are
+  // data; the rolling and the set bonuses are balance.
+  'equipment.json': {
+    slots: equipment.SLOT_ORDER.map((id) => ({
+      id, name: equipment.SLOTS[id].name, stat: equipment.SLOTS[id].stat,
+      label: equipment.SLOTS[id].label, desc: equipment.SLOTS[id].desc,
+    })),
+    names: equipment.SLOT_ORDER.flatMap((slot) =>
+      heroes.GRADE_ORDER.map((grade) => ({ slot, grade, name: equipment.itemName(slot, grade) }))),
+    basePct: heroes.GRADE_ORDER.map((grade) => ({ grade, pct: equipment.itemBasePct(grade) })),
+  },
+
   'balance.json': {
     upgradeCostBase: BALANCE.UPGRADE_COST_BASE, upgradeCostGrowth: BALANCE.UPGRADE_COST_GROWTH,
     monsterHpBase: BALANCE.MONSTER_HP_BASE,     monsterHpGrowth: BALANCE.MONSTER_HP_GROWTH,
@@ -211,6 +224,21 @@ const files = {
     // 야근 모드 — one 60-second survival run a day at a difficulty above anything cleared,
     // paying gems per kill. The per-kill value rises with phase on purpose: deeper stages take
     // longer per body, so without it a once-a-day reward shrinks as the run progresses.
+    equipDropChance: BALANCE.EQUIP?.dropChance ?? 0.35,
+    equipBossDropChance: BALANCE.EQUIP?.bossDropChance ?? 1,
+    equipBossRolls: BALANCE.EQUIP?.bossRolls ?? 2,
+    equipBossFirstRolls: BALANCE.EQUIP?.bossFirstRolls ?? 4,
+    equipBossFirstMinGrade: BALANCE.EQUIP?.bossFirstMinGrade ?? 'B',
+    equipMaxLevel: BALANCE.EQUIP?.maxLevel ?? 10,
+    equipPctPerLevel: BALANCE.EQUIP?.pctPerLevel ?? 0.12,
+    equipUpgradeGoldKills: BALANCE.EQUIP?.upgradeGoldKills ?? 12,
+    equipUpgradeGrowth: BALANCE.EQUIP?.upgradeGrowth ?? 1.35,
+    equipInventoryMax: BALANCE.EQUIP?.inventoryMax ?? 120,
+    equipSetAny: BALANCE.EQUIP?.setAny ?? 3,
+    equipDismantleGrades: Object.keys(BALANCE.EQUIP?.dismantleGoldKills ?? {}),
+    equipDismantleKills: Object.values(BALANCE.EQUIP?.dismantleGoldKills ?? {}),
+    equipSetSameGrades: Object.keys(BALANCE.EQUIP?.setSame ?? {}),
+    equipSetSameValues: Object.values(BALANCE.EQUIP?.setSame ?? {}),
     overtimeDuration: BALANCE.OVERTIME?.duration ?? 60,
     overtimeStageOffset: BALANCE.OVERTIME?.stageOffset ?? 3,
     overtimeCount: BALANCE.OVERTIME?.count ?? 7,

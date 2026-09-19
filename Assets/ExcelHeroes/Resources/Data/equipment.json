@@ -1,0 +1,156 @@
+{
+ "slots": [
+  {
+   "id": "keyboard",
+   "name": "키보드",
+   "stat": "atk",
+   "label": "공격력",
+   "desc": "공격력 +{v}%"
+  },
+  {
+   "id": "chair",
+   "name": "의자",
+   "stat": "hp",
+   "label": "체력",
+   "desc": "체력 +{v}%"
+  },
+  {
+   "id": "monitor",
+   "name": "모니터",
+   "stat": "skill",
+   "label": "스킬 위력",
+   "desc": "스킬 위력 +{v}%"
+  },
+  {
+   "id": "badge",
+   "name": "사원증",
+   "stat": "speed",
+   "label": "공격 속도",
+   "desc": "공격 속도 +{v}%"
+  }
+ ],
+ "names": [
+  {
+   "slot": "keyboard",
+   "grade": "D",
+   "name": "지급품 키보드"
+  },
+  {
+   "slot": "keyboard",
+   "grade": "C",
+   "name": "멤브레인 키보드"
+  },
+  {
+   "slot": "keyboard",
+   "grade": "B",
+   "name": "기계식 키보드"
+  },
+  {
+   "slot": "keyboard",
+   "grade": "A",
+   "name": "무접점 키보드"
+  },
+  {
+   "slot": "keyboard",
+   "grade": "S",
+   "name": "장인이 깎은 키보드"
+  },
+  {
+   "slot": "chair",
+   "grade": "D",
+   "name": "접이식 의자"
+  },
+  {
+   "slot": "chair",
+   "grade": "C",
+   "name": "사무용 회전의자"
+  },
+  {
+   "slot": "chair",
+   "grade": "B",
+   "name": "메시 등받이 의자"
+  },
+  {
+   "slot": "chair",
+   "grade": "A",
+   "name": "인체공학 의자"
+  },
+  {
+   "slot": "chair",
+   "grade": "S",
+   "name": "임원용 가죽 의자"
+  },
+  {
+   "slot": "monitor",
+   "grade": "D",
+   "name": "중고 모니터"
+  },
+  {
+   "slot": "monitor",
+   "grade": "C",
+   "name": "FHD 모니터"
+  },
+  {
+   "slot": "monitor",
+   "grade": "B",
+   "name": "와이드 모니터"
+  },
+  {
+   "slot": "monitor",
+   "grade": "A",
+   "name": "듀얼 4K 모니터"
+  },
+  {
+   "slot": "monitor",
+   "grade": "S",
+   "name": "커브드 울트라와이드"
+  },
+  {
+   "slot": "badge",
+   "grade": "D",
+   "name": "임시 출입증"
+  },
+  {
+   "slot": "badge",
+   "grade": "C",
+   "name": "사원증"
+  },
+  {
+   "slot": "badge",
+   "grade": "B",
+   "name": "팀장 사원증"
+  },
+  {
+   "slot": "badge",
+   "grade": "A",
+   "name": "임원 사원증"
+  },
+  {
+   "slot": "badge",
+   "grade": "S",
+   "name": "전사 마스터 키"
+  }
+ ],
+ "basePct": [
+  {
+   "grade": "D",
+   "pct": 2
+  },
+  {
+   "grade": "C",
+   "pct": 4
+  },
+  {
+   "grade": "B",
+   "pct": 7
+  },
+  {
+   "grade": "A",
+   "pct": 11
+  },
+  {
+   "grade": "S",
+   "pct": 16
+  }
+ ]
+}

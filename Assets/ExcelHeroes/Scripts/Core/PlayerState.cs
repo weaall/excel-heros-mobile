@@ -6,6 +6,16 @@ using ExcelHeroes.Data;
 namespace ExcelHeroes.Core
 {
     /// <summary>One owned card. Duplicates stack as `copies`, which is what buys the next ★.</summary>
+    /// <summary>One piece of 비품 in the bag. Level is bought with gold; grade never changes.</summary>
+    [Serializable]
+    public class EquipItem
+    {
+        public int id;
+        public string slot;
+        public string grade;
+        public int lv;
+    }
+
     [Serializable]
     public class OwnedHero
     {
@@ -58,6 +68,55 @@ namespace ExcelHeroes.Core
         public string checkInDate = "";
         public int streak;
         public bool allClearClaimed;
+
+        /// <summary>
+        /// 비품 — the bag, and what each hero is wearing.
+        ///
+        /// Items carry their own id because a hero refers to one by id: two identical keyboards
+        /// are two objects, and upgrading the one on someone's desk must not upgrade the spare.
+        /// The worn map is parallel lists of "heroId/slot" against item id, because JsonUtility
+        /// cannot serialise a dictionary and cannot nest one either.
+        /// </summary>
+        public List<EquipItem> items = new();
+        public int nextItemId = 1;
+        public List<string> wornKeys = new();
+        public List<int> wornItemIds = new();
+
+        static string WornKey(string heroId, string slot) => heroId + "/" + slot;
+
+        public int WornId(string heroId, string slot)
+        {
+            var i = wornKeys.IndexOf(WornKey(heroId, slot));
+            return i >= 0 && i < wornItemIds.Count ? wornItemIds[i] : 0;
+        }
+
+        public void SetWorn(string heroId, string slot, int itemId)
+        {
+            var key = WornKey(heroId, slot);
+            var i = wornKeys.IndexOf(key);
+            if (itemId <= 0)
+            {
+                if (i < 0) return;
+                wornKeys.RemoveAt(i);
+                if (i < wornItemIds.Count) wornItemIds.RemoveAt(i);
+                return;
+            }
+            if (i < 0) { wornKeys.Add(key); wornItemIds.Add(itemId); return; }
+            while (wornItemIds.Count <= i) wornItemIds.Add(0);
+            wornItemIds[i] = itemId;
+        }
+
+        /// <summary>Who is wearing an item, or "" when it is in the bag.</summary>
+        public string WornBy(int itemId)
+        {
+            var i = wornItemIds.IndexOf(itemId);
+            if (i < 0 || i >= wornKeys.Count) return "";
+            var key = wornKeys[i];
+            var slash = key.LastIndexOf('/');
+            return slash > 0 ? key.Substring(0, slash) : "";
+        }
+
+        public EquipItem Item(int id) => items.FirstOrDefault(it => it.id == id);
 
         /// <summary>야근 모드 — done today, plus any extra runs bought with an ad. Both sit in
         /// the daily block and reset with it; `overtimeBest` is a lifetime record and does not.</summary>

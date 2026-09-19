@@ -3426,3 +3426,12 @@
 }
 
 .overtime-btn:disabled { opacity: 0.45; }
+
+/* 분해 sits beside 장착 and must not read as the same decision. */
+.arow__claim--ghost {
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
+    color: var(--ex-ink-muted);
+    margin-left: var(--ex-space-1);
+}
