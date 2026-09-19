@@ -291,6 +291,27 @@ namespace ExcelHeroes.Data
         public float comboPerHit, comboMax, comboDecay;
         public float tankChance, tankChancePerStar, tankChanceMax;
         public float tankReduce, tankReducePerStar, tankReduceMax, tankSaveCd;
+        public long offlineCapSec;
+        public float offlineEfficiency;
+        public long offlineMinSec;
+        public int adPerDay;
+        public List<AdOfferDef> adOffers = new();
+    }
+
+    /// <summary>
+    /// One rewarded-ad offer. Every one of them pays a FLAT amount — never a multiplier on what
+    /// the run earned while away, because a reward that scales with time spent not playing makes
+    /// leaving the game closed the better play.
+    /// </summary>
+    [Serializable]
+    public class AdOfferDef
+    {
+        public string id;       // gold gems cards dispatch overtime
+        public string name;
+        public string desc;
+        public int perDay;
+        public float hours;     // gold: how many hours of the current rate it pays
+        public int amount;      // gems / cards: the flat number
     }
 
     /// <summary>

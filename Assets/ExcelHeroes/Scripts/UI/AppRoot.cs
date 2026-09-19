@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ExcelHeroes.Core;
+using ExcelHeroes.Data;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -122,6 +123,9 @@ namespace ExcelHeroes.UI
 
             // Back and home both mean 메인: the main screen is the one every other screen is
             // entered from, the way the reference's lobby is.
+            var settings = root.Q<Button>("overflowBtn");
+            if (settings != null) settings.clicked += OpenAdMenu;
+
             var back = root.Q<Button>("backBtn");
             if (back != null) back.clicked += () => { AudioService.Play("nav", 0.5f); Show(Sheet.Home); };
             var home = root.Q<Button>("homeBtn");
@@ -303,6 +307,50 @@ namespace ExcelHeroes.UI
         public void SetStatus(string text) { if (_status != null) _status.text = text; }
 
         public void Rebuild() => Show(_sheet);
+
+        /// <summary>
+        /// 광고 보상. Every offer pays a flat amount — see AdService. The menu prints that rule at
+        /// the foot rather than leaving a player to work out whether closing the app pays better,
+        /// because the answer being "no, never" is the point of the whole design.
+        /// </summary>
+        void OpenAdMenu()
+        {
+            AudioService.Play("tap", 0.5f);
+            var p = Game.Player;
+            var pane = UiKit.Div("picker ad-menu");
+
+            var head = UiKit.Div("prog-head", pane);
+            UiKit.Text("광고 보상", "section-title", head);
+            UiKit.Div("spacer", head);
+            UiKit.Text($"오늘 남은 광고 {AdService.LeftToday(p)} / {GameData.Balance.adPerDay}회",
+                "muted", head);
+
+            foreach (var offer in AdService.Offers(p))
+            {
+                var row = UiKit.Div("arow", pane);
+                var text = UiKit.Div("arow__text", row);
+                UiKit.Text($"{offer.Def.name}　{offer.Value}", "arow__name", text);
+                UiKit.Text($"{offer.Def.desc}　·　오늘 {offer.Left} / {offer.Def.perDay}회",
+                    "arow__meta", text);
+
+                var id = offer.Def.id;
+                var watch = UiKit.Btn(offer.Can ? "광고 보기" : offer.Reason, "arow__claim", () =>
+                {
+                    var told = AdService.Grant(Game.Player, id);
+                    if (told == null) return;
+                    AudioService.Play("victory", 0.6f);
+                    SetStatus(told);
+                    Game.Touch();
+                    CloseOverlay();
+                    OpenAdMenu();
+                }, row);
+                watch.SetEnabled(offer.Can);
+            }
+
+            UiKit.Text("광고 1편 = 보상 1개 · 모든 보상은 고정 지급 (방치 배율 없음)", "muted", pane);
+            UiKit.Btn("닫기", "btn btn--ghost", CloseOverlay, pane);
+            OpenOverlay(pane);
+        }
 
         public void OpenDetail(string heroId)
         {

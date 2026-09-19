@@ -3411,3 +3411,9 @@
 .idle { width: 46%; min-width: 760px; align-items: center; }
 .idle .power-readout { margin-top: var(--ex-space-2); margin-bottom: var(--ex-space-2); }
 .idle .btn { min-width: 420px; margin-top: var(--ex-space-2); }
+
+/* 광고 보상 — five rows and a rule, which is all it is. */
+.ad-menu { width: 62%; min-width: 1100px; }
+.ad-menu .arow { margin-bottom: var(--ex-space-1); }
+.ad-menu .arow__claim { min-width: 230px; }
+.ad-menu .btn { margin-top: var(--ex-space-2); }

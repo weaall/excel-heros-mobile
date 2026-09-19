@@ -59,6 +59,32 @@ namespace ExcelHeroes.Core
         public int streak;
         public bool allClearClaimed;
 
+        /// <summary>광고 보상 — how many of each offer were taken today, as parallel lists.
+        /// Cleared with the rest of the daily block at local midnight.</summary>
+        public List<string> adIds = new();
+        public List<int> adCounts = new();
+
+        public int AdsUsed(string id)
+        {
+            var i = adIds.IndexOf(id);
+            return i >= 0 && i < adCounts.Count ? adCounts[i] : 0;
+        }
+
+        public int AdsUsedTotal()
+        {
+            var n = 0;
+            foreach (var c in adCounts) n += c;
+            return n;
+        }
+
+        public void NoteAd(string id)
+        {
+            var i = adIds.IndexOf(id);
+            if (i < 0) { adIds.Add(id); adCounts.Add(1); return; }
+            while (adCounts.Count <= i) adCounts.Add(0);
+            adCounts[i]++;
+        }
+
         // 위장 모드. Persisted because someone who turns it on is at work and will still be at work
         // when they next open the app; coming back un-disguised is the one failure that matters.
         public bool stealth;

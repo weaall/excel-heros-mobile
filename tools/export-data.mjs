@@ -197,6 +197,18 @@ const files = {
     tankReducePerStar: BALANCE.TANK?.reducePerStar ?? 0.05,
     tankReduceMax: BALANCE.TANK?.reduceMax ?? 0.5,
     tankSaveCd: BALANCE.TANK?.saveCd ?? 6,
+    // 백그라운드 정산. The efficiency is under 1 on purpose: leaving the game closed must never
+    // be the better play, which is the same rule every ad offer follows.
+    offlineCapSec: BALANCE.OFFLINE_CAP_SEC ?? 36000,
+    offlineEfficiency: BALANCE.OFFLINE_EFFICIENCY ?? 0.6,
+    offlineMinSec: BALANCE.OFFLINE_MIN_SEC ?? 60,
+    // 광고 보상. Keyed in the web build, a list here because Unity's JsonUtility cannot
+    // deserialise a keyed record. Every reward is FLAT — never a multiplier on idle earnings.
+    adPerDay: BALANCE.AD?.perDay ?? 9,
+    adOffers: Object.entries(BALANCE.AD_OFFERS ?? {}).map(([id, o]) => ({
+      id, name: o.name, desc: o.desc,
+      perDay: o.perDay ?? 1, hours: o.hours ?? 0, amount: o.amount ?? 0,
+    })),
   },
 };
 

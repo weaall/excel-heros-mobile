@@ -53,6 +53,10 @@ namespace ExcelHeroes.Core
             if (p.dailyDate == today) return;
 
             p.dailyDate = today;
+            // The ad allowance rolls over with the quests, which is the whole point of it being
+            // daily; a counter that never resets is a one-time reward wearing a daily label.
+            p.adIds.Clear();
+            p.adCounts.Clear();
             p.quests.Clear();
             foreach (var id in TodayQuestIds(today)) p.quests.Add(new QuestProgress { id = id });
             p.allClearClaimed = false;

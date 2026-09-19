@@ -101,5 +101,51 @@
  "tankReduce": 0.25,
  "tankReducePerStar": 0.05,
  "tankReduceMax": 0.5,
- "tankSaveCd": 6
+ "tankSaveCd": 6,
+ "offlineCapSec": 36000,
+ "offlineEfficiency": 0.6,
+ "offlineMinSec": 60,
+ "adPerDay": 9,
+ "adOffers": [
+  {
+   "id": "gold",
+   "name": "유휴 골드 1시간분",
+   "desc": "현재 스테이지 골드 수익 1시간분을 즉시 지급",
+   "perDay": 3,
+   "hours": 1,
+   "amount": 0
+  },
+  {
+   "id": "gems",
+   "name": "보석 +15",
+   "desc": "뽑기 재화. 하루 2회",
+   "perDay": 2,
+   "hours": 0,
+   "amount": 15
+  },
+  {
+   "id": "cards",
+   "name": "강화 카드 +10",
+   "desc": "강화·한계 돌파 재화. 하루 2회",
+   "perDay": 2,
+   "hours": 0,
+   "amount": 10
+  },
+  {
+   "id": "dispatch",
+   "name": "출장 즉시 복귀",
+   "desc": "진행 중인 출장을 바로 끝내고 보상 수령 가능",
+   "perDay": 1,
+   "hours": 0,
+   "amount": 0
+  },
+  {
+   "id": "overtime",
+   "name": "야근 모드 추가 1회",
+   "desc": "오늘 야근을 이미 했어도 한 번 더",
+   "perDay": 1,
+   "hours": 0,
+   "amount": 0
+  }
+ ]
 }
