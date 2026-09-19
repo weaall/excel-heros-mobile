@@ -59,10 +59,23 @@ namespace ExcelHeroes.Core
                     case "cards":
                         value = $"강화 카드 +{o.amount}";
                         break;
+                    case "dispatch":
+                        var di = DispatchService.Read(p);
+                        if (di.Active && !di.Done)
+                        {
+                            value = $"남은 {DispatchService.Remaining(di.Remaining)} → 즉시 복귀";
+                        }
+                        else
+                        {
+                            value = "출장 중일 때만";
+                            can = false;
+                            reason = "진행 중인 출장이 없음";
+                        }
+                        break;
                     default:
-                        // 출장 and 야근 are not ported yet, so their offers are listed and disabled
-                        // rather than hidden: a menu that changes shape as features land teaches a
-                        // player the wrong shape twice.
+                        // 야근 is not ported yet, so its offer is listed and disabled rather than
+                        // hidden: a menu that changes shape as features land teaches a player the
+                        // wrong shape twice.
                         value = "준비 중";
                         can = false;
                         reason = "아직 열리지 않은 기능";
@@ -103,6 +116,10 @@ namespace ExcelHeroes.Core
                 case "cards":
                     p.cards += o.amount;
                     told = $"광고 보상 · 강화 카드 +{o.amount}";
+                    break;
+                case "dispatch":
+                    if (!DispatchService.FinishNow(p)) return null;
+                    told = "출장 복귀 완료 — 검토에서 보상을 받으세요";
                     break;
                 default:
                     return null;

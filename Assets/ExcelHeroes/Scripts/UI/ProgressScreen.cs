@@ -44,6 +44,7 @@ namespace ExcelHeroes.UI
             var right = UiKit.Div("prog-cols__right", cols);
 
             BuildAchievements(left, p);
+            BuildDispatch(right, p);
             BuildMilestones(right, p);
         }
 
@@ -109,6 +110,73 @@ namespace ExcelHeroes.UI
         static string Tier(int claimed, int total) =>
             total <= 0 ? "" : $"{claimed}/{total}";
 
+        /// <summary>
+        /// 출장 — the one system that pays for owning staff you never field, so it belongs beside
+        /// the other things a long run collects rather than buried in the roster.
+        /// </summary>
+        void BuildDispatch(VisualElement parent, PlayerState p)
+        {
+            var info = DispatchService.Read(p);
+            var b = GameData.Balance;
+
+            var head = UiKit.Div("prog-head", parent);
+            UiKit.Text("출장", "section-title", head);
+            UiKit.Div("spacer", head);
+            UiKit.Text($"오늘 {info.StartsLeft} / {b.dispatchMaxPerDay}회", "muted", head);
+
+            var panel = UiKit.Div("panel", parent);
+
+            if (info.Done)
+            {
+                var (gems, cards) = DispatchService.Preview(p, info.HeroIds);
+                UiKit.Text($"복귀 · 보석 +{gems} 강화 카드 +{cards}", "synergy-line", panel);
+                UiKit.Btn("보상 수령", "btn btn--primary", () =>
+                {
+                    var r = DispatchService.Claim(Game.Player);
+                    if (r == null) return;
+                    AudioService.Play("victory", 0.6f);
+                    _app.SetStatus($"출장 복귀 · 보석 +{r.Value.Gems} · 강화 카드 +{r.Value.Cards}");
+                    Game.Touch();
+                    Refresh();
+                }, panel);
+                return;
+            }
+
+            if (info.Active)
+            {
+                var names = string.Join(", ", info.HeroIds.Select(id => GameData.Hero(id)?.name ?? id));
+                UiKit.Text(names, "synergy-line", panel);
+                UiKit.Text($"복귀까지 {DispatchService.Remaining(info.Remaining)}", "muted", panel);
+                return;
+            }
+
+            if (!info.CanStart)
+            {
+                UiKit.Text(info.StartsLeft <= 0
+                    ? "오늘 출장은 모두 보냈습니다."
+                    : "편성에 들어 있지 않은 사원이 있어야 보낼 수 있습니다.", "muted", panel);
+                return;
+            }
+
+            // The pick is the top of the bench, which is what a player would choose anyway — the
+            // reward reads off grade, and the bench is already sorted by power.
+            var picked = info.Bench.Take(b.dispatchSlots).Select(o => o.id).ToList();
+            var preview = DispatchService.Preview(p, picked);
+            UiKit.Text(string.Join(", ", picked.Select(id => GameData.Hero(id)?.name ?? id)),
+                "synergy-line", panel);
+            UiKit.Text($"{b.dispatchHours:0}시간 · 보석 +{preview.Gems} 강화 카드 +{preview.Cards}",
+                "muted", panel);
+
+            UiKit.Btn("출장 보내기", "btn btn--primary", () =>
+            {
+                if (!DispatchService.Start(Game.Player, picked)) return;
+                AudioService.Play("tap", 0.6f);
+                _app.SetStatus($"출장 시작 · {b.dispatchHours:0}시간 후 복귀");
+                Game.Touch();
+                Refresh();
+            }, panel);
+        }
+
         void BuildMilestones(VisualElement parent, PlayerState p)
         {
             var head = UiKit.Div("prog-head", parent);
@@ -152,7 +220,9 @@ namespace ExcelHeroes.UI
             }
             else
             {
-                foreach (var m in upcoming)
+                // Two, not three: the column also carries 출장 and the milestone list, and the
+                // third row was landing a pixel past the bottom of the frame.
+                foreach (var m in upcoming.Take(2))
                     UiKit.StatRow(m.name, $"{ProgressService.Value(p, m):N0} / {m.target:N0}", next);
             }
 

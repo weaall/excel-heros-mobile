@@ -205,6 +205,18 @@ const files = {
     // 광고 보상. Keyed in the web build, a list here because Unity's JsonUtility cannot
     // deserialise a keyed record. Every reward is FLAT — never a multiplier on idle earnings.
     adPerDay: BALANCE.AD?.perDay ?? 9,
+    // 출장 — bench heroes sent away for a few hours. Gems scale with who was sent, cards with
+    // how far the run has got, and the travellers come back with affection. The per-grade gem
+    // table is flattened into parallel lists because JsonUtility cannot read a keyed record.
+    dispatchHours: BALANCE.DISPATCH?.hours ?? 4,
+    dispatchSlots: BALANCE.DISPATCH?.slots ?? 3,
+    dispatchMaxPerDay: BALANCE.DISPATCH?.maxPerDay ?? 2,
+    dispatchGemsBase: BALANCE.DISPATCH?.gemsBase ?? 20,
+    dispatchGemGrades: Object.keys(BALANCE.DISPATCH?.gemsPerGrade ?? {}),
+    dispatchGemValues: Object.values(BALANCE.DISPATCH?.gemsPerGrade ?? {}),
+    dispatchCardsPerPhase: BALANCE.DISPATCH?.cardsPerPhase ?? 1,
+    dispatchAffectionXp: BALANCE.DISPATCH?.affectionXp ?? 60,
+    bossEvery: BALANCE.BOSS_EVERY ?? 10,
     adOffers: Object.entries(BALANCE.AD_OFFERS ?? {}).map(([id, o]) => ({
       id, name: o.name, desc: o.desc,
       perDay: o.perDay ?? 1, hours: o.hours ?? 0, amount: o.amount ?? 0,

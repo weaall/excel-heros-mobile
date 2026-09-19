@@ -110,8 +110,11 @@ namespace ExcelHeroes.UI
             var pane = UiKit.Div("picker");
             UiKit.Text("대기 인원", "section-title", pane);
 
-            var benched = p.owned.Where(o => !p.party.Contains(o.id))
-                                 .OrderByDescending(StatMath.Power).ToList();
+            // Anyone on 출장 is not on the bench: they are away, and a slot filled with
+            // someone who is not here is the kind of bug a player reads as the game losing a hero.
+            var benched = p.owned
+                .Where(o => !p.party.Contains(o.id) && !DispatchService.IsAway(p, o.id))
+                .OrderByDescending(StatMath.Power).ToList();
 
             var pages = new Pages<OwnedHero>(pane, "roster-grid picker-grid", 12)
                 .Empty("대기 중인 사원이 없습니다");

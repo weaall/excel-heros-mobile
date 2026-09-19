@@ -59,6 +59,17 @@ namespace ExcelHeroes.Core
         public int streak;
         public bool allClearClaimed;
 
+        /// <summary>
+        /// 출장 — who is away, when they get back, and how many runs have been started today.
+        /// `dispatchDate` is what makes the daily cap daily; the rest of the block outlives the
+        /// day on purpose, because a run started at 23:50 must still come back at 03:50.
+        /// </summary>
+        public List<string> dispatchHeroIds = new();
+        public long dispatchEndsUnix;
+        public string dispatchDate = "";
+        public int dispatchCount;
+        public int dispatches;      // lifetime, for 업적
+
         /// <summary>광고 보상 — how many of each offer were taken today, as parallel lists.
         /// Cleared with the rest of the daily block at local midnight.</summary>
         public List<string> adIds = new();

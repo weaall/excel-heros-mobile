@@ -106,6 +106,27 @@
  "offlineEfficiency": 0.6,
  "offlineMinSec": 60,
  "adPerDay": 9,
+ "dispatchHours": 4,
+ "dispatchSlots": 3,
+ "dispatchMaxPerDay": 2,
+ "dispatchGemsBase": 20,
+ "dispatchGemGrades": [
+  "D",
+  "C",
+  "B",
+  "A",
+  "S"
+ ],
+ "dispatchGemValues": [
+  3,
+  5,
+  8,
+  12,
+  20
+ ],
+ "dispatchCardsPerPhase": 1,
+ "dispatchAffectionXp": 60,
+ "bossEvery": 10,
  "adOffers": [
   {
    "id": "gold",

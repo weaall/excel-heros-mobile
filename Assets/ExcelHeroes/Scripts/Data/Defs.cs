@@ -295,6 +295,11 @@ namespace ExcelHeroes.Data
         public float offlineEfficiency;
         public long offlineMinSec;
         public int adPerDay;
+        public float dispatchHours;
+        public int dispatchSlots, dispatchMaxPerDay, dispatchGemsBase, dispatchCardsPerPhase, dispatchAffectionXp;
+        public List<string> dispatchGemGrades = new();
+        public List<int> dispatchGemValues = new();
+        public int bossEvery;
         public List<AdOfferDef> adOffers = new();
     }
 

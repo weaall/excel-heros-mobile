@@ -132,7 +132,8 @@ namespace ExcelHeroes.Core
         /// even though they can be taken in one press: the number is "things to collect", and a
         /// player who sees 0 does not open the screen.
         /// </summary>
-        public static int ReadyCount(PlayerState p) => ClaimableCount(p) + Pending(p).Count;
+        public static int ReadyCount(PlayerState p) =>
+            ClaimableCount(p) + Pending(p).Count + (DispatchService.Read(p).Done ? 1 : 0);
 
         /// <summary>Formats an achievement's value the way its unit asks — hours for time.</summary>
         public static string Format(long value, string unit) =>
