@@ -39,8 +39,8 @@ Assets/ExcelHeroes/
   Resources/Art/Cards/*.png 캐릭터 카드 일러 55종 (Gemini 생성)
   Resources/Art/UI/*.png    배경 3종 · 등급 프레임 5종 · 로고
   Scripts/Data/             JSON 미러 정의 + GameData 로더
-  Scripts/Core/             PlayerState · SaveService · GachaService · StatMath · BattleSim · Game
-  Scripts/UI/               AppRoot + 화면 5종 + HeroDetail + UiKit
+  Scripts/Core/             PlayerState · SaveService · GachaService · AffectionService · StatMath · BattleSim · Game
+  Scripts/UI/               AppRoot + 화면 6종 + HeroDetail + UiKit
   Scripts/Editor/           ProjectBootstrap · ArtImportSettings
   UI/                       AppShell.uxml · App.uss · ExcelHeroesTheme.tss · PanelSettings.asset
 tools/                      데이터 익스포터 · Gemini 아트 파이프라인
@@ -48,8 +48,6 @@ tools/                      데이터 익스포터 · Gemini 아트 파이프라
 
 **밸런스의 원본은 웹 저장소입니다.** 수치를 바꾸려면 `excel-heros/src/config/balance.js` 를 고치고
 `node tools/export-data.mjs` 를 다시 돌리세요. 이 프로젝트의 JSON은 산출물입니다.
-
-## 도구
 
 ## 밸런스
 
@@ -105,7 +103,8 @@ node tools/gen-art.mjs ui                       # 배경 · 로고
 ## 아직 없는 것 (다음 마일스톤)
 
 - 서버 없음 — 저장은 `persistentDataPath` 로컬 JSON 한 개
-- 강화/비품/호감도/출장/일일 업무/업적 — 웹에는 있으나 이 슬라이스에는 미포함
-- 상점, 광고, 인앱결제, 일일 업무
+- 비품/출장/일일 업무/업적 — 웹에는 있으나 아직 미포함
+- 상점, 광고, 인앱결제
+- 사운드 없음
 - 안드로이드 빌드 모듈 미설치 (에디터 플레이만 검증됨)
 - 아트는 `Resources/` 에 있어 전량 빌드에 포함됩니다. 로스터가 커지면 Addressables로 옮겨야 합니다
