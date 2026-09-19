@@ -11,6 +11,12 @@ namespace ExcelHeroes.UI
     /// This is not a tutorial that explains systems. It gives the premise in three lines, then puts
     /// them one tap from the only thing worth doing first: a ten-pull. The systems explain
     /// themselves once there are faces to hang them on.
+    ///
+    /// It is drawn as an Excel dialog rather than as a game popup, because that is the joke and
+    /// because the shape is already familiar: a grey caption bar, a message with an icon beside it,
+    /// the content laid out in worksheet rows, and the buttons bottom-right where every dialog in
+    /// Office puts them. The previous version was a plain dark card with three centred lines, which
+    /// belonged to neither the game nor the disguise.
     /// </summary>
     public class Onboarding
     {
@@ -23,35 +29,58 @@ namespace ExcelHeroes.UI
 
         public void Show()
         {
-            var overlay = _app.Overlay;
-            overlay.Clear();
-            overlay.RemoveFromClassList("hidden");
+            var dialog = UiKit.Div("xl-dialog");
 
-            var view = UiKit.Div("onboard");
-            UiKit.Div("onboard__bg", view);
+            // Caption bar. Named like a real one, because a dialog titled "환영합니다!" is the one
+            // thing on screen that would give the game away over a shoulder.
+            var caption = UiKit.Div("xl-dialog__caption", dialog);
+            UiKit.Text("신규 통합 문서 설정", "xl-dialog__caption-title", caption);
+            UiKit.Div("spacer", caption);
+            UiKit.Btn("✕", "xl-dialog__close", Close, caption);
 
-            var card = UiKit.Div("onboard__card", view);
-            UiKit.Text("입사를 환영합니다", "onboard__title", card);
+            var body = UiKit.Div("xl-dialog__body", dialog);
 
-            // The premise, in the voice the rest of the game is written in.
-            UiKit.Text("스프레드시트 괴물이 서울을 덮쳤습니다.", "onboard__line", card);
-            UiKit.Text("당신은 오늘 입사한 신입 김인턴입니다.", "onboard__line", card);
-            UiKit.Text("정규직 전환까지, 동료를 모으고 오류를 처리하세요.", "onboard__line", card);
+            var head = UiKit.Div("xl-dialog__head", body);
+            UiKit.Text("i", "xl-dialog__icon", head);
+            var headText = UiKit.Div("xl-dialog__head-text", head);
+            UiKit.Text("입사를 환영합니다", "xl-dialog__title", headText);
+            UiKit.Text("아래 내용을 확인한 뒤 계속하세요.", "xl-dialog__subtitle", headText);
 
-            var tip = UiKit.Div("onboard__tip", card);
-            UiKit.Text($"보석 {Game.Player.gems:N0}개가 지급되었습니다", "onboard__tip-title", tip);
-            UiKit.Text($"10회 모집이 {GameData.Balance.gachaTenCost}개입니다. 먼저 동료부터 뽑으세요.",
-                "muted", tip);
+            // The premise, in worksheet rows. Row numbers down the side are doing the same work
+            // here as they do on the sheets behind this dialog.
+            var sheet = UiKit.Div("xl-dialog__sheet", body);
+            var lines = new[]
+            {
+                "스프레드시트 괴물이 서울을 덮쳤습니다.",
+                "당신은 오늘 입사한 신입 김인턴입니다.",
+                "정규직 전환까지, 동료를 모으고 오류를 처리하세요.",
+            };
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var row = UiKit.Div("xl-row", sheet);
+                UiKit.Text((i + 1).ToString(), "xl-row__n", row);
+                var cell = UiKit.Text(lines[i], "xl-row__cell", row);
+                cell.style.whiteSpace = WhiteSpace.Normal;
+            }
 
-            UiKit.Btn("모집하러 가기", "btn btn--primary", () =>
+            // The one row that is a number, formatted as a number — right-aligned, accented.
+            var grant = UiKit.Div("xl-row xl-row--grant", sheet);
+            UiKit.Text("4", "xl-row__n", grant);
+            UiKit.Text("입사 지원금", "xl-row__cell", grant);
+            UiKit.Text($"{Game.Player.gems:N0}", "xl-row__value", grant);
+
+            UiKit.Text($"10회 모집에 {GameData.Balance.gachaTenCost}개가 듭니다. 먼저 동료부터 뽑으세요.",
+                "xl-dialog__note", body);
+
+            var foot = UiKit.Div("xl-dialog__foot", dialog);
+            UiKit.Btn("둘러보기", "xl-btn", Close, foot);
+            UiKit.Btn("모집하러 가기", "xl-btn xl-btn--default", () =>
             {
                 Close();
                 _app.Show(AppRoot.Sheet.Gacha);
-            }, card);
+            }, foot);
 
-            UiKit.Btn("둘러보기", "btn btn--ghost", Close, card);
-
-            overlay.Add(view);
+            _app.OpenOverlay(dialog);
         }
 
         void Close()

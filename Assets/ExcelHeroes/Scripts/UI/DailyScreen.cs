@@ -46,23 +46,39 @@ namespace ExcelHeroes.UI
             var file = GameData.Quests;
 
             // --- 출근 도장 ---------------------------------------------------------------
-            var stamp = UiKit.Div("panel stamp", _root);
-            UiKit.Text("출근 도장", "section-title", stamp);
+            //
+            // A stamp card, not a row of dots. Each day is a cell with its number and what it pays,
+            // today is outlined, and stamped days carry the mark — so the thing the screen is
+            // actually selling (come back tomorrow, it pays more) is legible without reading a
+            // sentence underneath. The dots version could not show what any given day was worth.
+            var stamp = UiKit.Div("stamp", _root);
 
-            var streakRow = UiKit.Div("stamp__row", stamp);
+            var stampHead = UiKit.Div("stamp__head", stamp);
+            UiKit.Text("출근 도장", "stamp__title", stampHead);
+            UiKit.Div("spacer", stampHead);
+            UiKit.Text($"연속 {p.streak}일", "stamp__streak", stampHead);
+
+            var days = UiKit.Div("stamp__grid", stamp);
             for (var i = 1; i <= file.streakMaxDays + 1; i++)
             {
-                var dot = UiKit.Div("stamp__dot", streakRow);
-                dot.EnableInClassList("stamp__dot--on", p.streak >= i);
-            }
+                var stamped = p.streak >= i;
+                var today = p.streak + 1 == i && QuestService.CanCheckIn(p);
+                var bonus = Mathf.Min(i - 1, file.streakMaxDays);
 
-            var bonusDays = Mathf.Min(Mathf.Max(0, p.streak), file.streakMaxDays);
-            UiKit.Text($"연속 {p.streak}일 · 오늘 보석 {file.loginGems + bonusDays * file.streakGemsPerDay}",
-                "muted", stamp);
+                var cell = UiKit.Div("stamp-day", days);
+                cell.EnableInClassList("stamp-day--on", stamped);
+                cell.EnableInClassList("stamp-day--today", today);
+
+                UiKit.Text(i > file.streakMaxDays ? "이후" : $"{i}일", "stamp-day__n", cell);
+                UiKit.Text($"◈{file.loginGems + bonus * file.streakGemsPerDay}", "stamp-day__gems", cell);
+                if (stamped) UiKit.Text("승인", "stamp-day__mark", cell);
+            }
 
             if (QuestService.CanCheckIn(p))
             {
-                UiKit.Btn("출근하기", "btn btn--primary", () =>
+                var todayGems = file.loginGems
+                              + Mathf.Min(Mathf.Max(0, p.streak), file.streakMaxDays) * file.streakGemsPerDay;
+                UiKit.Btn($"출근하기 · 보석 {todayGems}", "btn btn--primary stamp__go", () =>
                 {
                     var (gems, gold) = QuestService.CheckIn(p);
                     if (gems > 0) AudioService.Play("victory", 0.6f);
@@ -71,7 +87,7 @@ namespace ExcelHeroes.UI
             }
             else
             {
-                UiKit.Text("오늘 출근 완료 — 내일 또 오세요.", "muted", stamp);
+                UiKit.Text("오늘 출근 완료 — 내일 또 오세요.", "stamp__done", stamp);
             }
 
             // --- 오늘의 업무 -------------------------------------------------------------

@@ -86,7 +86,7 @@ namespace ExcelHeroes.UI
 
             // Attach to the run already in progress instead of restarting it: opening 인사 to spend
             // gold and coming back should not throw away the wave the party was on.
-            if (_sim == null) NewRun(); else AttachViews();
+            if (_sim == null || Game.Player.PartyCount() == 0) NewRun(); else AttachViews();
             SyncAutoButton();
             BuildUpgrades();
             return _root;
@@ -160,13 +160,15 @@ namespace ExcelHeroes.UI
 
         void ShowEmptyParty()
         {
-            if (_stage == null) return;
-            _stage.Clear();
-            _exBar?.Clear();
-            var empty = UiKit.Div("panel", _stage);
-            UiKit.Text("편성된 사원이 없습니다.", "section-title", empty);
-            UiKit.Text("먼저 모집하고 편성 탭에서 파티를 짜 주세요.", "muted", empty);
-            UiKit.Btn("모집하러 가기", "btn btn--primary", () => _app.Show(AppRoot.Sheet.Gacha), empty);
+            if (_root == null) return;
+            _root.Clear();
+            _stage = null;
+
+            var empty = UiKit.Div("battle-empty", _root);
+            UiKit.Text("편성된 사원이 없습니다", "battle-empty__title", empty);
+            UiKit.Text("먼저 동료를 모집하고, 인사 시트에서 파티를 짜 주세요.", "battle-empty__line", empty);
+            UiKit.Btn("모집하러 가기", "btn btn--primary battle-empty__go",
+                () => _app.Show(AppRoot.Sheet.Gacha), empty);
         }
 
         /// <summary>Kept for the 리본's 다시 출근 — it just forces the next run to start now.</summary>
@@ -174,6 +176,13 @@ namespace ExcelHeroes.UI
 
         void AddFighterView(Combatant c)
         {
+            // Attaching to a run in progress builds a view for every combatant, and the Spawn
+            // events that announced those same combatants are still queued — draining them would
+            // build a second view and leave the first orphaned in the corner of the field at 0,0,
+            // never laid out again. Which is exactly what the screenshot caught: a monster parked
+            // in the sky at the left edge with its health bar under it.
+            if (_views.ContainsKey(c)) return;
+
             // 보스는 3배, 일반 몬스터는 2배 (CLAUDE.md 픽셀 아트 규칙). A boss drawn at wave-enemy
             // size is just a monster with a long health bar; the size is how the fight announces it.
             var classes = "fighter " + (c.side == Side.Hero ? "fighter--hero" : "fighter--monster");
@@ -427,8 +436,12 @@ namespace ExcelHeroes.UI
             {
                 // Straight from the source: each speck has its own speed from its index, and the
                 // whole field wraps, so nothing ever needs spawning or destroying.
-                var x = (i * 137f + _moteT * (8f + i % 5 * 3f)) % (width + 40f) - 20f;
-                var y = (i * 71f + _moteT * (14f + i % 3 * 6f)) % (height + 20f) - 10f;
+                // Wrapped inside the field rather than around it: a mote that starts 20px left of
+                // the edge ends 20px past the right one, which the layout audit reads as content
+                // hanging off the screen — and on a phone that is usually a real bug, so the
+                // decoration should not be the thing that cries wolf.
+                var x = (i * 137f + _moteT * (8f + i % 5 * 3f)) % Mathf.Max(1f, width - 12f);
+                var y = (i * 71f + _moteT * (14f + i % 3 * 6f)) % Mathf.Max(1f, height - 10f);
                 _motes[i].style.left = x;
                 _motes[i].style.top = y;
             }
@@ -463,8 +476,14 @@ namespace ExcelHeroes.UI
                     drawX = Mathf.Lerp(c.homeX, c.dashTo, reach);
                 }
 
+                // Clamped by the element's own width, not by the hero width constant. A boss is
+                // 176px wide and an office monster's body 84, so a fighter standing at the right
+                // edge of the field hung off the right edge of the screen by up to a third of
+                // itself — which the field's overflow:hidden then cropped mid-sprite.
                 var t = Mathf.Clamp01(drawX / BattleSim.FieldW);
-                el.style.left = t * (width - FighterWidth);
+                var w = el.resolvedStyle.width;
+                if (float.IsNaN(w) || w <= 1f) w = FighterWidth;
+                el.style.left = Mathf.Clamp(t * (width - FighterWidth), 0f, Mathf.Max(0f, width - w));
 
                 // One fighter per worksheet row. The first version staggered them by 34px, which is
                 // a fifth of a sprite's height, so a five-hero party read as one smear — and once
@@ -533,7 +552,7 @@ namespace ExcelHeroes.UI
             // A second cut-in landing on top of the first reads as a glitch, so the last one wins.
             _cutIn?.RemoveFromHierarchy();
 
-            var view = UiKit.Div("cutin", _root);
+            var view = UiKit.Div("cutin clips", _root);
             _cutIn = view;
 
             var sweep = UiKit.Div("cutin__sweep", view);

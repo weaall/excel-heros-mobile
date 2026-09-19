@@ -25,52 +25,6 @@ namespace ExcelHeroes.UI
         Label _pityA, _pityS, _total;
         Button _one, _ten;
 
-        /// <summary>
-        /// 오늘의 픽업. Two featured cards, a countdown, and — the part that matters — a 모집 포인트
-        /// price next to each. Every pull banks a point, the points never expire, so a player chasing
-        /// one character can see exactly how far away they are instead of guessing at a 0.5% wall.
-        /// </summary>
-        void BuildPickup()
-        {
-            _pickup.Clear();
-            if (GameData.Pickup == null) return;
-
-            var left = GameData.BannerDaysLeft(System.DateTime.UtcNow);
-            UiKit.Text($"오늘의 픽업 · {left}일 남음 · 해당 등급의 {GameData.Pickup.rate:P0}는 픽업으로",
-                "pickup__timer", _pickup);
-
-            var row = UiKit.Div("pickup", _pickup);
-            foreach (var grade in new[] { "S", "A" })
-            {
-                var hero = GameData.Featured(grade, System.DateTime.UtcNow);
-                if (hero == null) continue;
-                var g = GameData.Grade(grade);
-
-                var card = UiKit.Div("pickup__card", row);
-                card.style.borderTopColor = card.style.borderBottomColor =
-                    card.style.borderLeftColor = card.style.borderRightColor = g?.Color ?? Color.white;
-                UiKit.SetArt(UiKit.Div("pickup__art", card), GameData.CardArt(hero.id));
-                UiKit.Text($"PICK UP {grade}", "pickup__tag", card);
-
-                var plate = UiKit.Div("pickup__plate", card);
-                UiKit.Text(hero.name, "pickup__name", plate);
-
-                var cost = GameData.SparkCost(grade);
-                var have = Game.Player.sparkPoints;
-                UiKit.Text($"모집 포인트 {have}/{cost}", "pickup__spark", plate);
-
-                var take = UiKit.Btn("교환", "btn btn--primary", () =>
-                {
-                    var r = GachaService.Spark(Game.Player, grade);
-                    if (r == null) return;
-                    AudioService.Play("spark");
-                    Game.Touch();
-                    _app.StartCoroutine(RevealSequence(new List<PullResult> { r }));
-                }, plate);
-                take.SetEnabled(GachaService.CanSpark(Game.Player, grade));
-            }
-        }
-
         public GachaScreen(AppRoot app) { _app = app; }
 
         public IEnumerable<RibbonItem> Ribbon()
@@ -79,47 +33,152 @@ namespace ExcelHeroes.UI
             yield return new RibbonItem("⇓", "10행 가져오기", () => Pull(10), $"◈{GachaService.CostFor(10)}");
         }
 
+        /// <summary>
+        /// The banner and the two featured cards.
+        ///
+        /// Laid out against a design reference (docs/design/pickup.md): a full-bleed splash of the
+        /// S pickup with the title plate sitting on it, then the two cards at a size where the face
+        /// is actually the subject, then the pull buttons hard-anchored at the foot. What was here
+        /// before put two 150px thumbnails and three grey chips in the middle of the sheet with
+        /// half the screen empty underneath, which read as a form rather than as a banner.
+        ///
+        /// Every trick is a flat one, because USS has no gradients and no shadows: thick bottom
+        /// borders stand in for elevation and carry the rarity colour, a skewed tag breaks the grid,
+        /// and an oversized low-opacity word fills the dead space behind the title.
+        /// </summary>
+        void BuildPickup()
+        {
+            _pickup.Clear();
+            if (GameData.Pickup == null) return;
+
+            var featuredS = GameData.Featured("S", System.DateTime.UtcNow);
+            var sColour = GameData.Grade("S")?.Color ?? Color.white;
+
+            // ---- the splash -------------------------------------------------------------
+            var banner = UiKit.Div("banner", _pickup);
+            if (featuredS != null) UiKit.SetArt(banner, GameData.CardArt(featuredS.id));
+
+            // Fills the height the splash leaves empty, and gives the block an editorial spine.
+            UiKit.Text("RECRUITMENT", "banner__watermark", banner);
+
+            var tagWrap = UiKit.Div("banner__tag", banner);
+            tagWrap.style.backgroundColor = sColour;
+            UiKit.Text($"{GameData.BannerDaysLeft(System.DateTime.UtcNow)}일 남음", "banner__tag-text", tagWrap);
+
+            var plate = UiKit.Div("banner__plate", banner);
+            plate.style.borderLeftColor = sColour;
+            UiKit.Text("PICK UP", "banner__kicker", plate);
+            UiKit.Text("데이터_가져오기", "banner__title", plate);
+
+            // ---- the two featured cards -------------------------------------------------
+            var row = UiKit.Div("pickup", _pickup);
+            foreach (var grade in new[] { "S", "A" })
+            {
+                var hero = GameData.Featured(grade, System.DateTime.UtcNow);
+                if (hero == null) continue;
+                var g = GameData.Grade(grade);
+                var colour = g?.Color ?? Color.white;
+
+                var card = UiKit.Div("pcard", row);
+                card.style.borderBottomColor = colour;
+
+                var art = UiKit.Div("pcard__art", card);
+                UiKit.SetArt(art, GameData.CardArt(hero.id));
+                var badge = UiKit.Text(grade, "pcard__grade", art);
+                badge.style.backgroundColor = colour;
+
+                var foot = UiKit.Div("pcard__foot", card);
+                UiKit.Text(hero.name, "pcard__name", foot);
+
+                // 모집 포인트 as a bar. A pity counter is a progress bar written as a fraction;
+                // drawing it as one is the whole reason a player can tell how close they are.
+                var cost = GameData.SparkCost(grade);
+                var have = Game.Player.sparkPoints;
+                var track = UiKit.Div("pcard__track", foot);
+                var fill = UiKit.Div("pcard__fill", track);
+                fill.style.width = Length.Percent(Mathf.Clamp01(have / (float)cost) * 100f);
+                fill.style.backgroundColor = colour;
+
+                var line = UiKit.Div("pcard__line", foot);
+                UiKit.Text($"{have} / {cost}", "pcard__points", line);
+                UiKit.Div("spacer", line);
+                var take = UiKit.Btn("교환", "pcard__take", () =>
+                {
+                    var r = GachaService.Spark(Game.Player, grade);
+                    if (r == null) return;
+                    AudioService.Play("spark");
+                    Game.Touch();
+                    _app.StartCoroutine(RevealSequence(new List<PullResult> { r }));
+                }, line);
+                take.SetEnabled(GachaService.CanSpark(Game.Player, grade));
+            }
+        }
+
         public VisualElement Build()
         {
             _root = UiKit.Div("gacha");
 
-            var banner = UiKit.Div("gacha__banner", _root);
-            UiKit.Text("외부 데이터 가져오기", "gacha__banner-title", banner);
-            UiKit.Text("인사 시스템에서 사원 레코드를 가져옵니다", "gacha__banner-sub", banner);
-
-            _pickup = UiKit.Div(null, _root);
+            var scroll = UiKit.Scroll("gacha__scroll", _root);
+            _pickup = UiKit.Div(null, scroll);
             BuildPickup();
 
-            var rates = UiKit.Div("gacha__pity", banner);
+            // Rates and the two pity floors, as one block of numbers under the banner rather than
+            // as chips floating over it. Printed, not buried: they are what the banner is selling.
+            var rates = UiKit.Div("rates", scroll);
+            var rateRow = UiKit.Div("rates__row", rates);
             foreach (var g in GameData.Grades)
             {
-                var chip = UiKit.Text($"{g.id} {g.rate:P1}", "pity-chip", rates);
-                chip.style.color = g.Color;
+                var chip = UiKit.Div("rate-chip", rateRow);
+                var id = UiKit.Text(g.id, "rate-chip__id", chip);
+                id.style.backgroundColor = g.Color;
+                UiKit.Text($"{g.rate:P1}", "rate-chip__rate", chip);
             }
 
-            var pity = UiKit.Div("gacha__pity", banner);
-            _pityA = UiKit.Text("", "pity-chip", pity);
-            _pityS = UiKit.Text("", "pity-chip", pity);
-            _total = UiKit.Text("", "pity-chip", pity);
+            (_pityA, _pityAFill) = PityRow(rates, "A", GameData.Grade("A")?.Color ?? Color.white);
+            (_pityS, _pitySFill) = PityRow(rates, "S", GameData.Grade("S")?.Color ?? Color.white);
 
-            var actions = UiKit.Div("gacha__actions", _root);
-            _one = UiKit.Btn("", "btn", () => Pull(1), actions);
-            _ten = UiKit.Btn("", "btn btn--primary", () => Pull(10), actions);
+            // ---- the foot: points on the left, the two pulls on the right ---------------
+            var actions = UiKit.Div("pull-bar", _root);
+            var points = UiKit.Div("pull-bar__points", actions);
+            UiKit.Text("모집 포인트", "pull-bar__label", points);
+            _total = UiKit.Text("0", "pull-bar__value", points);
+
+            _one = UiKit.Btn("", "pull-btn", () => Pull(1), actions);
+            _ten = UiKit.Btn("", "pull-btn pull-btn--primary", () => Pull(10), actions);
 
             Refresh();
             return _root;
         }
 
+        VisualElement _pityAFill, _pitySFill;
+
+        static (Label, VisualElement) PityRow(VisualElement parent, string grade, Color colour)
+        {
+            var row = UiKit.Div("pity__row", parent);
+            var tag = UiKit.Text(grade, "pity__tag", row);
+            tag.style.backgroundColor = colour;
+            var track = UiKit.Div("pity__track", row);
+            var fill = UiKit.Div("pity__fill", track);
+            fill.style.backgroundColor = colour;
+            var label = UiKit.Text("", "pity__label", row);
+            return (label, fill);
+        }
+
         public void Refresh()
         {
             var p = Game.Player;
+            var b = GameData.Balance;
             var (toA, toS) = GachaService.PityRemaining(p);
-            _pityA.text = $"A 확정까지 {toA}";
-            _pityS.text = $"S 확정까지 {toS}";
-            _total.text = $"모집 포인트 {p.sparkPoints:N0}";
+
+            _pityA.text = $"{toA}회";
+            _pityS.text = $"{toS}회";
+            _pityAFill.style.width = Length.Percent(100f * (b.pityA - toA) / Mathf.Max(1, b.pityA));
+            _pitySFill.style.width = Length.Percent(100f * (b.pityS - toS) / Mathf.Max(1, b.pityS));
+            _total.text = p.sparkPoints.ToString("N0");
+
             if (_pickup != null) BuildPickup();
 
-            _one.text = $"1행 가져오기 · ◈{GachaService.CostFor(1)}";
+            _one.text = $"1행 · ◈{GachaService.CostFor(1)}";
             _ten.text = $"10행 가져오기 · ◈{GachaService.CostFor(10)}";
             _one.SetEnabled(GachaService.CanAfford(p, 1));
             _ten.SetEnabled(GachaService.CanAfford(p, 10));

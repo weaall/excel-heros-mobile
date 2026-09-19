@@ -68,12 +68,32 @@ async function bakeMonsters() {
   fs.rmSync(out, { recursive: true, force: true });
   mkdir(out);
 
-  const ids = new Set(Object.keys(pack.MONSTER_MAP));
+  // Every monster the data defines, not just the ones the tileset happens to have. Seventeen of
+  // the thirty-one types are hand-pixelled in monsterArt.js and were never in the pack, so half
+  // the bestiary was arriving in Unity as a health bar with nothing above it.
+  const sprites = await import(`file://${webPath('src/data/sprites.js')}`);
+  const mon = await import(`file://${webPath('src/data/monsters.js')}`);
+
+  // A monster's colours come from the palette of the phase it appears in, not from its own
+  // definition, so bake each type as the variant the web build would actually show: walk the
+  // phases and take the first pool that contains it. One strip per type, plain id, because that
+  // is what the runtime looks up.
+  const byId = new Map();
+  for (let stage = 1; stage <= 200 && byId.size < MONSTER_TYPES.length; stage += 10)
+    for (const variant of mon.stagePool(stage)) {
+      const base = String(variant.id).split(':')[0];
+      if (!byId.has(base)) byId.set(base, variant);
+    }
+  for (const m of MONSTER_TYPES) if (!byId.has(m.id)) byId.set(m.id, m);
+  for (const id of Object.keys(pack.MONSTER_MAP)) if (!byId.has(id)) byId.set(id, { id });
+
   let n = 0, missing = [];
-  for (const id of ids) {
+  for (const [id, def] of byId) {
     const frames = [];
     for (let f = 0; f < 4; f++) {
-      const c = pack.packMonsterFrame({ id }, f);
+      // The pack cut first where it exists — it is a real sprite sheet and looks it — then the
+      // web build's own renderer, which covers the hand-drawn office monsters.
+      const c = pack.packMonsterFrame({ id }, f) ?? sprites.monsterSprite({ ...def, id }, f);
       if (c) frames.push(c);
     }
     if (frames.length === 0) { missing.push(id); continue; }

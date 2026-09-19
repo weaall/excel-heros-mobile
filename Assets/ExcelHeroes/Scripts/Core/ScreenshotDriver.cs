@@ -42,6 +42,25 @@ namespace ExcelHeroes.Core
         {
             public string Directory;
 
+            /// <summary>
+            /// Gives the capture run one card of each grade and puts them in the party, so the
+            /// battle, the roster modal and the party sheet are photographed with content in them.
+            /// In memory only: the save is never touched.
+            /// </summary>
+            static void SeedPartyForCapture()
+            {
+                var p = Game.Player;
+                if (p == null || p.owned.Count > 0) return;
+
+                foreach (var grade in new[] { "S", "A", "B", "C", "D" })
+                {
+                    var def = Data.GameData.Heroes.Find(h => h.grade == grade);
+                    if (def == null) continue;
+                    p.owned.Add(new OwnedHero(def.id) { star = 2, level = 20 });
+                    p.AddToParty(def.id);
+                }
+            }
+
             IEnumerator Start()
             {
                 System.IO.Directory.CreateDirectory(Directory);
@@ -67,6 +86,22 @@ namespace ExcelHeroes.Core
                 // and least likely to be looked at twice.
                 yield return Shoot($"{n++:00}-Opening");
                 app.CloseOverlay();
+                yield return null;
+
+                // The prologue, forced open. It only appears on a genuinely new save, so on any
+                // machine that has run the game once it can never be checked by accident — which
+                // is how it went unnoticed that the art was being cropped to a third of itself.
+                // CloseOverlay rather than the screen's own Finish, so the save is not marked read.
+                new PrologueScreen(app).Show();
+                yield return null;
+                yield return Shoot($"{n++:00}-Prologue");
+                app.CloseOverlay();
+                yield return null;
+
+                // A save with nobody in it renders half these screens as empty states, which is a
+                // real screen but not the one that needs checking. Seed a party in memory only —
+                // Game.Touch is deliberately not called, so nothing here reaches the save file.
+                SeedPartyForCapture();
                 yield return null;
 
                 foreach (AppRoot.Sheet sheet in System.Enum.GetValues(typeof(AppRoot.Sheet)))

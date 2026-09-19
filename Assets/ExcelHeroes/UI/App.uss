@@ -193,24 +193,24 @@
 
 .name-box {
     flex-shrink: 0;
-    min-width: 116px;
+    min-width: 96px;
     height: 62px;
     -unity-text-align: middle-center;
-    font-size: 28px;
+    font-size: 26px;
     color: rgb(60, 60, 60);
     background-color: rgb(244, 244, 244);
     border-width: 1px;
     border-color: rgb(212, 212, 212);
     border-radius: 4px;
-    margin-left: 14px;
-    margin-right: 12px;
-    padding-left: 12px;
-    padding-right: 12px;
+    margin-left: 10px;
+    margin-right: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 .formula-expand {
     flex-shrink: 0;
-    width: 70px;
+    width: 52px;
     -unity-text-align: middle-center;
     font-size: 30px;
     color: rgb(107, 107, 107);
@@ -218,7 +218,7 @@
 
 .fx {
     flex-shrink: 0;
-    width: 84px;
+    width: 62px;
     -unity-text-align: middle-center;
     font-size: 32px;
     color: rgb(107, 107, 107);
@@ -231,8 +231,8 @@
     flex-grow: 1;
     flex-shrink: 1;
     min-width: 0;
-    padding-left: 20px;
-    font-size: 30px;
+    padding-left: 14px;
+    font-size: 27px;
     color: rgb(34, 34, 34);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -288,8 +288,8 @@
 
 .sheet-tab__badge {
     position: absolute;
-    top: 12px;
-    right: 10px;
+    top: 4px;
+    right: -6px;
     min-width: 44px;
     height: 44px;
     border-radius: 22px;
@@ -518,124 +518,6 @@
 }
 
 .home__actions .btn { flex-grow: 1; margin-left: 8px; margin-right: 8px; }
-
-/* ---------------------------------------------------------------- pickup banner */
-
-.pickup {
-    flex-direction: row;
-    width: 100%;
-    margin-bottom: 22px;
-}
-
-.pickup__card {
-    flex-grow: 1;
-    height: 480px;
-    margin-left: 10px;
-    margin-right: 10px;
-    border-radius: 26px;
-    border-width: 3px;
-    overflow: hidden;
-    justify-content: flex-end;
-}
-
-.pickup__art {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    -unity-background-scale-mode: scale-and-crop;
-}
-
-.pickup__plate {
-    background-color: rgba(255, 255, 255, 0.86);
-    padding: 13px;
-    align-items: center;
-}
-
-.pickup__tag {
-    position: absolute;
-    left: 13px;
-    top: 13px;
-    padding-left: 16px;
-    padding-right: 16px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    border-radius: 19px;
-    font-size: 29px;
-    -unity-font-style: bold;
-    background-color: rgb(196, 43, 28);
-    color: rgb(120, 40, 70);
-}
-
-.pickup__name { font-size: 34px; -unity-font-style: bold; }
-.pickup__spark { font-size: 29px; color: rgb(31, 111, 235); }
-
-.pickup__timer {
-    font-size: 34px;
-    color: rgb(200, 60, 110);
-    -unity-text-align: middle-center;
-    margin-bottom: 10px;
-}
-
-/* ---------------------------------------------------------------- gacha */
-
-.gacha {
-    flex-grow: 1;
-    align-items: center;
-    justify-content: flex-start;
-    background-color: rgb(255, 255, 255);
-}
-
-.gacha__banner {
-    align-items: center;
-    max-width: 100%;
-    margin-top: 64px;
-    margin-bottom: 32px;
-}
-
-.gacha__banner-title {
-    font-size: 64px;
-    -unity-font-style: bold;
-    color: rgb(196, 152, 20);
-}
-
-.gacha__banner-sub {
-    font-size: 35px;
-    color: rgb(107, 107, 107);
-    margin-top: 10px;
-}
-
-.gacha__pity {
-    flex-wrap: wrap;
-    max-width: 100%;
-    flex-direction: row;
-    margin-top: 26px;
-}
-
-.pity-chip {
-    height: 72px;
-    flex-direction: row;
-    align-items: center;
-    margin-left: 13px;
-    margin-right: 13px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 26px;
-    padding-right: 26px;
-    background-color: rgba(255, 255, 255, 0.75);
-    border-radius: 26px;
-    border-width: 1px;
-    border-color: rgb(191, 191, 191);
-    font-size: 35px;
-}
-
-.gacha__actions {
-    width: 100%;
-    margin-bottom: 38px;
-}
-
-.gacha__actions .btn { margin-top: 19px; }
 
 /* ---------------------------------------------------------------- reveal */
 
@@ -888,19 +770,27 @@
 .card--locked .card__art { opacity: 0.25; }
 .card--locked .card__name { color: rgb(150, 150, 150); }
 
+/* A modal, not a second full screen. Tapping a card is a look at one card — taking over the whole
+   display for it loses where you were in a list of fifty-five, and on the way back the scroll
+   position went with it. The dim behind it is the overlay's own. */
 .detail {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
+    width: 90%;
+    max-height: 88%;
     background-color: rgb(255, 255, 255);
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: rgb(196, 196, 196);
+    overflow: hidden;
 }
 
 .detail__art {
-    height: 1152px;
+    height: 660px;
+    flex-shrink: 0;
     background-color: rgb(238, 238, 238);
-    -unity-background-scale-mode: scale-to-fit;
+    /* Fills the plate and crops the feet rather than leaving grey bars either side of a portrait
+       in a landscape-ish box. Anchored to the top, because the face is what identifies a card. */
+    -unity-background-scale-mode: scale-and-crop;
+    background-position-y: top;
 }
 
 .detail__scrim { display: none; }
@@ -1014,7 +904,9 @@
    it is generated per phase. */
 .battle__stage {
     flex-shrink: 0;
-    height: 540px;
+    flex-grow: 1;
+    min-height: 540px;
+    max-height: 760px;
     background-color: rgb(30, 34, 44);
     -unity-background-scale-mode: stretch-to-fill;
     overflow: hidden;
@@ -1300,6 +1192,7 @@
    screen shouting their line. It is the one time the art is at full size during play, and
    it is what makes a skill feel like a person acting rather than a number resolving. */
 
+/* `clips` tells LayoutAudit that children overrunning this box are deliberate. */
 .cutin {
     position: absolute;
     left: 0;
@@ -1707,8 +1600,8 @@
     position: absolute;
     top: 6px;
     left: 8px;
-    min-width: 40px;
-    height: 40px;
+    min-width: 42px;
+    height: 42px;
     border-radius: 20px;
     background-color: rgb(31, 111, 235);
     color: rgb(255, 255, 255);
@@ -1758,6 +1651,8 @@
    with the creature already scaled and standing on the bottom edge, whereas the hero strips are the
    raw 16x28 cells. Sizing both boxes the same made every monster look like a doll next to the
    party. 64 canvas pixels is 84 at this field's scale. */
+.fighter--monster { width: 88px; }
+
 .fighter--monster .fighter__body--creature {
     scale: 1 1;
     width: 84px;
@@ -1765,6 +1660,7 @@
 }
 
 .fighter--boss .fighter__body--creature { width: 168px; height: 152px; }
+.fighter--boss.fighter--monster { width: 172px; }
 
 /* Pixel HP bars: hard edges, a one-pixel dark border and no rounding, so they sit on the same grid
    as the sprites instead of looking like a web widget dropped onto a tileset. */
@@ -1808,8 +1704,8 @@
     right: 0;
     bottom: 0;
     background-color: rgb(8, 9, 13);
-    justify-content: flex-start;
-    padding-top: 9%;
+    justify-content: center;
+    padding-bottom: 180px;
 }
 
 /* The letterbox. Its height is set from the picture's aspect ratio in PrologueScreen, so the
@@ -1909,14 +1805,15 @@
 /* Rows in the sheet under the field, numbered like cells. In 위장 모드 the same rows carry
    recalculation progress, which is the whole reason the log is here and not in a floating panel. */
 .battle-log {
-    flex-grow: 1;
+    flex-shrink: 1;
+    max-height: 420px;
     background-color: rgb(255, 255, 255);
 }
 
 .log-row {
     flex-direction: row;
     align-items: center;
-    height: 48px;
+    height: 54px;
     border-bottom-width: 1px;
     border-bottom-color: rgb(238, 238, 238);
 }
@@ -2110,3 +2007,604 @@
     -unity-font-style: bold;
     background-color: rgb(240, 248, 243);
 }
+
+
+/* ---------------------------------------------------------------- roster sections */
+
+/* The sheet header is a title and a count, and the count is the whole of the codex readout:
+   a number on the right, where a spreadsheet puts its numbers. */
+.sheet-head--tight {
+    flex-wrap: nowrap;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.sheet-head__title {
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: rgb(40, 42, 48);
+}
+
+.sheet-head__count {
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: rgb(33, 115, 70);
+    -unity-text-align: middle-right;
+}
+
+/* One band per grade. The coloured rule down the left is what makes the sections scannable while
+   scrolling fast — the tag alone disappears at speed. */
+.grade-head {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 74px;
+    margin-top: 18px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    background-color: rgb(246, 246, 246);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(216, 216, 216);
+}
+
+.grade-head__rule {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+}
+
+.grade-head__tag {
+    min-width: 46px;
+    height: 46px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    font-size: 28px;
+    color: rgb(255, 255, 255);
+    border-radius: 4px;
+    margin-right: 14px;
+}
+
+.grade-head__label {
+    font-size: 28px;
+    color: rgb(70, 72, 80);
+}
+
+.grade-head__count {
+    font-size: 28px;
+    color: rgb(120, 124, 134);
+}
+
+
+/* ---------------------------------------------------------------- Excel dialog */
+
+/* The shape of an Office dialog: a grey caption bar, a body with the message and an icon, and a
+   button row bottom-right. Used for anything that has to interrupt, so interruptions look like
+   part of the spreadsheet rather than part of a game. */
+.xl-dialog {
+    width: 90%;
+    max-height: 86%;
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-color: rgb(150, 150, 150);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.xl-dialog__caption {
+    flex-direction: row;
+    align-items: center;
+    height: 88px;
+    flex-shrink: 0;
+    background-color: rgb(242, 242, 242);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(214, 214, 214);
+    padding-left: 24px;
+}
+
+.xl-dialog__caption-title {
+    font-size: 28px;
+    color: rgb(70, 72, 78);
+}
+
+.xl-dialog__close {
+    width: 88px;
+    height: 88px;
+    font-size: 32px;
+    color: rgb(90, 92, 98);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+}
+
+.xl-dialog__body {
+    padding-top: 28px;
+    padding-bottom: 20px;
+    padding-left: 28px;
+    padding-right: 28px;
+}
+
+.xl-dialog__head {
+    flex-direction: row;
+    align-items: flex-start;
+    margin-bottom: 22px;
+}
+
+/* The round information glyph Office puts beside a message. Drawn rather than imported, because
+   Unity's default font has no symbol for it. */
+.xl-dialog__icon {
+    width: 68px;
+    height: 68px;
+    flex-shrink: 0;
+    margin-right: 20px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold-and-italic;
+    font-size: 36px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(33, 115, 70);
+    border-radius: 34px;
+}
+
+.xl-dialog__head-text { flex-grow: 1; flex-shrink: 1; }
+
+.xl-dialog__title {
+    font-size: 40px;
+    -unity-font-style: bold;
+    color: rgb(30, 32, 38);
+}
+
+.xl-dialog__subtitle {
+    font-size: 26px;
+    color: rgb(120, 124, 134);
+    margin-top: 6px;
+}
+
+/* A block of worksheet rows inside the dialog: row numbers, cell borders, the lot. */
+.xl-dialog__sheet {
+    border-width: 1px;
+    border-color: rgb(214, 214, 214);
+}
+
+.xl-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 82px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(228, 228, 228);
+}
+
+.xl-row__n {
+    width: 62px;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
+    font-size: 24px;
+    color: rgb(130, 134, 142);
+    background-color: rgb(243, 243, 243);
+    border-right-width: 1px;
+    border-right-color: rgb(214, 214, 214);
+    height: 100%;
+}
+
+.xl-row__cell {
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-size: 28px;
+    color: rgb(42, 44, 50);
+    padding-left: 18px;
+    padding-right: 12px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.xl-row--grant { background-color: rgb(240, 248, 243); }
+
+.xl-row__value {
+    flex-shrink: 0;
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(33, 115, 70);
+    -unity-text-align: middle-right;
+    padding-right: 20px;
+}
+
+.xl-dialog__note {
+    font-size: 25px;
+    color: rgb(126, 130, 140);
+    white-space: normal;
+    margin-top: 18px;
+}
+
+.xl-dialog__foot {
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    padding-top: 18px;
+    padding-bottom: 22px;
+    padding-left: 24px;
+    padding-right: 24px;
+    background-color: rgb(247, 247, 247);
+    border-top-width: 1px;
+    border-top-color: rgb(222, 222, 222);
+}
+
+.xl-btn {
+    min-width: 200px;
+    height: 92px;
+    margin-left: 14px;
+    font-size: 30px;
+    color: rgb(45, 47, 53);
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-color: rgb(170, 172, 178);
+    border-radius: 4px;
+}
+
+/* The default button — the one Enter would press. */
+.xl-btn--default {
+    color: rgb(255, 255, 255);
+    background-color: rgb(33, 115, 70);
+    border-color: rgb(24, 88, 54);
+    -unity-font-style: bold;
+}
+
+
+/* ---------------------------------------------------------------- check-in stamp */
+
+.stamp {
+    flex-shrink: 0;
+    margin: 14px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 18px;
+    padding-right: 18px;
+    background-color: rgb(252, 252, 252);
+    border-width: 1px;
+    border-color: rgb(210, 210, 210);
+    border-radius: 6px;
+}
+
+.stamp__head { flex-direction: row; align-items: center; margin-bottom: 16px; }
+.stamp__title { font-size: 34px; -unity-font-style: bold; color: rgb(38, 40, 46); }
+.stamp__streak { font-size: 28px; color: rgb(33, 115, 70); -unity-font-style: bold; }
+
+/* Eight day cells across, so a week plus "이후" fits one row without wrapping on a phone. */
+.stamp__grid { flex-direction: row; }
+
+.stamp-day {
+    flex-grow: 1;
+    flex-basis: 0;
+    height: 132px;
+    margin-left: 3px;
+    margin-right: 3px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(246, 246, 246);
+    border-width: 1px;
+    border-color: rgb(216, 216, 216);
+    border-radius: 4px;
+}
+
+.stamp-day--on { background-color: rgb(236, 246, 240); border-color: rgb(160, 200, 178); }
+
+/* Today is an outline rather than a fill — a filled cell means "already stamped". */
+.stamp-day--today {
+    border-width: 3px;
+    border-color: rgb(33, 115, 70);
+    background-color: rgb(255, 255, 255);
+}
+
+.stamp-day__n { font-size: 24px; color: rgb(110, 114, 122); }
+.stamp-day__gems { font-size: 26px; -unity-font-style: bold; color: rgb(52, 96, 178); margin-top: 4px; }
+
+/* The stamp itself: a red approval mark at an angle, the way an actual 도장 lands. */
+.stamp-day__mark {
+    position: absolute;
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: rgba(199, 62, 62, 0.85);
+    border-width: 2px;
+    border-color: rgba(199, 62, 62, 0.7);
+    border-radius: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+    rotate: -14deg;
+}
+
+.stamp__go { margin-top: 18px; }
+.stamp__done { margin-top: 16px; font-size: 27px; color: rgb(126, 130, 140); }
+
+/* ---------------------------------------------------------------- summon banner
+
+   Built from docs/design/pickup.md. Flat-only tricks throughout, because USS has no gradients
+   and no box-shadow: thick bottom borders stand in for elevation and carry the rarity colour,
+   one skewed tag breaks the spreadsheet grid, and an oversized low-opacity word fills the space
+   the splash art leaves empty. */
+
+.gacha { flex-grow: 1; background-color: rgb(243, 245, 247); }
+.gacha__scroll { flex-grow: 1; }
+
+.banner {
+    height: 800px;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    padding-bottom: 40px;
+    padding-left: 40px;
+    background-color: rgb(26, 37, 48);
+    -unity-background-scale-mode: scale-and-crop;
+    background-position-y: top;
+    overflow: hidden;
+}
+
+.banner__watermark {
+    position: absolute;
+    left: 20px;
+    bottom: 150px;
+    font-size: 200px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    opacity: 0.08;
+}
+
+/* The one geometric break in a screen made entirely of right angles. */
+.banner__tag {
+    position: absolute;
+    left: 40px;
+    top: 36px;
+    height: 62px;
+    padding-left: 30px;
+    padding-right: 30px;
+    justify-content: center;
+    rotate: -2deg;
+    scale: 1 1;
+}
+
+.banner__tag-text {
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: rgb(20, 22, 28);
+}
+
+.banner__plate {
+    width: 700px;
+    padding: 26px 30px 26px 30px;
+    background-color: rgb(255, 255, 255);
+    border-left-width: 12px;
+}
+
+.banner__kicker {
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(33, 115, 70);
+    letter-spacing: 4px;
+}
+
+.banner__title {
+    font-size: 58px;
+    -unity-font-style: bold;
+    color: rgb(26, 37, 48);
+}
+
+/* ---- the two featured cards ---- */
+
+.pickup {
+    flex-direction: row;
+    flex-shrink: 0;
+    padding: 28px 28px 0 28px;
+}
+
+.pcard {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 12px;
+    /* Rarity and elevation in one stroke — the colour is set per card from grades.json. */
+    border-bottom-width: 16px;
+    overflow: hidden;
+}
+
+.pcard__art {
+    height: 320px;
+    background-color: rgb(232, 234, 238);
+    -unity-background-scale-mode: scale-and-crop;
+    background-position-y: top;
+}
+
+.pcard__grade {
+    position: absolute;
+    left: 0;
+    top: 0;
+    min-width: 58px;
+    height: 58px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    font-size: 32px;
+    color: rgb(20, 22, 28);
+    border-bottom-right-radius: 10px;
+}
+
+.pcard__foot { padding: 18px 22px 20px 22px; }
+
+.pcard__name {
+    font-size: 38px;
+    -unity-font-style: bold;
+    color: rgb(26, 37, 48);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pcard__track {
+    height: 12px;
+    margin-top: 14px;
+    background-color: rgb(226, 229, 234);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.pcard__fill { height: 100%; }
+
+.pcard__line { flex-direction: row; align-items: center; margin-top: 12px; }
+
+.pcard__points { font-size: 28px; color: rgb(110, 116, 128); }
+
+.pcard__take {
+    min-width: 130px;
+    height: 66px;
+    font-size: 28px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    background-color: rgb(33, 115, 70);
+    border-width: 0;
+    border-bottom-width: 6px;
+    border-bottom-color: rgb(22, 82, 50);
+    border-radius: 8px;
+}
+
+.pcard__take:disabled {
+    background-color: rgb(214, 216, 220);
+    border-bottom-color: rgb(190, 192, 198);
+    color: rgb(150, 154, 162);
+}
+
+/* ---- rates and the two pity floors ---- */
+
+.rates {
+    margin: 28px 28px 24px 28px;
+    padding: 24px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 12px;
+}
+
+.rates__row { flex-direction: row; margin-bottom: 18px; }
+
+.rate-chip {
+    flex-direction: row;
+    align-items: center;
+    height: 54px;
+    margin-right: 10px;
+    padding-right: 14px;
+    background-color: rgb(243, 245, 247);
+    border-radius: 6px;
+}
+
+.rate-chip__id {
+    width: 50px;
+    height: 54px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    font-size: 28px;
+    color: rgb(20, 22, 28);
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.rate-chip__rate { font-size: 26px; color: rgb(90, 96, 106); margin-left: 10px; }
+
+.pity__row { flex-direction: row; align-items: center; height: 62px; }
+
+.pity__tag {
+    width: 50px;
+    height: 50px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    font-size: 28px;
+    color: rgb(20, 22, 28);
+    border-radius: 6px;
+    margin-right: 16px;
+}
+
+.pity__track {
+    flex-grow: 1;
+    height: 16px;
+    background-color: rgb(230, 233, 238);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.pity__fill { height: 100%; }
+
+.pity__label {
+    width: 140px;
+    -unity-text-align: middle-right;
+    font-size: 28px;
+    color: rgb(90, 96, 106);
+}
+
+/* ---- the foot ---- */
+
+.pull-bar {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 20px 28px 26px 28px;
+    background-color: rgb(255, 255, 255);
+    border-top-width: 1px;
+    border-top-color: rgb(222, 226, 232);
+}
+
+.pull-bar__points { width: 210px; flex-shrink: 0; }
+.pull-bar__label { font-size: 26px; -unity-font-style: bold; color: rgb(130, 140, 150); }
+.pull-bar__value { font-size: 52px; -unity-font-style: bold; color: rgb(26, 37, 48); }
+
+.pull-btn {
+    flex-grow: 1;
+    flex-basis: 0;
+    height: 140px;
+    margin-left: 16px;
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(26, 37, 48);
+    background-color: rgb(255, 255, 255);
+    border-width: 4px;
+    border-color: rgb(26, 37, 48);
+    border-bottom-width: 12px;
+    border-radius: 12px;
+    white-space: normal;
+}
+
+.pull-btn--primary {
+    flex-grow: 1.8;
+    color: rgb(255, 255, 255);
+    background-color: rgb(33, 115, 70);
+    border-color: rgb(33, 115, 70);
+    border-bottom-color: rgb(20, 74, 45);
+}
+
+.pull-btn:disabled {
+    color: rgb(160, 164, 172);
+    background-color: rgb(238, 240, 244);
+    border-color: rgb(206, 210, 216);
+    border-bottom-color: rgb(190, 194, 200);
+}
+
+
+/* The first-run home screen, before anyone has been recruited. It replaces the battlefield rather
+   than sitting inside it — a notice on a black band under an empty EX bar reads as a broken
+   battle, which is exactly what it is not. */
+.battle-empty {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    padding-left: 60px;
+    padding-right: 60px;
+}
+
+.battle-empty__title {
+    font-size: 46px;
+    -unity-font-style: bold;
+    color: rgb(40, 42, 48);
+}
+
+.battle-empty__line {
+    font-size: 30px;
+    color: rgb(120, 124, 134);
+    white-space: normal;
+    -unity-text-align: middle-center;
+    margin-top: 16px;
+}
+
+.battle-empty__go { margin-top: 40px; min-width: 460px; }

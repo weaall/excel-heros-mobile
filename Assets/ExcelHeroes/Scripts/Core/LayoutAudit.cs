@@ -40,7 +40,7 @@ namespace ExcelHeroes.Core
             {
                 // Off the screen entirely, or hanging past its right/bottom edge by more than a
                 // rounding error. Scroll views legitimately overflow, so their contents are skipped.
-                if (!InsideAScrollView(e))
+                if (!InsideAScrollView(e) && !InsideAClip(e))
                 {
                     if (box.xMax > screen.xMax + 1f)
                         problems.Add(new Problem { Where = Describe(e), What = $"{box.xMax - screen.xMax:F0}px past the right edge" });
@@ -70,6 +70,20 @@ namespace ExcelHeroes.Core
             }
 
             foreach (var child in e.Children()) Walk(child, root, screen, problems);
+        }
+
+        /// <summary>
+        /// Some elements are meant to overrun their parent and be cropped by it — a cut-in's
+        /// diagonal sweep is drawn oversized on purpose so its edges never show. USS exposes no
+        /// resolved `overflow` to read, so the containers that clip on purpose say so with a
+        /// class, and everything inside one is exempt. Without this the audit cries wolf on
+        /// decoration, and an audit that reports things that are fine stops being read.
+        /// </summary>
+        static bool InsideAClip(VisualElement e)
+        {
+            for (var p = e.parent; p != null; p = p.parent)
+                if (p.ClassListContains("clips")) return true;
+            return false;
         }
 
         static bool InsideAScrollView(VisualElement e)

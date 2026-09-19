@@ -55,8 +55,13 @@ namespace ExcelHeroes.UI
         {
             _root = UiKit.Div("screen-body");
 
-            var head = UiKit.Div("sheet-head", _root);
-            _counter = UiKit.Text("", "sheet-head__stat", head);
+            // 도감 — a number, right-aligned, and nothing else. It was a sentence taking the full
+            // width of the sheet header above a screen whose entire job is showing the cards it
+            // was counting.
+            var head = UiKit.Div("sheet-head sheet-head--tight", _root);
+            UiKit.Text("인사 명단", "sheet-head__title", head);
+            UiKit.Div("spacer", head);
+            _counter = UiKit.Text("", "sheet-head__count", head);
 
             // ▼ 필터 — the web build's filter bar. Fifty-five cards in one scroll is a haystack:
             // the question a player actually asks is "who is my B-grade healer", and without this
@@ -110,19 +115,36 @@ namespace ExcelHeroes.UI
                     _ => true,
                 })).ToList();
 
-            _counter.text = _grade == "" && _role == "" && _owned == ""
-                ? $"도감 {p.owned.Count} / {GameData.Heroes.Count}"
-                : $"{shown.Count}명 · 도감 {p.owned.Count} / {GameData.Heroes.Count}";
+            _counter.text = $"{p.owned.Count}/{GameData.Heroes.Count}";
 
             _scroll.Clear();
-            var grid = UiKit.Div("roster-grid", _scroll);
 
-            // Owned first, strongest grade first — the shelf the player actually browses.
-            foreach (var def in shown
-                         .OrderByDescending(h => p.Owns(h.id))
-                         .ThenByDescending(h => GameData.GradeRank(h.grade))
-                         .ThenBy(h => h.name))
-                grid.Add(UiKit.Card(def, p.Find(def.id), () => _app.OpenDetail(def.id)));
+            // One section per grade, best first. Fifty-five cards in a single grid is a wall; the
+            // grade is the axis a player actually sorts by in their head, so it is the axis the
+            // page is cut along — and the header doubles as the "how many S do I have" readout
+            // that used to require counting.
+            foreach (var grade in GameData.Grades.OrderByDescending(g => GameData.GradeRank(g.id)))
+            {
+                var inGrade = shown.Where(h => h.grade == grade.id)
+                                   .OrderByDescending(h => p.Owns(h.id))
+                                   .ThenBy(h => h.name)
+                                   .ToList();
+                if (inGrade.Count == 0) continue;
+
+                var header = UiKit.Div("grade-head", _scroll);
+                var rule = UiKit.Div("grade-head__rule", header);
+                rule.style.backgroundColor = grade.Color;
+
+                var tag = UiKit.Text(grade.id, "grade-head__tag", header);
+                tag.style.backgroundColor = grade.Color;
+                UiKit.Text(grade.label, "grade-head__label", header);
+                UiKit.Div("spacer", header);
+                UiKit.Text($"{inGrade.Count(h => p.Owns(h.id))}/{inGrade.Count}", "grade-head__count", header);
+
+                var grid = UiKit.Div("roster-grid", _scroll);
+                foreach (var def in inGrade)
+                    grid.Add(UiKit.Card(def, p.Find(def.id), () => _app.OpenDetail(def.id)));
+            }
 
             if (shown.Count == 0)
                 UiKit.Text("조건에 맞는 사원이 없습니다.", "muted filter-empty", _scroll);
