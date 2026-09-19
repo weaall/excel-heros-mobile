@@ -21,7 +21,7 @@ Game 뷰는 세로 비율(예: 1080×1920)로 맞춰 두세요. 다시 세팅이
 | 화면 | 내용 |
 | --- | --- |
 | 내 자리 | 대표 카드가 화면 전체에 서서 숨쉬고 말을 겁니다. 탭할 때마다 다른 대사 — 호감도가 오르면 아는 사람처럼 말합니다 |
-| 모집 | 1회/10회 뽑기, 공개 확률표, 천장 2종(A 50 · S 120), 카드 한 장씩 공개 → 10연 결과 그리드 |
+| 모집 | 1회/10회 뽑기, 공개 확률표, 천장 2종(A 50 · S 120). **등급 색 빛기둥이 카드보다 먼저 올라옵니다** — 카드는 확인이지 정보가 아닙니다 |
 | 오늘의 픽업 | S·A 각 1명이 3일마다 교체(전원 순회). 해당 등급의 50%가 픽업으로. **모집 포인트**(뽑기당 1점, 만료 없음)로 S 150 / A 60에 그냥 교환 |
 | 호감도 | 전투와 간식(골드)으로 상승. Lv3 사무실 비화, Lv5 개인 메시지 — 55명 전원치가 웹 빌드에 쓰여 있습니다 |
 | 인사 명단 | 55장 전체 도감. 미보유는 실루엣으로 남아 다음 뽑기를 만듭니다 |
@@ -39,7 +39,7 @@ Assets/ExcelHeroes/
   Resources/Art/Cards/*.png 캐릭터 카드 일러 55종 (Gemini 생성)
   Resources/Art/UI/*.png    배경 3종 · 등급 프레임 5종 · 로고
   Scripts/Data/             JSON 미러 정의 + GameData 로더
-  Scripts/Core/             PlayerState · SaveService · GachaService · AffectionService · StatMath · BattleSim · Game
+  Scripts/Core/             PlayerState · SaveService · GachaService · AffectionService · AudioService · StatMath · BattleSim · Game
   Scripts/UI/               AppRoot + 화면 6종 + HeroDetail + UiKit
   Scripts/Editor/           ProjectBootstrap · ArtImportSettings
   UI/                       AppShell.uxml · App.uss · ExcelHeroesTheme.tss · PanelSettings.asset
@@ -105,6 +105,6 @@ node tools/gen-art.mjs ui                       # 배경 · 로고
 - 서버 없음 — 저장은 `persistentDataPath` 로컬 JSON 한 개
 - 비품/출장/일일 업무/업적 — 웹에는 있으나 아직 미포함
 - 상점, 광고, 인앱결제
-- 사운드 없음
+- BGM 없음 — 효과음은 전부 합성이지만 배경음악은 합성으로 해결되지 않습니다 (작곡·라이선스 문제)
 - 안드로이드 빌드 모듈 미설치 (에디터 플레이만 검증됨)
 - 아트는 `Resources/` 에 있어 전량 빌드에 포함됩니다. 로스터가 커지면 Addressables로 옮겨야 합니다

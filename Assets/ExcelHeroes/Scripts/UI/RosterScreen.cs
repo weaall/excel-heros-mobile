@@ -189,7 +189,11 @@ namespace ExcelHeroes.UI
                     var cost = AffectionService.GiftCost(Game.Player);
                     var gift = UiKit.Btn($"간식 사주기 · ₩{cost:N0}", "btn", () =>
                     {
-                        if (AffectionService.Gift(Game.Player, owned) >= 0) { Game.Touch(); Reopen(heroId, onClose); }
+                        if (AffectionService.Gift(Game.Player, owned) >= 0)
+                        {
+                            AudioService.Play("bond");
+                            Game.Touch(); Reopen(heroId, onClose);
+                        }
                     }, bond);
                     gift.SetEnabled(Game.Player.gold >= cost);
                 }

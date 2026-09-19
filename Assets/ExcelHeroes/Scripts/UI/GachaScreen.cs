@@ -62,6 +62,7 @@ namespace ExcelHeroes.UI
                 {
                     var r = GachaService.Spark(Game.Player, grade);
                     if (r == null) return;
+                    AudioService.Play("spark");
                     Game.Touch();
                     _app.StartCoroutine(RevealSequence(new List<PullResult> { r }));
                 }, plate);
@@ -133,13 +134,25 @@ namespace ExcelHeroes.UI
             overlay.RemoveFromClassList("hidden");
             _app.SetNavEnabled(false);
 
+            AudioService.Play("pull");
+
             foreach (var r in results)
             {
                 var skip = false;
                 overlay.Clear();
+
+                // The tell runs first. A pull with no build-up is just a list of names appearing.
+                var tell = BuildTell(r);
+                overlay.Add(tell);
+                tell.RegisterCallback<ClickEvent>(_ => skip = true);
+                foreach (var step in PlayTell(tell, r, () => skip)) yield return step;
+
+                overlay.Clear();
                 var view = BuildReveal(r, results.Count);
                 overlay.Add(view);
                 view.RegisterCallback<ClickEvent>(_ => skip = true);
+                AudioService.Play(AudioService.RevealId(r.grade));
+                if (r.promoted) AudioService.Play("promote", 0.7f);
 
                 // Long enough to read the line, short enough that a ten-pull never drags.
                 var hold = r.grade == "S" ? 2.2f : r.grade == "A" ? 1.5f : 0.85f;
@@ -160,6 +173,76 @@ namespace ExcelHeroes.UI
             overlay.AddToClassList("hidden");
             _app.SetNavEnabled(true);
             Refresh();
+        }
+
+        /// <summary>
+        /// The build-up. A beam of light rises in the rarity's colour, rings pulse out of it, and
+        /// only then does the card land. The beam is the whole trick: by the time the art appears
+        /// the player already knows what they got, so the reveal confirms a feeling instead of
+        /// delivering information.
+        ///
+        /// Every rarity gets the same shape so the moment reads the same — what changes is how long
+        /// it takes and how many rings, and that difference is the tension.
+        /// </summary>
+        VisualElement BuildTell(PullResult r)
+        {
+            var view = UiKit.Div("reveal");
+            var tell = UiKit.Div("tell", view);
+            var colour = GameData.Grade(r.grade)?.Color ?? Color.white;
+
+            var beam = UiKit.Div("tell__beam", tell);
+            beam.style.backgroundColor = new Color(colour.r, colour.g, colour.b, 0.55f);
+
+            for (var i = 0; i < 3; i++)
+            {
+                var ring = UiKit.Div("tell__ring", tell);
+                ring.style.borderTopColor = ring.style.borderBottomColor =
+                    ring.style.borderLeftColor = ring.style.borderRightColor = colour;
+                _rings.Add(ring);
+            }
+
+            _tellLabel = UiKit.Text("", "tell__label", tell);
+            _tellLabel.style.color = colour;
+            return view;
+        }
+
+        readonly List<VisualElement> _rings = new();
+        Label _tellLabel;
+
+        IEnumerable<object> PlayTell(VisualElement tell, PullResult r, System.Func<bool> skipped)
+        {
+            var rank = GameData.GradeRank(r.grade);
+            // A D resolves almost immediately; an S makes you wait for it.
+            var beats = Mathf.Clamp(rank, 0, 4);
+            var beam = tell.Q(className: "tell__beam");
+
+            yield return new WaitForSeconds(0.05f);
+            beam?.AddToClassList("tell__beam--up");
+
+            for (var i = 0; i <= beats && !skipped(); i++)
+            {
+                if (i < _rings.Count)
+                {
+                    _rings[i].AddToClassList("tell__ring--in");
+                    _rings[i].schedule.Execute(() =>
+                    {
+                        _rings[i].RemoveFromClassList("tell__ring--in");
+                        _rings[i].AddToClassList("tell__ring--out");
+                    }).ExecuteLater(220);
+                }
+                AudioService.Play("tap", 0.35f + 0.15f * i);
+                yield return new WaitForSeconds(rank >= 3 ? 0.30f : 0.16f);
+            }
+
+            // Naming the tier before the card lands is the payoff of the build-up.
+            if (rank >= 3 && !skipped())
+            {
+                _tellLabel.text = r.grade == "S" ? "전설" : "영웅";
+                _tellLabel.AddToClassList("tell__label--on");
+                yield return new WaitForSeconds(0.45f);
+            }
+
+            _rings.Clear();
         }
 
         VisualElement BuildReveal(PullResult r, int batch)

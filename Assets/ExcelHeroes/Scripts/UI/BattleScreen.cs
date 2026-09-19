@@ -145,12 +145,16 @@ namespace ExcelHeroes.UI
                         break;
                     case EventKind.Damage:
                         Float(e.target, e.amount.ToString("N0"), "floater");
+                        // Only the party's own hits get a sound; every monster swing too would be mud.
+                        if (e.actor != null && e.actor.side == Side.Hero) AudioService.Play("hit", 0.22f);
                         break;
                     case EventKind.Heal:
                         Float(e.target, "+" + e.amount.ToString("N0"), "floater floater--heal");
+                        AudioService.Play("heal", 0.4f);
                         break;
                     case EventKind.Skill:
                         Float(e.actor, e.text, "floater floater--skill");
+                        AudioService.Play("skill", 0.55f);
                         break;
                     case EventKind.Death:
                         if (_views.TryGetValue(e.target, out var dead)) dead.AddToClassList("fighter--dead");
@@ -221,6 +225,7 @@ namespace ExcelHeroes.UI
 
         void ShowResult()
         {
+            AudioService.Play(_sim.Won ? "victory" : "defeat");
             _resultView = UiKit.Div("result", _root);
             var title = UiKit.Text(_sim.Won ? "업무 완료" : "업무 실패",
                 "result__title " + (_sim.Won ? "result__title--win" : "result__title--lose"), _resultView);

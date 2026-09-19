@@ -40,6 +40,7 @@ namespace ExcelHeroes.UI
         {
             _doc = GetComponent<UIDocument>();
             Game.Boot();
+            AudioService.Init(gameObject);
         }
 
         void OnEnable()
@@ -74,7 +75,7 @@ namespace ExcelHeroes.UI
             {
                 var button = root.Q<Button>(name);
                 if (button == null) return;
-                button.clicked += () => Show(tab);
+                button.clicked += () => { AudioService.Play("nav", 0.5f); Show(tab); };
                 _navButtons[tab] = button;
             }
         }
