@@ -99,6 +99,7 @@ rather than rebuilt from the data:
 | 자동 편성 | `autoParty` / `partyScore` | seed on role, hill-climb on score; role coverage outranks raw power |
 | 비품 자동 장착 | `bestLoadout` / `autoEquip` / `autoEquipParty` | best-per-slot vs a full same-grade set, higher total wins |
 | 레벨 회수 | `levelGold` / `LEVEL_REFUND` | full refund, bench only — skips 김인턴, the party, 출장, and 즐겨찾기, which the grid shows as a 보존 badge |
+| 자동 진행 · 안전 진행 · 자동 강화 | `setAutoAdvance` / `setSafeAdvance` / `upgradeCheapestLoop` | three pills on the main sheet. Before this the Phase advanced on every win, unconditionally — 파밍 was not expressible |
 
 ### Gold is an `int` here and a double in the web — decide what to do about it
 
@@ -329,6 +330,14 @@ card is a small face.
   divergence from the web and the only one in the gold economy, so it is written down here rather
   than left to be discovered. Anything that undoes a level charge — 환급, 레벨 다운, 방출 — must
   carry the same tier, which is exactly what one of the shipped bugs below got wrong.
+- **안전 진행 gates on the ETA, not on 승산.** The web reads `승산 >= SAFE_ADVANCE.min`
+  (0.35). This port's `ForecastService` returns `Prob = 0` on purpose — the web's thresholds were
+  measured against its own encounter, and this build fights two waves and a boss at every Phase —
+  so the web's gate would have held the party on its current Phase for the rest of the save. The
+  ETA is the number this port computes honestly, and the web's own note says it was always the
+  one carrying the signal. The ceiling, `safeAdvanceEtaMax`, is 180s and is the one constant in
+  `balance.json` that has no web counterpart. Re-deriving 승산 for this encounter is a bench run,
+  and would let both this gate and the 유리/불리 label come back.
 - **The battle log lives in the sheet's rows**, not a floating panel, because those same rows carry
   the disguise when the boss key is on.
 

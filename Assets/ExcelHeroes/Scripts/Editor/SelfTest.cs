@@ -113,10 +113,75 @@ namespace ExcelHeroes.EditorTools
             CheckSaveTransfer();
             CheckAutoParty();
             CheckRefund();
+            CheckAutoPlay();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
             if (_failures == 0) Debug.Log(Log.ToString());
             else Debug.LogError(Log.ToString());
+        }
+
+        /// <summary>
+        /// 자동 진행 · 안전 진행 · 자동 강화 — the three settings that decide what happens without
+        /// the player, which is most of the time this game is running.
+        ///
+        /// Every one of them is invisible in a screenshot: a capture of the main sheet shows a
+        /// party fighting whether the Phase is about to advance, about to be held back, or about
+        /// to spend every coin the player has. The only way to see which is to do the arithmetic.
+        /// </summary>
+        static void CheckAutoPlay()
+        {
+            Line("\n-- auto play --");
+
+            var p = PlayerState.New();
+            foreach (var h in GameData.Heroes.Take(8))
+                if (!p.Owns(h.id)) p.owned.Add(new OwnedHero(h.id) { star = 3, level = 40 });
+            p.party.Clear();
+            foreach (var o in p.owned.Take(GameData.Balance.partySize)) p.party.Add(o.id);
+            p.stage = 20;
+            p.maxCleared = 20;
+
+            // 자동 진행 off is 파밍: the Phase must NOT move, whatever the forecast says.
+            p.autoAdvance = false;
+            Check(!AutoPlayService.ShouldAdvance(p, p.stage), "자동 진행 off holds the Phase");
+            Check(AutoPlayService.HeldBack(p, p.stage).Length > 0, "and says why");
+
+            // On with no gate, it always moves — that is what this build did before the setting.
+            p.autoAdvance = true;
+            p.safeAdvance = false;
+            Check(AutoPlayService.ShouldAdvance(p, p.stage), "자동 진행 on advances");
+
+            // 안전 진행 has to bite on the wall AND stay out of the way everywhere else. Both
+            // halves matter: this check is the reason the gate is not the web's.
+            //
+            // Built on 승산 it failed here, and rightly — ForecastService returns Prob = 0 by
+            // design in this port, so `prob >= 0.35` is false at every Phase and a player who
+            // turned 안전 진행 on would never advance again. Nothing would have looked wrong: the
+            // party fights, the gold arrives, the Phase number simply stops. The gate reads the
+            // ETA now, which is the number this build computes honestly.
+            p.safeAdvance = true;
+            // Forty Phases on, not four hundred: the ETA grows 1.18x a Phase, so this is
+            // comfortably past the ceiling while still being a number the game can compute.
+            // At +400 the monster curve overflows an int and the ETA comes back NEGATIVE,
+            // which tests the overflow rather than the gate.
+            var hopeless = p.stage + 40;
+            Check(!AutoPlayService.ShouldAdvance(p, hopeless - 1),
+                  $"안전 진행 blocks Phase {hopeless} (예상 {ForecastService.Eta(ForecastService.For(p, hopeless).Eta)})");
+            Check(AutoPlayService.ShouldAdvance(p, p.stage),
+                  $"and lets Phase {p.stage + 1} through (예상 {ForecastService.Eta(ForecastService.For(p, p.stage + 1).Eta)})");
+
+            // 자동 강화 — spends down to what it cannot afford, and never past a level cap.
+            var before = p.gold = 5_000_000;
+            var levels = AutoPlayService.UpgradeCheapest(p, 500);
+            Check(levels > 0, $"자동 강화 buys levels ({levels})");
+            Check(p.gold < before, $"and spends gold (₩{before - p.gold:N0})");
+            Check(p.party.Where(id => !string.IsNullOrEmpty(id)).Select(p.Find)
+                   .All(o => o == null || o.level <= StatMath.LevelCap(o)),
+                  "and never past a ★ cap");
+
+            // An empty party is the state a fresh save is in for exactly as long as it takes to
+            // press 편성, and a loop that looks for "the cheapest of nothing" is where that shows.
+            var broke = new PlayerState();
+            Check(AutoPlayService.UpgradeCheapest(broke, 10) == 0, "and buys nothing with no party");
         }
 
         /// <summary>

@@ -108,6 +108,13 @@ namespace ExcelHeroes.UI
             _forecastLabel = UiKit.Text("", "forecast", hud);
             _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
 
+            // 진행 — whether a win moves the party on, and whether 승산 gets a say. Pills rather
+            // than a settings screen: the thing they change is happening on this screen, and a
+            // toggle two taps away from what it affects is one nobody finds.
+            _advanceButton = UiKit.Btn("진행", "auto-toggle", ToggleAdvance, hud);
+            _safeButton = UiKit.Btn("안전", "auto-toggle", ToggleSafe, hud);
+            _upgradeButton = UiKit.Btn("자동 강화", "auto-toggle", ToggleAutoUpgrade, hud);
+
             // 야근 — the one fight in this game a player chooses to start. Everything else runs
             // whether or not anyone is watching, which is what makes this worth a button.
             _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn", StartOvertime, hud);
@@ -240,10 +247,58 @@ namespace ExcelHeroes.UI
             SyncAutoButton();
         }
 
+        Button _advanceButton, _safeButton, _upgradeButton;
+
+        /// <summary>The last 자동 진행 reason logged, so 파밍 does not repeat itself every clear.</summary>
+        string _lastHeld;
+
+        void ToggleAdvance()
+        {
+            var p = Game.Player;
+            p.autoAdvance = !p.autoAdvance;
+            Log(p.autoAdvance
+                ? "자동 진행 켜짐 — 처리를 마치면 다음 구간으로 넘어갑니다"
+                : $"자동 진행 꺼짐 — Phase {p.stage}에서 계속 처리합니다");
+            Game.Touch();
+            SyncAutoButton();
+        }
+
+        void ToggleSafe()
+        {
+            var p = Game.Player;
+            p.safeAdvance = !p.safeAdvance;
+            var min = Mathf.RoundToInt(GameData.Balance.safeAdvanceMin * 100);
+            Log(p.safeAdvance
+                ? $"안전 진행 켜짐 — 승산 {min}% 미만이면 넘어가지 않습니다"
+                : "안전 진행 꺼짐 — 승산과 무관하게 넘어갑니다");
+            Game.Touch();
+            SyncAutoButton();
+        }
+
+        void ToggleAutoUpgrade()
+        {
+            var p = Game.Player;
+            p.autoUpgrade = !p.autoUpgrade;
+            Log(p.autoUpgrade
+                ? "자동 강화 켜짐 — 가장 싼 편성 카드부터 골드를 씁니다"
+                : "자동 강화 꺼짐");
+            Game.Touch();
+            SyncAutoButton();
+        }
+
         void SyncAutoButton()
         {
-            if (_autoButton == null) return;
-            _autoButton.EnableInClassList("auto-toggle--on", Game.Player.autoSkill);
+            var p = Game.Player;
+            if (p == null) return;
+            _autoButton?.EnableInClassList("auto-toggle--on", p.autoSkill);
+            _advanceButton?.EnableInClassList("auto-toggle--on", p.autoAdvance);
+            _upgradeButton?.EnableInClassList("auto-toggle--on", p.autoUpgrade);
+
+            if (_safeButton == null) return;
+            _safeButton.EnableInClassList("auto-toggle--on", p.safeAdvance);
+            // 안전 진행 only has anything to gate while 자동 진행 is on. Left enabled it is a
+            // switch that changes nothing, which reads as a bug rather than as a dependency.
+            _safeButton.SetEnabled(p.autoAdvance);
         }
 
         /// <summary>
@@ -375,6 +430,15 @@ namespace ExcelHeroes.UI
 
             if (_hitStop > 0f) _hitStop -= dt;
             else if (!_sim.Finished) _sim.Tick(dt);
+
+            // 자동 강화 runs off the screen's tick, not the sim's, so gold keeps being spent while
+            // the player is on another sheet — which is the whole point of a setting that spends
+            // for them. It levels the party the run is already using, so the next wave feels it.
+            if (AutoPlayService.Tick(Game.Player, dt) > 0)
+            {
+                _sim?.RefreshHeroStats();
+                Game.Touch();
+            }
 
             var visible = _root != null && _root.panel != null;
             if (!visible)
@@ -928,8 +992,25 @@ namespace ExcelHeroes.UI
                 var drop = EquipService.Drop(Game.Player, _sim.Stage, boss: true, firstBoss: firstClear);
                 if (drop != null) Log($"비품 획득 — {EquipService.Label(drop)}");
 
-                if (_sim.Stage >= Game.Player.stage) Game.Player.stage++;
+                // The Phase only moves when 자동 진행 says so. maxCleared is recorded either
+                // way — what was beaten was beaten, and every gate in the game that reads "how
+                // far have you got" reads this one, so parking on a Phase must never look like
+                // losing ground.
                 if (_sim.Stage > Game.Player.maxCleared) Game.Player.maxCleared = _sim.Stage;
+
+                var held = AutoPlayService.HeldBack(Game.Player, _sim.Stage);
+                if (held.Length == 0)
+                {
+                    if (_sim.Stage >= Game.Player.stage) Game.Player.stage++;
+                }
+                else if (held != _lastHeld)
+                {
+                    // Said once per reason rather than after every clear: on 파밍 this fires every
+                    // fifteen seconds forever, and a log that repeats itself is a log nobody reads.
+                    Log(held);
+                    _lastHeld = held;
+                }
+                if (held.Length == 0) _lastHeld = null;
                 AffectionService.AwardBattle(Game.Player, _sim.Kills, clearedBoss: true);
                 QuestService.Note(Game.Player, "clears");
                 QuestService.Note(Game.Player, "boss");

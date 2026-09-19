@@ -2291,6 +2291,12 @@
     border-color: rgb(120, 214, 160);
 }
 
+/* 안전 진행 has nothing to gate while 자동 진행 is off, so it disables itself. Dimmed past the
+   already-dim off state, or "disabled" and "off" look the same and the dependency is invisible. */
+.auto-toggle:disabled {
+    opacity: 0.4;
+}
+
 /* The gold sink, as a strip of four cells under the EX bar. Cells, deliberately: this is a
    spreadsheet, and a row of bordered boxes with a number in each is what one looks like. */
 .upgrades {

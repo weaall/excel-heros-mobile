@@ -252,11 +252,50 @@ namespace ExcelHeroes.Core
         /// </summary>
         public bool Overtime { get; set; }
 
+        /// <summary>
+        /// Kept only so a level bought DURING a run can be felt in it. Every stat below is a
+        /// snapshot taken at the bell, which is what makes the fight cheap to run off-screen; the
+        /// player is the one thing that can change underneath it.
+        /// </summary>
+        readonly PlayerState _player;
+
+        /// <summary>
+        /// Re-reads 공격력 and 체력 for the heroes still standing, after 자동 강화 or 일괄 강화 has
+        /// bought levels mid-fight. Current HP is carried across as a FRACTION rather than a
+        /// number: a hero at half health who gains 200 max HP should still be at half, and copying
+        /// the old absolute value would make a level-up a stealth heal — or, on a max-HP drop,
+        /// a stealth execution.
+        ///
+        /// Only 공격력 and 체력 move. Interval, range, traits and skill power come from the card's
+        /// definition and its ★, and none of those can change without a new run anyway.
+        /// </summary>
+        public void RefreshHeroStats()
+        {
+            if (_player == null) return;
+
+            foreach (var c in Heroes)
+            {
+                var owned = _player.Find(c.heroId);
+                if (owned == null || c.hp <= 0) continue;
+
+                var maxHp = (int)(StatMath.Hp(owned) * (1f + _synergy.hpBonus + TeamUpgrades.Health(_player)));
+                if (maxHp <= 0) continue;
+
+                var share = c.maxHp > 0 ? (float)c.hp / c.maxHp : 1f;
+                c.maxHp = maxHp;
+                c.hp = Math.Max(1, (int)Math.Round(maxHp * share));
+                c.atk = (int)(StatMath.Atk(owned) * (1f + _synergy.atkBonus));
+            }
+
+            ApplyLeadership();
+        }
+
         public BattleSim(PlayerState player, int stage, int waves = 3, int monstersPerWave = 3)
         {
             Stage = stage;
             WaveCount = waves;
             _perWave = monstersPerWave;
+            _player = player;
             _synergy = StatMath.Synergy(player);
 
             var slot = 0;
@@ -306,10 +345,7 @@ namespace ExcelHeroes.Core
                 slot++;
             }
 
-            // 팀 리더십 is the one trait that reads across the party, so it is folded in afterwards
-            // once every member is known. It stacks — two leaders are worth two.
-            var rally = Heroes.Where(h => h.traitId == "rally").Sum(h => h.traitValue);
-            if (rally > 0f) foreach (var h in Heroes) h.atk = (int)(h.atk * (1f + rally));
+            ApplyLeadership();
 
             // 영업 마인드 / 행운의 셀 pay out at the end of the run rather than per swing.
             _goldBonus = Heroes.Where(h => h.traitId == "greedy").Sum(h => h.traitValue) + Perk("gold")
@@ -318,6 +354,18 @@ namespace ExcelHeroes.Core
             _gemDropBonus = TeamUpgrades.GemChance(player);
 
             SpawnWave();
+        }
+
+        /// <summary>
+        /// 팀 리더십 is the one trait that reads across the party, so it is folded in once every
+        /// member is known rather than while they are being built. It stacks — two leaders are
+        /// worth two. It multiplies 공격력, so anything that recomputes 공격력 has to end here or
+        /// the bonus quietly disappears mid-fight.
+        /// </summary>
+        void ApplyLeadership()
+        {
+            var rally = Heroes.Where(h => h.traitId == "rally").Sum(h => h.traitValue);
+            if (rally > 0f) foreach (var h in Heroes) h.atk = (int)(h.atk * (1f + rally));
         }
 
         float _goldBonus;

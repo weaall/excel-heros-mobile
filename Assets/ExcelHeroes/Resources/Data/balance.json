@@ -190,6 +190,8 @@
  "forecastBossHi": 15,
  "forecastEtaBoss": 0.81,
  "safeAdvanceMin": 0.35,
+ "autoUpgradeInterval": 1,
+ "safeAdvanceEtaMax": 180,
  "shardCardGrades": [
   "D",
   "C",

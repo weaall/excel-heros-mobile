@@ -280,6 +280,20 @@ const files = {
     forecastBossHi: BALANCE.FORECAST?.boss?.[1] ?? 15,
     forecastEtaBoss: BALANCE.FORECAST?.etaBoss ?? 0.81,
     safeAdvanceMin: BALANCE.SAFE_ADVANCE?.min ?? 0.35,
+    autoUpgradeInterval: BALANCE.AUTO_UPGRADE_INTERVAL ?? 1,
+    // 안전 진행's gate, and the one number on this list the web does not have.
+    //
+    // The web gates on 승산 >= SAFE_ADVANCE.min (0.35). This port's ForecastService deliberately
+    // returns no probability at all — the web's thresholds were measured against ITS encounter
+    // (one wave, or one boss on a boss stage) and this build fights two waves and a boss at every
+    // Phase, so the same ratio means something else here. Prob is a hard 0, and a gate reading
+    // `prob >= 0.35` would hold the party on its current Phase for the rest of the save.
+    //
+    // So the gate is the ETA instead, which is the number this port DOES compute honestly — and
+    // by the web's own note ("what grows continuously is the TIME a stage takes, and that growth
+    // IS the wall") it was always the part carrying the information. 180s: a normal Phase runs
+    // about 15 seconds, so three minutes is unambiguously the wall rather than a slow day.
+    safeAdvanceEtaMax: 180,
     // 방출 — cards paid per shard by grade, plus a flat bonus for the card itself.
     shardCardGrades: Object.keys(BALANCE.SHARD_CARD_VALUE ?? {}),
     shardCardValues: Object.values(BALANCE.SHARD_CARD_VALUE ?? {}),

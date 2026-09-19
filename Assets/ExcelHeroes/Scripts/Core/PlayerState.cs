@@ -225,6 +225,29 @@ namespace ExcelHeroes.Core
         /// <summary>자동 전투 — on by default; the main sheet is an idle battle, not a menu.</summary>
         public bool autoSkill = true;
 
+        /// <summary>
+        /// 자동 진행 — push to the next Phase after a clear, rather than re-running this one.
+        ///
+        /// True by default because that is what this build did unconditionally before the setting
+        /// existed, and a save that loads with it off would quietly stop progressing. Turning it
+        /// off is 파밍: the party keeps clearing the Phase it is on, which is what a player wants
+        /// while waiting on gold, 비품 drops or a 승급.
+        /// </summary>
+        public bool autoAdvance = true;
+
+        /// <summary>
+        /// 안전 진행 — only push on when 승산 clears BALANCE.SAFE_ADVANCE.min. Off by default,
+        /// because the forecast reads "유리" almost always and a gate that never fires is only a
+        /// switch to find later; the player turns it on when the wall arrives.
+        /// </summary>
+        public bool safeAdvance;
+
+        /// <summary>
+        /// 자동 강화 — spend gold on the cheapest party level, once a second, while the fight runs.
+        /// Off by default: it empties the wallet, and gold is also what 스카우트 and 비품 want.
+        /// </summary>
+        public bool autoUpgrade;
+
         // --- 누적 기록 ------------------------------------------------------------------
         //
         // The running totals the achievements read. They are counters rather than a derived view
