@@ -74,6 +74,10 @@ namespace ExcelHeroes.UI
             Game.Changed += OnGameChanged;
             Show(Tab.Home);
 
+            // A brand new player lands on an empty home screen, which reads as a broken app rather
+            // than a game waiting to start. Give them the premise and point at the banner.
+            if (Onboarding.Needed(Game.Player)) new Onboarding(this).Show();
+
             void Bind(string name, Tab tab)
             {
                 var button = root.Q<Button>(name);

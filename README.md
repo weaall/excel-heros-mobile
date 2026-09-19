@@ -12,7 +12,7 @@
 
 1. Unity Hub에서 이 폴더를 엽니다 (6000.0.82f1).
 2. 첫 로드 때 `ProjectBootstrap`이 PanelSettings·Main 씬·빌드 설정·세로 고정을 자동으로 만듭니다.
-3. `Assets/ExcelHeroes/Scenes/Main.unity` 를 열고 Play.
+3. `Assets/ExcelHeroes/Scenes/Main.unity` 를 열고 Play. 첫 실행이면 입사 안내가 뜨고 바로 첫 10연으로 이어집니다.
 
 Game 뷰는 세로 비율(예: 1080×1920)로 맞춰 두세요. 다시 세팅이 필요하면 메뉴 **Excel Heroes ▸ Rebuild Project Setup**.
 

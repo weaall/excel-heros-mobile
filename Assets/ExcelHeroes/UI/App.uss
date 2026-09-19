@@ -974,6 +974,70 @@
     padding-right: 8px;
 }
 
+/* ---------------------------------------------------------------- onboarding */
+
+.onboard {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    justify-content: center;
+    padding-left: 28px;
+    padding-right: 28px;
+}
+
+.onboard__bg {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/gacha_bg.png");
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.onboard__card {
+    background-color: rgba(8, 11, 20, 0.92);
+    border-radius: 20px;
+    border-width: 1px;
+    border-color: rgba(84, 106, 150, 0.8);
+    padding: 30px;
+}
+
+.onboard__title {
+    font-size: 44px;
+    -unity-font-style: bold;
+    color: rgb(212, 160, 23);
+    margin-bottom: 18px;
+}
+
+.onboard__line {
+    font-size: 27px;
+    white-space: normal;
+    margin-bottom: 8px;
+    color: rgb(232, 236, 244);
+}
+
+.onboard__tip {
+    margin-top: 22px;
+    margin-bottom: 22px;
+    padding: 18px;
+    background-color: rgba(20, 27, 46, 0.9);
+    border-radius: 14px;
+    border-left-width: 4px;
+    border-left-color: rgb(126, 198, 255);
+}
+
+.onboard__tip-title {
+    font-size: 26px;
+    -unity-font-style: bold;
+    color: rgb(126, 198, 255);
+    margin-bottom: 4px;
+}
+
+.onboard__card .btn { margin-top: 10px; }
+
 /* ---------------------------------------------------------------- EX cut-in */
 
 /* The signature moment: firing a skill throws the character's own illustration across the
