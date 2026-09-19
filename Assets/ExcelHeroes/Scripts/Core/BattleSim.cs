@@ -245,6 +245,13 @@ namespace ExcelHeroes.Core
         readonly SynergyResult _synergy;
         readonly int _perWave;
 
+        /// <summary>
+        /// 야근 모드 — the once-a-day survival run. It changes three things about a fight: the
+        /// bodies come thicker and softer, crowned ones are common rather than rare, and losing
+        /// does not end it. Everything else, including the party, is the same fight.
+        /// </summary>
+        public bool Overtime { get; set; }
+
         public BattleSim(PlayerState player, int stage, int waves = 3, int monstersPerWave = 3)
         {
             Stage = stage;
@@ -365,7 +372,13 @@ namespace ExcelHeroes.Core
             }
 
             // From stage 5 on, crowned variants start showing up: much tougher, worth much more.
-            var elite = Stage >= EliteFromStage && Random.value < EliteChance;
+            // 야근 makes them common and every body soft: the run is scored on how many fall in a
+            // minute, so it has to be survivable at a difficulty three stages past anything cleared.
+            var b = GameData.Balance;
+            if (Overtime) hp = Math.Max(1, (int)(hp * b.overtimeHpMult));
+            var elite = Overtime
+                ? Random.value < b.overtimeElite
+                : Stage >= EliteFromStage && Random.value < EliteChance;
             var type = GameData.MonsterForStage(Stage, slot);
             var name = type?.name ?? "스프레드시트 오류";
             var m = new Combatant
@@ -473,7 +486,13 @@ namespace ExcelHeroes.Core
 
             Monsters.RemoveAll(m => !m.Alive);
 
-            if (!Heroes.Any(h => h.Alive)) { Finished = true; Won = false; Events.Enqueue(new BattleEvent { kind = EventKind.Defeat }); return; }
+            if (!Heroes.Any(h => h.Alive))
+            {
+                // 야근 중 전원 번아웃 — the run keeps going. It is scored on kills over a minute,
+                // and ending it early on a wipe would make the reward a coin flip on one bad wave.
+                if (Overtime) { foreach (var h in Heroes) h.hp = h.maxHp; return; }
+                Finished = true; Won = false; Events.Enqueue(new BattleEvent { kind = EventKind.Defeat }); return;
+            }
 
             if (Monsters.Count == 0)
             {

@@ -3417,3 +3417,12 @@
 .ad-menu .arow { margin-bottom: var(--ex-space-1); }
 .ad-menu .arow__claim { min-width: 230px; }
 .ad-menu .btn { margin-top: var(--ex-space-2); }
+
+/* 야근 sits beside AUTO and is the louder of the two — it is the one fight the player starts. */
+.overtime-btn {
+    margin-left: var(--ex-space-1);
+    border-color: rgba(250, 204, 70, 0.7);
+    color: rgb(250, 204, 70);
+}
+
+.overtime-btn:disabled { opacity: 0.45; }

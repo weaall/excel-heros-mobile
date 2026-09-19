@@ -72,10 +72,12 @@ namespace ExcelHeroes.Core
                             reason = "진행 중인 출장이 없음";
                         }
                         break;
+                    case "overtime":
+                        value = "야근 1회 추가";
+                        if (OvertimeService.Active != null) { can = false; reason = "야근 진행 중"; }
+                        else if (!p.overtimeDone) { can = false; reason = "오늘 야근을 먼저 하세요"; }
+                        break;
                     default:
-                        // 야근 is not ported yet, so its offer is listed and disabled rather than
-                        // hidden: a menu that changes shape as features land teaches a player the
-                        // wrong shape twice.
                         value = "준비 중";
                         can = false;
                         reason = "아직 열리지 않은 기능";
@@ -120,6 +122,10 @@ namespace ExcelHeroes.Core
                 case "dispatch":
                     if (!DispatchService.FinishNow(p)) return null;
                     told = "출장 복귀 완료 — 검토에서 보상을 받으세요";
+                    break;
+                case "overtime":
+                    p.overtimeExtra++;
+                    told = "야근 1회가 추가되었습니다";
                     break;
                 default:
                     return null;

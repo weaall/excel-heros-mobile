@@ -59,6 +59,12 @@ namespace ExcelHeroes.Core
         public int streak;
         public bool allClearClaimed;
 
+        /// <summary>야근 모드 — done today, plus any extra runs bought with an ad. Both sit in
+        /// the daily block and reset with it; `overtimeBest` is a lifetime record and does not.</summary>
+        public bool overtimeDone;
+        public int overtimeExtra;
+        public int overtimeBest;
+
         /// <summary>
         /// 출장 — who is away, when they get back, and how many runs have been started today.
         /// `dispatchDate` is what makes the daily cap daily; the rest of the block outlives the

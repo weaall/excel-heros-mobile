@@ -208,6 +208,19 @@ const files = {
     // 출장 — bench heroes sent away for a few hours. Gems scale with who was sent, cards with
     // how far the run has got, and the travellers come back with affection. The per-grade gem
     // table is flattened into parallel lists because JsonUtility cannot read a keyed record.
+    // 야근 모드 — one 60-second survival run a day at a difficulty above anything cleared,
+    // paying gems per kill. The per-kill value rises with phase on purpose: deeper stages take
+    // longer per body, so without it a once-a-day reward shrinks as the run progresses.
+    overtimeDuration: BALANCE.OVERTIME?.duration ?? 60,
+    overtimeStageOffset: BALANCE.OVERTIME?.stageOffset ?? 3,
+    overtimeCount: BALANCE.OVERTIME?.count ?? 7,
+    overtimeElite: BALANCE.OVERTIME?.elite ?? 0.35,
+    overtimeHpMult: BALANCE.OVERTIME?.hpMult ?? 0.35,
+    overtimeGemsPerKill: BALANCE.OVERTIME?.gemsPerKill ?? 2,
+    overtimeGemsPerElite: BALANCE.OVERTIME?.gemsPerElite ?? 6,
+    overtimeGemsPerPhase: BALANCE.OVERTIME?.gemsPerPhase ?? 0.15,
+    overtimeMaxGems: BALANCE.OVERTIME?.maxGems ?? 400,
+    overtimeCardsPerPhase: BALANCE.OVERTIME?.cardsPerPhase ?? 2,
     dispatchHours: BALANCE.DISPATCH?.hours ?? 4,
     dispatchSlots: BALANCE.DISPATCH?.slots ?? 3,
     dispatchMaxPerDay: BALANCE.DISPATCH?.maxPerDay ?? 2,

@@ -23,6 +23,7 @@ namespace ExcelHeroes.UI
 
         readonly AppRoot _app;
         VisualElement _root, _stage, _resultView, _upgradeBar, _backdropView;
+        Button _overtimeButton;
         BattleFx _fx;
         Label _comboLabel;
         Label _waveLabel;
@@ -102,6 +103,10 @@ namespace ExcelHeroes.UI
             // going while you are on another sheet, so the reason to fast-forward was gone.
             _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
 
+            // 야근 — the one fight in this game a player chooses to start. Everything else runs
+            // whether or not anyone is watching, which is what makes this worth a button.
+            _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn", StartOvertime, hud);
+
             _upgradeBar = UiKit.Div("upgrades", _root);
 
             _log = UiKit.Scroll("battle-log", _root);
@@ -148,6 +153,78 @@ namespace ExcelHeroes.UI
 
             foreach (var h in _sim.Heroes) AddFighterView(h);
             foreach (var m in _sim.Monsters) AddFighterView(m);
+        }
+
+        /// <summary>
+        /// 야근 모드 — sixty seconds at a difficulty three stages past anything cleared, scored on
+        /// kills. It replaces the running fight and puts it back afterwards, so the idle run loses
+        /// only the minute the player spent watching this one.
+        /// </summary>
+        void StartOvertime()
+        {
+            if (OvertimeService.Start(Game.Player) == null) return;
+            AudioService.Play("boss", 0.7f);
+
+            _hitStop = 0f;
+            _restartIn = 0f;
+            _resultApplied = true;   // an overtime run never advances the stage
+            // Waves are set high enough that the boss wave cannot arrive inside a minute: this is
+            // a survival run, and a boss script in the middle of it is a different fight.
+            _sim = new BattleSim(Game.Player, OvertimeService.StageFor(Game.Player),
+                                 999, GameData.Balance.overtimeCount)
+            {
+                AutoSkill = Game.Player.autoSkill,
+                Overtime = true,
+            };
+            AttachViews();
+            SyncOvertimeButton();
+            Log($"야근 모드 시작 — {GameData.Balance.overtimeDuration:0}초");
+        }
+
+        void EndOvertime()
+        {
+            var report = OvertimeService.End(Game.Player);
+            SyncOvertimeButton();
+            if (report == null) return;
+
+            AudioService.Play("victory", 0.7f);
+            Game.Touch();
+
+            var pane = UiKit.Div("onboard__card idle");
+            UiKit.Text("야근 종료", "onboard__title", pane);
+            UiKit.Text($"처치 {report.Value.Kills} · 엘리트 {report.Value.Elites} · 최고 기록 {report.Value.Best}",
+                "muted", pane);
+
+            var value = UiKit.Div("power-readout", pane);
+            UiKit.Text($"◈{report.Value.Gems}", "power-readout__value", value);
+            UiKit.Text($"강화 카드 +{report.Value.Cards}", "power-readout__label", value);
+
+            UiKit.Btn("확인", "btn btn--primary", () =>
+            {
+                _app.CloseOverlay();
+                // Back to the idle run the minute interrupted.
+                _resultApplied = false;
+                NewRun();
+            }, pane);
+            _app.OpenOverlay(pane);
+        }
+
+        /// <summary>While a run is on, the wave counter carries its clock instead.</summary>
+        void UpdateOvertimeLabel()
+        {
+            var run = OvertimeService.Active;
+            if (run == null || _waveLabel == null) return;
+            _waveLabel.text = $"야근 {Mathf.CeilToInt(Mathf.Max(0f, run.Left))}초 · 처치 {run.Kills}";
+        }
+
+        void SyncOvertimeButton()
+        {
+            if (_overtimeButton == null) return;
+            var can = OvertimeService.CanStart(Game.Player);
+            var blocked = OvertimeService.Blocked(Game.Player);
+            _overtimeButton.text = can ? "야근" : blocked;
+            _overtimeButton.SetEnabled(can);
+            _overtimeButton.EnableInClassList("auto-toggle--on", OvertimeService.Active != null);
         }
 
         void ToggleAuto()
@@ -271,6 +348,14 @@ namespace ExcelHeroes.UI
         /// </summary>
         public void Tick(float dt)
         {
+            // 야근's clock runs on the screen's tick rather than the sim's, because the run is
+            // sixty seconds of real time and not a number of waves.
+            if (OvertimeService.Active != null)
+            {
+                UpdateOvertimeLabel();
+                if (OvertimeService.Tick(dt)) { EndOvertime(); return; }
+            }
+
             if (Game.Player == null) return;
 
             if (_sim == null)
@@ -310,6 +395,7 @@ namespace ExcelHeroes.UI
                 : _sim.Enraged
                     ? $"Phase {_sim.Stage} · 웨이브 {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
                     : $"Phase {_sim.Stage} · 웨이브 {_sim.Wave}/{_sim.WaveCount}";
+            if (OvertimeService.Active != null) { UpdateOvertimeLabel(); return; }
             _waveLabel.EnableInClassList("battle__wave--enraged", !_sim.Finished && _sim.Enraged);
 
             if (_sim.Finished && _resultView == null) ShowResult();
@@ -369,7 +455,10 @@ namespace ExcelHeroes.UI
                         // A kill is the beat worth stopping for; a monster popping mid-stride is
                         // the moment the whole exchange was building to.
                         if (e.target != null && e.target.side == Side.Monster)
+                        {
                             _hitStop = Mathf.Max(_hitStop, e.target.boss != null ? 0.18f : 0.09f);
+                            OvertimeService.Note(e.target.elite);
+                        }
                         if (_views.TryGetValue(e.target, out var dead)) dead.AddToClassList("fighter--dead");
                         if (e.target != null && e.target.side == Side.Monster) Log($"{e.target.name} 처리 완료");
                         else if (e.target != null) Log($"{e.target.name} 이탈");

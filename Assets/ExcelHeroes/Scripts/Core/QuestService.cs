@@ -57,6 +57,8 @@ namespace ExcelHeroes.Core
             // daily; a counter that never resets is a one-time reward wearing a daily label.
             p.adIds.Clear();
             p.adCounts.Clear();
+            p.overtimeDone = false;
+            p.overtimeExtra = 0;
             p.quests.Clear();
             foreach (var id in TodayQuestIds(today)) p.quests.Add(new QuestProgress { id = id });
             p.allClearClaimed = false;
