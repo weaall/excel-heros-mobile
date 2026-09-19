@@ -39,7 +39,8 @@ namespace ExcelHeroes.Core
         }
 
         /// <summary>The office upgrades' gold bonus, which an idle hour earns as well.</summary>
-        static float GoldMultiplier(PlayerState p) => 1f + TeamUpgrades.Gold(p);
+        static float GoldMultiplier(PlayerState p) =>
+            1f + TeamUpgrades.Gold(p) + PrestigeService.Bonus(p);
 
         public readonly struct Report
         {

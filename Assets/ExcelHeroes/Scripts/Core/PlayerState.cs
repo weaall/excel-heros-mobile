@@ -118,6 +118,10 @@ namespace ExcelHeroes.Core
 
         public EquipItem Item(int id) => items.FirstOrDefault(it => it.id == id);
 
+        /// <summary>지분 — permanent, never reset. Each one adds to attack and to gold.</summary>
+        public int prestigeShares;
+        public int prestigeCount;
+
         /// <summary>야근 모드 — done today, plus any extra runs bought with an ad. Both sit in
         /// the daily block and reset with it; `overtimeBest` is a lifetime record and does not.</summary>
         public bool overtimeDone;

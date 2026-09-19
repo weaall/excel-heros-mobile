@@ -106,6 +106,8 @@
  "offlineEfficiency": 0.6,
  "offlineMinSec": 60,
  "adPerDay": 9,
+ "prestigeMinCleared": 30,
+ "prestigeBonusPerShare": 0.03,
  "equipDropChance": 0.35,
  "equipBossDropChance": 1,
  "equipBossRolls": 2,

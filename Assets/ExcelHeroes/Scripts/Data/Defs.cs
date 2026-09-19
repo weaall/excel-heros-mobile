@@ -295,6 +295,8 @@ namespace ExcelHeroes.Data
         public float offlineEfficiency;
         public long offlineMinSec;
         public int adPerDay;
+        public int prestigeMinCleared;
+        public float prestigeBonusPerShare;
         public float equipDropChance, equipBossDropChance, equipPctPerLevel, equipUpgradeGrowth;
         public int equipBossRolls, equipBossFirstRolls, equipMaxLevel, equipUpgradeGoldKills;
         public int equipInventoryMax, equipSetAny;

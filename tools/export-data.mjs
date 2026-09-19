@@ -224,6 +224,9 @@ const files = {
     // 야근 모드 — one 60-second survival run a day at a difficulty above anything cleared,
     // paying gems per kill. The per-kill value rises with phase on purpose: deeper stages take
     // longer per body, so without it a once-a-day reward shrinks as the run progresses.
+    // 회사 이전 — the reset that trades the run for permanent shares.
+    prestigeMinCleared: BALANCE.PRESTIGE?.minCleared ?? 30,
+    prestigeBonusPerShare: BALANCE.PRESTIGE?.bonusPerShare ?? 0.03,
     equipDropChance: BALANCE.EQUIP?.dropChance ?? 0.35,
     equipBossDropChance: BALANCE.EQUIP?.bossDropChance ?? 1,
     equipBossRolls: BALANCE.EQUIP?.bossRolls ?? 2,

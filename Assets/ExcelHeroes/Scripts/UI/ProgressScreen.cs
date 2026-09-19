@@ -44,6 +44,7 @@ namespace ExcelHeroes.UI
             var right = UiKit.Div("prog-cols__right", cols);
 
             BuildAchievements(left, p);
+            BuildPrestige(right, p);
             BuildDispatch(right, p);
             BuildMilestones(right, p);
         }
@@ -109,6 +110,61 @@ namespace ExcelHeroes.UI
 
         static string Tier(int claimed, int total) =>
             total <= 0 ? "" : $"{claimed}/{total}";
+
+        /// <summary>
+        /// 회사 이전 — the reset. It sits at the top of this column because it is the decision the
+        /// rest of the column is building towards, and because a player who does not know it is
+        /// there will grind a stage they cannot clear instead.
+        /// </summary>
+        void BuildPrestige(VisualElement parent, PlayerState p)
+        {
+            var b = GameData.Balance;
+            var head = UiKit.Div("prog-head", parent);
+            UiKit.Text("회사 이전", "section-title", head);
+            UiKit.Div("spacer", head);
+            UiKit.Text($"지분 {p.prestigeShares}　·　{p.prestigeCount}회", "muted", head);
+
+            var panel = UiKit.Div("panel", parent);
+            var bonus = PrestigeService.Bonus(p);
+            UiKit.Text($"현재 지분 효과 · 공격력 +{bonus:P0} 골드 +{bonus:P0}", "synergy-line", panel);
+
+            var gain = PrestigeService.Gain(p);
+            if (gain <= 0)
+            {
+                UiKit.Text($"스테이지 {b.prestigeMinCleared} 클리어부터 이전할 수 있습니다 (현재 {p.maxCleared}).",
+                    "muted", panel);
+                return;
+            }
+
+            UiKit.Text($"지금 이전하면 지분 +{gain}", "muted", panel);
+            UiKit.Btn($"회사 이전 · 지분 +{gain}", "btn btn--primary", () => Confirm(gain), panel);
+
+            void Confirm(int shares)
+            {
+                // Confirmed, because it throws the run away. Everything it keeps is spelled out:
+                // a player who is surprised by what a reset took will not press it a second time.
+                var pane = UiKit.Div("onboard__card idle");
+                UiKit.Text("회사 이전", "onboard__title", pane);
+                UiKit.Text($"지분 +{shares}을 받고 스테이지·레벨·골드·사무실 개선을 처음부터 시작합니다.",
+                    "muted", pane);
+                UiKit.Text("사원, ★, 각성, 비품, 호감도는 그대로 남습니다.", "muted", pane);
+
+                var row = UiKit.Div("party-actions", pane);
+                UiKit.Btn("취소", "btn", _app.CloseOverlay, row);
+                UiKit.Btn("이전한다", "btn btn--primary", () =>
+                {
+                    var got = PrestigeService.Reset(Game.Player);
+                    if (got <= 0) { _app.CloseOverlay(); return; }
+                    AudioService.Play("victory", 0.7f);
+                    _app.SetStatus($"회사 이전 완료 · 지분 +{got}");
+                    Game.Touch();
+                    _app.CloseOverlay();
+                    _app.Show(AppRoot.Sheet.Home);
+                }, row);
+
+                _app.OpenOverlay(pane);
+            }
+        }
 
         /// <summary>
         /// 출장 — the one system that pays for owning staff you never field, so it belongs beside
@@ -220,9 +276,9 @@ namespace ExcelHeroes.UI
             }
             else
             {
-                // Two, not three: the column also carries 출장 and the milestone list, and the
-                // third row was landing a pixel past the bottom of the frame.
-                foreach (var m in upcoming.Take(2))
+                // One, not three: the column carries 회사 이전, 출장 and the milestone list above
+                // this, and each extra row lands past the bottom of the frame.
+                foreach (var m in upcoming.Take(1))
                     UiKit.StatRow(m.name, $"{ProgressService.Value(p, m):N0} / {m.target:N0}", next);
             }
 

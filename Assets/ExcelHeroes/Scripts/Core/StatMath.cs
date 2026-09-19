@@ -49,7 +49,8 @@ namespace ExcelHeroes.Core
                     * MathF.Pow(b.heroAtkGrowth, Math.Max(1, o.level) - 1)
                     * StarMult(o.star)
                     * (1f + o.affection * GameData.Balance.affectionBonusPerLevel)
-                    * (1f + EquipPct(o.id).Atk / 100f);
+                    * (1f + EquipPct(o.id).Atk / 100f)
+                    * (1f + PrestigeService.Bonus(Game.Player));
             return Math.Max(1, (int)MathF.Floor(v));
         }
 
