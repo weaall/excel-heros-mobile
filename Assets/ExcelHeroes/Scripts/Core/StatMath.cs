@@ -287,17 +287,38 @@ namespace ExcelHeroes.Core
             return r;
         }
 
+        /// <summary>
+        /// A growth curve, floored and clamped to what an int can hold.
+        ///
+        /// The clamp is the whole point. These curves are exponential and the casts below used to
+        /// be bare: `(int)MathF.Floor(...)` on a float larger than int.MaxValue is undefined in C#
+        /// and in practice lands on int.MinValue, so the monster curve did not run away at Phase
+        /// 108 — it went NEGATIVE. Monsters spawned with negative health, every fight past that
+        /// point was won instantly, and the 승산 forecast reported a negative ETA, which is how
+        /// this was found at all.
+        ///
+        /// Saturating is not the right answer, it is the safe one: past the clamp the curve is
+        /// flat and the game is beatable for ever. The right answer is a wider number, and that is
+        /// the same decision the gold ceiling is waiting on — see 'Blocked' in the handoff.
+        /// </summary>
+        static int Curve(float base_, float growth, int stage)
+        {
+            var v = MathF.Floor(base_ * MathF.Pow(growth, Math.Max(1, stage) - 1));
+            if (!float.IsFinite(v) || v >= int.MaxValue) return int.MaxValue;
+            return (int)MathF.Max(0f, v);
+        }
+
         /// <summary>Monster health for a stage, straight from the GDD formula.</summary>
         public static int MonsterHp(int stage)
         {
             var b = GameData.Balance;
-            return (int)MathF.Floor(b.monsterHpBase * MathF.Pow(b.monsterHpGrowth, Math.Max(1, stage) - 1));
+            return Curve(b.monsterHpBase, b.monsterHpGrowth, stage);
         }
 
         public static int StageGold(int stage)
         {
             var b = GameData.Balance;
-            return (int)MathF.Floor(b.goldBase * MathF.Pow(b.goldGrowth, Math.Max(1, stage) - 1));
+            return Curve(b.goldBase, b.goldGrowth, stage);
         }
 
         /// <summary>
@@ -313,7 +334,10 @@ namespace ExcelHeroes.Core
         {
             var b = GameData.Balance;
             var ramp = Math.Clamp((stage - b.monsterAtkRampFull) / (float)Math.Max(1, b.monsterAtkRampByStage), 0f, 1f);
-            return Math.Max(1, (int)MathF.Floor(MonsterHp(stage) * 0.09f * (0.5f + 0.5f * ramp)));
+            // MonsterHp is already clamped, but 9% of int.MaxValue is not — the product is
+            // computed as a float and cast back, so the clamp has to be repeated here.
+            var atk = MathF.Floor(MonsterHp(stage) * 0.09f * (0.5f + 0.5f * ramp));
+            return atk >= int.MaxValue ? int.MaxValue : Math.Max(1, (int)atk);
         }
     }
 }

@@ -114,10 +114,56 @@ namespace ExcelHeroes.EditorTools
             CheckAutoParty();
             CheckRefund();
             CheckAutoPlay();
+            CheckCurves();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
             if (_failures == 0) Debug.Log(Log.ToString());
             else Debug.LogError(Log.ToString());
+        }
+
+        /// <summary>
+        /// The stage curves, across further than anyone will ever play.
+        ///
+        /// Every one of them is exponential and every one ends in a cast to int. `(int)` on a
+        /// float past int.MaxValue is undefined in C# and lands on int.MinValue in practice, so
+        /// the monster curve did not run away at Phase 108 — it went negative, monsters spawned
+        /// with negative health, and every fight past that point was won the instant it started.
+        ///
+        /// Nothing about that is visible in a screenshot or in a compiler warning, and no fight
+        /// fails: the player wins. It was found because a forecast came back with a negative ETA
+        /// while a gate was being tested against it. This walks the curves instead of trusting
+        /// them, because "it works at the Phase I happened to try" is what let it ship.
+        /// </summary>
+        static void CheckCurves()
+        {
+            Line("\n-- stage curves --");
+
+            var badHp = 0; var badAtk = 0; var badGold = 0; var firstBad = 0;
+            for (var stage = 1; stage <= 1000; stage++)
+            {
+                var hp = StatMath.MonsterHp(stage);
+                var atk = StatMath.MonsterAtk(stage);
+                var gold = StatMath.StageGold(stage);
+                if (hp <= 0) { badHp++; if (firstBad == 0) firstBad = stage; }
+                if (atk <= 0) { badAtk++; if (firstBad == 0) firstBad = stage; }
+                if (gold <= 0) { badGold++; if (firstBad == 0) firstBad = stage; }
+            }
+
+            Check(badHp == 0, $"체력 stays positive to Phase 1000 ({badHp} bad)");
+            Check(badAtk == 0, $"공격력 stays positive to Phase 1000 ({badAtk} bad)");
+            Check(badGold == 0, $"골드 stays positive to Phase 1000 ({badGold} bad)");
+            if (firstBad > 0) Line($"  first bad Phase: {firstBad}");
+
+            // Monotonic until it saturates, and flat after. A curve that goes UP then DOWN is the
+            // overflow wearing a different hat.
+            var dips = 0;
+            for (var stage = 2; stage <= 1000; stage++)
+                if (StatMath.MonsterHp(stage) < StatMath.MonsterHp(stage - 1)) dips++;
+            Check(dips == 0, $"체력 never decreases with the Phase ({dips} dips)");
+
+            // And the clamp is reached rather than being theoretical, so this is testing the
+            // guard and not just the range below it.
+            Check(StatMath.MonsterHp(1000) == int.MaxValue, "체력 saturates rather than wrapping");
         }
 
         /// <summary>
