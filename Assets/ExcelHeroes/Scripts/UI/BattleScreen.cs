@@ -423,7 +423,16 @@ namespace ExcelHeroes.UI
 
         // Kept in step with .fighter / .fighter__body in App.uss: a 16x28 sprite at 4x, on rows tall
         // enough to clear it.
-        const float FighterWidth = 72f;
+        const float FighterWidth = 92f;
+
+        // The camera does not show the whole 832-unit field any more.
+        //
+        // The party stands around x=200-400 and monsters are fought at roughly 450-650, so a third
+        // of the field was permanently empty road and every fighter was drawn small to fit space
+        // nothing happened in. Showing this window instead is about a 1.3x zoom, which is enough
+        // for the sprites to read at arm's length without cropping anyone out of frame.
+        const float ViewX0 = 110f, ViewX1 = 760f;
+        const float ViewW = ViewX1 - ViewX0;
 
         // The party stands on one line, as in the web build, with a six-pixel stagger so a
         // five-stack still reads as five people. Rows were readable but they turned a side-view
@@ -453,7 +462,7 @@ namespace ExcelHeroes.UI
 
                 var k = shot.Progress;
                 var x = Mathf.Lerp(shot.From.x, shot.To.x, k);
-                el.style.left = Mathf.Clamp01(x / BattleSim.FieldW) * (width - FighterWidth) + FighterWidth * 0.5f;
+                    el.style.left = Mathf.Clamp01((x - ViewX0) / ViewW) * (width - FighterWidth) + FighterWidth * 0.5f;
                 // A thrown thing arcs; a slash does not travel at all.
                 var arc = shot.Kind == "slash" ? 0f : Mathf.Sin(k * Mathf.PI) * 30f;
                 el.style.top = height * GroundFraction - 46f - arc;
@@ -499,7 +508,10 @@ namespace ExcelHeroes.UI
 
             if (_fx != null)
             {
-                _fx.ScaleX = width / BattleSim.FieldW;
+                // The effects ride the same zoom as the fighters, or a slash lands somewhere the
+                // sprite is not.
+                _fx.ScaleX = width / ViewW;
+                _fx.OffsetX = -ViewX0 * _fx.ScaleX;
                 _fx.ScaleY = height / CityBackdrop.CanvasH;
             }
 
@@ -536,7 +548,7 @@ namespace ExcelHeroes.UI
                     _knock[c] = Mathf.MoveTowards(knock, 0f, dt * 60f);
                 }
 
-                var t = Mathf.Clamp01(drawX / BattleSim.FieldW);
+                var t = Mathf.Clamp01((drawX - ViewX0) / ViewW);
                 var w = el.resolvedStyle.width;
                 if (float.IsNaN(w) || w <= 1f) w = FighterWidth;
                 el.style.left = Mathf.Clamp(t * (width - FighterWidth), 0f, Mathf.Max(0f, width - w));
@@ -548,7 +560,7 @@ namespace ExcelHeroes.UI
                 var lane = Mathf.Max(0, c.side == Side.Hero ? _sim.Heroes.IndexOf(c) : _sim.Monsters.IndexOf(c));
                 // The sprite is anchored by its feet, so subtract its height to sit ON the ground.
                 var feet = height * GroundFraction + (lane % 2 == 0 ? -StaggerY : StaggerY);
-                el.style.top = feet - (c.boss != null ? 105f : 70f);
+                el.style.top = feet - (c.boss != null ? 138f : 92f);
 
                 var fill = el.Q(className: "fighter__hpfill");
                 if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);

@@ -923,21 +923,21 @@
 
 .fighter {
     position: absolute;
-    width: 72px;
+    width: 92px;
     align-items: center;
 }
 
 /* Pixel sprites want whole-number scale and no crop. 16x28 at 6x is 96x168, which reads clearly at
    arm's length on a phone and still lines the cast up on one baseline. */
 .fighter__body {
-    width: 40px;
-    height: 70px;
+    width: 52px;
+    height: 92px;
     -unity-background-scale-mode: scale-to-fit;
     background-color: rgba(0, 0, 0, 0);
 }
 
 .fighter__body--chibi {
-    width: 40px;
+    width: 52px;
     height: 70px;
     border-width: 0;
     background-color: rgba(0, 0, 0, 0);
@@ -948,17 +948,19 @@
 .fighter--monster .fighter__body { scale: -1 1; }
 
 /* Integer multiples only, and the web build's ratio: wave enemies 2x, bosses 3x. */
-.fighter--boss { width: 100px; }
-.fighter--boss .fighter__body { width: 60px; height: 105px; }
-.fighter--boss .fighter__hpbar { width: 84px; }
-.fighter--elite .fighter__body { width: 48px; height: 84px; }
+.fighter--boss { width: 220px; }
+.fighter--boss .fighter__body { width: 78px; height: 138px; }
+.fighter--boss .fighter__hpbar { width: 110px; }
+.fighter--elite .fighter__body { width: 62px; height: 110px; }
 
 .fighter--dead { opacity: 0.25; }
 
 .fighter__hpbar {
-    width: 56px;
-    height: 8px;
-    margin-top: 10px;
+    width: 74px;
+    height: 10px;
+    /* Tight under the feet. At the old 10px the bar floated a sprite-width below its owner once
+       the cast was scaled up, and read as a mark on the road rather than as that thing's health. */
+    margin-top: 2px;
     background-color: rgba(255, 255, 255, 0.85);
     border-radius: 8px;
     overflow: hidden;
@@ -1678,16 +1680,16 @@
    with the creature already scaled and standing on the bottom edge, whereas the hero strips are the
    raw 16x28 cells. Sizing both boxes the same made every monster look like a doll next to the
    party. 64 canvas pixels is 84 at this field's scale. */
-.fighter--monster { width: 88px; }
+.fighter--monster { width: 116px; }
 
 .fighter--monster .fighter__body--creature {
     scale: 1 1;
-    width: 84px;
-    height: 84px;
+    width: 110px;
+    height: 110px;
 }
 
-.fighter--boss .fighter__body--creature { width: 168px; height: 152px; }
-.fighter--boss.fighter--monster { width: 172px; }
+.fighter--boss .fighter__body--creature { width: 216px; height: 196px; }
+.fighter--boss.fighter--monster { width: 224px; }
 
 /* Pixel HP bars: hard edges, a one-pixel dark border and no rounding, so they sit on the same grid
    as the sprites instead of looking like a web widget dropped onto a tileset. */

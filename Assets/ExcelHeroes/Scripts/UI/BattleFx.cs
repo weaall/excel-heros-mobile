@@ -36,6 +36,9 @@ namespace ExcelHeroes.UI
         /// <summary>Field space to element space. The screen sets these every frame.</summary>
         public float ScaleX = 1f, ScaleY = 1f;
 
+        /// <summary>Shifts field space by the camera window, so effects sit under the sprites.</summary>
+        public float OffsetX;
+
         /// <summary>
         /// How much bigger to draw an effect than the source does.
         ///
@@ -102,7 +105,7 @@ namespace ExcelHeroes.UI
             foreach (var f in _live)
             {
                 var k = Mathf.Clamp01(f.T / f.Life);
-                var x = f.X * ScaleX;
+                var x = f.X * ScaleX + OffsetX;
                 var y = f.Y * ScaleY;
                 var fade = 1f - k;
 
