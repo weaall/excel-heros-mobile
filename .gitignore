@@ -31,3 +31,6 @@ tools/.env.local
 
 # Gemini raw output cache (regenerable, large)
 tools/.cache/
+
+# built player
+Build/
