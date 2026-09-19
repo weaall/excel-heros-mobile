@@ -77,6 +77,19 @@ namespace ExcelHeroes.UI
             }, actions);
             auto.SetEnabled(p.owned.Any(o => o.id != GameData.MainId));
 
+            // 비품 자동 장착 sits next to it: both answer "just put the good stuff on", and
+            // four slots across five heroes is the other thing nobody compares by hand.
+            var gear = UiKit.Btn("비품 자동 장착", "btn", () =>
+            {
+                var (heroes, slotsChanged) = AutoEquipService.EquipParty(Game.Player);
+                AudioService.Play("upgrade", 0.6f);
+                _app.SetStatus(slotsChanged > 0
+                    ? $"비품 자동 장착 · {heroes}명 · {slotsChanged}부위"
+                    : "바꿀 비품이 없습니다");
+                Game.Touch();
+            }, actions);
+            gear.SetEnabled(Game.Player.items.Count > 0 && p.PartyCount() > 0);
+
             UiKit.Btn("대기 인원에서 채우기", "btn", OpenPicker, actions);
             var bulk = UiKit.Btn("골드 소진까지 일괄 강화", "btn btn--primary", () =>
             {

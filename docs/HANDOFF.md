@@ -97,6 +97,7 @@ rather than rebuilt from the data:
 | 스카우트 · 조각 변환 | `scoutShard` / `scoutInfo` / `convertShards` | gold buys a duplicate 3x a day; spares become 강화 카드 |
 | 세이브 이동 | `exportSave` / `importSave` | base64, same format as the web, so a code crosses between them |
 | 자동 편성 | `autoParty` / `partyScore` | seed on role, hill-climb on score; role coverage outranks raw power |
+| 비품 자동 장착 | `bestLoadout` / `autoEquip` / `autoEquipParty` | best-per-slot vs a full same-grade set, higher total wins |
 
 ### Gold is an `int` here and a double in the web — decide what to do about it
 
@@ -123,8 +124,7 @@ An audit of the web's `GameManager` API against this build found **18 missing fe
 The table above had been read as a complete list and it never was one. Still missing, in rough order
 of how much they matter:
 
-- **편의**: 비품 자동 장착 (`autoEquip`/`autoEquipParty`/`bestLoadout`), 즐겨찾기
-  (`toggleFavorite`)
+- **편의**: 즐겨찾기 (`toggleFavorite`)
 - **되돌리기**: 레벨·강화 환급 (`resetHeroLevel`, `downgradeHero`, `downgradeEnhance`,
   `reclaimBenchLevels`)
 - **설정**: 자동 진행 (`setAutoAdvance`/`setSafeAdvance`), 자동 강화 (`setAutoUpgrade`)
@@ -355,7 +355,9 @@ than trusting that a port of it works.
 
 ## What the audit still cannot see
 
-`LayoutAudit` measures against the screen and against each label's own text. It does NOT see an
+`LayoutAudit` measures against all four screen edges and against each label's own text. It checked
+only the right and bottom until a right-aligned button row outgrew its column and spilled off the
+LEFT — content that grows down and right is the common case, not the only one. It does NOT see an
 element clipped by an ancestor's `overflow: hidden` — UI Toolkit exposes no resolved `overflow`
 (`resolvedStyle` has no such property, `OverflowInternal` is internal, `computedStyle` is not
 public), so there is nothing to read. Containers that crop on purpose carry the `clips` class and

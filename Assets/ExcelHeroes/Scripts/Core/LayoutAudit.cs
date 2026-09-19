@@ -46,6 +46,15 @@ namespace ExcelHeroes.Core
                         problems.Add(new Problem { Where = Describe(e), What = $"{box.xMax - screen.xMax:F0}px past the right edge" });
                     if (box.yMax > screen.yMax + 1f)
                         problems.Add(new Problem { Where = Describe(e), What = $"{box.yMax - screen.yMax:F0}px below the bottom edge" });
+
+                    // The other two edges. This only ever checked right and bottom, which covers
+                    // content that grows downwards or rightwards — and misses the case that put a
+                    // button half off the screen here: a CENTRED row that outgrows its column
+                    // spills equally in both directions, so the first thing to go is the left end.
+                    if (box.xMin < screen.xMin - 1f)
+                        problems.Add(new Problem { Where = Describe(e), What = $"{screen.xMin - box.xMin:F0}px past the left edge" });
+                    if (box.yMin < screen.yMin - 1f)
+                        problems.Add(new Problem { Where = Describe(e), What = $"{screen.yMin - box.yMin:F0}px above the top edge" });
                 }
 
             }

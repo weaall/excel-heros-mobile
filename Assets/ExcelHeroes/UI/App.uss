@@ -3469,14 +3469,19 @@
 
 .party-cols__right { width: 34%; flex-shrink: 0; }
 
+/* Four buttons no longer fit on one line, and a right-aligned row that does not wrap spills off
+   the LEFT of the screen — which is how 자동 편성 ended up cut in half. Wrapping drops the overflow
+   onto a second line instead. Labels are not shortened to force one line: 골드 소진까지 일괄 강화
+   spends every coin the player has and the label is the only warning it gets. */
 .party-actions {
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: flex-end;
     flex-shrink: 0;
-    margin-top: var(--ex-space-2);
+    margin-top: var(--ex-space-1);
 }
 
-.party-actions .btn { margin-left: var(--ex-space-2); }
+.party-actions .btn { margin-left: var(--ex-space-2); margin-top: 6px; }
 
 .slot__hint { font-size: var(--ex-text-xs); color: var(--ex-ink-muted); margin-top: 6px; }
 
