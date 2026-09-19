@@ -110,6 +110,7 @@ namespace ExcelHeroes.UI
 
             var art = UiKit.Div("detail__art", view);
             UiKit.SetArt(art, GameData.CardArt(heroId));
+            ArtMotion.Breathe(art);
 
             // Outfits, not motion frames: the web build ships three illustrations per hero and no
             // in-between poses, and a generated tween between two drawings of the same face lands

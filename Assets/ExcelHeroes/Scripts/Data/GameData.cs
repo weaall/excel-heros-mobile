@@ -25,6 +25,7 @@ namespace ExcelHeroes.Data
         public static List<MainJobDef> MainJobs { get; private set; } = new();
         public static List<MonsterTypeDef> MonsterTypes { get; private set; } = new();
         public static List<BossDef> Bosses { get; private set; } = new();
+        public static List<PrologueScene> Prologue { get; private set; } = new();
         public static PickupFile Pickup { get; private set; }
         public static QuestFile Quests { get; private set; }
 
@@ -55,6 +56,7 @@ namespace ExcelHeroes.Data
             Traits = Read<Wrapper<TraitDef>>("traits").items;
             Heroes = Read<Wrapper<HeroDef>>("heroes").items;
             Episodes = Read<Wrapper<EpisodeDef>>("story").items;
+            Prologue = Read<PrologueFile>("prologue").items;
             Balance = Read<BalanceDef>("balance");
 
             Synergy = Read<DivisionFile>("divisions");

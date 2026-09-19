@@ -63,6 +63,9 @@ namespace ExcelHeroes.Core
         // when they next open the app; coming back un-disguised is the one failure that matters.
         public bool stealth;
 
+        /// <summary>The opening has been watched. It is re-readable from the 사내_메신저 sheet.</summary>
+        public bool prologueSeen;
+
         public static PlayerState New()
         {
             var b = GameData.Balance;

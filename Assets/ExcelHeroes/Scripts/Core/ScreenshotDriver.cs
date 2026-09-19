@@ -61,6 +61,14 @@ namespace ExcelHeroes.Core
                 }
 
                 var n = 0;
+
+                // Whatever a brand new save opens on, before anything is dismissed. On a fresh
+                // profile that is the prologue, which is exactly the screen most likely to be wrong
+                // and least likely to be looked at twice.
+                yield return Shoot($"{n++:00}-Opening");
+                app.CloseOverlay();
+                yield return null;
+
                 foreach (AppRoot.Sheet sheet in System.Enum.GetValues(typeof(AppRoot.Sheet)))
                 {
                     app.Show(sheet);

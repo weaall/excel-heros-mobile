@@ -82,6 +82,7 @@ namespace ExcelHeroes.UI
 
             var panel = UiKit.Div("viewer");
             var art = UiKit.Div("viewer__art", panel);
+            ArtMotion.Breathe(art);
             var caption = UiKit.Div("viewer__caption", panel);
             UiKit.Text(def.name, "viewer__name", caption);
             UiKit.Text($"{def.nick} · {def.dept}", "viewer__nick", caption);

@@ -1780,3 +1780,109 @@
 
 .shot--drop { background-color: rgb(214, 62, 52); border-radius: 7px; }
 .shot--slash { width: 22px; height: 6px; background-color: rgb(255, 240, 200); }
+
+/* ---------------------------------------------------------------- 프롤로그 */
+
+/* Full bleed, chrome included. A story beat framed by a ribbon and a formula bar is not one. */
+.prologue {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(12, 14, 20);
+}
+
+.prologue__art {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+/* The narration sits over the lower third, so that part is darkened and the art is not — in four
+   bands, because one box of flat alpha cuts a visible line across the picture. */
+.prologue__scrim { position: absolute; left: 0; right: 0; }
+.prologue__scrim--0 { bottom: 40%; height: 9%; background-color: rgba(8, 10, 16, 0.18); }
+.prologue__scrim--1 { bottom: 28%; height: 12%; background-color: rgba(8, 10, 16, 0.42); }
+.prologue__scrim--2 { bottom: 16%; height: 12%; background-color: rgba(8, 10, 16, 0.62); }
+.prologue__scrim--3 { bottom: 0; height: 16%; background-color: rgba(8, 10, 16, 0.78); }
+
+.prologue__head {
+    position: absolute;
+    left: 48px;
+    top: 72px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.prologue__counter {
+    width: 54px;
+    height: 54px;
+    -unity-text-align: middle-center;
+    font-size: 28px;
+    color: rgb(255, 255, 255);
+    background-color: rgba(255, 255, 255, 0.18);
+    border-radius: 27px;
+    margin-right: 16px;
+}
+
+.prologue__title { font-size: 40px; color: rgb(255, 255, 255); -unity-font-style: bold; }
+
+.prologue__body {
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    bottom: 200px;
+    font-size: 40px;
+    color: rgb(240, 242, 248);
+    white-space: normal;
+}
+
+.prologue__foot {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 56px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.prologue__skip {
+    height: 88px;
+    min-width: 180px;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-width: 0;
+    border-radius: 8px;
+    color: rgb(215, 220, 232);
+    font-size: 32px;
+}
+
+.prologue__dots { flex-grow: 1; flex-direction: row; justify-content: center; }
+
+.prologue__dot {
+    width: 18px;
+    height: 18px;
+    margin-left: 7px;
+    margin-right: 7px;
+    border-radius: 9px;
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.prologue__dot--on { background-color: rgb(33, 115, 70); }
+
+.prologue__nav {
+    height: 88px;
+    min-width: 168px;
+    margin-left: 14px;
+    background-color: rgba(255, 255, 255, 0.14);
+    border-width: 0;
+    border-radius: 8px;
+    color: rgb(255, 255, 255);
+    font-size: 32px;
+}
+
+.prologue__nav:disabled { opacity: 0.35; }
+.prologue__nav--primary { background-color: rgb(33, 115, 70); }

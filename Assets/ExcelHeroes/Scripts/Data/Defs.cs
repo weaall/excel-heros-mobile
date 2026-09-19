@@ -241,6 +241,21 @@ namespace ExcelHeroes.Data
         public List<BossSpecialDef> specials = new();
     }
 
+    /// <summary>
+    /// One page of the opening: a backdrop and a few lines of narration. Shown once on a new save
+    /// and re-readable from the 사내_메신저 sheet afterwards.
+    /// </summary>
+    [Serializable]
+    public class PrologueScene
+    {
+        public string id;
+        public string title;
+        public List<string> lines = new();
+    }
+
+    [Serializable]
+    public class PrologueFile { public List<PrologueScene> items = new(); }
+
     [Serializable]
     public class MonsterFile
     {

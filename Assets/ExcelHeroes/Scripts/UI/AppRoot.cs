@@ -127,7 +127,11 @@ namespace ExcelHeroes.UI
             ApplyStealth();
             Show(Sheet.Home);
 
-            if (Onboarding.Needed(Game.Player)) new Onboarding(this).Show();
+            // The opening comes before anything else, and the tips only after it — the web build
+            // does the same, and stacking them would put a coach mark on top of a story beat.
+            if (PrologueScreen.Needed(Game.Player))
+                new PrologueScreen(this, ShowOnboardingIfNeeded).Show();
+            else ShowOnboardingIfNeeded();
 
             void Bind(string name, Sheet sheet)
             {
@@ -137,6 +141,11 @@ namespace ExcelHeroes.UI
                 button.clicked += () => { AudioService.Play("nav", 0.5f); Show(sheet); };
                 _tabs[sheet] = button;
             }
+        }
+
+        void ShowOnboardingIfNeeded()
+        {
+            if (Onboarding.Needed(Game.Player)) new Onboarding(this).Show();
         }
 
         void OnDisable()
