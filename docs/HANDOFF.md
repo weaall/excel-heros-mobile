@@ -93,8 +93,13 @@ rather than rebuilt from the data:
 
 | 승진 | `mainPromotionInfo` / `promoteMain` + `MAIN_JOBS` | 11 jobs, three tracks, the fork after 사원 is permanent |
 
-**Not yet.** Cloud sync (needs a mobile OAuth decision — the client secret is never usable), the
-roster's table view.
+**Not yet.** Cloud sync — it needs a decision about mobile OAuth, and the client secret can never
+be used, so this is not a coding task until that decision is made.
+
+**Deliberately not ported: the roster's table view.** It existed in the web because the whole game
+was disguised as a spreadsheet, and a table is the one shape that disguise demanded. 도감 was the
+last screen still wearing it and became a card gallery for the same reason. Porting a table back in
+would be porting the disguise, not the feature.
 
 ### 김인턴 was not in the game
 
@@ -246,9 +251,13 @@ this sim.
   once.
 - **Safe area is untested.** `Screen.safeArea` returns the whole screen on desktop, so `SafeArea.cs`
   has never actually inset anything. It needs a device or an emulator with a cutout.
-- Nothing on the art side. The HF route is no longer the only one: `tools/gen-art.mjs` runs the
-  whole cast through Gemini (`cards`, then `skins`, which reference the freshly generated bases),
-  and `tools/art-prompts.mjs` holds the direction. The key lives in `tools/.env.local`, gitignored.
+- Nothing on the art side, and **do not generate any**. `tools/gen-art.mjs` and
+  `tools/art-prompts.mjs` are still in the tree but the route is abandoned: generated replacements
+  came back as the same characters with different faces, which broke the visual identity the whole
+  project is built on. The web build is the art source. `tools/bake-art.mjs` copies its 198
+  illustrations and re-bakes its sprite strips through the web's own builders, and that is the only
+  way art should enter this project. Re-run it after any change to the web's art — it is the only
+  thing that notices, and this build was shipping a stale set until someone re-ran it.
 
 ## Art direction
 
