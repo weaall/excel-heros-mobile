@@ -108,6 +108,16 @@ namespace ExcelHeroes.UI
 
             // On a phone the ribbon is summoned, not resident: 홈 ▲ slides it up over the grid.
             _gutter = root.Q<VisualElement>("rowGutter");
+
+            // Excel's tab strip slides without showing a scrollbar. The USS selector for the
+            // built-in scroller does not survive the ScrollView rebuilding its parts, so it is set
+            // on the control itself.
+            var tabScroll = root.Q<ScrollView>("sheetTabsScroll");
+            if (tabScroll != null)
+            {
+                tabScroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+                tabScroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+            }
             _ribbonToggle = root.Q<Button>("ribbonToggle");
             if (_ribbonToggle != null) _ribbonToggle.clicked += ToggleRibbon;
 

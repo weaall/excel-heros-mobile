@@ -42,12 +42,17 @@
     margin-right: 18px;
 }
 
-.appbar__title { color: rgb(255, 255, 255); font-size: 40px; }
+.appbar__title {
+    flex-grow: 1;
+    color: rgb(255, 255, 255);
+    font-size: 38px;
+    -unity-text-align: middle-center;
+}
 .appbar__save { color: rgba(255, 255, 255, 0.85); font-size: 30px; margin-right: 10px; }
 
 .appbar__btn {
-    width: 96px;
-    height: 96px;
+    width: 84px;
+    height: 84px;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     color: rgb(255, 255, 255);
@@ -63,23 +68,26 @@
 .ws-cols {
     flex-direction: row;
     flex-shrink: 0;
-    height: 54px;
-    background-color: rgb(243, 243, 243);
+    height: 62px;
+    background-color: rgb(255, 255, 255);
     border-bottom-width: 1px;
     border-bottom-color: rgb(191, 191, 191);
 }
 
 .ws-corner {
-    width: 68px;
+    width: 74px;
+    -unity-text-align: middle-center;
+    font-size: 26px;
+    color: rgb(140, 140, 140);
     border-right-width: 1px;
-    border-right-color: rgb(191, 191, 191);
+    border-right-color: rgb(212, 212, 212);
 }
 
 .ws-col {
     flex-grow: 1;
     -unity-text-align: middle-center;
-    font-size: 28px;
-    color: rgb(107, 107, 107);
+    font-size: 30px;
+    color: rgb(70, 70, 70);
     border-right-width: 1px;
     border-right-color: rgb(212, 212, 212);
 }
@@ -87,18 +95,18 @@
 .sheet-row { flex-direction: row; flex-grow: 1; min-height: 0; }
 
 .ws-rows {
-    width: 68px;
+    width: 74px;
     flex-shrink: 0;
-    background-color: rgb(243, 243, 243);
+    background-color: rgb(255, 255, 255);
     border-right-width: 1px;
-    border-right-color: rgb(191, 191, 191);
+    border-right-color: rgb(212, 212, 212);
 }
 
 .ws-row-num {
     height: 96px;
     -unity-text-align: middle-center;
     font-size: 26px;
-    color: rgb(107, 107, 107);
+    color: rgb(120, 120, 120);
     border-bottom-width: 1px;
     border-bottom-color: rgb(212, 212, 212);
 }
@@ -109,6 +117,9 @@
     min-height: 0;
     overflow: hidden;
     background-color: rgb(255, 255, 255);
+    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/cell_rule.png");
+    background-repeat: repeat;
+    background-size: 96px 96px;
 }
 
 .screen { flex-grow: 1; overflow: hidden; }
@@ -180,16 +191,21 @@
 }
 
 .name-box {
-    width: 168px;
-    height: 96px;
+    -unity-text-align: middle-right;
+    font-size: 26px;
+    color: rgb(150, 150, 150);
+    margin-right: 10px;
+}
+
+.formula-expand {
+    width: 70px;
     -unity-text-align: middle-center;
-    font-size: 32px;
-    border-right-width: 1px;
-    border-right-color: rgb(212, 212, 212);
+    font-size: 30px;
+    color: rgb(107, 107, 107);
 }
 
 .fx {
-    width: 76px;
+    width: 84px;
     -unity-text-align: middle-center;
     font-size: 32px;
     color: rgb(107, 107, 107);
@@ -211,34 +227,47 @@
 
 /* The sheet tabs are the game's navigation, so unlike the real app they stay put rather than
    hiding behind a sheet icon — and they sit low, inside thumb reach. */
-.sheet-tabs-scroll {
-    height: 124px;
+.sheet-tabs-row {
+    flex-direction: row;
+    align-items: center;
     flex-shrink: 0;
-    background-color: rgb(243, 243, 243);
+    height: 118px;
+    background-color: rgb(247, 247, 247);
     border-top-width: 1px;
     border-top-color: rgb(212, 212, 212);
 }
 
-.sheet-tabs { flex-direction: row; align-items: center; height: 124px; }
+.sheet-tabs-scroll { flex-grow: 1; height: 118px; }
 
-.sheet-tab {
-    height: 124px;
-    padding-left: 34px;
-    padding-right: 34px;
+.sheet-list-btn, .sheet-add-btn {
+    width: 92px;
+    height: 118px;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
-    border-right-width: 1px;
-    border-right-color: rgb(212, 212, 212);
-    color: rgb(70, 70, 70);
-    font-size: 34px;
+    color: rgb(107, 107, 107);
+    font-size: 36px;
+}
+
+.sheet-tabs { flex-direction: row; align-items: center; height: 118px; }
+
+.sheet-tab {
+    height: 118px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding-left: 30px;
+    padding-right: 30px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    color: rgb(107, 107, 107);
+    font-size: 33px;
 }
 
 .sheet-tab--active {
     background-color: rgb(255, 255, 255);
-    color: rgb(33, 115, 70);
+    color: rgb(24, 92, 55);
     -unity-font-style: bold;
-    border-bottom-width: 6px;
-    border-bottom-color: rgb(33, 115, 70);
+    border-bottom-width: 5px;
+    border-bottom-color: rgb(24, 92, 55);
 }
 
 .sheet-tab__badge {
@@ -260,7 +289,7 @@
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-    height: 116px;
+    height: 92px;
     padding-left: 12px;
     padding-right: 20px;
     background-color: rgb(243, 243, 243);
@@ -280,12 +309,12 @@
 
 .status-text { font-size: 26px; color: rgb(107, 107, 107); margin-left: 18px; }
 
-.cell-stat { flex-direction: row; align-items: center; margin-left: 24px; }
-.cell-stat__icon { font-size: 30px; margin-right: 8px; color: rgb(107, 107, 107); }
-.cell-stat__value { font-size: 34px; -unity-font-style: bold; }
+.cell-stat { flex-direction: row; align-items: center; margin-left: 28px; }
+.cell-stat__icon { font-size: 27px; margin-right: 10px; color: rgb(128, 128, 128); }
+.cell-stat__value { font-size: 29px; color: rgb(70, 70, 70); }
 
-#gemChip .cell-stat__value { color: rgb(31, 111, 235); }
-#goldChip .cell-stat__value { color: rgb(150, 112, 8); }
+#gemChip .cell-stat__value { color: rgb(70, 70, 70); }
+#goldChip .cell-stat__value { color: rgb(70, 70, 70); }
 
 /* ---------------------------------------------------------------- overlay */
 
@@ -324,7 +353,7 @@
 .panel {
     flex-shrink: 0;
     background-color: rgb(250, 250, 250);
-    border-radius: 26px;
+    border-radius: 0;
     border-width: 1px;
     border-color: rgb(212, 212, 212);
     padding: 32px;
