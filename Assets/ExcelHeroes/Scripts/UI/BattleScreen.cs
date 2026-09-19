@@ -24,7 +24,16 @@ namespace ExcelHeroes.UI
         readonly AppRoot _app;
         VisualElement _root, _stage, _exBar, _resultView;
         Label _waveLabel;
-        Button _autoButton;
+        Button _autoButton, _speedButton;
+
+        // Blue Archive offers up to 3x and an auto toggle side by side in the HUD, not buried in
+        // settings. An idle-ish fight nobody can speed up is a fight you watch rather than play.
+        static readonly int[] Speeds = { 1, 2, 3 };
+        int _speedIndex;
+        public float Speed => Speeds[_speedIndex];
+
+        ScrollView _log;
+        readonly System.Collections.Generic.List<string> _logLines = new();
         BattleSim _sim;
 
         readonly Dictionary<Combatant, VisualElement> _views = new();
@@ -49,6 +58,7 @@ namespace ExcelHeroes.UI
             var hud = UiKit.Div("battle__hud", _root);
             _waveLabel = UiKit.Text("", "battle__wave", hud);
             _autoButton = UiKit.Btn("자동 스킬 OFF", "btn btn--ghost", ToggleAuto, hud);
+            _speedButton = UiKit.Btn("×1", "btn btn--ghost", CycleSpeed, hud);
 
             _stage = UiKit.Div("battle__stage", _root);
 
@@ -61,6 +71,7 @@ namespace ExcelHeroes.UI
                 _costCells.Add(UiKit.Div("cost-cell", track));
 
             _exBar = UiKit.Div("ex-bar", _root);
+            _log = UiKit.Scroll("battle-log", _root);
 
             Start();
             return _root;
@@ -68,6 +79,12 @@ namespace ExcelHeroes.UI
 
         Label _costValue;
         readonly System.Collections.Generic.List<VisualElement> _costCells = new();
+
+        void CycleSpeed()
+        {
+            _speedIndex = (_speedIndex + 1) % Speeds.Length;
+            _speedButton.text = $"×{Speeds[_speedIndex]}";
+        }
 
         void ToggleAuto()
         {
@@ -177,7 +194,11 @@ namespace ExcelHeroes.UI
         public void Tick(float dt)
         {
             if (_sim == null) return;
-            if (!_sim.Finished) _sim.Tick(dt);
+            // The whole simulation runs faster, rather than the animation being sped up separately,
+            // so what is on screen is always what actually happened.
+            if (!_sim.Finished)
+                for (var i = 0; i < Speed; i++)
+                    if (!_sim.Finished) _sim.Tick(dt);
 
             DrainEvents();
             LayoutFighters();
@@ -223,9 +244,42 @@ namespace ExcelHeroes.UI
                         break;
                     case EventKind.Death:
                         if (_views.TryGetValue(e.target, out var dead)) dead.AddToClassList("fighter--dead");
+                        if (e.target != null && e.target.side == Side.Monster) Log($"{e.target.name} 처리 완료");
+                        else if (e.target != null) Log($"{e.target.name} 이탈");
+                        break;
+                    case EventKind.WaveClear:
+                        Log($"웨이브 {_sim.Wave} 정리 — 다음 구간");
+                        break;
+                    case EventKind.Victory:
+                        Log("전 구간 처리 완료");
+                        break;
+                    case EventKind.Defeat:
+                        Log(_sim.TimedOut ? "시간 초과 — 미처리 건 남음" : "처리 실패");
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// The battle log, written into the sheet's own rows under the field — which is where the
+        /// web build puts it, and what the empty space below the battle was there for. It is also
+        /// the part of the screen that carries the disguise: in 위장 모드 these lines become
+        /// recalculation progress instead.
+        /// </summary>
+        void Log(string line)
+        {
+            if (_log == null) return;
+            _logLines.Add(line);
+            if (_logLines.Count > 40) _logLines.RemoveAt(0);
+
+            _log.Clear();
+            for (var i = 0; i < _logLines.Count; i++)
+            {
+                var row = UiKit.Div("log-row", _log);
+                UiKit.Text((i + 1).ToString(), "log-row__n", row);
+                UiKit.Text(_app.Stealth ? StealthLabels.LogLine(i) : _logLines[i], "log-row__text", row);
+            }
+            _log.scrollOffset = new Vector2(0, float.MaxValue);
         }
 
         // Kept in step with .fighter / .fighter__body in App.uss: a 16x28 sprite at 4x, on rows tall

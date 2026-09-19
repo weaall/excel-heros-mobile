@@ -1888,3 +1888,31 @@
 
 .prologue__nav:disabled { opacity: 0.35; }
 .prologue__nav--primary { background-color: rgb(33, 115, 70); }
+
+/* ---------------------------------------------------------------- battle log */
+
+/* Rows in the sheet under the field, numbered like cells. In 위장 모드 the same rows carry
+   recalculation progress, which is the whole reason the log is here and not in a floating panel. */
+.battle-log {
+    flex-grow: 1;
+    background-color: rgb(255, 255, 255);
+}
+
+.log-row {
+    flex-direction: row;
+    align-items: center;
+    height: 48px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(238, 238, 238);
+}
+
+.log-row__n {
+    width: 74px;
+    -unity-text-align: middle-center;
+    font-size: 22px;
+    color: rgb(160, 160, 160);
+    border-right-width: 1px;
+    border-right-color: rgb(238, 238, 238);
+}
+
+.log-row__text { padding-left: 18px; font-size: 24px; color: rgb(70, 70, 70); }
