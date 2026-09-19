@@ -55,19 +55,30 @@ namespace ExcelHeroes.Core
             // The bodies hit about once a second each; the boss hits harder and slower.
             var enemyDps = StatMath.MonsterAtk(stage) * MinionsPerWave / 1.1f;
 
-            var ratio = dps / Mathf.Max(1f, enemyHp) / (enemyDps / hp);
+            // The ratio is against ONE encounter — the boss, as the hardest of the three — not
+            // against the whole stage. Summing every wave into it made a party that clears the
+            // stage on every run read 불리, because it was being asked to kill three waves at once.
+            // Total HP still drives the ETA below, which is what the total is actually for.
+            var ratio = dps / Mathf.Max(1f, bossHp) / (enemyDps / hp);
 
             var b = GameData.Balance;
-            var lo = Mathf.Max(0.01f, b.forecastBossLo);
-            var hi = Mathf.Max(lo + 0.01f, b.forecastBossHi);
-            var prob = Mathf.Clamp01(Mathf.Log(Mathf.Max(1e-9f, ratio) / lo) / Mathf.Log(hi / lo));
 
             var eta = (MinionWaves + 1) * Approach
                       + (minionHp * MinionWaves + bossHp) / dps;
             eta *= b.forecastEtaBoss;
 
-            var label = prob >= 0.7f ? "유리" : prob >= b.safeAdvanceMin ? "접전" : "불리";
-            return new Result(stage, ratio, prob, eta, label);
+            // No 유리/접전/불리 label.
+            //
+            // The web's thresholds ([3,15]) were measured against ITS encounter — one wave, or one
+            // boss on a boss stage. This build's fight is two waves and a boss at every stage, so
+            // the same ratio means something different here and those constants do not transfer.
+            // Shipping a label calibrated for another game read 불리 on a stage this party clears
+            // every single run, which is worse than saying nothing.
+            //
+            // Calibrating it honestly means measuring this sim, which is a bench run and a
+            // separate piece of work. Until then the ETA carries the information — and by the
+            // web's own note that was always the part that did.
+            return new Result(stage, ratio, 0f, eta, "");
         }
 
         /// <summary>"1분 20초" — the number a player actually reads off this.</summary>

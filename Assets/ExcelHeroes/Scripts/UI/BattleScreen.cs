@@ -405,8 +405,7 @@ namespace ExcelHeroes.UI
             if (_forecastLabel != null)
             {
                 var f = ForecastService.For(Game.Player, _sim.Stage);
-                _forecastLabel.text = $"예상 {ForecastService.Eta(f.Eta)} · {f.Label}";
-                _forecastLabel.EnableInClassList("forecast--hard", f.Prob < GameData.Balance.safeAdvanceMin);
+                _forecastLabel.text = $"예상 {ForecastService.Eta(f.Eta)}";
             }
 
             if (_sim.Finished && _resultView == null) ShowResult();
