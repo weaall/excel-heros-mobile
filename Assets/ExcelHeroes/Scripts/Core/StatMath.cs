@@ -48,7 +48,7 @@ namespace ExcelHeroes.Core
             var v = grade.baseAtk * role.atk
                     * MathF.Pow(b.heroAtkGrowth, Math.Max(1, o.level) - 1)
                     * StarMult(o.star)
-                    * (1f + o.affection * 0.01f);
+                    * (1f + o.affection * GameData.Balance.affectionBonusPerLevel);
             return Math.Max(1, (int)MathF.Floor(v));
         }
 
@@ -62,7 +62,7 @@ namespace ExcelHeroes.Core
             var v = grade.baseHp * role.hp
                     * MathF.Pow(b.heroHpGrowth, Math.Max(1, o.level) - 1)
                     * StarMult(o.star)
-                    * (1f + o.affection * 0.01f);
+                    * (1f + o.affection * GameData.Balance.affectionBonusPerLevel);
             return Math.Max(1, (int)MathF.Floor(v));
         }
 

@@ -13,6 +13,8 @@ const OUT = resolve(HERE, '..', 'Assets', 'ExcelHeroes', 'Resources', 'Data');
 const load = (rel) => import(pathToFileURL(join(WEB, rel)).href);
 
 const heroes    = await load('src/data/heroes.js');
+const pickup    = await load('src/data/pickup.js');
+const extra     = await load('src/data/profilesExtra.js');
 const profiles  = await load('src/data/profiles.js');
 const divisions = await load('src/data/divisions.js');
 const story     = await load('src/data/story.js');
@@ -76,6 +78,31 @@ const files = {
                       pairAtk: SYNERGY.pair.atk, pairHp: SYNERGY.pair.hp,
                       trioAtk: SYNERGY.trio.atk, trioHp: SYNERGY.trio.hp,
                       balancedHp: SYNERGY.balanced.hp },
+  // 오늘의 픽업. The web build rotates a featured S and A through the whole roster so wanting a
+  // particular card becomes "come back on their day" rather than praying. We export the fixed
+  // per-grade order it walks, so the Unity client lands on the same hero on the same date.
+  'pickup.json': {
+    rate: pickup.PICKUP_RATE, days: pickup.PICKUP_DAYS,
+    sparkS: pickup.SPARK_COST?.S ?? 150, sparkA: pickup.SPARK_COST?.A ?? 60,
+    orders: pickup.PICKUP_GRADES.map((g) => ({
+      grade: g,
+      // pickupFor() walks this order one step per banner; reproducing the order is enough.
+      ids: (() => {
+        const ids = [];
+        for (let i = 0; i < 400; i++) {
+          const key = new Date((i * pickup.PICKUP_DAYS) * 86400000).toISOString().slice(0, 10);
+          const id = pickup.pickupFor(key)[g];
+          if (id && !ids.includes(id)) ids.push(id);
+        }
+        return ids;
+      })(),
+    })),
+  },
+  // 호감도 해금 텍스트: a second bio line at Lv3 and a private message at Lv5. This is the payoff
+  // that makes levelling a bond worth doing, so it ships with the roster rather than as an extra.
+  'affection.json': wrap(Object.entries(extra.EXTRA ?? {}).map(([id, e]) => ({
+    id, secret: e.secret ?? '', line2: e.line2 ?? '',
+  }))),
   // 몬스터는 스프레드시트 오류다. 페이즈마다 다른 3종을 뽑아 쓰고, 10스테이지마다 보스가 돌아온다.
   'monsters.json': {
     items: (monsters.MONSTER_TYPES ?? []).map((m) => ({ id: m.id, name: m.name, shape: m.shape })),
@@ -107,6 +134,16 @@ const files = {
     traitPerStar: BALANCE.TRAIT_STAR?.perStar ?? 0.12,
     monsterAtkRampFull: BALANCE.MONSTER_ATK_RAMP?.full ?? 5,
     monsterAtkRampByStage: BALANCE.MONSTER_ATK_RAMP?.byStage ?? 25,
+    affectionMax: BALANCE.AFFECTION?.maxLevel ?? 10,
+    affectionXpBase: BALANCE.AFFECTION?.xpBase ?? 60,
+    affectionXpGrowth: BALANCE.AFFECTION?.xpGrowth ?? 1.45,
+    affectionXpPerKill: BALANCE.AFFECTION?.xpPerKill ?? 1,
+    affectionXpPerBoss: BALANCE.AFFECTION?.xpPerBoss ?? 15,
+    affectionGiftXp: BALANCE.AFFECTION?.giftXp ?? 45,
+    affectionGiftGoldKills: BALANCE.AFFECTION?.giftGoldKills ?? 40,
+    affectionBonusPerLevel: BALANCE.AFFECTION?.bonusPerLevel ?? 0.01,
+    affectionUnlockSecret: BALANCE.AFFECTION?.unlockSecret ?? 3,
+    affectionUnlockLine: BALANCE.AFFECTION?.unlockLine ?? 5,
   },
 };
 

@@ -157,6 +157,51 @@ namespace ExcelHeroes.UI
                 td.style.whiteSpace = WhiteSpace.Normal;
             }
 
+            // 호감도 — the bond, and the text it buys. The locked rows stay visible on purpose:
+            // knowing there IS a private message at Lv5 is what makes Lv4 worth reaching.
+            if (owned != null)
+            {
+                var bond = UiKit.Div("panel", body);
+                var b = GameData.Balance;
+                UiKit.Text($"호감도 Lv{owned.affection} / {b.affectionMax}", "section-title", bond);
+
+                var need = AffectionService.XpForNext(owned.affection);
+                UiKit.Text(need > 0 ? $"다음까지 {owned.affectionXp} / {need}" : "최대 호감도", "muted", bond);
+
+                var extra = GameData.Affection(heroId);
+                if (AffectionService.SecretUnlocked(owned) && !string.IsNullOrEmpty(extra?.secret))
+                {
+                    var s = UiKit.Text($"사무실 비화 — {extra.secret}", null, bond);
+                    s.style.whiteSpace = WhiteSpace.Normal;
+                }
+                else UiKit.Text($"사무실 비화 — Lv{b.affectionUnlockSecret} 해금", "muted", bond);
+
+                if (AffectionService.LineUnlocked(owned) && !string.IsNullOrEmpty(extra?.line2))
+                {
+                    var l = UiKit.Text($"“{extra.line2}”", null, bond);
+                    l.style.whiteSpace = WhiteSpace.Normal;
+                    l.style.color = new Color(1f, 0.67f, 0.74f);
+                }
+                else UiKit.Text($"개인 메시지 — Lv{b.affectionUnlockLine} 해금", "muted", bond);
+
+                if (!AffectionService.AtMax(owned))
+                {
+                    var cost = AffectionService.GiftCost(Game.Player);
+                    var gift = UiKit.Btn($"간식 사주기 · ₩{cost:N0}", "btn", () =>
+                    {
+                        if (AffectionService.Gift(Game.Player, owned) >= 0) { Game.Touch(); Reopen(heroId, onClose); }
+                    }, bond);
+                    gift.SetEnabled(Game.Player.gold >= cost);
+                }
+
+                var lead = UiKit.Btn(Game.Player.leadHeroId == heroId ? "대표 사원 ✓" : "대표 사원으로", "btn btn--ghost", () =>
+                {
+                    Game.Player.leadHeroId = Game.Player.leadHeroId == heroId ? "" : heroId;
+                    Game.Touch();
+                    Reopen(heroId, onClose);
+                }, bond);
+            }
+
             var bioPanel = UiKit.Div("panel", body);
             UiKit.Text("인사 기록", "section-title", bioPanel);
             var bio = UiKit.Text(def.bio, null, bioPanel);

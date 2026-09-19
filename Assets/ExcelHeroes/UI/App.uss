@@ -152,6 +152,170 @@
     border-color: rgb(54, 70, 108);
 }
 
+/* ---------------------------------------------------------------- home */
+
+.home { flex-grow: 1; }
+
+.home__art {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+/* stacked on the base art so a motion frame can cross-fade in */
+.home__art-motion {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+    opacity: 0;
+    transition-duration: 0.9s;
+}
+
+.home__art-motion--on { opacity: 1; }
+
+.home__scrim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 620px;
+    background-color: rgba(6, 9, 18, 0.62);
+}
+
+.home__strip {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    top: 16px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.home__stat {
+    flex-grow: 1;
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: rgba(8, 11, 20, 0.72);
+    border-radius: 14px;
+    border-width: 1px;
+    border-color: rgba(84, 106, 150, 0.6);
+}
+
+.home__stat-value { font-size: 30px; -unity-font-style: bold; color: rgb(240, 196, 70); }
+.home__stat-key { font-size: 19px; color: rgb(168, 182, 210); }
+
+.home__bubble {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 240px;
+    padding: 20px;
+    background-color: rgba(8, 11, 20, 0.82);
+    border-radius: 18px;
+    border-width: 1px;
+    border-color: rgba(84, 106, 150, 0.7);
+}
+
+.home__who { font-size: 24px; color: rgb(212, 160, 23); -unity-font-style: bold; }
+
+.home__speech {
+    font-size: 27px;
+    white-space: normal;
+    margin-top: 8px;
+    color: rgb(238, 242, 250);
+}
+
+.home__bond { margin-top: 16px; }
+.home__bond-level { font-size: 20px; color: rgb(255, 170, 190); }
+
+.home__bond-track {
+    height: 10px;
+    margin-top: 6px;
+    background-color: rgba(40, 52, 82, 0.9);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.home__bond-fill { height: 100%; background-color: rgb(255, 122, 158); }
+
+.home__actions {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    flex-direction: row;
+}
+
+.home__actions .btn { flex-grow: 1; margin-left: 5px; margin-right: 5px; }
+
+/* ---------------------------------------------------------------- pickup banner */
+
+.pickup {
+    flex-direction: row;
+    width: 100%;
+    margin-bottom: 14px;
+}
+
+.pickup__card {
+    flex-grow: 1;
+    height: 300px;
+    margin-left: 6px;
+    margin-right: 6px;
+    border-radius: 16px;
+    border-width: 3px;
+    overflow: hidden;
+    justify-content: flex-end;
+}
+
+.pickup__art {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.pickup__plate {
+    background-color: rgba(6, 9, 18, 0.86);
+    padding: 8px;
+    align-items: center;
+}
+
+.pickup__tag {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-radius: 12px;
+    font-size: 18px;
+    -unity-font-style: bold;
+    background-color: rgb(226, 72, 112);
+    color: rgb(255, 240, 245);
+}
+
+.pickup__name { font-size: 21px; -unity-font-style: bold; }
+.pickup__spark { font-size: 18px; color: rgb(126, 198, 255); }
+
+.pickup__timer {
+    font-size: 21px;
+    color: rgb(255, 170, 190);
+    -unity-text-align: middle-center;
+    margin-bottom: 6px;
+}
+
 /* ---------------------------------------------------------------- gacha */
 
 .gacha {

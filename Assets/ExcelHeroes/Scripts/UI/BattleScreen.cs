@@ -228,9 +228,16 @@ namespace ExcelHeroes.UI
             if (_sim.Won)
             {
                 Game.Player.gold += _sim.GoldEarned;
-                Game.Player.gems += 5;
+                var gems = 5 + _sim.GemBonus;          // 행운의 셀 holders pay out here
+                Game.Player.gems += gems;
                 if (_sim.Stage >= Game.Player.stage) Game.Player.stage++;
-                UiKit.Text($"골드 +{_sim.GoldEarned:N0} · 보석 +5", null, _resultView);
+
+                // Everyone who fought gets closer to you. Reported so the bond is visibly a reward
+                // for fielding a card rather than a hidden counter.
+                AffectionService.AwardBattle(Game.Player, _sim.Kills, clearedBoss: true);
+
+                UiKit.Text($"골드 +{_sim.GoldEarned:N0} · 보석 +{gems}", null, _resultView);
+                UiKit.Text("파티 전원 호감도 상승", "muted", _resultView);
                 UiKit.Text($"다음 구간: Phase {Game.Player.stage}", "muted", _resultView);
                 Game.Touch();
             }

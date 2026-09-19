@@ -103,6 +103,8 @@ namespace ExcelHeroes.EditorTools
             CheckPity();
             CheckStats();
             CheckSynergy();
+            CheckPickup();
+            CheckAffection();
             CheckBattle();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
@@ -229,6 +231,105 @@ namespace ExcelHeroes.EditorTools
             solo.owned.Add(new OwnedHero(tech[0].id));
             solo.AddToParty(tech[0].id);
             Check(StatMath.Synergy(solo).atkBonus == 0f, "a lone hero grants no synergy");
+        }
+
+        static void CheckPickup()
+        {
+            Line("\n-- pickup banner --");
+            Check(GameData.Pickup != null, "pickup data loaded");
+            if (GameData.Pickup == null) return;
+
+            var today = DateTime.UtcNow;
+            var s = GameData.Featured("S", today);
+            var a = GameData.Featured("A", today);
+            Check(s != null && s.grade == "S", $"today's S pickup is an S ({s?.name})");
+            Check(a != null && a.grade == "A", $"today's A pickup is an A ({a?.name})");
+
+            var left = GameData.BannerDaysLeft(today);
+            Check(left >= 1 && left <= GameData.Pickup.days, $"banner has {left} day(s) left");
+
+            // Every card in a grade must get its turn, or a player chasing one of them waits forever.
+            var seen = new System.Collections.Generic.HashSet<string>();
+            for (var i = 0; i < 60; i++) seen.Add(GameData.Featured("S", today.AddDays(i * GameData.Pickup.days))?.id);
+            var sCount = GameData.OfGrade("S").Count();
+            Check(seen.Count >= sCount, $"every S gets a banner within 60 rotations ({seen.Count}/{sCount})");
+
+            // Consecutive banners must differ, otherwise "come back on her day" means nothing.
+            var repeats = 0;
+            for (var i = 1; i < 30; i++)
+                if (GameData.Featured("S", today.AddDays(i * GameData.Pickup.days))?.id ==
+                    GameData.Featured("S", today.AddDays((i - 1) * GameData.Pickup.days))?.id) repeats++;
+            Check(repeats == 0, $"no back-to-back repeat of the same S ({repeats})");
+
+            // Rate-up must actually bias pulls towards the featured card.
+            var p = PlayerState.New();
+            int sTotal = 0, sFeatured = 0;
+            for (var i = 0; i < 300000; i++)
+            {
+                var r = GachaService.Pull(p);
+                if (r.grade != "S") continue;
+                sTotal++;
+                if (r.hero.id == s.id) sFeatured++;
+            }
+            var share = sTotal == 0 ? 0f : sFeatured / (float)sTotal;
+            Check(share > 0.4f, $"featured S takes {share:P0} of S pulls (rate-up {GameData.Pickup.rate:P0})");
+
+            // 모집 포인트 must accrue and buy the card outright.
+            var spark = PlayerState.New();
+            for (var i = 0; i < GameData.SparkCost("S"); i++) GachaService.Pull(spark);
+            Check(GachaService.CanSpark(spark, "S"), $"{GameData.SparkCost("S")} pulls affords an S spark");
+            var before = spark.sparkPoints;
+            var got = GachaService.Spark(spark, "S");
+            Check(got != null && got.hero.id == s.id, "spark hands over today's featured S");
+            Check(spark.sparkPoints == before - GameData.SparkCost("S"), "spark charges the advertised price");
+        }
+
+        static void CheckAffection()
+        {
+            Line("\n-- affection --");
+            var b = GameData.Balance;
+            var def = GameData.Heroes.First(h => GameData.Affection(h.id) != null);
+            var o = new OwnedHero(def.id);
+
+            Check(o.affection == 0, "a new card starts at Lv0");
+            Check(AffectionService.XpForNext(0) > 0, $"Lv1 costs {AffectionService.XpForNext(0)} xp");
+
+            AffectionService.AddXp(o, 10000);
+            Check(o.affection == b.affectionMax, $"enough xp reaches the cap (Lv{o.affection})");
+            Check(AffectionService.AtMax(o) && o.affectionXp == 0, "capped cards stop banking xp");
+
+            // Levelled first: at base stats a D card attacks for 6, and +10% of 6 floors straight
+            // back to 6. The bonus is real, just invisible at integer scale.
+            var fresh = new OwnedHero(def.id) { level = 40 };
+            var atk0 = StatMath.Atk(fresh);
+            fresh.affection = b.affectionMax;
+            var atkMax = StatMath.Atk(fresh);
+            Check(atkMax > atk0, $"affection raises attack ({atk0} -> {atkMax})");
+            var expected = 1f + b.affectionMax * b.affectionBonusPerLevel;
+            Check(Mathf.Abs(atkMax / (float)atk0 - expected) < 0.01f,
+                $"the bonus matches the table (x{atkMax / (float)atk0:F3} vs x{expected:F3})");
+
+            var mid = new OwnedHero(def.id) { affection = b.affectionUnlockSecret };
+            Check(AffectionService.SecretUnlocked(mid), $"secret unlocks at Lv{b.affectionUnlockSecret}");
+            Check(!AffectionService.LineUnlocked(mid), $"private message still locked at Lv{mid.affection}");
+            mid.affection = b.affectionUnlockLine;
+            Check(AffectionService.LineUnlocked(mid), $"private message unlocks at Lv{b.affectionUnlockLine}");
+            Check(AffectionService.Greeting(mid) == GameData.Affection(def.id).line2,
+                "the home greeting switches to the private line once known");
+
+            // A gift must cost gold and be refused when broke.
+            var p = PlayerState.New();
+            var owned = new OwnedHero(def.id);
+            p.owned.Add(owned); p.AddToParty(def.id);
+            Check(AffectionService.Gift(p, owned) == -1, "a broke player cannot buy a snack");
+            p.gold = AffectionService.GiftCost(p) * 2;
+            var goldBefore = p.gold;
+            AffectionService.Gift(p, owned);
+            Check(p.gold < goldBefore, "a snack costs gold");
+            Check(owned.affectionXp > 0 || owned.affection > 0, "a snack raises the bond");
+
+            var missing = GameData.Heroes.Count(h => GameData.Affection(h.id) == null);
+            Check(missing == 0, $"every hero has affection text (missing {missing})");
         }
 
         static void CheckBattle()

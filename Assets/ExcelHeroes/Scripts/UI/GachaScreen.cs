@@ -20,9 +20,54 @@ namespace ExcelHeroes.UI
         public string Title => "모집";
 
         readonly AppRoot _app;
-        VisualElement _root;
+        VisualElement _root, _pickup;
         Label _pityA, _pityS, _total;
         Button _one, _ten;
+
+        /// <summary>
+        /// 오늘의 픽업. Two featured cards, a countdown, and — the part that matters — a 모집 포인트
+        /// price next to each. Every pull banks a point, the points never expire, so a player chasing
+        /// one character can see exactly how far away they are instead of guessing at a 0.5% wall.
+        /// </summary>
+        void BuildPickup()
+        {
+            _pickup.Clear();
+            if (GameData.Pickup == null) return;
+
+            var left = GameData.BannerDaysLeft(System.DateTime.UtcNow);
+            UiKit.Text($"오늘의 픽업 · {left}일 남음 · 해당 등급의 {GameData.Pickup.rate:P0}는 픽업으로",
+                "pickup__timer", _pickup);
+
+            var row = UiKit.Div("pickup", _pickup);
+            foreach (var grade in new[] { "S", "A" })
+            {
+                var hero = GameData.Featured(grade, System.DateTime.UtcNow);
+                if (hero == null) continue;
+                var g = GameData.Grade(grade);
+
+                var card = UiKit.Div("pickup__card", row);
+                card.style.borderTopColor = card.style.borderBottomColor =
+                    card.style.borderLeftColor = card.style.borderRightColor = g?.Color ?? Color.white;
+                UiKit.SetArt(UiKit.Div("pickup__art", card), GameData.CardArt(hero.id));
+                UiKit.Text($"PICK UP {grade}", "pickup__tag", card);
+
+                var plate = UiKit.Div("pickup__plate", card);
+                UiKit.Text(hero.name, "pickup__name", plate);
+
+                var cost = GameData.SparkCost(grade);
+                var have = Game.Player.sparkPoints;
+                UiKit.Text($"모집 포인트 {have}/{cost}", "pickup__spark", plate);
+
+                var take = UiKit.Btn("교환", "btn btn--primary", () =>
+                {
+                    var r = GachaService.Spark(Game.Player, grade);
+                    if (r == null) return;
+                    Game.Touch();
+                    _app.StartCoroutine(RevealSequence(new List<PullResult> { r }));
+                }, plate);
+                take.SetEnabled(GachaService.CanSpark(Game.Player, grade));
+            }
+        }
 
         public GachaScreen(AppRoot app) { _app = app; }
 
@@ -34,6 +79,9 @@ namespace ExcelHeroes.UI
             var banner = UiKit.Div("gacha__banner", _root);
             UiKit.Text("사원 모집 공고", "gacha__banner-title", banner);
             UiKit.Text("스프레드시트 괴물과 싸울 사람을 찾습니다", "gacha__banner-sub", banner);
+
+            _pickup = UiKit.Div(null, _root);
+            BuildPickup();
 
             var rates = UiKit.Div("gacha__pity", banner);
             foreach (var g in GameData.Grades)
@@ -61,7 +109,8 @@ namespace ExcelHeroes.UI
             var (toA, toS) = GachaService.PityRemaining(p);
             _pityA.text = $"A 확정까지 {toA}";
             _pityS.text = $"S 확정까지 {toS}";
-            _total.text = $"누적 {p.totalPulls}회";
+            _total.text = $"모집 포인트 {p.sparkPoints:N0}";
+            if (_pickup != null) BuildPickup();
 
             _one.text = $"1회 모집 · ◈{GachaService.CostFor(1)}";
             _ten.text = $"10회 모집 · ◈{GachaService.CostFor(10)}";
@@ -132,6 +181,7 @@ namespace ExcelHeroes.UI
             UiKit.Text($"{r.hero.nick} · {r.hero.dept}", "reveal__nick", plate);
             if (!string.IsNullOrEmpty(r.hero.line)) UiKit.Text($"“{r.hero.line}”", "reveal__line", plate);
 
+            if (r.isPickup) UiKit.Text("PICK UP", "reveal__badge", plate);
             if (r.isNew) UiKit.Text("NEW", "reveal__badge", plate);
             else if (r.promoted) UiKit.Text($"승급! ★{r.starAfter}", "reveal__badge", plate);
             else UiKit.Text($"중복 · 승급 조각 {r.copiesAfter}", "reveal__badge", plate);

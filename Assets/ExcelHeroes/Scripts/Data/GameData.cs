@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -24,6 +25,9 @@ namespace ExcelHeroes.Data
         public static List<MainJobDef> MainJobs { get; private set; } = new();
         public static List<MonsterTypeDef> MonsterTypes { get; private set; } = new();
         public static List<BossDef> Bosses { get; private set; } = new();
+        public static PickupFile Pickup { get; private set; }
+
+        static Dictionary<string, AffectionText> _affection = new();
         public static BalanceDef Balance { get; private set; }
         public static DivisionFile Synergy { get; private set; }
         public static string MainId { get; private set; } = "main";
@@ -54,6 +58,9 @@ namespace ExcelHeroes.Data
             Synergy = Read<DivisionFile>("divisions");
             Divisions = Synergy.items;
             Perks = Synergy.perks;
+
+            Pickup = Read<PickupFile>("pickup");
+            _affection = Read<Wrapper<AffectionText>>("affection").items.ToDictionary(a => a.id);
 
             var bestiary = Read<MonsterFile>("monsters");
             MonsterTypes = bestiary.items;
@@ -92,6 +99,41 @@ namespace ExcelHeroes.Data
         public static PerkDef Perk(string divisionId) => divisionId != null && _perks.TryGetValue(divisionId, out var v) ? v : null;
 
         public static int GradeRank(string gradeId) => System.Array.IndexOf(GradeOrder, gradeId);
+
+        public static AffectionText Affection(string heroId) =>
+            heroId != null && _affection.TryGetValue(heroId, out var v) ? v : null;
+
+        /// <summary>
+        /// Which banner index a date falls in. Days since the epoch divided by the banner length —
+        /// the same arithmetic the web build uses, so both clients feature the same hero on a date.
+        /// </summary>
+        public static int BannerIndex(DateTime dateUtc)
+        {
+            var days = (int)Math.Floor((dateUtc.Date - new DateTime(1970, 1, 1)).TotalDays);
+            var span = Math.Max(1, Pickup?.days ?? 3);
+            return (int)Math.Floor(days / (double)span);
+        }
+
+        /// <summary>Whole days left on the banner running on that date (1 = last day).</summary>
+        public static int BannerDaysLeft(DateTime dateUtc)
+        {
+            var days = (int)Math.Floor((dateUtc.Date - new DateTime(1970, 1, 1)).TotalDays);
+            var span = Math.Max(1, Pickup?.days ?? 3);
+            return span - ((days % span) + span) % span;
+        }
+
+        /// <summary>The featured hero of a grade for the banner running on that date, or null.</summary>
+        public static HeroDef Featured(string grade, DateTime dateUtc)
+        {
+            var order = Pickup?.orders?.FirstOrDefault(o => o.grade == grade);
+            if (order == null || order.ids.Count == 0) return null;
+            var i = BannerIndex(dateUtc) % order.ids.Count;
+            if (i < 0) i += order.ids.Count;
+            return Hero(order.ids[i]);
+        }
+
+        public static int SparkCost(string grade) =>
+            grade == "S" ? Pickup?.sparkS ?? 150 : Pickup?.sparkA ?? 60;
 
         /// <summary>Ten stages to a phase, and each phase gets its own look and its own boss.</summary>
         public static int PhaseOf(int stage) => (Mathf.Max(1, stage) - 1) / 10;

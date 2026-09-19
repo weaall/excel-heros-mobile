@@ -121,6 +121,9 @@ namespace ExcelHeroes.Core
         public bool Won { get; private set; }
         public int GoldEarned { get; private set; }
 
+        /// <summary>Monsters put down this run — what 호감도 is paid on.</summary>
+        public int Kills { get; private set; }
+
         readonly SynergyResult _synergy;
         readonly int _perWave;
 
@@ -559,6 +562,7 @@ namespace ExcelHeroes.Core
                 // banked what it actually cleared. Elites and chests pay the premium they advertise.
                 if (to.side == Side.Monster)
                 {
+                    Kills++;
                     var worth = StatMath.StageGold(Stage) * (to.elite ? 3f : to.atk == 0 ? 5f : 1f);
                     GoldEarned += (int)(worth * (1f + _goldBonus));
                 }

@@ -16,6 +16,10 @@
         <ui:VisualElement name="content" class="screen" />
 
         <ui:VisualElement name="navbar" class="navbar">
+            <ui:Button name="navHome" class="nav-button">
+                <ui:Label text="⌂" class="nav-button__icon" />
+                <ui:Label text="내 자리" class="nav-button__label" />
+            </ui:Button>
             <ui:Button name="navGacha" class="nav-button">
                 <ui:Label text="◈" class="nav-button__icon" />
                 <ui:Label text="모집" class="nav-button__label" />

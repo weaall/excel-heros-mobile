@@ -23,7 +23,7 @@ namespace ExcelHeroes.UI
     [RequireComponent(typeof(UIDocument))]
     public class AppRoot : MonoBehaviour
     {
-        public enum Tab { Gacha, Roster, Party, Battle, Story }
+        public enum Tab { Home, Gacha, Roster, Party, Battle, Story }
 
         public VisualElement Overlay { get; private set; }
 
@@ -52,6 +52,7 @@ namespace ExcelHeroes.UI
             _gems = root.Q<Label>("gemValue");
             _gold = root.Q<Label>("goldValue");
 
+            _screens[Tab.Home] = new HomeScreen(this);
             _screens[Tab.Gacha] = new GachaScreen(this);
             _screens[Tab.Roster] = new RosterScreen(this);
             _screens[Tab.Party] = new PartyScreen(this);
@@ -59,6 +60,7 @@ namespace ExcelHeroes.UI
             _screens[Tab.Story] = new StoryScreen(this);
             _detail = new HeroDetail(this);
 
+            Bind("navHome", Tab.Home);
             Bind("navGacha", Tab.Gacha);
             Bind("navRoster", Tab.Roster);
             Bind("navParty", Tab.Party);
@@ -66,7 +68,7 @@ namespace ExcelHeroes.UI
             Bind("navStory", Tab.Story);
 
             Game.Changed += OnGameChanged;
-            Show(Tab.Gacha);
+            Show(Tab.Home);
 
             void Bind(string name, Tab tab)
             {

@@ -38,5 +38,15 @@
  "enhancePerLevel": 0.04,
  "traitPerStar": 0.12,
  "monsterAtkRampFull": 5,
- "monsterAtkRampByStage": 25
+ "monsterAtkRampByStage": 25,
+ "affectionMax": 10,
+ "affectionXpBase": 60,
+ "affectionXpGrowth": 1.45,
+ "affectionXpPerKill": 1,
+ "affectionXpPerBoss": 15,
+ "affectionGiftXp": 45,
+ "affectionGiftGoldKills": 40,
+ "affectionBonusPerLevel": 0.01,
+ "affectionUnlockSecret": 3,
+ "affectionUnlockLine": 5
 }

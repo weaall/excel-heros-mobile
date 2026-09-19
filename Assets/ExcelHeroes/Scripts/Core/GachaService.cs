@@ -16,6 +16,7 @@ namespace ExcelHeroes.Core
         public bool promoted;       // this pull pushed the card up a ★
         public int starAfter;
         public string pityReason;   // "" | "천장 A" | "천장 S"
+        public bool isPickup;       // landed on today's featured card
     }
 
     /// <summary>
@@ -62,13 +63,22 @@ namespace ExcelHeroes.Core
             var grade = RollGrade(p, out var pityReason);
             var pool = GameData.OfGrade(grade).ToList();
             if (pool.Count == 0) pool = GameData.Heroes;           // data safety net, never expected
-            var hero = pool[Random.Range(0, pool.Count)];
+
+            // 오늘의 픽업: half of every S and A lands on the featured card instead of rolling
+            // uniformly across the grade. This is what makes a banner worth showing up for.
+            var featured = GameData.Featured(grade, DateTime.UtcNow);
+            var onPickup = featured != null && Random.value < (GameData.Pickup?.rate ?? 0.5f);
+            var hero = onPickup ? featured : pool[Random.Range(0, pool.Count)];
+
+            // 모집 포인트 accrue on every pull and never expire, so even the worst run converges
+            // on the card eventually — the floor under the floor.
+            p.sparkPoints++;
 
             p.totalPulls++;
             p.pullsSinceA = GameData.GradeRank(grade) >= GameData.GradeRank("A") ? 0 : p.pullsSinceA + 1;
             p.pullsSinceS = grade == "S" ? 0 : p.pullsSinceS + 1;
 
-            var result = new PullResult { hero = hero, grade = grade, pityReason = pityReason };
+            var result = new PullResult { hero = hero, grade = grade, pityReason = pityReason, isPickup = onPickup };
             var owned = p.Find(hero.id);
             if (owned == null)
             {
@@ -140,5 +150,43 @@ namespace ExcelHeroes.Core
         public static (int toA, int toS) PityRemaining(PlayerState p) =>
             (Math.Max(0, GameData.Balance.pityA - p.pullsSinceA),
              Math.Max(0, GameData.Balance.pityS - p.pullsSinceS));
+
+        /// <summary>
+        /// 모집 포인트 교환 — spend banked points to simply take the featured card. The points never
+        /// expire, so a player who keeps missing still gets there; it is the promise that chasing a
+        /// specific character has an end.
+        /// </summary>
+        public static bool CanSpark(PlayerState p, string grade) =>
+            GameData.Featured(grade, DateTime.UtcNow) != null && p.sparkPoints >= GameData.SparkCost(grade);
+
+        public static PullResult Spark(PlayerState p, string grade)
+        {
+            var hero = GameData.Featured(grade, DateTime.UtcNow);
+            if (hero == null) return null;
+            var cost = GameData.SparkCost(grade);
+            if (p.sparkPoints < cost) return null;
+
+            p.sparkPoints -= cost;
+            var result = new PullResult { hero = hero, grade = grade, isPickup = true, pityReason = "모집 포인트 교환" };
+
+            var owned = p.Find(hero.id);
+            if (owned == null)
+            {
+                owned = new OwnedHero(hero.id);
+                p.owned.Add(owned);
+                result.isNew = true;
+                p.AddToParty(hero.id);
+            }
+            else
+            {
+                owned.copies++;
+                owned.isNew = true;
+                result.promoted = TryPromote(owned);
+            }
+
+            result.copiesAfter = owned.copies;
+            result.starAfter = owned.star;
+            return result;
+        }
     }
 }

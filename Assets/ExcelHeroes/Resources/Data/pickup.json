@@ -1,0 +1,39 @@
+{
+ "rate": 0.5,
+ "days": 3,
+ "sparkS": 150,
+ "sparkA": 60,
+ "orders": [
+  {
+   "grade": "S",
+   "ids": [
+    "union_chief",
+    "cso",
+    "chairman",
+    "ceo",
+    "founder",
+    "chairwoman",
+    "ai_lead",
+    "chief_of_staff",
+    "hacker"
+   ]
+  },
+  {
+   "grade": "A",
+   "ids": [
+    "bd_lead",
+    "chro",
+    "cto",
+    "cfo",
+    "ir_lead",
+    "labor_atty",
+    "cro",
+    "cpo",
+    "cco",
+    "cdo",
+    "coo",
+    "cmo"
+   ]
+  }
+ ]
+}

@@ -14,6 +14,7 @@ namespace ExcelHeroes.Core
         public int level = 1;
         public int copies;       // spare copies held towards the next promotion
         public int affection;    // 호감도 level, drives the small per-hero stat bonus
+        public int affectionXp;  // progress towards the next level
         public bool isNew = true;
 
         public OwnedHero() { }
@@ -37,7 +38,9 @@ namespace ExcelHeroes.Core
         public int pullsSinceA;                 // pity counters, see GachaService
         public int pullsSinceS;
         public int totalPulls;
+        public int sparkPoints;                 // 모집 포인트 — 1 per pull, never expires
         public int stage = 1;                   // highest stage reached
+        public string leadHeroId = "";          // the card that greets the player on the home screen
         public List<string> readEpisodes = new();
 
         public static PlayerState New()

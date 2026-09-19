@@ -153,6 +153,36 @@ namespace ExcelHeroes.Data
         public List<StoryLine> lines = new();
     }
 
+    /// <summary>
+    /// 오늘의 픽업. A featured S and A rotate through the whole roster, three days each, the same
+    /// for everyone. That turns "I want her" from praying at a 0.5% rate into "come back on her
+    /// banner" — and 모집 포인트 make even a failed chase converge on the card eventually.
+    /// </summary>
+    [Serializable]
+    public class PickupOrder
+    {
+        public string grade;
+        public List<string> ids = new();   // the fixed rotation the web build walks, one step per banner
+    }
+
+    [Serializable]
+    public class PickupFile
+    {
+        public float rate;      // chance a pull of that grade lands on the featured card
+        public int days;        // banner length
+        public int sparkS, sparkA;
+        public List<PickupOrder> orders = new();
+    }
+
+    /// <summary>호감도 unlocks: a second bio line at Lv3 and a private message at Lv5.</summary>
+    [Serializable]
+    public class AffectionText
+    {
+        public string id;
+        public string secret;
+        public string line2;
+    }
+
     /// <summary>A regular wave enemy — a spreadsheet error given a shape and a face.</summary>
     [Serializable]
     public class MonsterTypeDef
@@ -213,6 +243,11 @@ namespace ExcelHeroes.Data
         public float enhancePerLevel;
         public float traitPerStar;
         public int monsterAtkRampFull, monsterAtkRampByStage;
+        public int affectionMax;
+        public float affectionXpBase, affectionXpGrowth;
+        public int affectionXpPerKill, affectionXpPerBoss, affectionGiftXp, affectionGiftGoldKills;
+        public float affectionBonusPerLevel;
+        public int affectionUnlockSecret, affectionUnlockLine;
     }
 
     /// <summary>Hex string to Color, tolerant of missing or malformed values in the data files.</summary>
