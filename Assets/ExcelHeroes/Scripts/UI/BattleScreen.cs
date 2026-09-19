@@ -51,11 +51,23 @@ namespace ExcelHeroes.UI
             _autoButton = UiKit.Btn("자동 스킬 OFF", "btn btn--ghost", ToggleAuto, hud);
 
             _stage = UiKit.Div("battle__stage", _root);
+
+            // 재계산 예산 — the shared pool EX skills are paid from. Segmented rather than smooth so
+            // you can read "two more" at a glance without doing arithmetic mid-fight.
+            var costRow = UiKit.Div("cost-row", _root);
+            _costValue = UiKit.Text("0", "cost-row__value", costRow);
+            var track = UiKit.Div("cost-row__track", costRow);
+            for (var i = 0; i < (int)BattleSim.MaxCost; i++)
+                _costCells.Add(UiKit.Div("cost-cell", track));
+
             _exBar = UiKit.Div("ex-bar", _root);
 
             Start();
             return _root;
         }
+
+        Label _costValue;
+        readonly System.Collections.Generic.List<VisualElement> _costCells = new();
 
         void ToggleAuto()
         {
@@ -83,6 +95,15 @@ namespace ExcelHeroes.UI
             }
 
             _sim = new BattleSim(Game.Player, Game.Player.stage);
+
+            // The street the fight happens on, built once per phase. A blank field made the battle
+            // read as a debug view; the web build has never fought on one.
+            if (_backdropStage != Game.Player.stage || _backdrop == null)
+            {
+                _backdropStage = Game.Player.stage;
+                _backdrop = CityBackdrop.Build(_backdropStage);
+            }
+            _stage.style.backgroundImage = new StyleBackground(_backdrop);
             _autoButton.text = "자동 스킬 OFF";
 
             foreach (var h in _sim.Heroes) AddFighterView(h);
@@ -133,6 +154,7 @@ namespace ExcelHeroes.UI
             var btn = UiKit.Div("ex-button", _exBar);
             UiKit.SetArt(UiKit.Div("ex-button__art", btn), GameData.CardArt(h.heroId));
             var charge = UiKit.Div("ex-button__charge", btn);
+            UiKit.Text(BattleSim.CostOf(h).ToString(), "ex-button__cost", btn);
             UiKit.Text(def?.skillName ?? "스킬", "ex-button__label", btn);
             btn.RegisterCallback<ClickEvent>(_ => _sim?.FireSkill(h));
             _exButtons[h.heroId] = (btn, charge);
@@ -197,8 +219,16 @@ namespace ExcelHeroes.UI
 
         // Kept in step with .fighter / .fighter__body in App.uss: a 16x28 sprite at 4x, on rows tall
         // enough to clear it.
-        const float FighterWidth = 160f;
-        const float RowHeight = 210f;
+        const float FighterWidth = 72f;
+
+        // The party stands on one line, as in the web build, with a six-pixel stagger so a
+        // five-stack still reads as five people. Rows were readable but they turned a side-view
+        // brawl into a spreadsheet of duels.
+        const float GroundFraction = CityBackdrop.GroundY / (float)CityBackdrop.CanvasH;
+        const float StaggerY = 9f;
+
+        Texture2D _backdrop;
+        int _backdropStage = -1;
 
         void LayoutFighters()
         {
@@ -222,8 +252,10 @@ namespace ExcelHeroes.UI
                 // a fifth of a sprite's height, so a five-hero party read as one smear — and once
                 // the monsters closed in, nine sprites shared the same spot. Rows also mean the
                 // side-view line stays a line: x is still distance, y is only identity.
-                var lane = c.side == Side.Hero ? _sim.Heroes.IndexOf(c) : _sim.Monsters.IndexOf(c);
-                el.style.top = height * 0.08f + Mathf.Max(0, lane) * RowHeight;
+                var lane = Mathf.Max(0, c.side == Side.Hero ? _sim.Heroes.IndexOf(c) : _sim.Monsters.IndexOf(c));
+                // The sprite is anchored by its feet, so subtract its height to sit ON the ground.
+                var feet = height * GroundFraction + (lane % 2 == 0 ? -StaggerY : StaggerY);
+                el.style.top = feet - (c.boss != null ? 105f : 70f);
 
                 var fill = el.Q(className: "fighter__hpfill");
                 if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);
@@ -237,8 +269,22 @@ namespace ExcelHeroes.UI
             {
                 if (!_exButtons.TryGetValue(h.heroId, out var pair)) continue;
                 pair.charge.style.height = Length.Percent(h.SkillCharge * 100f);
-                pair.button.EnableInClassList("ex-button--ready", h.SkillReady);
+                var affordable = _sim.CanAfford(h);
+                pair.button.EnableInClassList("ex-button--ready", h.SkillReady && affordable);
+                // Charged but unaffordable is its own state: the card is waiting on budget, not on
+                // its own cooldown, and dimming it the same as a dead slot hides that difference.
+                pair.button.EnableInClassList("ex-button--poor", h.SkillReady && !affordable);
                 pair.button.EnableInClassList("ex-button--spent", !h.Alive);
+            }
+
+            var cost = _sim.Cost;
+            _costValue.text = ((int)cost).ToString();
+            for (var i = 0; i < _costCells.Count; i++)
+            {
+                _costCells[i].EnableInClassList("cost-cell--full", cost >= i + 1);
+                // The partly-charged cell shows the fraction, so the bar moves continuously rather
+                // than jumping once a second.
+                _costCells[i].EnableInClassList("cost-cell--part", cost > i && cost < i + 1);
             }
         }
 

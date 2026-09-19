@@ -960,33 +960,35 @@
 /* The battlefield is the worksheet. A painted landscape was both off-premise and unreadable behind
    16x28 pixel sprites; a tiled cell grid gives them a surface to stand on and survives the disguise,
    because what a passer-by sees is cells. */
+/* The battlefield keeps the web build's 2:1 shape — a side-view street band across the top of
+   the sheet, with the party's EX buttons below it. The backdrop texture is set from code because
+   it is generated per phase. */
 .battle__stage {
-    flex-grow: 1;
-    background-color: rgb(255, 255, 255);
-    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/cell_grid.png");
-    background-repeat: repeat;
-    background-size: 96px 96px;
+    flex-shrink: 0;
+    height: 540px;
+    background-color: rgb(30, 34, 44);
+    -unity-background-scale-mode: stretch-to-fill;
     overflow: hidden;
 }
 
 .fighter {
     position: absolute;
-    width: 160px;
+    width: 72px;
     align-items: center;
 }
 
 /* Pixel sprites want whole-number scale and no crop. 16x28 at 6x is 96x168, which reads clearly at
    arm's length on a phone and still lines the cast up on one baseline. */
 .fighter__body {
-    width: 96px;
-    height: 168px;
+    width: 40px;
+    height: 70px;
     -unity-background-scale-mode: scale-to-fit;
     background-color: rgba(0, 0, 0, 0);
 }
 
 .fighter__body--chibi {
-    width: 96px;
-    height: 168px;
+    width: 40px;
+    height: 70px;
     border-width: 0;
     background-color: rgba(0, 0, 0, 0);
     -unity-background-scale-mode: scale-to-fit;
@@ -996,16 +998,16 @@
 .fighter--monster .fighter__body { scale: -1 1; }
 
 /* Integer multiples only, and the web build's ratio: wave enemies 2x, bosses 3x. */
-.fighter--boss { width: 240px; }
-.fighter--boss .fighter__body { width: 144px; height: 252px; }
-.fighter--boss .fighter__hpbar { width: 192px; }
-.fighter--elite .fighter__body { width: 112px; height: 196px; }
+.fighter--boss { width: 100px; }
+.fighter--boss .fighter__body { width: 60px; height: 105px; }
+.fighter--boss .fighter__hpbar { width: 84px; }
+.fighter--elite .fighter__body { width: 48px; height: 84px; }
 
 .fighter--dead { opacity: 0.25; }
 
 .fighter__hpbar {
-    width: 128px;
-    height: 16px;
+    width: 56px;
+    height: 8px;
     margin-top: 10px;
     background-color: rgba(255, 255, 255, 0.85);
     border-radius: 8px;
@@ -1019,11 +1021,7 @@
 
 .fighter--monster .fighter__hpfill { background-color: rgb(196, 43, 28); }
 
-.fighter__name {
-    font-size: 27px;
-    margin-top: 6px;
-    color: rgb(70, 70, 70);
-}
+.fighter__name { display: none; }
 
 .floater {
     position: absolute;
@@ -1621,3 +1619,54 @@
     border-left-color: rgb(191, 191, 191);
     padding: 26px;
 }
+
+/* ---------------------------------------------------------------- cost pool */
+
+.cost-row {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.cost-row__value {
+    width: 70px;
+    font-size: 44px;
+    -unity-font-style: bold;
+    color: rgb(31, 111, 235);
+}
+
+.cost-row__track { flex-direction: row; flex-grow: 1; }
+
+.cost-cell {
+    flex-grow: 1;
+    height: 24px;
+    margin-right: 4px;
+    background-color: rgb(226, 226, 226);
+    border-width: 1px;
+    border-color: rgb(191, 191, 191);
+}
+
+.cost-cell--full { background-color: rgb(31, 111, 235); }
+.cost-cell--part { background-color: rgb(150, 190, 245); }
+
+.ex-button__cost {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: rgb(31, 111, 235);
+    color: rgb(255, 255, 255);
+    font-size: 26px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+/* charged, but the budget is not there yet */
+.ex-button--poor { opacity: 0.55; }
+.ex-button--poor .ex-button__cost { background-color: rgb(150, 150, 150); }

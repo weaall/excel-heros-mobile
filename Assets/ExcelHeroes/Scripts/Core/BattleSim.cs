@@ -117,6 +117,41 @@ namespace ExcelHeroes.Core
         public int Wave { get; private set; }
         public int WaveCount { get; }
         public bool AutoSkill { get; set; }
+
+        /// <summary>
+        /// 재계산 예산 — the shared pool every EX skill is paid out of, ported from Blue Archive's
+        /// Cost (see docs/BLUE_ARCHIVE_NOTES.md).
+        ///
+        /// Independent per-hero cooldowns gave the player no decision: each button was pressed the
+        /// moment it lit up. One shared pool turns every few seconds into a question — spend it on
+        /// the cheap skill now, or hold for the expensive one. Recovery is per-hero and additive,
+        /// so a full party charges faster, which is a second reason to field five.
+        /// </summary>
+        public const float MaxCost = 10f;
+        const float CostPerHeroPerSecond = 0.27f;
+
+        public float Cost { get; private set; }
+        public float CostRate => LivingHeroes * CostPerHeroPerSecond;
+        int LivingHeroes => Heroes.Count(h => h.Alive);
+
+        /// <summary>
+        /// What one hero's EX costs. Rarer cards hit harder, so they cost more — the same shape as
+        /// the source game, where a 1-cost utility skill and an 8-cost nuke sit on the same bar.
+        /// </summary>
+        public static int CostOf(Combatant h)
+        {
+            var def = GameData.Hero(h?.heroId);
+            return def?.grade switch
+            {
+                "S" => 6,
+                "A" => 5,
+                "B" => 4,
+                "C" => 3,
+                _ => 2,
+            };
+        }
+
+        public bool CanAfford(Combatant h) => Cost >= CostOf(h);
         public bool Finished { get; private set; }
         public bool Won { get; private set; }
         public int GoldEarned { get; private set; }
@@ -303,12 +338,14 @@ namespace ExcelHeroes.Core
                 return;
             }
 
+            Cost = Math.Min(MaxCost, Cost + CostRate * dt);
+
             foreach (var c in Heroes.Concat(Monsters)) TickStatus(c, dt);
 
             foreach (var h in Heroes.Where(h => h.Alive))
             {
                 if (h.skillCooldown > 0f && h.skillTimer > 0f) h.skillTimer -= dt;
-                if (AutoSkill && h.SkillReady && WorthFiring(h)) FireSkill(h);
+                if (AutoSkill && h.SkillReady && CanAfford(h) && WorthFiring(h)) FireSkill(h);
                 StepHero(h, dt);
                 StepAttack(h, dt, Monsters);
             }
@@ -586,7 +623,8 @@ namespace ExcelHeroes.Core
         /// <summary>Player-facing: fire a charged EX skill. Safe to call when not ready — it no-ops.</summary>
         public bool FireSkill(Combatant h)
         {
-            if (!h.SkillReady) return false;
+            if (!h.SkillReady || !CanAfford(h)) return false;
+            Cost -= CostOf(h);
             var def = GameData.Hero(h.heroId);
             var skill = GameData.Skill(def?.skillType);
             if (def == null || skill == null) return false;
