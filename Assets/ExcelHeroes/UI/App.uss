@@ -299,7 +299,7 @@
 /* The lit tab, the way the reference lights one: a filled plate, not a hairline. */
 .navtab--active { background-color: var(--ex-accent); }
 
-.navtab__icon { font-size: 54px; height: 62px; color: rgba(255, 255, 255, 0.66); }
+.navtab__icon { font-size: 54px; height: 68px; color: rgba(255, 255, 255, 0.66); }
 .navtab--active .navtab__icon { color: rgb(255, 255, 255); }
 
 .navtab__label {
@@ -340,7 +340,7 @@
 
 .navcta:hover { background-color: rgb(255, 199, 74); }
 
-.navcta__icon { font-size: 52px; height: 62px; color: rgb(72, 44, 0); margin-right: var(--ex-space-1); }
+.navcta__icon { font-size: 52px; height: 68px; color: rgb(72, 44, 0); margin-right: var(--ex-space-1); }
 
 .navcta__label {
     font-size: var(--ex-text-base);
@@ -474,8 +474,9 @@
 }
 
 .btn--ghost {
-    background-color: rgba(0, 0, 0, 0);
-    border-width: 0;
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
     color: var(--ex-ink-muted);
 }
 
@@ -623,10 +624,7 @@
     align-items: center;
 }
 
-.reveal__grade {
-    font-size: 86px;
-    -unity-font-style: bold;
-}
+.reveal__grade { flex-shrink: 0; font-size: 46px; -unity-text-align: middle-left; }
 
 .reveal__name {
     font-size: 54px;
@@ -861,10 +859,10 @@
     width: 88%;
     max-width: 1700px;
     height: 88%;
-    background-color: rgb(255, 255, 255);
-    border-radius: 12px;
-    border-width: 1px;
-    border-color: rgb(196, 196, 196);
+    background-color: var(--ex-surface-raised);
+    border-radius: var(--ex-rad-lg);
+    border-width: 3px;
+    border-color: var(--ex-navy-line);
     overflow: hidden;
 }
 
@@ -886,16 +884,15 @@
 }
 
 .detail__head {
-    padding: 22px 38px;
-    background-color: rgb(243, 243, 243);
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-top-color: rgb(212, 212, 212);
-    border-bottom-color: rgb(212, 212, 212);
+    flex-shrink: 0;
+    padding: var(--ex-space-2) var(--ex-space-3) var(--ex-space-2) var(--ex-space-3);
+    background-color: var(--ex-navy);
+    border-bottom-width: 5px;
+    border-bottom-color: var(--ex-gold);
 }
 
-.detail__name { font-size: 64px; -unity-font-style: bold; }
-.detail__nick { font-size: 38px; color: rgb(107, 107, 107); }
+.detail__name { font-size: var(--ex-text-lg); -unity-font-style: bold; }
+.detail__nick { font-size: var(--ex-text-xs); color: rgba(255, 255, 255, 0.66); }
 
 /* flex-shrink is what makes this scroll. With only flex-grow the body kept its content height
    inside a modal capped at 88%, so anything past the fold simply could not be reached. */
@@ -909,27 +906,28 @@
 .stat-row {
     flex-direction: row;
     justify-content: space-between;
-    padding-top: 16px;
-    padding-bottom: 16px;
+    align-items: center;
+    flex-shrink: 0;
+    height: 66px;
     border-bottom-width: 1px;
-    border-bottom-color: rgb(238, 238, 238);
+    border-bottom-color: var(--ex-line);
 }
 
-.stat-row__key { color: rgb(107, 107, 107); font-size: 38px; }
-.stat-row__value { font-size: 38px; -unity-font-style: bold; }
+.stat-row__key { color: var(--ex-ink-muted); font-size: var(--ex-text-sm); }
+.stat-row__value { font-size: var(--ex-text-sm); -unity-font-style: bold; color: var(--ex-ink); }
 
 .detail__close {
     position: absolute;
-    right: var(--ex-space-3);
-    top: var(--ex-space-3);
-    width: var(--ex-tap);
-    height: var(--ex-tap);
-    border-radius: 60px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border-width: 1px;
-    border-color: rgb(191, 191, 191);
-    color: rgb(34, 34, 34);
-    font-size: 51px;
+    right: var(--ex-space-2);
+    top: var(--ex-space-2);
+    width: 90px;
+    height: 90px;
+    border-radius: 45px;
+    background-color: var(--ex-surface-raised);
+    border-width: 3px;
+    border-color: var(--ex-navy-line);
+    color: var(--ex-navy);
+    font-size: 44px;
 }
 
 /* ---------------------------------------------------------------- party */
@@ -1630,12 +1628,13 @@
 /* ---------------------------------------------------------------- picker */
 
 .picker {
-    width: 86%;
-    max-height: 80%;
-    background-color: rgb(255, 255, 255);
-    border-width: 1px;
-    border-color: rgb(191, 191, 191);
-    padding: 29px;
+    width: 72%;
+    max-height: 84%;
+    background-color: var(--ex-surface-raised);
+    border-width: 3px;
+    border-color: var(--ex-navy-line);
+    border-radius: var(--ex-rad-lg);
+    padding: var(--ex-space-3);
 }
 
 .picker__list { flex-grow: 1; }
@@ -1695,11 +1694,11 @@
     right: 0;
     top: 0;
     bottom: 0;
-    width: 86%;
-    background-color: rgb(255, 255, 255);
-    border-left-width: 1px;
-    border-left-color: rgb(191, 191, 191);
-    padding: 26px;
+    width: 76%;
+    background-color: var(--ex-surface-raised);
+    border-left-width: 3px;
+    border-left-color: var(--ex-navy-line);
+    padding: var(--ex-space-3);
 }
 
 /* ---------------------------------------------------------------- cost pool */

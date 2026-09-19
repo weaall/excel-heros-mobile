@@ -357,7 +357,9 @@ namespace ExcelHeroes.UI
                 }, bond);
             }
 
-            if (_tab == "info")
+            // 인사 기록 rides with 호감도 rather than 정보: the stat page is already seven rows
+            // and a star line, and one more panel silently fell off the bottom of it.
+            if (_tab == "bond")
             {
                 var bioPanel = UiKit.Div("panel", body);
                 UiKit.Text("인사 기록", "section-title", bioPanel);
