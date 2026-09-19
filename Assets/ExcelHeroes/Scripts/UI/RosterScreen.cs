@@ -106,6 +106,31 @@ namespace ExcelHeroes.UI
                 UiKit.StatRow("레벨", $"{owned.level} / {StatMath.LevelCap(owned.star)}", body);
                 var need = GachaService.PromoteCost(owned);
                 UiKit.StatRow("승급", need > 0 ? $"중복 {owned.copies} / {need}장" : "최대 ★", body);
+
+                // 강화 — the gold sink. ★ raises the ceiling, gold walks the hero up to it.
+                var levelPanel = UiKit.Div("panel", body);
+                UiKit.Text("강화", "section-title", levelPanel);
+                if (StatMath.AtLevelCap(owned))
+                {
+                    UiKit.Text($"★{owned.star} 레벨 상한 도달 — 승급하면 상한이 올라갑니다.", "muted", levelPanel);
+                }
+                else
+                {
+                    var cost = StatMath.LevelUpCost(owned);
+                    UiKit.Text($"다음 레벨 ₩{cost:N0} · 보유 ₩{Game.Player.gold:N0}", "muted", levelPanel);
+
+                    var one = UiKit.Btn($"레벨 +1 · ₩{cost:N0}", "btn", () =>
+                    {
+                        if (StatMath.TryLevelUp(Game.Player, owned)) { Game.Touch(); Reopen(heroId, onClose); }
+                    }, levelPanel);
+                    one.SetEnabled(Game.Player.gold >= cost);
+
+                    var max = UiKit.Btn("골드 소진까지 강화", "btn btn--primary", () =>
+                    {
+                        if (StatMath.LevelUpMax(Game.Player, owned) > 0) { Game.Touch(); Reopen(heroId, onClose); }
+                    }, levelPanel);
+                    max.SetEnabled(Game.Player.gold >= cost);
+                }
             }
             else
             {
@@ -156,6 +181,13 @@ namespace ExcelHeroes.UI
 
             UiKit.Btn("✕", "detail__close", () => Close(onClose), view);
             return view;
+        }
+
+        /// <summary>Rebuilds the sheet in place so levelling shows the new numbers immediately.</summary>
+        void Reopen(string heroId, System.Action onClose)
+        {
+            if (_motion != null) { _app.StopCoroutine(_motion); _motion = null; }
+            _app.OpenDetail(heroId);
         }
 
         void Close(System.Action onClose)

@@ -616,7 +616,16 @@
     background-color: rgb(14, 19, 34);
 }
 
-.battle__wave { flex-grow: 1; font-size: 26px; -unity-font-style: bold; }
+.battle__wave {
+    flex-grow: 1;
+    font-size: 26px;
+    -unity-font-style: bold;
+    color: rgb(232, 236, 244);
+    transition-duration: 0.3s;
+}
+
+/* 야근: overtime has started and the errors are hitting harder every second */
+.battle__wave--enraged { color: rgb(255, 122, 122); }
 
 .ex-bar {
     flex-direction: row;

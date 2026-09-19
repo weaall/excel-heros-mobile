@@ -124,8 +124,11 @@ namespace ExcelHeroes.UI
             UpdateFloaters(dt);
 
             _waveLabel.text = _sim.Finished
-                ? (_sim.Won ? "업무 완료" : "업무 실패")
-                : $"Phase {_sim.Stage} · 웨이브 {_sim.Wave}/{_sim.WaveCount}";
+                ? (_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패")
+                : _sim.Enraged
+                    ? $"Phase {_sim.Stage} · 웨이브 {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
+                    : $"Phase {_sim.Stage} · 웨이브 {_sim.Wave}/{_sim.WaveCount}";
+            _waveLabel.EnableInClassList("battle__wave--enraged", !_sim.Finished && _sim.Enraged);
 
             if (_sim.Finished && _resultView == null) ShowResult();
         }

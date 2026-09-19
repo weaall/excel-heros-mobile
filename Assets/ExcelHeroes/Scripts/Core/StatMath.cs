@@ -90,6 +90,46 @@ namespace ExcelHeroes.Core
         public static int Power(OwnedHero o) => Atk(o) * 2 + Hp(o) / 2;
 
         /// <summary>
+        /// Gold cost of the next level, from the GDD's cost curve. Rarer cards cost more per level,
+        /// so a spare D is the cheap way to fill a slot and an S is the investment.
+        ///
+        /// This is the axis that makes gold a currency: without it the only way a party gets stronger
+        /// is pulling, ★ caps out at 2.8x, and the monster curve (1.18 per stage) runs away from the
+        /// party within a handful of stages — which is exactly the stalemate the balance bench found.
+        /// </summary>
+        public static int LevelUpCost(OwnedHero o)
+        {
+            var b = GameData.Balance;
+            var grade = GameData.Hero(o.id)?.grade;
+            var tier = Math.Max(1, GameData.GradeRank(grade) + 1);   // D=1 … S=5
+            return Math.Max(1, (int)MathF.Floor(b.upgradeCostBase * tier * MathF.Pow(b.upgradeCostGrowth, Math.Max(1, o.level) - 1)));
+        }
+
+        public static bool AtLevelCap(OwnedHero o) => o.level >= LevelCap(o.star);
+
+        /// <summary>Spends gold for one level. Returns false when capped or short of gold.</summary>
+        public static bool TryLevelUp(PlayerState player, OwnedHero o)
+        {
+            if (AtLevelCap(o)) return false;
+            var cost = LevelUpCost(o);
+            if (player.gold < cost) return false;
+            player.gold -= cost;
+            o.level++;
+            return true;
+        }
+
+        /// <summary>
+        /// Spends everything affordable in one go, up to the ★ cap. The roster gets big enough that
+        /// tapping level-by-level stops being a decision and starts being a chore.
+        /// </summary>
+        public static int LevelUpMax(PlayerState player, OwnedHero o, int limit = 200)
+        {
+            var n = 0;
+            while (n < limit && TryLevelUp(player, o)) n++;
+            return n;
+        }
+
+        /// <summary>
         /// 부문 시너지: 2+ heroes of one division buff the whole party, 3+ buff it more, and fielding
         /// all four roles adds health on top. Each qualifying division also unlocks its perk.
         /// </summary>
@@ -162,12 +202,17 @@ namespace ExcelHeroes.Core
         /// <summary>
         /// Monster attack ramps in over the first stages so a lone starting hero is not deleted, then
         /// tracks a fraction of monster health (same shape as MONSTER_ATK_RAMP in the web build).
+        ///
+        /// The fraction was 6% with a 0.35 floor, which left early monsters so harmless that a party
+        /// too weak to clear a stage could not lose it either — the balance bench turned up whole rows
+        /// of 40/40 timeouts. A fight the player cannot win should kill them and say so, so both the
+        /// fraction and the floor are up. The grace period itself is kept: the ramp still starts late.
         /// </summary>
         public static int MonsterAtk(int stage)
         {
             var b = GameData.Balance;
             var ramp = Math.Clamp((stage - b.monsterAtkRampFull) / (float)Math.Max(1, b.monsterAtkRampByStage), 0f, 1f);
-            return Math.Max(1, (int)MathF.Floor(MonsterHp(stage) * 0.06f * (0.35f + 0.65f * ramp)));
+            return Math.Max(1, (int)MathF.Floor(MonsterHp(stage) * 0.09f * (0.5f + 0.5f * ramp)));
         }
     }
 }

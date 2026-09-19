@@ -22,6 +22,74 @@ namespace ExcelHeroes.EditorTools
         static int _failures;
         static readonly StringBuilder Log = new();
 
+        /// <summary>
+        /// Plays real battles across a stage range and reports how often a party of a given strength
+        /// actually wins. The point is to tune the curve against measurements rather than against a
+        /// feeling — a stage the intended party wins 100% of the time is not a stage, and one it wins
+        /// 0% of the time is a wall the player cannot read.
+        /// </summary>
+        [MenuItem("Excel Heroes/Run Balance Bench")]
+        public static void Bench()
+        {
+            GameData.Load();
+            var report = new StringBuilder();
+            report.AppendLine("=== balance bench: win rate by stage and party strength ===");
+            // "timeout" is tracked apart from "loss" on purpose: a loss is the fight being too hard,
+            // a timeout is the fight not resolving, and only the second one is a bug.
+            report.AppendLine("party            stage  win%  timeout  avg time  avg gold");
+
+            // Rows model what a player plausibly HAS at that point, not an abstract tier: a starter
+            // party is ★1 level 1, but by stage 5 they have spent a few battles' gold on levels.
+            foreach (var (label, star, level, grades) in new[]
+            {
+                ("day1 D/C ★1 L1",   1, 1,  new[] { "D", "C" }),
+                ("day1 levelled L20",1, 20, new[] { "D", "C" }),
+                ("mid B/A ★3 L40",   3, 40, new[] { "B", "A" }),
+                ("built A/S ★5 L90", 5, 90, new[] { "A", "S" }),
+            })
+            {
+                foreach (var stage in new[] { 1, 3, 5, 10, 20, 40, 60 })
+                {
+                    var wins = 0; var timeouts = 0; var time = 0f; var gold = 0L;
+                    const int runs = 40;
+                    for (var i = 0; i < runs; i++)
+                    {
+                        var p = PartyOf(grades, star, level);
+                        var sim = new BattleSim(p, stage) { AutoSkill = true };
+                        var guard = 0;
+                        // The sim stops itself at BattleSim.TimeLimit; the step guard is only there so
+                        // a future bug cannot hang the Editor.
+                        while (!sim.Finished && guard < 60 * 600) { sim.Tick(1f / 60f); sim.Events.Clear(); guard++; }
+                        if (sim.Won) wins++;
+                        if (sim.TimedOut) timeouts++;
+                        time += sim.Elapsed;
+                        gold += sim.GoldEarned;
+                    }
+                    report.AppendLine($"{label,-16} {stage,5}  {wins * 100 / runs,3}%  {timeouts,6}  {time / runs,7:F1}s  {gold / runs,9:N0}");
+                }
+                report.AppendLine();
+            }
+
+            Debug.Log(report.ToString());
+        }
+
+        static PlayerState PartyOf(string[] grades, int star, int level)
+        {
+            var p = PlayerState.New();
+            // One of each role where possible, so the bench measures the curve rather than a
+            // pathological all-healer or all-tank line-up.
+            foreach (var role in new[] { "tank", "melee", "ranged", "healer", "melee" })
+            {
+                var pick = GameData.Heroes.FirstOrDefault(h =>
+                    h.role == role && grades.Contains(h.grade) && !p.Owns(h.id));
+                pick ??= GameData.Heroes.FirstOrDefault(h => grades.Contains(h.grade) && !p.Owns(h.id));
+                if (pick == null) continue;
+                p.owned.Add(new OwnedHero(pick.id) { star = star, level = level });
+                p.AddToParty(pick.id);
+            }
+            return p;
+        }
+
         [MenuItem("Excel Heroes/Run Self Test")]
         public static void Run()
         {
