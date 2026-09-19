@@ -159,6 +159,13 @@ const files = {
     affectionBonusPerLevel: BALANCE.AFFECTION?.bonusPerLevel ?? 0.01,
     affectionUnlockSecret: BALANCE.AFFECTION?.unlockSecret ?? 3,
     affectionUnlockLine: BALANCE.AFFECTION?.unlockLine ?? 5,
+    // 팀 업그레이드 — the gold sink the auto-battle feeds. Keyed in the web build, flattened to a
+    // list here because Unity's JsonUtility cannot deserialise a keyed record.
+    teamUpgrades: Object.entries(BALANCE.TEAM_UPGRADES ?? {}).map(([id, t]) => ({
+      id, name: t.name, desc: t.desc, per: t.per, baseCost: t.base, growth: t.growth,
+      max: t.max, unit: t.unit ?? '',
+    })),
+    gemDropBase: BALANCE.GEM_DROP?.base ?? 0.005,
   },
 };
 

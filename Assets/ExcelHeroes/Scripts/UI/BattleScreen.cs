@@ -22,15 +22,15 @@ namespace ExcelHeroes.UI
         public string Formula => "=SUMIFS(Sheet2!D:D,Sheet2!A:A,\"Q3\",Sheet2!B:B,\">0\")";
 
         readonly AppRoot _app;
-        VisualElement _root, _stage, _exBar, _resultView;
+        VisualElement _root, _stage, _exBar, _resultView, _upgradeBar;
         Label _waveLabel;
-        Button _autoButton, _speedButton;
+        Button _autoButton;
 
-        // Blue Archive offers up to 3x and an auto toggle side by side in the HUD, not buried in
-        // settings. An idle-ish fight nobody can speed up is a fight you watch rather than play.
-        static readonly int[] Speeds = { 1, 2, 3 };
-        int _speedIndex;
-        public float Speed => Speeds[_speedIndex];
+        // How long the result card stays up before the next run starts on its own. The fight is
+        // an idle loop; stopping it on a modal until someone taps 다시 is what made it a menu.
+        const float RestartDelay = 2.6f;
+        float _restartIn;
+        bool _resultApplied;
 
         // Ash and office paper drifting across the field, ported from drawAsh in cityBackdrop.js.
         // A still battlefield reads as a screenshot; this is what makes it read as weather.
@@ -62,8 +62,9 @@ namespace ExcelHeroes.UI
 
             var hud = UiKit.Div("battle__hud", _root);
             _waveLabel = UiKit.Text("", "battle__wave", hud);
-            _autoButton = UiKit.Btn("자동 스킬 OFF", "btn btn--ghost", ToggleAuto, hud);
-            _speedButton = UiKit.Btn("×1", "btn btn--ghost", CycleSpeed, hud);
+            // One toggle, called what it is. The ×1–3 speed control went with it: the run now keeps
+            // going while you are on another sheet, so the reason to fast-forward was gone.
+            _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
 
             _stage = UiKit.Div("battle__stage", _root);
 
@@ -76,61 +77,100 @@ namespace ExcelHeroes.UI
                 _costCells.Add(UiKit.Div("cost-cell", track));
 
             _exBar = UiKit.Div("ex-bar", _root);
+
+            // 사무실 개선 — the gold sink, under the EX bar rather than on a sheet of its own,
+            // because it is meant to be spent from without leaving the fight that earns it.
+            _upgradeBar = UiKit.Div("upgrades", _root);
+
             _log = UiKit.Scroll("battle-log", _root);
 
-            Start();
+            // Attach to the run already in progress instead of restarting it: opening 인사 to spend
+            // gold and coming back should not throw away the wave the party was on.
+            if (_sim == null) NewRun(); else AttachViews();
+            SyncAutoButton();
+            BuildUpgrades();
             return _root;
+        }
+
+        /// <summary>
+        /// Rebuilds the visible half of the screen against whatever the simulation is currently
+        /// doing. Called both when a run starts and when the player comes back to this sheet.
+        /// </summary>
+        void AttachViews()
+        {
+            if (_stage == null || _sim == null) return;
+
+            _views.Clear();
+            _exButtons.Clear();
+            _floaters.Clear();
+            _shotViews.Clear();
+            _motes.Clear();
+            _stage.Clear();
+            _exBar.Clear();
+            _resultView = null;
+
+            if (_backdropStage != _sim.Stage || _backdrop == null)
+            {
+                _backdropStage = _sim.Stage;
+                _backdrop = CityBackdrop.Build(_backdropStage);
+            }
+            _stage.style.backgroundImage = new StyleBackground(_backdrop);
+
+            foreach (var h in _sim.Heroes) AddFighterView(h);
+            foreach (var m in _sim.Monsters) AddFighterView(m);
+            foreach (var h in _sim.Heroes) AddExButton(h);
         }
 
         Label _costValue;
         readonly System.Collections.Generic.List<VisualElement> _costCells = new();
 
-        void CycleSpeed()
-        {
-            _speedIndex = (_speedIndex + 1) % Speeds.Length;
-            _speedButton.text = $"×{Speeds[_speedIndex]}";
-        }
-
         void ToggleAuto()
         {
-            if (_sim == null) return;
-            _sim.AutoSkill = !_sim.AutoSkill;
-            _autoButton.text = _sim.AutoSkill ? "자동 스킬 ON" : "자동 스킬 OFF";
+            Game.Player.autoSkill = !Game.Player.autoSkill;
+            if (_sim != null) _sim.AutoSkill = Game.Player.autoSkill;
+            Game.Touch();
+            SyncAutoButton();
         }
 
-        void Start()
+        void SyncAutoButton()
         {
-            _views.Clear();
-            _exButtons.Clear();
-            _floaters.Clear();
-            _stage.Clear();
-            _exBar.Clear();
-            _resultView = null;
-
-            if (Game.Player.PartyCount() == 0)
-            {
-                var empty = UiKit.Div("panel", _stage);
-                UiKit.Text("편성된 사원이 없습니다.", "section-title", empty);
-                UiKit.Text("먼저 모집하고 편성 탭에서 파티를 짜 주세요.", "muted", empty);
-                UiKit.Btn("모집하러 가기", "btn btn--primary", () => _app.Show(AppRoot.Sheet.Gacha), empty);
-                return;
-            }
-
-            _sim = new BattleSim(Game.Player, Game.Player.stage);
-
-            // The street the fight happens on, built once per phase. A blank field made the battle
-            // read as a debug view; the web build has never fought on one.
-            if (_backdropStage != Game.Player.stage || _backdrop == null)
-            {
-                _backdropStage = Game.Player.stage;
-                _backdrop = CityBackdrop.Build(_backdropStage);
-            }
-            _stage.style.backgroundImage = new StyleBackground(_backdrop);
-            _autoButton.text = "자동 스킬 OFF";
-
-            foreach (var h in _sim.Heroes) AddFighterView(h);
-            foreach (var h in _sim.Heroes) AddExButton(h);
+            if (_autoButton == null) return;
+            _autoButton.EnableInClassList("auto-toggle--on", Game.Player.autoSkill);
         }
+
+        /// <summary>
+        /// Starts a run. The simulation can exist without any of the screen — that is the point:
+        /// AppRoot ticks this sheet whether or not it is the one on display, so the party keeps
+        /// clearing waves while the player is off spending the gold.
+        /// </summary>
+        bool NewRun()
+        {
+            if (Game.Player == null || Game.Player.PartyCount() == 0)
+            {
+                ShowEmptyParty();
+                return false;
+            }
+
+            _sim = new BattleSim(Game.Player, Game.Player.stage) { AutoSkill = Game.Player.autoSkill };
+            _resultApplied = false;
+            _restartIn = 0f;
+            AttachViews();
+            return true;
+        }
+
+        void ShowEmptyParty()
+        {
+            if (_stage == null) return;
+            _stage.Clear();
+            _exBar?.Clear();
+            var empty = UiKit.Div("panel", _stage);
+            UiKit.Text("편성된 사원이 없습니다.", "section-title", empty);
+            UiKit.Text("먼저 모집하고 편성 탭에서 파티를 짜 주세요.", "muted", empty);
+            UiKit.Btn("모집하러 가기", "btn btn--primary", () => _app.Show(AppRoot.Sheet.Gacha), empty);
+        }
+
+        /// <summary>Kept for the 리본's 다시 출근 — it just forces the next run to start now.</summary>
+        void Start() => NewRun();
 
         void AddFighterView(Combatant c)
         {
@@ -193,22 +233,48 @@ namespace ExcelHeroes.UI
             _exButtons[h.heroId] = (btn, charge);
         }
 
-        public void Refresh() { }
+        /// <summary>Gold changed somewhere else, so the prices on the upgrade strip did too.</summary>
+        public void Refresh()
+        {
+            SyncAutoButton();
+            UpdateUpgrades();
+        }
 
-        /// <summary>Driven by AppRoot.Update while this screen is on top.</summary>
+        /// <summary>
+        /// Driven by AppRoot.Update every frame, on whatever sheet the player is looking at. The
+        /// simulation always runs; only the drawing is conditional on this sheet being mounted.
+        /// </summary>
         public void Tick(float dt)
         {
-            if (_sim == null) return;
-            // The whole simulation runs faster, rather than the animation being sped up separately,
-            // so what is on screen is always what actually happened.
-            if (!_sim.Finished)
-                for (var i = 0; i < Speed; i++)
-                    if (!_sim.Finished) _sim.Tick(dt);
+            if (Game.Player == null) return;
+
+            if (_sim == null)
+            {
+                // Nothing to run yet — either the game has just booted, or the party was empty last
+                // time we looked. Retry once a second rather than every frame.
+                _restartIn -= dt;
+                if (_restartIn > 0f) return;
+                _restartIn = 1f;
+                if (!NewRun()) return;
+            }
+
+            if (!_sim.Finished) _sim.Tick(dt);
+
+            var visible = _root != null && _root.panel != null;
+            if (!visible)
+            {
+                // Off-screen the events still have to be consumed or the queue grows without bound,
+                // but nothing is drawn for them.
+                _sim.Events.Clear();
+                Finish(dt);
+                return;
+            }
 
             DrainEvents();
             LayoutFighters(dt);
             UpdateExButtons();
             UpdateFloaters(dt);
+            UpdateUpgrades();
 
             _waveLabel.text = _sim.Finished
                 ? (_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패")
@@ -218,6 +284,21 @@ namespace ExcelHeroes.UI
             _waveLabel.EnableInClassList("battle__wave--enraged", !_sim.Finished && _sim.Enraged);
 
             if (_sim.Finished && _resultView == null) ShowResult();
+            Finish(dt);
+        }
+
+        /// <summary>
+        /// Banks the run's rewards once, then counts down to the next one. Auto-restarting is what
+        /// makes this an idle game rather than a level select: a finished fight that waits for a tap
+        /// stops earning, and the whole economy below it assumes the fight never stops.
+        /// </summary>
+        void Finish(float dt)
+        {
+            if (!_sim.Finished) return;
+            if (!_resultApplied) { ApplyResult(); _restartIn = RestartDelay; }
+
+            _restartIn -= dt;
+            if (_restartIn <= 0f) NewRun();
         }
 
         void DrainEvents()
@@ -508,45 +589,110 @@ namespace ExcelHeroes.UI
             }
         }
 
-        void ShowResult()
+        /// <summary>
+        /// Banks what the run earned. Separate from the card that reports it, because the run also
+        /// finishes while the player is on another sheet — the gold has to land either way.
+        /// </summary>
+        void ApplyResult()
         {
-            AudioService.Play(_sim.Won ? "victory" : "defeat");
+            _resultApplied = true;
 
             // Counted whether or not the run was won: the player still put those errors down.
             QuestService.Note(Game.Player, "kills", _sim.Kills);
             QuestService.Note(Game.Player, "elite", _sim.EliteKills);
             QuestService.Note(Game.Player, "chests", _sim.ChestsOpened);
 
-            _resultView = UiKit.Div("result", _root);
-            var title = UiKit.Text(_sim.Won ? "업무 완료" : "업무 실패",
-                "result__title " + (_sim.Won ? "result__title--win" : "result__title--lose"), _resultView);
+            // Gold and dropped gems are per kill, so a failed run still pays for what it cleared.
+            Game.Player.gold += _sim.GoldEarned;
+            Game.Player.gems += _sim.GemsDropped;
 
             if (_sim.Won)
             {
-                Game.Player.gold += _sim.GoldEarned;
-                var gems = 5 + _sim.GemBonus;          // 행운의 셀 holders pay out here
-                Game.Player.gems += gems;
+                Game.Player.gems += 5 + _sim.GemBonus;   // 행운의 셀 holders pay out here
                 if (_sim.Stage >= Game.Player.stage) Game.Player.stage++;
-
-                // Everyone who fought gets closer to you. Reported so the bond is visibly a reward
-                // for fielding a card rather than a hidden counter.
                 AffectionService.AwardBattle(Game.Player, _sim.Kills, clearedBoss: true);
-
                 QuestService.Note(Game.Player, "clears");
                 QuestService.Note(Game.Player, "boss");
-
-                UiKit.Text($"골드 +{_sim.GoldEarned:N0} · 보석 +{gems}", null, _resultView);
-                UiKit.Text("파티 전원 호감도 상승", "muted", _resultView);
-                UiKit.Text($"다음 구간: Phase {Game.Player.stage}", "muted", _resultView);
-                Game.Touch();
             }
-            else
+
+            Game.Touch();
+        }
+
+        void ShowResult()
+        {
+            AudioService.Play(_sim.Won ? "victory" : "defeat");
+
+            _resultView = UiKit.Div("result", _root);
+            UiKit.Text(_sim.Won ? "업무 완료" : "업무 실패",
+                "result__title " + (_sim.Won ? "result__title--win" : "result__title--lose"), _resultView);
+
+            var gems = _sim.GemsDropped + (_sim.Won ? 5 + _sim.GemBonus : 0);
+            UiKit.Text($"골드 +{_sim.GoldEarned:N0} · 보석 +{gems}", null, _resultView);
+            UiKit.Text(_sim.Won ? $"다음 구간: Phase {Game.Player.stage}" : "이 구간을 한 번 더 돕니다.",
+                "muted", _resultView);
+            UiKit.Text("잠시 후 자동으로 다시 시작합니다", "result__auto", _resultView);
+        }
+
+        // ---------------------------------------------------------------- 사무실 개선
+
+        readonly System.Collections.Generic.Dictionary<string, (Button Button, Label Level, Label Cost)> _upgradeRows = new();
+
+        /// <summary>
+        /// Four permanent, party-wide upgrades bought straight out of the gold the auto-battle is
+        /// earning. This is the idle half of the loop: levelling one card at a time in a modal is a
+        /// decision, and there is nothing to decide while you are watching a fight run itself.
+        /// </summary>
+        void BuildUpgrades()
+        {
+            if (_upgradeBar == null) return;
+            _upgradeBar.Clear();
+            _upgradeRows.Clear();
+
+            foreach (var def in TeamUpgrades.All)
             {
-                UiKit.Text("파티를 보강하고 다시 도전해 보세요.", "muted", _resultView);
+                var id = def.id;
+                var cell = new Button(() =>
+                {
+                    if (!TeamUpgrades.Buy(Game.Player, id)) return;
+                    AudioService.Play("tap", 0.5f);
+                    Game.Touch();
+                    // The bonuses are baked into the combatants at spawn, so they apply from the
+                    // next run. Reporting that is honest and it is also why the price is low.
+                    UpdateUpgrades();
+                });
+                cell.AddToClassList("upgrade");
+                _upgradeBar.Add(cell);
+
+                UiKit.Text(def.name, "upgrade__name", cell);
+                var level = UiKit.Text("", "upgrade__level", cell);
+                var cost = UiKit.Text("", "upgrade__cost", cell);
+                _upgradeRows[id] = (cell, level, cost);
             }
 
-            UiKit.Btn("다시", "btn btn--primary", Start, _resultView);
-            UiKit.Btn("모집하러 가기", "btn", () => _app.Show(AppRoot.Sheet.Gacha), _resultView);
+            UpdateUpgrades();
+        }
+
+        void UpdateUpgrades()
+        {
+            if (_upgradeRows.Count == 0) return;
+            var p = Game.Player;
+
+            foreach (var def in TeamUpgrades.All)
+            {
+                if (!_upgradeRows.TryGetValue(def.id, out var row)) continue;
+                var lv = TeamUpgrades.Level(p, def.id);
+                var maxed = TeamUpgrades.AtMax(p, def.id);
+
+                // The bonus, not the level, is what the player is actually buying — so that is the
+                // big number, with the level as the small one beside it.
+                var bonus = TeamUpgrades.Bonus(p, def.id);
+                row.Level.text = def.unit == "pct"
+                    ? $"+{bonus * 100f:0.#}%p · Lv{lv}"
+                    : $"+{bonus * 100f:0}% · Lv{lv}";
+                row.Cost.text = maxed ? "MAX" : $"₩{TeamUpgrades.Cost(p, def.id):N0}";
+                row.Button.EnableInClassList("upgrade--ready", TeamUpgrades.CanBuy(p, def.id));
+                row.Button.SetEnabled(!maxed);
+            }
         }
     }
 }

@@ -96,14 +96,16 @@ namespace ExcelHeroes.UI
             _detail = new HeroDetail(this);
             _stealthSheet = new StealthSheet(this);
 
+            // Four tabs along the bottom, because four short words is what fits on a phone without
+            // the strip scrolling. The other four sheets live behind the sheet-list button, which
+            // is where Excel for Android keeps sheets that do not fit either.
             Bind("tabHome", Sheet.Home);
             Bind("tabRoster", Sheet.Roster);
             Bind("tabGacha", Sheet.Gacha);
             Bind("tabQuests", Sheet.Quests);
-            Bind("tabStory", Sheet.Story);
-            Bind("tabAlbum", Sheet.Album);
-            Bind("tabCodex", Sheet.Codex);
-            Bind("tabChart", Sheet.Chart);
+
+            var sheetList = root.Q<Button>("sheetListBtn");
+            if (sheetList != null) sheetList.clicked += OpenSheetList;
 
             // Keeps the chrome clear of the notch and the gesture bar.
             (gameObject.GetComponent<SafeArea>() ?? gameObject.AddComponent<SafeArea>()).Bind(root);
@@ -162,7 +164,11 @@ namespace ExcelHeroes.UI
         void Update()
         {
             Game.Tick(Time.deltaTime);
-            if (_current is BattleScreen battle) battle.Tick(Time.deltaTime);
+            // 메인 전투는 자동전투라 항상 돌아간다. Ticking only the sheet on screen meant the run
+            // froze the moment you opened the roster to spend the gold it was earning, which is
+            // backwards for an idle game — the reason to browse is that the fight keeps going.
+            if (_screens.TryGetValue(Sheet.Home, out var home) && home is BattleScreen battle)
+                battle.Tick(Time.deltaTime);
         }
 
         void OnGameChanged()
@@ -245,7 +251,7 @@ namespace ExcelHeroes.UI
             {
                 if (item.Separator) { UiKit.Div("rb-sep", _ribbon); continue; }
                 var captured = item;
-                var b = new Button(() => captured.Click?.Invoke());
+                var b = new Button(() => { AudioService.Play("tap", 0.5f); captured.Click?.Invoke(); });
                 b.AddToClassList("rb-btn");
                 if (!string.IsNullOrEmpty(item.Icon)) UiKit.Text(item.Icon, "rb-btn__icon", b);
                 UiKit.Text(item.Label, null, b);
@@ -263,6 +269,36 @@ namespace ExcelHeroes.UI
         public void SetStatus(string text) { if (_status != null) _status.text = text; }
 
         public void Rebuild() => Show(_sheet);
+
+        /// <summary>
+        /// The sheet list. Excel for Android puts every sheet behind this button; here it is also
+        /// where the four sheets that did not fit on the tab strip live, so nothing is unreachable.
+        /// </summary>
+        static readonly (Sheet Sheet, string Name)[] MoreSheets =
+        {
+            (Sheet.Home, "메인_전투"), (Sheet.Roster, "인사_명단"),
+            (Sheet.Gacha, "데이터_가져오기"), (Sheet.Quests, "일일_업무"),
+            (Sheet.Story, "사내_메신저"), (Sheet.Album, "사원_앨범"),
+            (Sheet.Codex, "오류_도감"), (Sheet.Chart, "통계_차트"),
+        };
+
+        void OpenSheetList()
+        {
+            AudioService.Play("tap", 0.5f);
+            var pane = UiKit.Div("sheet-list");
+            UiKit.Text("시트", "sheet-list__title", pane);
+
+            foreach (var (sheet, name) in MoreSheets)
+            {
+                var target = sheet;
+                var row = UiKit.Btn(Stealth ? StealthLabels.Tab(target) : name, "sheet-list__row",
+                    () => { CloseOverlay(); Show(target); }, pane);
+                row.EnableInClassList("sheet-list__row--active", target == _sheet);
+            }
+
+            UiKit.Btn("닫기", "btn btn--ghost", CloseOverlay, pane);
+            OpenOverlay(pane);
+        }
 
         public void OpenDetail(string heroId)
         {

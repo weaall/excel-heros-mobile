@@ -286,6 +286,25 @@ namespace ExcelHeroes.Data
         public int affectionXpPerKill, affectionXpPerBoss, affectionGiftXp, affectionGiftGoldKills;
         public float affectionBonusPerLevel;
         public int affectionUnlockSecret, affectionUnlockLine;
+        public List<TeamUpgradeDef> teamUpgrades = new();
+        public float gemDropBase;
+    }
+
+    /// <summary>
+    /// One office upgrade — the gold sink that runs alongside the auto-battle. Straight out of the
+    /// web build's BALANCE.TEAM_UPGRADES: a flat per-level bonus, a geometric price, and a cap.
+    /// </summary>
+    [Serializable]
+    public class TeamUpgradeDef
+    {
+        public string id;       // coffee payroll chairs sales
+        public string name;
+        public string desc;
+        public float per;       // bonus added per level
+        public int baseCost;    // renamed on load: `base` is a C# keyword
+        public float growth;
+        public int max;
+        public string unit;     // "pct" formats the bonus as a percentage point
     }
 
     /// <summary>Hex string to Color, tolerant of missing or malformed values in the data files.</summary>

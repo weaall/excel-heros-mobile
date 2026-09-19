@@ -58,8 +58,13 @@ namespace ExcelHeroes.Core
 
         static AudioClip Build(string id) => id switch
         {
-            "tap"      => Notes(0.06f, (C6, 0f, 0.35f)),
-            "nav"      => Notes(0.09f, (G5, 0f, 0.3f), (C6, 0.03f, 0.25f)),
+            // 또로롱 — three quick rising pings rather than the two-note 또롱 this had. A UI
+            // click wants to be a flick, so the decay is more than twice as fast as a note in a
+            // reveal chord: each ping is gone before the next one lands.
+            "tap"      => Notes(0.26f, 11f, (G5, 0f, 0.34f), (C6, 0.035f, 0.32f), (E6, 0.07f, 0.28f)),
+            // The same figure a fourth lower and a touch longer, so moving between sheets reads as
+            // a bigger gesture than pressing a button without sounding like a different instrument.
+            "nav"      => Notes(0.34f, 8.5f, (D5, 0f, 0.32f), (G5, 0.04f, 0.32f), (C6, 0.08f, 0.3f)),
             "pull"     => Sweep(0.45f, 180f, 900f, 0.4f),          // the summon winding up
             "reveal_D" => Notes(0.30f, (C5, 0f, 0.5f)),
             "reveal_C" => Notes(0.40f, (C5, 0f, 0.45f), (E5, 0.08f, 0.45f)),
@@ -92,6 +97,14 @@ namespace ExcelHeroes.Core
         /// rather than stepping on each other.
         /// </summary>
         static AudioClip Notes(float seconds, params (float freq, float at, float gain)[] notes)
+            => Notes(seconds, 4.2f, notes);
+
+        /// <summary>
+        /// As above, but with the decay rate exposed. UI clicks need a much faster one than the
+        /// reveal chords: at 4.2 a note is still at half volume after 160ms, which is long enough
+        /// for three of them to blur into one chord instead of reading as three taps.
+        /// </summary>
+        static AudioClip Notes(float seconds, float decay, params (float freq, float at, float gain)[] notes)
         {
             var n = Mathf.CeilToInt(SampleRate * seconds);
             var data = new float[n];
@@ -104,7 +117,7 @@ namespace ExcelHeroes.Core
                 {
                     var t = i / (float)SampleRate;
                     // Fast attack, exponential decay — the shape of anything plucked or struck.
-                    var env = Mathf.Min(1f, t / 0.006f) * Mathf.Exp(-t * 4.2f);
+                    var env = Mathf.Min(1f, t / 0.006f) * Mathf.Exp(-t * decay);
                     var phase = 2f * Mathf.PI * freq * t;
                     // A little second harmonic gives it body without turning into a square wave.
                     var s = Mathf.Sin(phase) + 0.25f * Mathf.Sin(phase * 2f);
@@ -112,7 +125,7 @@ namespace ExcelHeroes.Core
                 }
             }
 
-            return Finish($"n{seconds}{notes.Length}{notes[0].freq}", data);
+            return Finish($"n{seconds}{decay}{notes.Length}{notes[0].freq}", data);
         }
 
         /// <summary>A pitch sweep — the sound of something charging or being released.</summary>

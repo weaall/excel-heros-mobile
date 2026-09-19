@@ -29,9 +29,15 @@ namespace ExcelHeroes.UI
             return l;
         }
 
+        /// <summary>
+        /// Every button in the game is built here, which is why the click sound lives here too.
+        /// Screens used to play it themselves, so whether a button made a noise depended on whether
+        /// whoever wrote that screen remembered — most did not, and the only things that clicked
+        /// were the sheet tabs.
+        /// </summary>
         public static Button Btn(string text, string classes, Action onClick, VisualElement parent = null)
         {
-            var b = new Button(() => onClick?.Invoke()) { text = text };
+            var b = new Button(() => { AudioService.Play("tap", 0.5f); onClick?.Invoke(); }) { text = text };
             AddClasses(b, classes);
             parent?.Add(b);
             return b;

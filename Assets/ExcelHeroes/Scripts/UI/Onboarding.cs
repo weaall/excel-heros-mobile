@@ -45,7 +45,6 @@ namespace ExcelHeroes.UI
 
             UiKit.Btn("모집하러 가기", "btn btn--primary", () =>
             {
-                AudioService.Play("nav");
                 Close();
                 _app.Show(AppRoot.Sheet.Gacha);
             }, card);

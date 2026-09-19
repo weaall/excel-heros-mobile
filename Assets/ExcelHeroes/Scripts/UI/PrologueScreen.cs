@@ -14,17 +14,23 @@ namespace ExcelHeroes.UI
     /// else's spreadsheet. Without it a new player lands on a gacha banner and a battle and has to
     /// infer all of that, which is what this build was doing.
     ///
-    /// It covers the whole screen, chrome included — the web build does the same, and a story beat
-    /// framed by a ribbon and a formula bar is not a story beat.
+    /// The art is letterboxed, not cropped. These backdrops are 912x624 landscape and the phone is
+    /// portrait, so filling the band meant cropping about a third of the width away — which is the
+    /// third the composition is in. It now sits at its own aspect ratio across the full width, with
+    /// black above and below, the way a widescreen shot sits inside a phone.
     /// </summary>
     public class PrologueScreen
     {
         readonly AppRoot _app;
         readonly Action _onDone;
-        VisualElement _root, _art, _dots;
+        VisualElement _root, _stage, _art, _dots;
         Label _title, _body, _counter;
         Button _prev, _next;
         int _page;
+
+        // 912x624 — every story backdrop is baked at the same size, and the measured sprite
+        // overrides this anyway. It only decides the band's height for the first frame.
+        float _aspect = 912f / 624f;
 
         public PrologueScreen(AppRoot app, Action onDone = null)
         {
@@ -38,10 +44,11 @@ namespace ExcelHeroes.UI
         {
             _root = UiKit.Div("prologue");
 
-            _art = UiKit.Div("prologue__art", _root);
-            // USS has no gradients, and a single translucent box draws a hard line straight across
-            // the middle of the illustration. Four stacked bands fade instead.
-            for (var i = 0; i < 4; i++) UiKit.Div($"prologue__scrim prologue__scrim--{i}", _root);
+            // The band and the picture are separate elements: the band is the letterbox, sized from
+            // the picture's aspect ratio once the panel knows how wide it is.
+            _stage = UiKit.Div("prologue__stage", _root);
+            _art = UiKit.Div("prologue__art", _stage);
+            _stage.RegisterCallback<GeometryChangedEvent>(OnStageMeasured);
 
             var head = UiKit.Div("prologue__head", _root);
             _counter = UiKit.Text("", "prologue__counter", head);
@@ -60,13 +67,29 @@ namespace ExcelHeroes.UI
             _app.OpenOverlay(_root);
         }
 
+        /// <summary>Height follows width, so the left and right edges always reach the screen.</summary>
+        void OnStageMeasured(GeometryChangedEvent e)
+        {
+            var width = e.newRect.width;
+            if (width <= 1f) return;
+            _stage.style.height = width / _aspect;
+        }
+
         void Go(int page)
         {
             if (page >= GameData.Prologue.Count) { Finish(); return; }
             _page = Mathf.Clamp(page, 0, GameData.Prologue.Count - 1);
 
             var scene = GameData.Prologue[_page];
-            UiKit.SetArt(_art, Resources.Load<Sprite>($"Art/Story/{scene.id}"));
+            var sprite = Resources.Load<Sprite>($"Art/Story/{scene.id}");
+            UiKit.SetArt(_art, sprite);
+            if (sprite != null && sprite.rect.height > 0f)
+            {
+                _aspect = sprite.rect.width / sprite.rect.height;
+                var width = _stage.resolvedStyle.width;
+                if (width > 1f) _stage.style.height = width / _aspect;
+            }
+
             _title.text = scene.title;
             _counter.text = (_page + 1).ToString();
             // One line per line, as written — the narration is paced by its line breaks.

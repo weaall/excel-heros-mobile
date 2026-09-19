@@ -229,9 +229,11 @@ namespace ExcelHeroes.Core
                     heroId = owned.id,
                     name = def.name,
                     role = def.role,
-                    maxHp = (int)(StatMath.Hp(owned) * (1f + _synergy.hpBonus)),
+                    // 인체공학 의자 and 커피 머신 land here: the office upgrades are party-wide, so
+                    // they multiply the same numbers synergy does rather than being a fifth stat.
+                    maxHp = (int)(StatMath.Hp(owned) * (1f + _synergy.hpBonus + TeamUpgrades.Health(player))),
                     atk = (int)(StatMath.Atk(owned) * (1f + _synergy.atkBonus)),
-                    interval = role.interval,
+                    interval = role.interval / (1f + TeamUpgrades.AttackSpeed(player)),
                     range = def.role is "tank" or "melee" ? MeleeReach : role.range * CellW,
                     x = FrontX - slot * LineGap,
                     homeX = FrontX - slot * LineGap,
@@ -258,14 +260,20 @@ namespace ExcelHeroes.Core
             if (rally > 0f) foreach (var h in Heroes) h.atk = (int)(h.atk * (1f + rally));
 
             // 영업 마인드 / 행운의 셀 pay out at the end of the run rather than per swing.
-            _goldBonus = Heroes.Where(h => h.traitId == "greedy").Sum(h => h.traitValue) + Perk("gold");
+            _goldBonus = Heroes.Where(h => h.traitId == "greedy").Sum(h => h.traitValue) + Perk("gold")
+                         + TeamUpgrades.Gold(player);
             _gemBonus = (int)Heroes.Where(h => h.traitId == "lucky").Sum(h => h.traitValue);
+            _gemDropBonus = TeamUpgrades.GemChance(player);
 
             SpawnWave();
         }
 
         float _goldBonus;
         int _gemBonus;
+        float _gemDropBonus;
+
+        /// <summary>Gems that fell off monsters during the run, paid out win or lose.</summary>
+        public int GemsDropped { get; private set; }
 
         /// <summary>Extra gems the party's 행운의 셀 holders earn for clearing the stage.</summary>
         public int GemBonus => _gemBonus;
@@ -701,6 +709,13 @@ namespace ExcelHeroes.Core
                     if (to.name.StartsWith("보물 상자")) ChestsOpened++;
                     var worth = StatMath.StageGold(Stage) * (to.elite ? 3f : to.atk == 0 ? 5f : 1f);
                     GoldEarned += (int)(worth * (1f + _goldBonus));
+
+                    // 보석 드롭 — a small chance per kill, tripled on elites, and the only thing
+                    // 성과급 제도 buys. Paid per kill rather than per clear on purpose: a run that
+                    // stalls against a wall still earns, which is what keeps deep farming worth it.
+                    var chance = (GameData.Balance?.gemDropBase ?? 0.005f) + _gemDropBonus;
+                    if (to.elite) chance *= 3f;
+                    if (Random.value < chance) GemsDropped++;
                 }
                 Events.Enqueue(new BattleEvent { kind = EventKind.Death, target = to });
             }

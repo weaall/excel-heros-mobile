@@ -187,16 +187,25 @@
     flex-shrink: 0;
     height: 96px;
     background-color: rgb(255, 255, 255);
-    border-top-width: 1px;
-    border-top-color: rgb(212, 212, 212);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(212, 212, 212);
 }
 
 .name-box {
     flex-shrink: 0;
-    -unity-text-align: middle-right;
-    font-size: 26px;
-    color: rgb(150, 150, 150);
-    margin-right: 10px;
+    min-width: 116px;
+    height: 62px;
+    -unity-text-align: middle-center;
+    font-size: 28px;
+    color: rgb(60, 60, 60);
+    background-color: rgb(244, 244, 244);
+    border-width: 1px;
+    border-color: rgb(212, 212, 212);
+    border-radius: 4px;
+    margin-left: 14px;
+    margin-right: 12px;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
 .formula-expand {
@@ -1798,30 +1807,31 @@
     top: 0;
     right: 0;
     bottom: 0;
-    background-color: rgb(12, 14, 20);
+    background-color: rgb(8, 9, 13);
+    justify-content: flex-start;
+    padding-top: 9%;
+}
+
+/* The letterbox. Its height is set from the picture's aspect ratio in PrologueScreen, so the
+   left and right edges of the illustration always reach the screen and the spare space ends up
+   above and below it instead of being cropped off the sides. */
+.prologue__stage {
+    width: 100%;
+    background-color: rgb(0, 0, 0);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 .prologue__art {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 14%;
-    height: 56%;
-    -unity-background-scale-mode: scale-and-crop;
+    flex-grow: 1;
+    -unity-background-scale-mode: scale-to-fit;
 }
 
-/* The narration sits over the lower third, so that part is darkened and the art is not — in four
-   bands, because one box of flat alpha cuts a visible line across the picture. */
-.prologue__scrim { position: absolute; left: 0; right: 0; }
-.prologue__scrim--0 { top: 52%; height: 6%; background-color: rgba(8, 10, 16, 0.22); }
-.prologue__scrim--1 { top: 58%; height: 6%; background-color: rgba(8, 10, 16, 0.48); }
-.prologue__scrim--2 { top: 64%; height: 6%; background-color: rgba(8, 10, 16, 0.72); }
-.prologue__scrim--3 { top: 70%; bottom: 0; background-color: rgb(8, 10, 16); }
-
 .prologue__head {
-    position: absolute;
-    left: 48px;
-    top: 15%;
+    margin-left: 48px;
+    margin-top: 56px;
     flex-direction: row;
     align-items: center;
 }
@@ -1840,10 +1850,9 @@
 .prologue__title { font-size: 40px; color: rgb(255, 255, 255); -unity-font-style: bold; }
 
 .prologue__body {
-    position: absolute;
-    left: 48px;
-    right: 48px;
-    top: 73%;
+    margin-left: 48px;
+    margin-right: 48px;
+    margin-top: 32px;
     font-size: 40px;
     color: rgb(240, 242, 248);
     white-space: normal;
@@ -1974,4 +1983,130 @@
     width: 10px;
     height: 8px;
     background-color: rgba(236, 236, 226, 0.7);
+}
+
+
+/* ---------------------------------------------------------------- AUTO + office upgrades */
+
+/* One toggle where the auto-skill and speed buttons used to be. Off is an outline, on is filled,
+   so its state reads from across the room without anyone having to parse ON / OFF. */
+.auto-toggle {
+    flex-shrink: 0;
+    min-width: 132px;
+    height: 68px;
+    margin-left: 12px;
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: rgb(150, 156, 170);
+    background-color: rgba(255, 255, 255, 0.06);
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.22);
+    border-radius: 8px;
+}
+
+.auto-toggle--on {
+    color: rgb(12, 16, 22);
+    background-color: rgb(120, 214, 160);
+    border-color: rgb(120, 214, 160);
+}
+
+/* The gold sink, as a strip of four cells under the EX bar. Cells, deliberately: this is a
+   spreadsheet, and a row of bordered boxes with a number in each is what one looks like. */
+.upgrades {
+    flex-direction: row;
+    flex-shrink: 0;
+    height: 124px;
+    margin-top: 8px;
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+.upgrade {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 3px;
+    margin-right: 3px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 6px;
+    padding-right: 6px;
+    background-color: rgb(250, 250, 250);
+    border-width: 1px;
+    border-color: rgb(205, 205, 205);
+    border-radius: 4px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Affordable is the only state worth colouring: everything else is just a price you cannot pay. */
+.upgrade--ready {
+    background-color: rgb(233, 246, 238);
+    border-color: rgb(33, 115, 70);
+}
+
+.upgrade__name {
+    font-size: 24px;
+    color: rgb(60, 62, 70);
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.upgrade__level {
+    font-size: 26px;
+    -unity-font-style: bold;
+    color: rgb(33, 115, 70);
+    margin-top: 4px;
+}
+
+.upgrade__cost {
+    font-size: 23px;
+    color: rgb(126, 130, 140);
+    margin-top: 2px;
+}
+
+.result__auto {
+    font-size: 26px;
+    color: rgb(150, 156, 170);
+    margin-top: 14px;
+}
+
+/* ---------------------------------------------------------------- sheet list */
+
+.sheet-list {
+    width: 84%;
+    max-height: 76%;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+.sheet-list__title {
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: rgb(40, 42, 48);
+    margin-bottom: 12px;
+    margin-left: 10px;
+}
+
+.sheet-list__row {
+    height: 96px;
+    font-size: 30px;
+    color: rgb(40, 42, 48);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(232, 232, 232);
+    -unity-text-align: middle-left;
+    padding-left: 18px;
+}
+
+.sheet-list__row--active {
+    color: rgb(33, 115, 70);
+    -unity-font-style: bold;
+    background-color: rgb(240, 248, 243);
 }

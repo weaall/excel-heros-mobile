@@ -24,6 +24,15 @@
             <ui:Button name="overflowBtn" class="appbar__btn icon icon--overflow" />
         </ui:VisualElement>
 
+        <!-- fx belongs at the top: the name box and the formula read as a header for the grid,
+             and down at the thumb end it was competing with the tab strip for the same band. -->
+        <ui:VisualElement name="formulaBar" class="formula-bar">
+            <ui:Label name="nameBox" text="A1" class="name-box" />
+            <ui:Label text="fx" class="fx" />
+            <ui:Label name="formula" text="=SUM(Hero_ATK)" class="formula" />
+            <ui:Label text="v" class="formula-expand" />
+        </ui:VisualElement>
+
         <!-- Column letters. With the ribbon gone this is what says "spreadsheet" at a glance. -->
         <ui:VisualElement name="colHeaders" class="ws-cols">
             <ui:Label text="" class="ws-corner" />
@@ -43,27 +52,16 @@
         <!-- Slides up over the grid when 홈 ▲ is tapped; collapsed is the resting state. -->
         <ui:VisualElement name="ribbon" class="ribbon hidden" />
 
-        <ui:VisualElement name="formulaBar" class="formula-bar">
-            <ui:Label text="fx" class="fx" />
-            <ui:Label name="formula" text="=SUM(Hero_ATK)" class="formula" />
-            <ui:Label name="nameBox" text="A1" class="name-box" />
-            <ui:Label text="^" class="formula-expand" />
-        </ui:VisualElement>
-
         <ui:VisualElement name="sheetTabsRow" class="sheet-tabs-row">
             <ui:Button name="sheetListBtn" class="sheet-list-btn icon icon--sheets" />
             <ui:ScrollView name="sheetTabsScroll" mode="Horizontal" class="sheet-tabs-scroll">
             <ui:VisualElement name="sheetTabs" class="sheet-tabs">
-                <ui:Button name="tabHome" text="메인_전투" class="sheet-tab sheet-tab--active" />
-                <ui:Button name="tabRoster" text="인사_명단" class="sheet-tab" />
-                <ui:Button name="tabGacha" text="데이터_가져오기" class="sheet-tab" />
-                <ui:Button name="tabQuests" text="일일_업무" class="sheet-tab">
+                <ui:Button name="tabHome" text="메인" class="sheet-tab sheet-tab--active" />
+                <ui:Button name="tabRoster" text="인사" class="sheet-tab" />
+                <ui:Button name="tabGacha" text="데이터" class="sheet-tab" />
+                <ui:Button name="tabQuests" text="업무" class="sheet-tab">
                     <ui:Label name="dailyBadge" text="" class="sheet-tab__badge hidden" />
                 </ui:Button>
-                <ui:Button name="tabStory" text="사내_메신저" class="sheet-tab" />
-                <ui:Button name="tabAlbum" text="사원_앨범" class="sheet-tab" />
-                <ui:Button name="tabCodex" text="오류_도감" class="sheet-tab" />
-                <ui:Button name="tabChart" text="통계_차트" class="sheet-tab" />
             </ui:VisualElement>
             </ui:ScrollView>
             <ui:Button name="addSheetBtn" class="sheet-add-btn icon icon--add" />

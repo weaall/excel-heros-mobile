@@ -66,6 +66,30 @@ namespace ExcelHeroes.Core
         /// <summary>The opening has been watched. It is re-readable from the 사내_메신저 sheet.</summary>
         public bool prologueSeen;
 
+        /// <summary>
+        /// 사무실 개선 levels, as parallel lists because JsonUtility cannot serialise a dictionary.
+        /// Unknown ids read as 0, so adding an upgrade to the data never invalidates a save.
+        /// </summary>
+        public List<string> teamIds = new();
+        public List<int> teamLevels = new();
+
+        /// <summary>자동 전투 — on by default; the main sheet is an idle battle, not a menu.</summary>
+        public bool autoSkill = true;
+
+        public int TeamLevel(string id)
+        {
+            var i = teamIds.IndexOf(id);
+            return i >= 0 && i < teamLevels.Count ? teamLevels[i] : 0;
+        }
+
+        public void SetTeamLevel(string id, int level)
+        {
+            var i = teamIds.IndexOf(id);
+            if (i < 0) { teamIds.Add(id); teamLevels.Add(level); return; }
+            while (teamLevels.Count <= i) teamLevels.Add(0);
+            teamLevels[i] = level;
+        }
+
         public static PlayerState New()
         {
             var b = GameData.Balance;
