@@ -1,0 +1,4 @@
+/* Project theme. Pulls in Unity's base control styling, then layers the game's own look on top
+   so PanelSettings has a theme to point at without depending on a package asset path. */
+@import url("unity-theme://default");
+@import url("project://database/Assets/ExcelHeroes/UI/App.uss");

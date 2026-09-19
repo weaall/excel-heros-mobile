@@ -1,0 +1,43 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="App.uss" />
+    <ui:VisualElement name="root" class="root">
+        <ui:VisualElement name="topbar" class="topbar">
+            <ui:Label name="screenTitle" text="모집" class="topbar__title" />
+            <ui:VisualElement name="gemChip" class="currency currency--gem">
+                <ui:Label text="◈" class="currency__icon" />
+                <ui:Label name="gemValue" text="0" class="currency__value" />
+            </ui:VisualElement>
+            <ui:VisualElement name="goldChip" class="currency currency--gold">
+                <ui:Label text="₩" class="currency__icon" />
+                <ui:Label name="goldValue" text="0" class="currency__value" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="content" class="screen" />
+
+        <ui:VisualElement name="navbar" class="navbar">
+            <ui:Button name="navGacha" class="nav-button">
+                <ui:Label text="◈" class="nav-button__icon" />
+                <ui:Label text="모집" class="nav-button__label" />
+            </ui:Button>
+            <ui:Button name="navRoster" class="nav-button">
+                <ui:Label text="▤" class="nav-button__icon" />
+                <ui:Label text="인사명단" class="nav-button__label" />
+            </ui:Button>
+            <ui:Button name="navParty" class="nav-button">
+                <ui:Label text="⌬" class="nav-button__icon" />
+                <ui:Label text="편성" class="nav-button__label" />
+            </ui:Button>
+            <ui:Button name="navBattle" class="nav-button">
+                <ui:Label text="⚔" class="nav-button__icon" />
+                <ui:Label text="출근" class="nav-button__label" />
+            </ui:Button>
+            <ui:Button name="navStory" class="nav-button">
+                <ui:Label text="✉" class="nav-button__icon" />
+                <ui:Label text="메신저" class="nav-button__label" />
+            </ui:Button>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="overlay" class="hidden" />
+    </ui:VisualElement>
+</ui:UXML>

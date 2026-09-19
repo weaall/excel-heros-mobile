@@ -1,0 +1,42 @@
+{
+ "upgradeCostBase": 10,
+ "upgradeCostGrowth": 1.105,
+ "monsterHpBase": 50,
+ "monsterHpGrowth": 1.18,
+ "goldBase": 5,
+ "goldGrowth": 1.16,
+ "gachaSingleCost": 100,
+ "gachaTenCost": 900,
+ "pityA": 50,
+ "pityS": 120,
+ "duplicateShardsMin": 5,
+ "duplicateShardsMax": 10,
+ "unlockShards": 10,
+ "startingGold": 0,
+ "startingGems": 1000,
+ "partySize": 5,
+ "maxStar": 5,
+ "skillUnlockStar": 2,
+ "skillBoostStar": 4,
+ "storyGems": 30,
+ "heroAtkGrowth": 1.1,
+ "heroHpGrowth": 1.08,
+ "starMult": [
+  1,
+  1.25,
+  1.6,
+  2.1,
+  2.8
+ ],
+ "levelCapByStar": [
+  80,
+  140,
+  200,
+  260,
+  320
+ ],
+ "enhancePerLevel": 0.04,
+ "traitPerStar": 0.12,
+ "monsterAtkRampFull": 5,
+ "monsterAtkRampByStage": 25
+}

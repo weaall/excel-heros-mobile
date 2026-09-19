@@ -1,0 +1,84 @@
+{
+ "items": [
+  {
+   "id": "D",
+   "name": "D",
+   "label": "일반",
+   "rate": 0.485,
+   "promote": [
+    10,
+    20,
+    40,
+    80
+   ],
+   "color": "#7f8c8d",
+   "bg": "#ecf0f1",
+   "baseAtk": 6,
+   "baseHp": 100
+  },
+  {
+   "id": "C",
+   "name": "C",
+   "label": "희귀",
+   "rate": 0.3,
+   "promote": [
+    15,
+    30,
+    60,
+    120
+   ],
+   "color": "#27ae60",
+   "bg": "#e9f7ef",
+   "baseAtk": 8,
+   "baseHp": 130
+  },
+  {
+   "id": "B",
+   "name": "B",
+   "label": "고급",
+   "rate": 0.16,
+   "promote": [
+    20,
+    40,
+    80,
+    160
+   ],
+   "color": "#2b7cd3",
+   "bg": "#e8f1fb",
+   "baseAtk": 11,
+   "baseHp": 160
+  },
+  {
+   "id": "A",
+   "name": "A",
+   "label": "영웅",
+   "rate": 0.05,
+   "promote": [
+    25,
+    50,
+    100,
+    200
+   ],
+   "color": "#8e44ad",
+   "bg": "#f4ecf7",
+   "baseAtk": 15,
+   "baseHp": 200
+  },
+  {
+   "id": "S",
+   "name": "S",
+   "label": "전설",
+   "rate": 0.005,
+   "promote": [
+    30,
+    60,
+    120,
+    240
+   ],
+   "color": "#d4a017",
+   "bg": "#fdf6e3",
+   "baseAtk": 20,
+   "baseHp": 250
+  }
+ ]
+}

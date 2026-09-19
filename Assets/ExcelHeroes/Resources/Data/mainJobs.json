@@ -1,0 +1,177 @@
+{
+ "mainId": "main",
+ "items": [
+  {
+   "id": "intern",
+   "tier": 0,
+   "grade": "D",
+   "name": "김인턴",
+   "title": "인턴",
+   "track": "",
+   "role": "melee",
+   "trait": "swift",
+   "skillType": "strike",
+   "skillPower": 3,
+   "skillName": "강타",
+   "next": [
+    "staff"
+   ]
+  },
+  {
+   "id": "staff",
+   "tier": 1,
+   "grade": "C",
+   "name": "김사원",
+   "title": "사원",
+   "track": "",
+   "role": "melee",
+   "trait": "swift",
+   "skillType": "strike",
+   "skillPower": 3.5,
+   "skillName": "강타",
+   "next": [
+    "sales_senior",
+    "finance_senior",
+    "admin_senior"
+   ]
+  },
+  {
+   "id": "sales_senior",
+   "tier": 2,
+   "grade": "B",
+   "name": "김대리",
+   "title": "영업대리",
+   "track": "sales",
+   "role": "melee",
+   "trait": "crit",
+   "skillType": "strike",
+   "skillPower": 4,
+   "skillName": "강타",
+   "next": [
+    "sales_manager"
+   ]
+  },
+  {
+   "id": "sales_manager",
+   "tier": 3,
+   "grade": "A",
+   "name": "김과장",
+   "title": "영업과장",
+   "track": "sales",
+   "role": "melee",
+   "trait": "rally",
+   "skillType": "strike",
+   "skillPower": 5,
+   "skillName": "강타",
+   "next": [
+    "sales"
+   ]
+  },
+  {
+   "id": "sales",
+   "tier": 4,
+   "grade": "S",
+   "name": "김부장",
+   "title": "영업부장",
+   "track": "sales",
+   "role": "melee",
+   "trait": "crit",
+   "skillType": "strike",
+   "skillPower": 6.5,
+   "skillName": "강타",
+   "next": []
+  },
+  {
+   "id": "finance_senior",
+   "tier": 2,
+   "grade": "B",
+   "name": "김대리",
+   "title": "재무대리",
+   "track": "finance",
+   "role": "ranged",
+   "trait": "greedy",
+   "skillType": "sweep",
+   "skillPower": 1.6,
+   "skillName": "범위 정리",
+   "next": [
+    "finance_manager"
+   ]
+  },
+  {
+   "id": "finance_manager",
+   "tier": 3,
+   "grade": "A",
+   "name": "김과장",
+   "title": "재무과장",
+   "track": "finance",
+   "role": "ranged",
+   "trait": "focus",
+   "skillType": "sweep",
+   "skillPower": 2,
+   "skillName": "범위 정리",
+   "next": [
+    "finance"
+   ]
+  },
+  {
+   "id": "finance",
+   "tier": 4,
+   "grade": "S",
+   "name": "김부장",
+   "title": "재무부장",
+   "track": "finance",
+   "role": "ranged",
+   "trait": "greedy",
+   "skillType": "sweep",
+   "skillPower": 2.5,
+   "skillName": "범위 정리",
+   "next": []
+  },
+  {
+   "id": "admin_senior",
+   "tier": 2,
+   "grade": "B",
+   "name": "김대리",
+   "title": "총무대리",
+   "track": "admin",
+   "role": "tank",
+   "trait": "sturdy",
+   "skillType": "barrier",
+   "skillPower": 3,
+   "skillName": "조항의 방패",
+   "next": [
+    "admin_manager"
+   ]
+  },
+  {
+   "id": "admin_manager",
+   "tier": 3,
+   "grade": "A",
+   "name": "김과장",
+   "title": "총무과장",
+   "track": "admin",
+   "role": "tank",
+   "trait": "sturdy",
+   "skillType": "ult",
+   "skillPower": 2.2,
+   "skillName": "경영 지시",
+   "next": [
+    "admin"
+   ]
+  },
+  {
+   "id": "admin",
+   "tier": 4,
+   "grade": "S",
+   "name": "김부장",
+   "title": "총무부장",
+   "track": "admin",
+   "role": "tank",
+   "trait": "sturdy",
+   "skillType": "ult",
+   "skillPower": 3,
+   "skillName": "경영 지시",
+   "next": []
+  }
+ ]
+}

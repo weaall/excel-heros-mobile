@@ -1,0 +1,736 @@
+/* Excel Heroes - shared runtime styling.
+   Portrait phone layout. The look is "spreadsheet at night": deep navy panels, thin cell borders,
+   gold for anything the player earns, and rarity colour reserved for cards. */
+
+/* ---------------------------------------------------------------- shell */
+
+.root {
+    flex-grow: 1;
+    background-color: rgb(9, 12, 22);
+    color: rgb(232, 236, 244);
+    font-size: 26px;
+}
+
+.screen {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.screen-body {
+    flex-grow: 1;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* ---------------------------------------------------------------- top bar */
+
+.topbar {
+    flex-direction: row;
+    align-items: center;
+    height: 96px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: rgb(14, 19, 34);
+    border-bottom-width: 2px;
+    border-bottom-color: rgb(34, 44, 70);
+}
+
+.topbar__title {
+    flex-grow: 1;
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: rgb(212, 160, 23);
+}
+
+.currency {
+    flex-direction: row;
+    align-items: center;
+    margin-left: 18px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 14px;
+    padding-right: 14px;
+    background-color: rgb(20, 27, 46);
+    border-radius: 18px;
+    border-width: 1px;
+    border-color: rgb(44, 57, 88);
+}
+
+.currency__icon {
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+.currency__value {
+    font-size: 26px;
+    -unity-font-style: bold;
+}
+
+.currency--gem .currency__value { color: rgb(126, 198, 255); }
+.currency--gold .currency__value { color: rgb(240, 196, 70); }
+
+/* ---------------------------------------------------------------- bottom nav */
+
+.navbar {
+    flex-direction: row;
+    height: 132px;
+    background-color: rgb(14, 19, 34);
+    border-top-width: 2px;
+    border-top-color: rgb(34, 44, 70);
+}
+
+.nav-button {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    margin: 0;
+    padding: 0;
+    color: rgb(126, 138, 166);
+    transition-duration: 0.15s;
+}
+
+.nav-button:hover { color: rgb(200, 210, 230); }
+
+.nav-button--active {
+    color: rgb(212, 160, 23);
+    background-color: rgb(20, 27, 46);
+}
+
+.nav-button__icon { font-size: 34px; }
+.nav-button__label { font-size: 20px; margin-top: 4px; }
+
+/* ---------------------------------------------------------------- generic pieces */
+
+.panel {
+    background-color: rgb(16, 22, 38);
+    border-radius: 16px;
+    border-width: 1px;
+    border-color: rgb(38, 49, 78);
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: rgb(150, 164, 196);
+    margin-bottom: 10px;
+}
+
+.muted { color: rgb(126, 138, 166); }
+.hidden { display: none; }
+
+.btn {
+    height: 88px;
+    background-color: rgb(30, 41, 68);
+    border-radius: 14px;
+    border-width: 1px;
+    border-color: rgb(54, 70, 108);
+    color: rgb(226, 232, 244);
+    font-size: 28px;
+    -unity-font-style: bold;
+    transition-duration: 0.12s;
+}
+
+.btn:hover { background-color: rgb(40, 54, 88); }
+.btn:disabled { opacity: 0.4; }
+
+.btn--primary {
+    background-color: rgb(196, 146, 20);
+    border-color: rgb(240, 196, 70);
+    color: rgb(20, 16, 6);
+}
+
+.btn--primary:hover { background-color: rgb(226, 172, 32); }
+
+.btn--ghost {
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgb(54, 70, 108);
+}
+
+/* ---------------------------------------------------------------- gacha */
+
+.gacha {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.gacha__bg {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/gacha_bg.png");
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.gacha__banner {
+    align-items: center;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.gacha__banner-title {
+    font-size: 40px;
+    -unity-font-style: bold;
+    color: rgb(244, 214, 120);
+}
+
+.gacha__banner-sub {
+    font-size: 22px;
+    color: rgb(168, 182, 210);
+    margin-top: 6px;
+}
+
+.gacha__pity {
+    flex-direction: row;
+    margin-top: 16px;
+}
+
+.pity-chip {
+    flex-direction: row;
+    align-items: center;
+    margin-left: 8px;
+    margin-right: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+    background-color: rgba(10, 14, 26, 0.75);
+    border-radius: 16px;
+    border-width: 1px;
+    border-color: rgb(58, 74, 112);
+    font-size: 22px;
+}
+
+.gacha__actions {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.gacha__actions .btn { margin-top: 12px; }
+
+/* ---------------------------------------------------------------- reveal */
+
+.reveal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(4, 6, 12, 0.94);
+    align-items: center;
+    justify-content: center;
+}
+
+.reveal__card {
+    width: 560px;
+    height: 780px;
+    border-radius: 20px;
+    border-width: 4px;
+    overflow: hidden;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.reveal__art {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.reveal__plate {
+    width: 100%;
+    padding: 18px;
+    background-color: rgba(6, 9, 18, 0.86);
+    align-items: center;
+}
+
+.reveal__grade {
+    font-size: 54px;
+    -unity-font-style: bold;
+}
+
+.reveal__name {
+    font-size: 34px;
+    -unity-font-style: bold;
+    margin-top: 2px;
+}
+
+.reveal__nick { font-size: 22px; color: rgb(168, 182, 210); }
+
+.reveal__line {
+    font-size: 22px;
+    color: rgb(200, 210, 230);
+    margin-top: 10px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+.reveal__badge {
+    margin-top: 10px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 14px;
+    font-size: 20px;
+    background-color: rgb(196, 146, 20);
+    color: rgb(20, 16, 6);
+}
+
+.reveal__hint {
+    margin-top: 28px;
+    font-size: 24px;
+    color: rgb(150, 164, 196);
+}
+
+/* ten-pull summary grid */
+
+.reveal-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.reveal-grid__cell {
+    width: 190px;
+    height: 264px;
+    margin: 6px;
+    border-radius: 12px;
+    border-width: 3px;
+    overflow: hidden;
+    justify-content: flex-end;
+}
+
+.reveal-grid__art {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.reveal-grid__plate {
+    background-color: rgba(6, 9, 18, 0.86);
+    padding-top: 4px;
+    padding-bottom: 4px;
+    align-items: center;
+}
+
+.reveal-grid__name { font-size: 18px; }
+.reveal-grid__grade { font-size: 20px; -unity-font-style: bold; }
+
+/* ---------------------------------------------------------------- roster */
+
+.roster-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.card {
+    width: 214px;
+    height: 306px;
+    margin: 7px;
+    border-radius: 14px;
+    border-width: 3px;
+    overflow: hidden;
+    justify-content: flex-end;
+    transition-duration: 0.12s;
+}
+
+.card:hover { scale: 1.03 1.03; }
+
+.card--locked { opacity: 0.32; }
+
+.card__art {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.card__top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 8px;
+}
+
+.card__grade {
+    width: 42px;
+    height: 42px;
+    border-radius: 21px;
+    -unity-text-align: middle-center;
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: rgb(12, 14, 20);
+}
+
+.card__role {
+    padding-left: 10px;
+    padding-right: 10px;
+    height: 34px;
+    border-radius: 17px;
+    background-color: rgba(8, 11, 20, 0.8);
+    -unity-text-align: middle-center;
+    font-size: 19px;
+}
+
+.card__plate {
+    background-color: rgba(6, 9, 18, 0.88);
+    padding: 8px;
+}
+
+.card__name { font-size: 21px; -unity-font-style: bold; }
+.card__stars { font-size: 19px; color: rgb(240, 196, 70); }
+
+.card__copies {
+    font-size: 18px;
+    color: rgb(126, 198, 255);
+}
+
+/* ---------------------------------------------------------------- hero detail */
+
+.detail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(4, 6, 12, 0.96);
+}
+
+.detail__art {
+    height: 900px;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+/* stacked with the base art so a cross-fade can run between them */
+.detail__art-motion {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 900px;
+    -unity-background-scale-mode: scale-and-crop;
+    opacity: 0;
+    transition-duration: 0.9s;
+}
+
+.detail__art-motion--on { opacity: 1; }
+
+.detail__scrim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 700px;
+    height: 200px;
+    background-color: rgba(9, 12, 22, 0.55);
+}
+
+.detail__head {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    top: 720px;
+}
+
+.detail__name { font-size: 46px; -unity-font-style: bold; }
+.detail__nick { font-size: 24px; color: rgb(212, 160, 23); }
+
+.detail__body {
+    flex-grow: 1;
+    padding: 24px;
+}
+
+.stat-row {
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(30, 40, 64);
+}
+
+.stat-row__key { color: rgb(150, 164, 196); font-size: 24px; }
+.stat-row__value { font-size: 24px; -unity-font-style: bold; }
+
+.detail__close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    width: 72px;
+    height: 72px;
+    border-radius: 36px;
+    background-color: rgba(8, 11, 20, 0.8);
+    border-width: 1px;
+    border-color: rgb(54, 70, 108);
+    color: rgb(226, 232, 244);
+    font-size: 32px;
+}
+
+/* ---------------------------------------------------------------- party */
+
+.party-slots {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.slot {
+    width: 190px;
+    height: 262px;
+    border-radius: 12px;
+    border-width: 2px;
+    border-color: rgb(54, 70, 108);
+    background-color: rgb(16, 22, 38);
+    overflow: hidden;
+    justify-content: flex-end;
+}
+
+.slot--empty {
+    align-items: center;
+    justify-content: center;
+    border-color: rgb(40, 52, 82);
+}
+
+.slot__plus { font-size: 44px; color: rgb(70, 88, 130); }
+
+.synergy-line {
+    font-size: 22px;
+    color: rgb(126, 214, 168);
+    margin-bottom: 4px;
+}
+
+.power-readout {
+    flex-direction: row;
+    align-items: flex-end;
+    margin-bottom: 8px;
+}
+
+.power-readout__value {
+    font-size: 52px;
+    -unity-font-style: bold;
+    color: rgb(240, 196, 70);
+}
+
+.power-readout__label {
+    font-size: 22px;
+    color: rgb(150, 164, 196);
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
+/* ---------------------------------------------------------------- battle */
+
+.battle {
+    flex-grow: 1;
+}
+
+.battle__stage {
+    flex-grow: 1;
+    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/battle_bg.png");
+    -unity-background-scale-mode: scale-and-crop;
+    overflow: hidden;
+}
+
+.fighter {
+    position: absolute;
+    width: 120px;
+    align-items: center;
+}
+
+.fighter__body {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    border-width: 3px;
+    overflow: hidden;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.fighter--hero .fighter__body { border-color: rgb(126, 198, 255); }
+.fighter--monster .fighter__body {
+    border-color: rgb(226, 108, 108);
+    background-color: rgb(58, 26, 34);
+}
+
+.fighter--dead { opacity: 0.25; }
+
+.fighter__hpbar {
+    width: 104px;
+    height: 10px;
+    margin-top: 6px;
+    background-color: rgba(8, 11, 20, 0.85);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.fighter__hpfill {
+    height: 100%;
+    background-color: rgb(96, 208, 128);
+}
+
+.fighter--monster .fighter__hpfill { background-color: rgb(226, 108, 108); }
+
+.fighter__name {
+    font-size: 17px;
+    margin-top: 4px;
+    color: rgb(212, 220, 238);
+}
+
+.floater {
+    position: absolute;
+    font-size: 28px;
+    -unity-font-style: bold;
+    color: rgb(255, 228, 130);
+}
+
+.floater--heal { color: rgb(126, 232, 168); }
+.floater--skill { color: rgb(150, 210, 255); font-size: 24px; }
+
+.battle__hud {
+    height: 90px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: rgb(14, 19, 34);
+}
+
+.battle__wave { flex-grow: 1; font-size: 26px; -unity-font-style: bold; }
+
+.ex-bar {
+    flex-direction: row;
+    height: 160px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(12, 17, 30);
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.ex-button {
+    width: 132px;
+    height: 132px;
+    margin-left: 7px;
+    margin-right: 7px;
+    border-radius: 18px;
+    border-width: 3px;
+    border-color: rgb(46, 60, 94);
+    background-color: rgb(20, 27, 46);
+    overflow: hidden;
+    justify-content: flex-end;
+    align-items: center;
+    transition-duration: 0.15s;
+}
+
+.ex-button--ready {
+    border-color: rgb(240, 196, 70);
+    scale: 1.05 1.05;
+}
+
+.ex-button--spent { opacity: 0.45; }
+
+.ex-button__art {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.ex-button__charge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(240, 196, 70, 0.28);
+}
+
+.ex-button__label {
+    width: 100%;
+    font-size: 17px;
+    -unity-text-align: middle-center;
+    background-color: rgba(6, 9, 18, 0.85);
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.result {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(4, 6, 12, 0.92);
+    align-items: center;
+    justify-content: center;
+}
+
+.result__title {
+    font-size: 72px;
+    -unity-font-style: bold;
+    margin-bottom: 16px;
+}
+
+.result__title--win { color: rgb(240, 196, 70); }
+.result__title--lose { color: rgb(226, 108, 108); }
+
+/* ---------------------------------------------------------------- story */
+
+.chat-room {
+    font-size: 22px;
+    color: rgb(126, 198, 255);
+    margin-bottom: 12px;
+}
+
+.chat-line {
+    flex-direction: row;
+    margin-bottom: 14px;
+}
+
+.chat-line--mine { justify-content: flex-end; }
+
+.chat-bubble {
+    max-width: 640px;
+    padding: 14px;
+    border-radius: 14px;
+    background-color: rgb(26, 35, 58);
+    font-size: 23px;
+    white-space: normal;
+}
+
+.chat-line--mine .chat-bubble { background-color: rgb(58, 48, 18); }
+.chat-line--sys .chat-bubble {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 1px;
+    border-color: rgb(54, 70, 108);
+    color: rgb(150, 164, 196);
+    font-size: 21px;
+}
+
+.chat-who {
+    font-size: 19px;
+    color: rgb(150, 164, 196);
+    margin-bottom: 4px;
+}

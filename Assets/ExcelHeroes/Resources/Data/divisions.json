@@ -1,0 +1,88 @@
+{
+ "items": [
+  {
+   "id": "admin",
+   "name": "경영지원",
+   "color": "#5d6d7e"
+  },
+  {
+   "id": "ops",
+   "name": "시설·복지",
+   "color": "#27ae60"
+  },
+  {
+   "id": "people",
+   "name": "인사",
+   "color": "#e67e22"
+  },
+  {
+   "id": "finance",
+   "name": "재무·감사",
+   "color": "#b7950b"
+  },
+  {
+   "id": "tech",
+   "name": "기술",
+   "color": "#2b7cd3"
+  },
+  {
+   "id": "market",
+   "name": "영업·마케팅",
+   "color": "#c0392b"
+  },
+  {
+   "id": "exec",
+   "name": "임원",
+   "color": "#8e44ad"
+  }
+ ],
+ "perks": [
+  {
+   "id": "admin",
+   "key": "gold",
+   "value": 0.08,
+   "desc": "골드 획득 +8%"
+  },
+  {
+   "id": "ops",
+   "key": "regen",
+   "value": 0.01,
+   "desc": "파티 초당 HP 회복 +1%"
+  },
+  {
+   "id": "people",
+   "key": "revive",
+   "value": 0.3,
+   "desc": "쓰러진 영웅 복귀 시간 -30%"
+  },
+  {
+   "id": "finance",
+   "key": "boss",
+   "value": 0.15,
+   "desc": "보스에게 주는 피해 +15%"
+  },
+  {
+   "id": "tech",
+   "key": "cooldown",
+   "value": 0.15,
+   "desc": "스킬 재사용 대기 -15%"
+  },
+  {
+   "id": "market",
+   "key": "crit",
+   "value": 0.08,
+   "desc": "파티 전원 치명타 확률 +8%"
+  },
+  {
+   "id": "exec",
+   "key": "skill",
+   "value": 0.2,
+   "desc": "스킬 위력 +20%"
+  }
+ ],
+ "pairAtk": 0.05,
+ "pairHp": 0,
+ "trioAtk": 0.12,
+ "trioHp": 0.06,
+ "balancedHp": 0.1
+}

@@ -1,0 +1,93 @@
+{
+ "items": [
+  {
+   "id": "strike",
+   "name": "강타",
+   "desc": "단일 대상 ×{p} 피해",
+   "cooldown": 8
+  },
+  {
+   "id": "sweep",
+   "name": "범위 정리",
+   "desc": "모든 적에게 ×{p} 피해",
+   "cooldown": 10
+  },
+  {
+   "id": "buff",
+   "name": "팀 싱크",
+   "desc": "5초간 파티 공격력 +{p}%",
+   "cooldown": 15
+  },
+  {
+   "id": "heal",
+   "name": "웰니스 데이",
+   "desc": "파티 전체가 **잃은 체력**의 {p}% 회복",
+   "cooldown": 12
+  },
+  {
+   "id": "ult",
+   "name": "경영 지시",
+   "desc": "모든 적에게 ×{p} 피해 + 1.2초 기절",
+   "cooldown": 14
+  },
+  {
+   "id": "burn",
+   "name": "긴급 패치",
+   "desc": "모든 적에게 4초간 초당 ×{p} 화상 피해",
+   "cooldown": 12,
+   "duration": 4
+  },
+  {
+   "id": "barrier",
+   "name": "조항의 방패",
+   "desc": "6초간 파티 총 체력의 {p}%만큼 피해를 대신 흡수",
+   "cooldown": 16,
+   "duration": 6
+  },
+  {
+   "id": "haste",
+   "name": "스프린트",
+   "desc": "5초간 파티 공격 속도 +{p}%",
+   "cooldown": 14,
+   "duration": 5
+  },
+  {
+   "id": "execute",
+   "name": "저격 보고",
+   "desc": "단일 대상 ×{p} 피해 · 대상 HP 30% 미만이면 2배",
+   "cooldown": 9
+  },
+  {
+   "id": "cleanse",
+   "name": "스트레스 해소",
+   "desc": "파티 {p}% 회복 · 둔화 해제 · 5초간 공격 속도 +35%",
+   "cooldown": 14,
+   "duration": 5
+  },
+  {
+   "id": "revive",
+   "name": "인사 복구",
+   "desc": "쓰러진 동료를 HP {p}%로 복귀 — 1명은 확정, 추가 인원은 ★에 따른 확률(최대 3명) · 쓰러진 동료가 없으면 「재고용 보장」: 25초 안에 처음 쓰러지는 한 명이 HP {p}%로 즉시 복귀",
+   "cooldown": 20
+  },
+  {
+   "id": "drain",
+   "name": "성과 회수",
+   "desc": "모든 적에게 ×{p} 피해 · 입힌 피해의 40%만큼 파티 회복 (1회 최대 HP 25%까지)",
+   "cooldown": 13
+  },
+  {
+   "id": "chain",
+   "name": "참조 연쇄",
+   "desc": "적 3명에게 차례로 ×{p} 피해 (연쇄마다 70%)",
+   "cooldown": 10
+  },
+  {
+   "id": "taunt",
+   "name": "총대 메기",
+   "desc": "5초간 모든 적의 공격을 자신이 받고 받는 피해 {p}% 감소",
+   "cooldown": 16,
+   "duration": 5
+  }
+ ]
+}
