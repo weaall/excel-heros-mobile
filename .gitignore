@@ -34,3 +34,6 @@ tools/.cache/
 
 # built player
 Build/
+
+# Generation scratch — the tool is committed, its logs are not.
+tools/gen/*.log
