@@ -83,7 +83,10 @@ namespace ExcelHeroes.UI
             // half and an empty white panel got the bottom, which is the layout of a tool, not
             // of a game. A landscape game gives the picture everything and puts the readouts
             // over it.
-            _stage = UiKit.Div("battle__stage", _root);
+            // `clips`: the audit's word for "this box crops its children and that is the point".
+            // Everything walks in from off-screen here, so without it the audit reports a dozen
+            // fighters past the right edge every single run and stops being worth reading.
+            _stage = UiKit.Div("battle__stage clips", _root);
 
             // The backdrop is a child rather than this box's own background image, so it can be
             // taller than the box and hang off the top. Held sideways the sheet is far wider than

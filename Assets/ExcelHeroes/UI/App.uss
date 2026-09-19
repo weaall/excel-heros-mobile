@@ -330,7 +330,7 @@
     border-bottom-color: var(--ex-accent-deep);
 }
 
-.navtab__icon { font-size: 54px; height: 68px; color: var(--ex-ink-muted); }
+.navtab__icon { font-size: 54px; height: 76px; flex-shrink: 0; color: var(--ex-ink-muted); }
 .navtab--active .navtab__icon { color: rgb(255, 255, 255); }
 
 .navtab__label {
@@ -345,9 +345,9 @@
     position: absolute;
     top: 12px;
     right: 30px;
-    min-width: 40px;
-    height: 40px;
-    border-radius: 20px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 22px;
     background-color: var(--ex-danger);
     color: rgb(255, 255, 255);
     font-size: var(--ex-text-xs);
@@ -371,7 +371,7 @@
 
 .navcta:hover { background-color: rgb(255, 199, 74); }
 
-.navcta__icon { font-size: 52px; height: 68px; color: rgb(72, 44, 0); margin-right: var(--ex-space-1); }
+.navcta__icon { font-size: 52px; height: 74px; flex-shrink: 0; color: rgb(72, 44, 0); margin-right: var(--ex-space-1); }
 
 .navcta__label {
     font-size: var(--ex-text-base);
@@ -956,7 +956,7 @@
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    height: 66px;
+    height: 74px;
     border-bottom-width: 1px;
     border-bottom-color: var(--ex-line);
 }
@@ -1087,17 +1087,17 @@
 /* Integer multiples only, and the web build's ratio: wave enemies 2x, bosses 3x. */
 .fighter--boss { width: 440px; }
 .fighter--boss .fighter__body { width: 156px; height: 276px; }
-.fighter--boss .fighter__hpbar { width: 220px; }
+.fighter--boss .fighter__hpbar { width: 150px; height: 12px; border-radius: 6px; }
 .fighter--elite .fighter__body { width: 124px; height: 220px; }
 
 .fighter--dead { opacity: 0.25; }
 
 .fighter__hpbar {
-    width: 96px;
-    height: 14px;
+    width: 64px;
+    height: 8px;
     margin-top: 2px;
     background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 7px;
+    border-radius: 4px;
     overflow: hidden;
 }
 
@@ -1446,17 +1446,16 @@
 .ep__cast {
     flex-direction: row;
     flex-shrink: 0;
-    height: 86px;
-    margin-bottom: var(--ex-space-1);
+    height: 74px;
     overflow: hidden;
 }
 
 .ep__face {
-    width: 86px;
-    height: 86px;
+    width: 74px;
+    height: 74px;
     flex-shrink: 0;
-    border-radius: 43px;
-    margin-right: -12px;
+    border-radius: 37px;
+    margin-right: -10px;
     border-width: 2px;
     border-color: rgb(212, 212, 212);
     background-color: rgb(238, 238, 238);
@@ -1577,6 +1576,67 @@
 .xl-cell--num { -unity-text-align: middle-right; padding-right: 26px; }
 .xl-body { flex-grow: 1; }
 
+/* ---------------------------------------------------------------- 오류 도감
+   A gallery rather than a table. Two rows of five, each card carrying the sprite you actually
+   meet — which is what the reference does with everything it asks you to collect. */
+.codex-grid {
+    flex-grow: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+}
+
+.mcard {
+    width: 18.4%;
+    height: 250px;
+    margin: 8px;
+    padding: var(--ex-space-1);
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    background-color: var(--ex-surface-raised);
+    border-width: 2px;
+    border-color: var(--ex-line);
+    border-radius: var(--ex-rad-md);
+}
+
+.mcard__art {
+    width: 100%;
+    height: 150px;
+    flex-shrink: 0;
+    -unity-background-scale-mode: scale-to-fit;
+    align-items: center;
+    justify-content: center;
+}
+
+.mcard__name {
+    flex-shrink: 0;
+    height: 42px;
+    font-size: 24px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: var(--ex-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mcard__meta {
+    flex-shrink: 0;
+    height: 40px;
+    font-size: 20px;
+    -unity-text-align: middle-center;
+    color: var(--ex-ink-muted);
+}
+
+.mcard__unknown { font-size: 64px; -unity-font-style: bold; color: rgb(198, 202, 210); }
+
+.mcard--locked { background-color: var(--ex-surface-sunken); }
+.mcard--locked .mcard__name { color: rgb(166, 170, 178); }
+
+/* A boss is the one entry in its phase you had to beat, so it gets the border that says so. */
+.mcard--boss { border-color: var(--ex-gold); }
+
 /* ---------------------------------------------------------------- album */
 
 .album { flex-grow: 1; }
@@ -1609,7 +1669,7 @@
 
 .album__name {
     font-size: var(--ex-text-xs);
-    height: 40px;
+    height: 48px;
     -unity-text-align: middle-center;
     white-space: nowrap;
     overflow: hidden;
@@ -1925,7 +1985,7 @@
    descenders rather than wrapping. */
 .prologue__title {
     font-size: 40px;
-    height: 56px;
+    height: 62px;
     flex-shrink: 0;
     color: rgb(255, 255, 255);
     -unity-font-style: bold;
@@ -2477,7 +2537,7 @@
 }
 
 .stamp-day__n { font-size: 24px; color: rgb(110, 114, 122); }
-.stamp-day__gems { font-size: 24px; height: 34px; -unity-font-style: bold; color: rgb(60, 62, 70); }
+.stamp-day__gems { font-size: 24px; height: 44px; -unity-font-style: bold; color: rgb(60, 62, 70); }
 
 /* The stamp itself: a red approval mark at an angle, the way an actual 도장 lands. */
 .stamp-day__mark {
@@ -2854,8 +2914,8 @@
    cards and the shared budget bar that used to sit under the field: every skill fires itself, so a
    card you cannot press only tells you the game is thinking. */
 .fighter__skillbar {
-    width: 96px;
-    height: 8px;
+    width: 64px;
+    height: 5px;
     margin-top: 2px;
     background-color: rgba(255, 255, 255, 0.28);
     border-radius: 4px;
@@ -2920,7 +2980,7 @@
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-    height: 108px;
+    height: 78px;
     overflow: hidden;
     border-bottom-width: 1px;
     border-bottom-color: rgb(234, 234, 234);
@@ -2943,12 +3003,15 @@
 
 .qrow__fill { height: 100%; background-color: rgb(33, 115, 70); }
 
-.qrow__meta { font-size: 21px; color: rgb(110, 115, 125); margin-top: 2px; }
+/* The reward sits at the end of the name's line, so the bar can have the next one to itself. */
+.qrow__head { flex-direction: row; align-items: center; }
+.qrow__name { flex-grow: 1; flex-shrink: 1; }
+.qrow__meta { font-size: 21px; color: rgb(110, 115, 125); flex-shrink: 0; margin-right: 20px; }
 
 .qrow__claim {
     flex-shrink: 0;
     min-width: 140px;
-    height: 68px;
+    height: 58px;
     font-size: var(--ex-text-xs);
     -unity-font-style: bold;
     -unity-text-align: middle-center;
@@ -3118,8 +3181,8 @@
 .ep {
     width: 31.3%;
     height: 46%;
-    margin: 1%;
-    padding: var(--ex-space-2);
+    margin: 8px;
+    padding: var(--ex-space-1) var(--ex-space-2) var(--ex-space-1) var(--ex-space-2);
     justify-content: space-between;
     overflow: hidden;
 }
@@ -3127,7 +3190,7 @@
 /* Inside an episode card the type steps down a size: the card is a third of the frame wide. */
 .ep .section-title { font-size: 30px; margin-bottom: 2px; }
 .ep .muted { font-size: 24px; }
-.ep .btn { flex-shrink: 0; height: 84px; margin-top: var(--ex-space-1); }
+.ep .btn { flex-shrink: 0; height: 74px; margin-top: 4px; }
 
 /* The screen's own heading is a line, not a panel taking a fifth of the frame. */
 .ep-head {
@@ -3150,15 +3213,17 @@
    blur — an ellipse at a third opacity reads as ground contact anyway. */
 .fighter__shadow {
     position: absolute;
-    left: 46px;
-    right: 46px;
-    top: 126px;
-    height: 22px;
-    border-radius: 11px;
-    background-color: rgba(0, 0, 0, 0.45);
+    left: 64px;
+    right: 64px;
+    top: 128px;
+    height: 14px;
+    border-radius: 7px;
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
-.fighter--monster .fighter__shadow { top: 170px; }
+.fighter--monster .fighter__shadow { top: 174px; }
+.fighter--elite .fighter__shadow { left: 56px; right: 56px; top: 206px; height: 16px; border-radius: 8px; }
+.fighter--boss .fighter__shadow { left: 172px; right: 172px; top: 258px; height: 20px; border-radius: 10px; }
 .fighter--elite .fighter__shadow { left: 38px; right: 38px; top: 206px; }
 
 .fighter--boss .fighter__shadow {
@@ -3302,7 +3367,7 @@
    screen rather than a pixel past the bottom of it. */
 .party-cols__right .panel { padding: var(--ex-space-2); margin-bottom: var(--ex-space-2); }
 .party-cols__right .section-title { font-size: var(--ex-text-sm); margin-bottom: var(--ex-space-1); }
-.party-cols__right .stat-row { height: 56px; }
+.party-cols__right .stat-row { height: 68px; }
 .party-cols__right .synergy-line { font-size: var(--ex-text-xs); }
 
 /* The text column has to be allowed to be narrow, or a long quest name pushes the 수령 button
@@ -3335,6 +3400,26 @@
 }
 
 .prog-head .section-title { margin-bottom: var(--ex-space-1); }
+
+/* A claim button that lives on the section's own title line. Anything that must stay reachable
+   belongs here rather than at the end of a stack of panels, where it is the first thing the
+   column runs out of room for. */
+.head-btn {
+    flex-shrink: 0;
+    min-width: 170px;
+    height: 56px;
+    margin-left: var(--ex-space-2);
+    font-size: 26px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: var(--ex-accent-ink);
+    background-color: var(--ex-accent);
+    border-width: 2px;
+    border-color: var(--ex-accent);
+    border-radius: var(--ex-rad-md);
+}
+
+.head-btn:hover { background-color: var(--ex-accent-deep); }
 
 .prog-list { flex-grow: 1; min-height: 0; }
 
@@ -3405,7 +3490,7 @@
 
 .prog-cols__right .panel { padding: var(--ex-space-2); margin-bottom: var(--ex-space-2); }
 .prog-cols__right .section-title { font-size: var(--ex-text-sm); margin-bottom: var(--ex-space-1); }
-.prog-cols__right .stat-row { height: 56px; }
+.prog-cols__right .stat-row { height: 68px; }
 
 /* 백그라운드 정산 — one number and one button, which is all this dialog is for. */
 .idle { width: 46%; min-width: 760px; align-items: center; }

@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 namespace ExcelHeroes.UI
 {
     /// <summary>
-    /// 데이터 가져오기 — the summon screen, and the reason the rest of the game exists.
+    /// 모집 — the summon screen, and the reason the rest of the game exists.
     ///
     /// A pull reveals one card at a time: the art fades up behind a rarity-coloured frame, the
     /// character says their entrance line, and the player taps to move on. A ten-pull walks the same
@@ -30,8 +30,8 @@ namespace ExcelHeroes.UI
 
         public IEnumerable<RibbonItem> Ribbon()
         {
-            yield return new RibbonItem(Icons.Gacha, "1행 가져오기", () => Pull(1), $"◈{GachaService.CostFor(1)}");
-            yield return new RibbonItem(Icons.Gacha, "10행 가져오기", () => Pull(10), $"◈{GachaService.CostFor(10)}");
+            yield return new RibbonItem(Icons.Gacha, "1회 모집", () => Pull(1), $"◈{GachaService.CostFor(1)}");
+            yield return new RibbonItem(Icons.Gacha, "10회 모집", () => Pull(10), $"◈{GachaService.CostFor(10)}");
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace ExcelHeroes.UI
             var plate = UiKit.Div("banner__plate", banner);
             plate.style.borderLeftColor = sColour;
             UiKit.Text("PICK UP", "banner__kicker", plate);
-            UiKit.Text("데이터_가져오기", "banner__title", plate);
+            UiKit.Text(featuredS?.name ?? "신규 모집", "banner__title", plate);
 
             // ---- the two featured cards -------------------------------------------------
             var row = UiKit.Div("pickup", _cards);
@@ -189,8 +189,8 @@ namespace ExcelHeroes.UI
 
             if (_pickup != null) BuildPickup();
 
-            _one.text = $"1행 · ◈{GachaService.CostFor(1)}";
-            _ten.text = $"10행 가져오기 · ◈{GachaService.CostFor(10)}";
+            _one.text = $"1회 모집 · ◈{GachaService.CostFor(1)}";
+            _ten.text = $"10회 모집 · ◈{GachaService.CostFor(10)}";
             _one.SetEnabled(GachaService.CanAfford(p, 1));
             _ten.SetEnabled(GachaService.CanAfford(p, 10));
         }

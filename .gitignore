@@ -40,3 +40,7 @@ tools/gen/*.log
 
 # Verification builds, so a screenshot pass can run while a copy is being played.
 Build/Verify/
+
+# Unity Performance Testing writes these into Assets/Resources on every headless run.
+Assets/Resources/PerformanceTestRun*.json
+Assets/Resources/PerformanceTestRun*.json.meta

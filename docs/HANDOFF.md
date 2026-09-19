@@ -177,3 +177,22 @@ than trusting that a port of it works.
   `DISPATCH`, `OVERTIME`, `EQUIP`, `PRESTIGE`. Each was found by trying to use it.
 - **편성 and 일괄 강화 became unreachable** when the Excel ribbon was removed, because they hung
   off it. A dead `IScreen` compiles perfectly.
+- **Every 읽기 button on 메신저 was cut in half by its own card**, and the audit called it a clean
+  run, because it only ever measured against the screen's edges. Same shape on 검토, where the
+  claim button — the one thing on the panel you can press — was the part below the fold, and on
+  업무, where the sixth quest of the day simply was not reachable.
+- **A percentage margin resolves against the parent's WIDTH, not its height.** `margin: 1%` on the
+  episode cards was 24px of vertical gap on a 2400-wide frame, which is what pushed the second row
+  into the pager.
+- **Ten labels were squeezing their own line height by 2–9px.** Nothing looked wrong in a capture;
+  the audit measured `MeasureTextSize` against `contentRect` and named all ten.
+
+## What the audit still cannot see
+
+`LayoutAudit` measures against the screen and against each label's own text. It does NOT see an
+element clipped by an ancestor's `overflow: hidden` — UI Toolkit exposes no resolved `overflow`
+(`resolvedStyle` has no such property, `OverflowInternal` is internal, `computedStyle` is not
+public), so there is nothing to read. Containers that crop on purpose carry the `clips` class and
+their contents are exempt from the edge checks; everything else that holds content in a fixed-size
+box still needs a human to look at the capture once.
+

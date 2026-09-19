@@ -247,6 +247,18 @@ namespace ExcelHeroes.UI
                 "muted", head);
 
             var pending = ProgressService.Pending(p);
+
+            if (pending.Count > 0)
+                UiKit.Btn($"{pending.Count}건 수령", "head-btn", () =>
+                {
+                    var (count, gems, cards) = ProgressService.GrantPending(Game.Player);
+                    if (count == 0) return;
+                    AudioService.Play("victory", 0.6f);
+                    _app.SetStatus($"마일스톤 {count}건: 보석 +{gems} · 강화 카드 +{cards}");
+                    Game.Touch();
+                    Refresh();
+                }, head);
+
             var panel = UiKit.Div("panel", parent);
 
             if (pending.Count == 0)
@@ -255,19 +267,9 @@ namespace ExcelHeroes.UI
             }
             else
             {
-                foreach (var m in pending.Take(4))
+                foreach (var m in pending.Take(2))
                     UiKit.Text($"{m.name}　·　◈{m.gems} 카드 {m.cards}", "synergy-line", panel);
-                if (pending.Count > 4) UiKit.Text($"외 {pending.Count - 4}건", "muted", panel);
-
-                var take = UiKit.Btn($"{pending.Count}건 한꺼번에 수령", "btn btn--primary", () =>
-                {
-                    var (count, gems, cards) = ProgressService.GrantPending(Game.Player);
-                    if (count == 0) return;
-                    AudioService.Play("victory", 0.6f);
-                    _app.SetStatus($"마일스톤 {count}건: 보석 +{gems} · 강화 카드 +{cards}");
-                    Game.Touch();
-                    Refresh();
-                }, panel);
+                if (pending.Count > 2) UiKit.Text($"외 {pending.Count - 2}건", "muted", panel);
             }
 
             // What is next, inside the same panel rather than a second one. A list of only what

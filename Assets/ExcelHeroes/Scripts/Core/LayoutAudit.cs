@@ -47,6 +47,7 @@ namespace ExcelHeroes.Core
                     if (box.yMax > screen.yMax + 1f)
                         problems.Add(new Problem { Where = Describe(e), What = $"{box.yMax - screen.yMax:F0}px below the bottom edge" });
                 }
+
             }
 
             if (e is Label label && !string.IsNullOrEmpty(label.text))
@@ -79,6 +80,17 @@ namespace ExcelHeroes.Core
         /// class, and everything inside one is exempt. Without this the audit cries wolf on
         /// decoration, and an audit that reports things that are fine stops being read.
         /// </summary>
+        // KNOWN BLIND SPOT: clipping INSIDE a box.
+        //
+        // Everything here measures against the screen's edges, so an element cut in half by the
+        // card it sits in reads as a clean run. That is not hypothetical — every 읽기 button on
+        // 메신저 was cut by four pixels while this reported zero problems.
+        //
+        // Detecting it needs to know which ancestors hide their overflow, and UI Toolkit does not
+        // expose that: `resolvedStyle` has no `overflow`, `OverflowInternal` is internal and
+        // `computedStyle` is not public. Marking every clipping container with a class would work
+        // and would drift out of date the first time someone adds one. So: a fixed-size box with
+        // content in it still needs a human to look at the capture once.
         static bool InsideAClip(VisualElement e)
         {
             for (var p = e.parent; p != null; p = p.parent)

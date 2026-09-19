@@ -56,7 +56,7 @@ namespace ExcelHeroes.UI
             var party = p.PartyMembers()
                 .Select(o => (Label: GameData.Hero(o.id)?.name ?? o.id, Value: (float)StatMath.Power(o)))
                 .ToList();
-            if (party.Count > 0) Chart("선택 영역 전투력", party, "");
+            if (party.Count > 0) Chart("편성 전투력", party, "");
         }
 
         void Chart(string title, List<(string Label, float Value)> rows, string unit)

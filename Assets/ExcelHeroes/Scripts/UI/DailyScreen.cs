@@ -158,17 +158,22 @@ namespace ExcelHeroes.UI
                 // The description line is gone. It restates the name in other words — "몬스터
                 // 100마리 처치" under "오류 100건 처리" — and it was the line that pushed five rows
                 // past the height a landscape frame has for them.
+                // Name and reward share a line, with the bar under both. Stacked on three
+                // lines these rows were 108px each and the sixth quest of the day — there are
+                // always six — fell out of the bottom of the panel with no way to reach it,
+                // because a landscape build has no scrollbar to rescue it.
                 var text = UiKit.Div("qrow__text", row);
-                UiKit.Text(def.name, "qrow__name", text);
-
-                var track = UiKit.Div("qrow__track", text);
-                var fill = UiKit.Div("qrow__fill", track);
-                fill.style.width = Length.Percent(Mathf.Clamp01(q.count / (float)def.target) * 100f);
+                var head = UiKit.Div("qrow__head", text);
+                UiKit.Text(def.name, "qrow__name", head);
 
                 var reward = def.goldKills > 0
                     ? $"◈{def.gems} · ₩{def.goldKills * StatMath.StageGold(Mathf.Max(1, p.stage)):N0}"
                     : $"◈{def.gems}";
-                UiKit.Text($"{q.count} / {def.target}　·　{reward}", "qrow__meta", text);
+                UiKit.Text($"{q.count} / {def.target}　·　{reward}", "qrow__meta", head);
+
+                var track = UiKit.Div("qrow__track", text);
+                var fill = UiKit.Div("qrow__fill", track);
+                fill.style.width = Length.Percent(Mathf.Clamp01(q.count / (float)def.target) * 100f);
 
                 if (q.claimed) UiKit.Text("완료", "qrow__done", row);
                 else

@@ -222,24 +222,31 @@ namespace ExcelHeroes.Core
                 if (Hash(i * 13) < 0.2f) continue;
                 var k = i / 6f;
                 var y = Mathf.Lerp(Sidewalk + 10, CanvasH - 8, k * k);
-                var len = Mathf.Lerp(10f, 76f, k);
-                var thick = Mathf.Max(1, Mathf.RoundToInt(Mathf.Lerp(1f, 6f, k)));
+                var len = Mathf.Lerp(8f, 44f, k);
+                var thick = Mathf.Max(1, Mathf.RoundToInt(Mathf.Lerp(1f, 4f, k)));
                 Blend(px, Mathf.RoundToInt(vpx - len * 0.5f), Mathf.RoundToInt(y),
                       Mathf.RoundToInt(len), thick,
                       new Color(230 / 255f, 200 / 255f, 90 / 255f), 0.5f);
             }
 
-            // cracks in the asphalt
-            for (var i = 0; i <= CanvasW / 160 + 1; i++)
+            // Cracks. These used to be drawn at one size wherever they landed, which on a road
+            // that recedes read as a black scribble floating above the surface. Now a crack sits
+            // at a depth k and everything about it follows from that: near the horizon it is
+            // short, thin and faint, and by the bottom of the frame it is long and dark.
+            for (var i = 0; i < 9; i++)
             {
-                if (Hash(i * 17) > 0.6f) continue;
-                float x = i * 160 + Hash(i * 19) * 100;
-                float y = Sidewalk + 10 + Hash(i * 23) * 80;
-                for (var s = 0; s < 5; s++)
+                if (Hash(i * 17) > 0.55f) continue;
+                var k = 0.25f + Hash(i * 37) * 0.75f;
+                var y = Mathf.Lerp(Sidewalk + 8, CanvasH - 10, k * k);
+                var spread = Mathf.Lerp(60f, CanvasW * 0.52f, k * k);
+                float x = vpx + (Hash(i * 19) - 0.5f) * 2f * spread;
+                var seg = Mathf.Lerp(3f, 14f, k);
+                var alpha = Mathf.Lerp(0.05f, 0.18f, k);
+                for (var n = 0; n < 4; n++)
                 {
-                    var nx = x + 10 + Hash(i * 29 + s) * 22;
-                    var ny = y + (Hash(i * 31 + s) - 0.5f) * 30;
-                    Line(px, x, y, nx, ny, Color.black, 0.5f);
+                    var nx = x + seg * (0.6f + Hash(i * 29 + n));
+                    var ny = y + (Hash(i * 31 + n) - 0.5f) * seg * 0.9f;
+                    Line(px, x, y, nx, ny, Color.black, alpha);
                     x = nx; y = ny;
                 }
             }
