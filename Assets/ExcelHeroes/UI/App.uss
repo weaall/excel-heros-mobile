@@ -8,19 +8,146 @@
 
 /* ---------------------------------------------------------------- shell */
 
+/* ---------------------------------------------------------------- tokens
+
+   Every colour, gap, radius and text size in this file comes from here.
+
+   It did not before, and that was the problem: each screen was styled the day it was written, so
+   the game had five button treatments, four card treatments and twenty-four distinct font sizes,
+   none of which agreed. A player reads that as five different people having built five screens,
+   which is exactly what happened.
+
+   The scale is the 1080x2400 reference PanelSettings uses. On a 1080-wide phone at 3x density one
+   dp is three of these units, so 42px is 14dp — the standard body size, and considerably larger
+   than the 28px this build was using, which was 9dp and simply too small to read comfortably. */
+
 .root {
     flex-grow: 1;
-    background-color: rgb(255, 255, 255);
-    color: rgb(34, 34, 34);
-    font-size: 40px;
+
+    --ex-surface: rgb(255, 255, 255);
+    --ex-surface-raised: rgb(246, 247, 249);
+    --ex-surface-sunken: rgb(238, 240, 243);
+    --ex-ink: rgb(30, 32, 38);
+    --ex-ink-muted: rgb(112, 118, 128);
+    --ex-line: rgb(216, 219, 224);
+    --ex-line-strong: rgb(178, 182, 190);
+
+    /* The accent is the Excel green. The disguise is the whole premise, so the game's primary
+       action and the chrome it hides behind are deliberately the same colour. */
+    --ex-accent: rgb(33, 115, 70);
+    --ex-accent-deep: rgb(22, 82, 50);
+    --ex-accent-ink: rgb(255, 255, 255);
+    --ex-accent-wash: rgb(233, 245, 238);
+    --ex-danger: rgb(196, 43, 28);
+    --ex-gold: rgb(202, 148, 22);
+
+    /* 4px grid. */
+    --ex-space-1: 8px;
+    --ex-space-2: 16px;
+    --ex-space-3: 24px;
+    --ex-space-4: 32px;
+    --ex-space-5: 48px;
+    --ex-space-6: 64px;
+
+    --ex-rad-sm: 6px;
+    --ex-rad-md: 12px;
+    --ex-rad-lg: 20px;
+
+    /* Touch targets. 120px is 40dp, 136px is 45dp — the floor for anything a thumb has to find. */
+    --ex-tap: 120px;
+    --ex-tap-lg: 136px;
+
+    --ex-text-xs: 26px;
+    --ex-text-sm: 32px;
+    --ex-text-base: 38px;
+    --ex-text-lg: 48px;
+    --ex-text-xl: 64px;
+
+    background-color: var(--ex-surface);
+    color: var(--ex-ink);
+    font-size: var(--ex-text-base);
 }
 
-/* The whole UI is set in Noto Sans KR. Unity's built-in font has no Hangul at all, so every
-   Korean glyph was coming from whatever fallback the editor happened to pick — which is why the
-   chrome, the card names and the battle log were in three subtly different faces. Text properties
-   inherit, so declaring it once on the root covers the overlays too. */
-.root {
-    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Medium%20SDF.asset");
+/* ---------------------------------------------------------------- components
+
+   One button, one card, one section header. Anything that wants to look like a button uses these;
+   a screen does not get to invent its own. */
+
+.ex-btn {
+    height: var(--ex-tap);
+    padding-left: var(--ex-space-4);
+    padding-right: var(--ex-space-4);
+    border-radius: var(--ex-rad-md);
+    font-size: var(--ex-text-base);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+
+    /* Elevation is a thicker bottom border — USS has no shadow, and a flat fill on a flat sheet
+       reads as a label rather than as something to press. */
+    border-width: 2px;
+    border-bottom-width: 8px;
+}
+
+.ex-btn--primary {
+    background-color: var(--ex-accent);
+    border-color: var(--ex-accent);
+    border-bottom-color: var(--ex-accent-deep);
+    color: var(--ex-accent-ink);
+}
+
+.ex-btn--secondary {
+    background-color: var(--ex-surface);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
+    color: var(--ex-ink);
+}
+
+.ex-btn--ghost {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    color: var(--ex-ink-muted);
+}
+
+.ex-btn:disabled {
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line);
+    color: rgb(160, 165, 174);
+}
+
+.ex-card {
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-bottom-width: 6px;
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-md);
+    padding: var(--ex-space-4);
+}
+
+.ex-section-head {
+    flex-direction: row;
+    align-items: baseline;
+    flex-shrink: 0;
+    padding-bottom: var(--ex-space-2);
+    margin-bottom: var(--ex-space-3);
+    border-bottom-width: 2px;
+    border-bottom-color: var(--ex-line);
+}
+
+.ex-section-head__name {
+    font-size: var(--ex-text-lg);
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    margin-right: var(--ex-space-2);
+}
+
+.ex-section-head__note {
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
+    flex-shrink: 1;
+    white-space: normal;
 }
 
 .spacer { flex-grow: 1; }
@@ -383,14 +510,18 @@
 
 /* ---------------------------------------------------------------- generic pieces */
 
+/* The panel is the card. Same borders, same radius, same padding as .ex-card and .qs-block —
+   before this there were four different panel treatments depending on which screen you were on. */
 .panel {
     flex-shrink: 0;
-    background-color: rgb(250, 250, 250);
-    border-radius: 0;
-    border-width: 1px;
-    border-color: rgb(212, 212, 212);
-    padding: 32px;
-    margin-bottom: 26px;
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-bottom-width: 6px;
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-md);
+    padding: var(--ex-space-4);
+    margin-bottom: var(--ex-space-3);
 }
 
 .section-title {
@@ -403,32 +534,57 @@
 .muted { color: rgb(128, 128, 128); white-space: normal; }
 .hidden { display: none; }
 
+/* The game's button. It is .ex-btn with a different name — every call site already says
+   `btn`, and renaming three hundred of them buys nothing that keeping the values in one place
+   does not. Anything that wants to look like a button gets these values, not its own. */
 .btn {
-    height: 141px;
-    background-color: rgb(238, 238, 238);
-    border-radius: 22px;
-    border-width: 1px;
-    border-color: rgb(191, 191, 191);
-    color: rgb(34, 34, 34);
-    font-size: 45px;
+    height: var(--ex-tap);
+    padding-left: var(--ex-space-4);
+    padding-right: var(--ex-space-4);
+    background-color: var(--ex-surface);
+    border-radius: var(--ex-rad-md);
+    border-width: 2px;
+    border-bottom-width: 8px;
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
+    color: var(--ex-ink);
+    font-size: var(--ex-text-base);
     -unity-font-style: bold;
-    transition-duration: 0.12s;
+    -unity-text-align: middle-center;
+    transition-duration: 0.2s;
 }
 
-.btn:hover { background-color: rgb(226, 239, 218); }
-.btn:disabled { opacity: 0.4; }
+.btn:hover { background-color: var(--ex-accent-wash); }
 
+.btn:disabled {
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line);
+    color: rgb(160, 165, 174);
+}
+
+/* Primary is the Excel green, not the old mustard. The disguise is the premise, so the thing the
+   player is meant to press and the chrome it hides behind are deliberately the same colour. */
 .btn--primary {
-    background-color: rgb(150, 112, 8);
-    border-color: rgb(176, 132, 10);
-    color: rgb(253, 246, 227);
+    background-color: var(--ex-accent);
+    border-color: var(--ex-accent);
+    border-bottom-color: var(--ex-accent-deep);
+    color: var(--ex-accent-ink);
 }
 
-.btn--primary:hover { background-color: rgb(24, 92, 55); }
+.btn--primary:hover { background-color: var(--ex-accent-deep); }
+
+.btn--primary:disabled {
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line);
+    color: rgb(160, 165, 174);
+}
 
 .btn--ghost {
     background-color: rgba(0, 0, 0, 0);
-    border-color: rgb(191, 191, 191);
+    border-width: 0;
+    color: var(--ex-ink-muted);
 }
 
 /* ---------------------------------------------------------------- home */
@@ -2257,16 +2413,22 @@
     border-top-color: rgb(222, 222, 222);
 }
 
+/* The dialog button. Squarer than the game's, because an Office dialog's buttons are square —
+   but the height, padding and type come from the same tokens as everything else. */
 .xl-btn {
     min-width: 200px;
-    height: 92px;
-    margin-left: 14px;
-    font-size: 30px;
-    color: rgb(45, 47, 53);
-    background-color: rgb(255, 255, 255);
-    border-width: 1px;
-    border-color: rgb(170, 172, 178);
-    border-radius: 4px;
+    height: var(--ex-tap);
+    margin-left: var(--ex-space-2);
+    padding-left: var(--ex-space-3);
+    padding-right: var(--ex-space-3);
+    font-size: var(--ex-text-sm);
+    color: var(--ex-ink);
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-bottom-width: 6px;
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-sm);
 }
 
 /* The default button — the one Enter would press. */
@@ -2280,18 +2442,7 @@
 
 /* ---------------------------------------------------------------- check-in stamp */
 
-.stamp {
-    flex-shrink: 0;
-    margin: 14px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-left: 18px;
-    padding-right: 18px;
-    background-color: rgb(252, 252, 252);
-    border-width: 1px;
-    border-color: rgb(210, 210, 210);
-    border-radius: 6px;
-}
+.stamp { flex-shrink: 0; }
 
 .stamp__head { flex-direction: row; align-items: center; margin-bottom: 16px; }
 .stamp__title { font-size: 34px; -unity-font-style: bold; color: rgb(38, 40, 46); }
@@ -2480,31 +2631,41 @@
 .pcard__points { font-size: 28px; color: rgb(110, 116, 128); }
 
 .pcard__take {
-    min-width: 130px;
-    height: 66px;
-    font-size: 28px;
+    min-width: 150px;
+    height: var(--ex-tap);
+    font-size: var(--ex-text-sm);
     -unity-font-style: bold;
-    color: rgb(255, 255, 255);
-    background-color: rgb(33, 115, 70);
-    border-width: 0;
+    -unity-text-align: middle-center;
+    color: var(--ex-accent-ink);
+    background-color: var(--ex-accent);
+    border-width: 2px;
+    border-color: var(--ex-accent);
     border-bottom-width: 6px;
-    border-bottom-color: rgb(22, 82, 50);
-    border-radius: 8px;
+    border-bottom-color: var(--ex-accent-deep);
+    border-radius: var(--ex-rad-md);
 }
 
 .pcard__take:disabled {
-    background-color: rgb(214, 216, 220);
-    border-bottom-color: rgb(190, 192, 198);
-    color: rgb(150, 154, 162);
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line);
+    color: rgb(160, 165, 174);
 }
 
 /* ---- rates and the two pity floors ---- */
 
 .rates {
-    margin: 28px 28px 24px 28px;
-    padding: 24px;
-    background-color: rgb(255, 255, 255);
-    border-radius: 12px;
+    margin-left: var(--ex-space-3);
+    margin-right: var(--ex-space-3);
+    margin-top: var(--ex-space-3);
+    margin-bottom: var(--ex-space-3);
+    padding: var(--ex-space-4);
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-bottom-width: 6px;
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-md);
 }
 
 .rates__row { flex-direction: row; margin-bottom: 18px; }
@@ -2581,32 +2742,34 @@
 .pull-btn {
     flex-grow: 1;
     flex-basis: 0;
-    height: 140px;
-    margin-left: 16px;
-    font-size: 34px;
+    height: var(--ex-tap-lg);
+    margin-left: var(--ex-space-2);
+    font-size: var(--ex-text-base);
     -unity-font-style: bold;
-    color: rgb(26, 37, 48);
-    background-color: rgb(255, 255, 255);
-    border-width: 4px;
-    border-color: rgb(26, 37, 48);
-    border-bottom-width: 12px;
-    border-radius: 12px;
-    white-space: normal;
+    -unity-text-align: middle-center;
+    color: var(--ex-ink);
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-color: var(--ex-line);
+    border-bottom-width: 8px;
+    border-bottom-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-md);
+    white-space: nowrap;
 }
 
 .pull-btn--primary {
     flex-grow: 1.8;
-    color: rgb(255, 255, 255);
-    background-color: rgb(33, 115, 70);
-    border-color: rgb(33, 115, 70);
-    border-bottom-color: rgb(20, 74, 45);
+    color: var(--ex-accent-ink);
+    background-color: var(--ex-accent);
+    border-color: var(--ex-accent);
+    border-bottom-color: var(--ex-accent-deep);
 }
 
 .pull-btn:disabled {
-    color: rgb(160, 164, 172);
-    background-color: rgb(238, 240, 244);
-    border-color: rgb(206, 210, 216);
-    border-bottom-color: rgb(190, 194, 200);
+    color: rgb(160, 165, 174);
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line);
 }
 
 
@@ -2712,30 +2875,39 @@
    rather than as one long column of panels. */
 .qs-block {
     flex-shrink: 0;
-    margin: 14px 14px 0 14px;
-    padding: 20px 18px 20px 18px;
-    background-color: rgb(252, 252, 252);
-    border-width: 1px;
-    border-color: rgb(212, 212, 212);
-    border-radius: 6px;
+    margin-left: var(--ex-space-3);
+    margin-right: var(--ex-space-3);
+    margin-top: var(--ex-space-3);
+    padding: var(--ex-space-4);
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-bottom-width: 6px;
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-md);
 }
 
+/* The section header, the same one everywhere: a name, a muted note beside it, a rule under. */
 .qs-title {
     flex-direction: row;
     align-items: baseline;
-    margin-bottom: 16px;
+    flex-shrink: 0;
+    padding-bottom: var(--ex-space-2);
+    margin-bottom: var(--ex-space-3);
+    border-bottom-width: 2px;
+    border-bottom-color: var(--ex-line);
 }
 
 .qs-title__name {
-    font-size: 34px;
+    font-size: var(--ex-text-lg);
     -unity-font-style: bold;
-    color: rgb(38, 40, 46);
-    margin-right: 14px;
+    color: var(--ex-ink);
+    margin-right: var(--ex-space-2);
 }
 
 .qs-title__note {
-    font-size: 24px;
-    color: rgb(140, 145, 155);
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
     flex-shrink: 1;
     white-space: normal;
 }
@@ -2775,22 +2947,25 @@
 
 .qrow__claim {
     flex-shrink: 0;
-    min-width: 128px;
-    height: 74px;
-    font-size: 28px;
+    min-width: 150px;
+    height: var(--ex-tap);
+    font-size: var(--ex-text-sm);
     -unity-font-style: bold;
-    color: rgb(255, 255, 255);
-    background-color: rgb(33, 115, 70);
-    border-width: 0;
-    border-bottom-width: 5px;
-    border-bottom-color: rgb(22, 82, 50);
-    border-radius: 6px;
+    -unity-text-align: middle-center;
+    color: var(--ex-accent-ink);
+    background-color: var(--ex-accent);
+    border-width: 2px;
+    border-color: var(--ex-accent);
+    border-bottom-width: 6px;
+    border-bottom-color: var(--ex-accent-deep);
+    border-radius: var(--ex-rad-md);
 }
 
 .qrow__claim:disabled {
-    background-color: rgb(224, 226, 230);
-    border-bottom-color: rgb(200, 202, 208);
-    color: rgb(150, 154, 162);
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    border-bottom-color: var(--ex-line);
+    color: rgb(160, 165, 174);
 }
 
 .qrow__done { flex-shrink: 0; min-width: 128px; -unity-text-align: middle-center; font-size: 26px; color: rgb(150, 154, 162); }

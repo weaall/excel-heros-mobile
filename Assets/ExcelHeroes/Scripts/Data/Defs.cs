@@ -310,6 +310,39 @@ namespace ExcelHeroes.Data
         public string unit;     // "pct" formats the bonus as a percentage point
     }
 
+    /// <summary>
+    /// 업적 — cumulative and tiered, never reset. `stat` names which running total it reads; the
+    /// Unity side resolves that in AchievementService because several of them are not plain
+    /// counters (owned cards, bestiary entries, equipment held).
+    /// </summary>
+    [Serializable]
+    public class AchievementDef
+    {
+        public string id;
+        public string name;
+        public string desc;
+        public string stat;
+        public long[] tiers;
+        public int[] gems;
+        public string unit;     // "time" formats the value as hours rather than as a count
+    }
+
+    /// <summary>
+    /// 마일스톤 — a one-time reward for passing a mark. Flattened out of the web build's procedural
+    /// list rather than re-derived here, because two generators drift the first time either changes.
+    /// </summary>
+    [Serializable]
+    public class MilestoneDef
+    {
+        public string id;
+        public string kind;     // stage | level | party
+        public int target;
+        public string name;
+        public string desc;
+        public int gems;
+        public int cards;
+    }
+
     /// <summary>Hex string to Color, tolerant of missing or malformed values in the data files.</summary>
     public static class Palette
     {

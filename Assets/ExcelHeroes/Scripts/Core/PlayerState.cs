@@ -76,6 +76,67 @@ namespace ExcelHeroes.Core
         /// <summary>자동 전투 — on by default; the main sheet is an idle battle, not a menu.</summary>
         public bool autoSkill = true;
 
+        // --- 누적 기록 ------------------------------------------------------------------
+        //
+        // The running totals the achievements read. They are counters rather than a derived view
+        // on purpose: "how many monsters have you ever put down" cannot be recomputed from a save
+        // that only knows the current stage, and an achievement that silently resets is worse than
+        // no achievement.
+        public long totalKills;
+        public long totalGold;
+        public int bossKills;
+        public int chestsOpened;
+        public int enhances;         // card upgrades bought, of any kind
+        public int overtimes;        // 야근 모드 runs
+        public long playSeconds;
+        public int maxCleared;       // the deepest stage actually cleared, which `stage` is not
+
+        /// <summary>업적 id -> how many tiers have been claimed.</summary>
+        public List<string> achievementIds = new();
+        public List<int> achievementTiers = new();
+
+        /// <summary>마일스톤 ids already granted.</summary>
+        public List<string> milestonesClaimed = new();
+
+        /// <summary>강화 카드 — the currency milestones pay in, spent on card upgrades.</summary>
+        public int cards;
+
+        /// <summary>오류 도감 — monster type id -> kills. Elites are counted under "<id>!".</summary>
+        public List<string> bestiaryIds = new();
+        public List<int> bestiaryKills = new();
+
+        public int AchievementTier(string id)
+        {
+            var i = achievementIds.IndexOf(id);
+            return i >= 0 && i < achievementTiers.Count ? achievementTiers[i] : 0;
+        }
+
+        public void SetAchievementTier(string id, int tier)
+        {
+            var i = achievementIds.IndexOf(id);
+            if (i < 0) { achievementIds.Add(id); achievementTiers.Add(tier); return; }
+            while (achievementTiers.Count <= i) achievementTiers.Add(0);
+            achievementTiers[i] = tier;
+        }
+
+        public void NoteKill(string typeId, bool elite)
+        {
+            if (string.IsNullOrEmpty(typeId)) return;
+            Bump(typeId);
+            if (elite) Bump(typeId + "!");
+
+            void Bump(string key)
+            {
+                var i = bestiaryIds.IndexOf(key);
+                if (i < 0) { bestiaryIds.Add(key); bestiaryKills.Add(1); return; }
+                while (bestiaryKills.Count <= i) bestiaryKills.Add(0);
+                bestiaryKills[i]++;
+            }
+        }
+
+        /// <summary>Monster types seen at least once. Elite entries do not count twice.</summary>
+        public int BestiaryCount() => bestiaryIds.Count(k => !k.EndsWith("!"));
+
         public int TeamLevel(string id)
         {
             var i = teamIds.IndexOf(id);

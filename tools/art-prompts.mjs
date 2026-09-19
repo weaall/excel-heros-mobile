@@ -134,10 +134,10 @@ const attitudeFor = (id) => ATTITUDE[hash(id + '!') % ATTITUDE.length];
 const GENDER = { M: 'a Korean man', F: 'a Korean woman' };
 
 /** Card illustration - the hero shot the gacha reveal lands on. */
-export function cardPrompt(h, { hasRef }) {
+export function cardPrompt(h, { hasRef, hasAnchor = false }) {
   const who = GENDER[h.gender] ?? 'a Korean office worker';
   const identity = hasRef
-    ? 'Redraw the character from the reference image. Keep the SAME identity: same face, hairstyle, hair colour, skin tone, outfit design, outfit colours and accessories. Only the rendering quality, the pose, the framing, the halo and the background change — and those change completely.'
+    ? 'Redraw the character from the CHARACTER reference (the last image attached). Keep the SAME identity: same face, hairstyle, hair colour, skin tone, outfit design, outfit colours and accessories. Only the rendering quality, the pose, the framing, the halo and the background change — and those change completely.'
     : 'Design a character matching the description below.';
   const accents = [h.colorHair, h.colorBody, h.colorPants, h.colorAccent].filter(Boolean).join(', ')
     || 'corporate navy and warm grey';
@@ -149,6 +149,20 @@ export function cardPrompt(h, { hasRef }) {
     'the THIGHS. Head to mid-thigh only. No feet, no shoes, no floor, no full body. The head is large,',
     'roughly one fifth of the image height, and the figure fills the frame from edge to edge.',
     '',
+    // The anchor comes first, because the first thing the model should settle is how this is
+    // drawn, not who is in it.
+    hasAnchor
+      ? 'TWO reference images are attached. The FIRST is the STYLE ANCHOR: it fixes how this is '
+        + 'drawn — line weight and how strokes taper, the two-step cel shading with hard shadow '
+        + 'edges, the strength and colour temperature of the key and rim light, how eyes and their '
+        + 'highlights are painted, how hair is massed into glossy clumps, how folds are simplified, '
+        + 'the saturation of the palette and the flatness of the background. Match all of that '
+        + 'exactly, as if the same artist drew both on the same afternoon. Do NOT take the '
+        + 'character, the outfit, the colours of the clothes, the pose or the background hue from '
+        + 'the anchor — only the hand that drew it.'
+      : '',
+    hasAnchor ? '' : null,
+
     identity,
     '',
     'SUBJECT: ' + who + ', ' + h.nick + ' - ' + h.bio + ' Department: ' + h.dept + '.',

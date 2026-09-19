@@ -75,18 +75,33 @@ async function skins() {
   summarise(await pool(jobs2, CONC, report('skin')));
 }
 
+/**
+ * The style anchor: one finished card that every other card is drawn to match.
+ *
+ * Generating each card independently is why fifty-five of them looked like fifty-five different
+ * artists even with the same prompt in front of all of them. A written style description leaves the
+ * model a lot of room, and it uses it differently every call. Handing it a picture and saying "this
+ * hand, not this character" closes most of that gap — it is the one lever here that moves the whole
+ * set at once.
+ */
+const ANCHOR = join(ROOT, 'docs', 'design', 'style-anchor.png');
+const anchorRef = () => (existsSync(ANCHOR) ? refFromFile(ANCHOR) : null);
+
 async function cards() {
   let list = heroes.filter((h) => !ONLY || ONLY.has(h.id));
   list = list.filter((h) => FORCE || !existsSync(join(ART, 'Cards', `${h.id}.png`)));
   list = list.slice(0, LIMIT);
   console.log(`cards: ${list.length} to generate (concurrency ${CONC})`);
+  const anchor = anchorRef();
   const jobs = list.map((h) => async () => {
     const ref = webRef(h.id);
-    const [img] = await genImage(cardPrompt(h, { hasRef: !!ref }), {
-      model: 'gemini-3-pro-image', refs: ref ? [ref] : [], aspectRatio: '3:4',
+    // Anchor first, character second — the prompt refers to them in that order.
+    const refs = [anchor, ref].filter(Boolean);
+    const [img] = await genImage(cardPrompt(h, { hasRef: !!ref, hasAnchor: !!anchor }), {
+      model: 'gemini-3-pro-image', refs, aspectRatio: '3:4',
     });
     writeOut(join(ART, 'Cards', `${h.id}.png`), img.buffer);
-    return `${h.id} (${h.grade}) ${(img.buffer.length / 1024).toFixed(0)}KB${ref ? ' [ref]' : ''}`;
+    return `${h.id} (${h.grade}) ${(img.buffer.length / 1024).toFixed(0)}KB${ref ? ' [ref]' : ''}${anchor ? ' [anchor]' : ''}`;
   });
   const res = await pool(jobs, CONC, report('card'));
   summarise(res);

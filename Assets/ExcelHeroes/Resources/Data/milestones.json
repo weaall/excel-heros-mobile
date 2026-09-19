@@ -1,0 +1,319 @@
+{
+ "items": [
+  {
+   "id": "stage5",
+   "kind": "stage",
+   "target": 5,
+   "name": "Phase 1-5 돌파",
+   "desc": "스테이지 5 클리어",
+   "gems": 40,
+   "cards": 2
+  },
+  {
+   "id": "stage10",
+   "kind": "stage",
+   "target": 10,
+   "name": "Phase 1-10 마감",
+   "desc": "스테이지 10 클리어",
+   "gems": 70,
+   "cards": 4
+  },
+  {
+   "id": "stage15",
+   "kind": "stage",
+   "target": 15,
+   "name": "Phase 2-5 돌파",
+   "desc": "스테이지 15 클리어",
+   "gems": 50,
+   "cards": 4
+  },
+  {
+   "id": "stage20",
+   "kind": "stage",
+   "target": 20,
+   "name": "Phase 2-10 마감",
+   "desc": "스테이지 20 클리어",
+   "gems": 80,
+   "cards": 8
+  },
+  {
+   "id": "stage25",
+   "kind": "stage",
+   "target": 25,
+   "name": "Phase 3-5 돌파",
+   "desc": "스테이지 25 클리어",
+   "gems": 60,
+   "cards": 6
+  },
+  {
+   "id": "stage30",
+   "kind": "stage",
+   "target": 30,
+   "name": "Phase 3-10 마감",
+   "desc": "스테이지 30 클리어",
+   "gems": 90,
+   "cards": 12
+  },
+  {
+   "id": "stage35",
+   "kind": "stage",
+   "target": 35,
+   "name": "Phase 4-5 돌파",
+   "desc": "스테이지 35 클리어",
+   "gems": 70,
+   "cards": 8
+  },
+  {
+   "id": "stage40",
+   "kind": "stage",
+   "target": 40,
+   "name": "Phase 4-10 마감",
+   "desc": "스테이지 40 클리어",
+   "gems": 100,
+   "cards": 16
+  },
+  {
+   "id": "stage45",
+   "kind": "stage",
+   "target": 45,
+   "name": "Phase 5-5 돌파",
+   "desc": "스테이지 45 클리어",
+   "gems": 80,
+   "cards": 10
+  },
+  {
+   "id": "stage50",
+   "kind": "stage",
+   "target": 50,
+   "name": "Phase 5-10 마감",
+   "desc": "스테이지 50 클리어",
+   "gems": 110,
+   "cards": 20
+  },
+  {
+   "id": "stage55",
+   "kind": "stage",
+   "target": 55,
+   "name": "Phase 6-5 돌파",
+   "desc": "스테이지 55 클리어",
+   "gems": 90,
+   "cards": 12
+  },
+  {
+   "id": "stage60",
+   "kind": "stage",
+   "target": 60,
+   "name": "Phase 6-10 마감",
+   "desc": "스테이지 60 클리어",
+   "gems": 120,
+   "cards": 24
+  },
+  {
+   "id": "stage65",
+   "kind": "stage",
+   "target": 65,
+   "name": "Phase 7-5 돌파",
+   "desc": "스테이지 65 클리어",
+   "gems": 100,
+   "cards": 14
+  },
+  {
+   "id": "stage70",
+   "kind": "stage",
+   "target": 70,
+   "name": "Phase 7-10 마감",
+   "desc": "스테이지 70 클리어",
+   "gems": 130,
+   "cards": 28
+  },
+  {
+   "id": "stage75",
+   "kind": "stage",
+   "target": 75,
+   "name": "Phase 8-5 돌파",
+   "desc": "스테이지 75 클리어",
+   "gems": 110,
+   "cards": 16
+  },
+  {
+   "id": "stage80",
+   "kind": "stage",
+   "target": 80,
+   "name": "Phase 8-10 마감",
+   "desc": "스테이지 80 클리어",
+   "gems": 140,
+   "cards": 32
+  },
+  {
+   "id": "stage85",
+   "kind": "stage",
+   "target": 85,
+   "name": "Phase 9-5 돌파",
+   "desc": "스테이지 85 클리어",
+   "gems": 120,
+   "cards": 18
+  },
+  {
+   "id": "stage90",
+   "kind": "stage",
+   "target": 90,
+   "name": "Phase 9-10 마감",
+   "desc": "스테이지 90 클리어",
+   "gems": 150,
+   "cards": 36
+  },
+  {
+   "id": "stage95",
+   "kind": "stage",
+   "target": 95,
+   "name": "Phase 10-5 돌파",
+   "desc": "스테이지 95 클리어",
+   "gems": 130,
+   "cards": 20
+  },
+  {
+   "id": "stage100",
+   "kind": "stage",
+   "target": 100,
+   "name": "Phase 10-10 마감",
+   "desc": "스테이지 100 클리어",
+   "gems": 160,
+   "cards": 40
+  },
+  {
+   "id": "mainlv10",
+   "kind": "level",
+   "target": 10,
+   "name": "김인턴 Lv 10",
+   "desc": "메인 영웅 레벨 10 달성",
+   "gems": 30,
+   "cards": 2
+  },
+  {
+   "id": "mainlv20",
+   "kind": "level",
+   "target": 20,
+   "name": "김인턴 Lv 20",
+   "desc": "메인 영웅 레벨 20 달성",
+   "gems": 40,
+   "cards": 4
+  },
+  {
+   "id": "mainlv30",
+   "kind": "level",
+   "target": 30,
+   "name": "김인턴 Lv 30",
+   "desc": "메인 영웅 레벨 30 달성",
+   "gems": 50,
+   "cards": 6
+  },
+  {
+   "id": "mainlv40",
+   "kind": "level",
+   "target": 40,
+   "name": "김인턴 Lv 40",
+   "desc": "메인 영웅 레벨 40 달성",
+   "gems": 60,
+   "cards": 8
+  },
+  {
+   "id": "mainlv50",
+   "kind": "level",
+   "target": 50,
+   "name": "김인턴 Lv 50",
+   "desc": "메인 영웅 레벨 50 달성",
+   "gems": 70,
+   "cards": 10
+  },
+  {
+   "id": "mainlv60",
+   "kind": "level",
+   "target": 60,
+   "name": "김인턴 Lv 60",
+   "desc": "메인 영웅 레벨 60 달성",
+   "gems": 80,
+   "cards": 12
+  },
+  {
+   "id": "mainlv70",
+   "kind": "level",
+   "target": 70,
+   "name": "김인턴 Lv 70",
+   "desc": "메인 영웅 레벨 70 달성",
+   "gems": 90,
+   "cards": 14
+  },
+  {
+   "id": "mainlv80",
+   "kind": "level",
+   "target": 80,
+   "name": "김인턴 Lv 80",
+   "desc": "메인 영웅 레벨 80 달성",
+   "gems": 100,
+   "cards": 16
+  },
+  {
+   "id": "mainlv90",
+   "kind": "level",
+   "target": 90,
+   "name": "김인턴 Lv 90",
+   "desc": "메인 영웅 레벨 90 달성",
+   "gems": 110,
+   "cards": 18
+  },
+  {
+   "id": "mainlv100",
+   "kind": "level",
+   "target": 100,
+   "name": "김인턴 Lv 100",
+   "desc": "메인 영웅 레벨 100 달성",
+   "gems": 120,
+   "cards": 20
+  },
+  {
+   "id": "party50",
+   "kind": "party",
+   "target": 50,
+   "name": "팀 역량 50",
+   "desc": "파티 레벨 합계 50",
+   "gems": 40,
+   "cards": 5
+  },
+  {
+   "id": "party100",
+   "kind": "party",
+   "target": 100,
+   "name": "팀 역량 100",
+   "desc": "파티 레벨 합계 100",
+   "gems": 70,
+   "cards": 10
+  },
+  {
+   "id": "party200",
+   "kind": "party",
+   "target": 200,
+   "name": "팀 역량 200",
+   "desc": "파티 레벨 합계 200",
+   "gems": 100,
+   "cards": 15
+  },
+  {
+   "id": "party300",
+   "kind": "party",
+   "target": 300,
+   "name": "팀 역량 300",
+   "desc": "파티 레벨 합계 300",
+   "gems": 130,
+   "cards": 20
+  },
+  {
+   "id": "party500",
+   "kind": "party",
+   "target": 500,
+   "name": "팀 역량 500",
+   "desc": "파티 레벨 합계 500",
+   "gems": 160,
+   "cards": 25
+  }
+ ]
+}

@@ -21,6 +21,9 @@ const divisions = await load('src/data/divisions.js');
 const story     = await load('src/data/story.js');
 const balance   = await load('src/config/balance.js');
 const monsters  = await load('src/data/monsters.js').catch(() => ({}));
+const achieve   = await load('src/data/achievements.js');
+const milestone = await load('src/data/milestones.js');
+const equipment = await load('src/data/equipment.js').catch(() => ({}));
 
 const { GRADES, ROLES, SKILLS, TRAITS, HEROES, MAIN_JOBS, MAIN_ID } = heroes;
 const { PROFILES } = profiles;
@@ -131,6 +134,20 @@ const files = {
                       id: e.id, phase: e.phase, title: e.title, room: e.room,
                       lines: e.lines.map(([who, text]) => ({ who, text })),
                     }))),
+  // 업적 — cumulative, tiered, never reset. The tiers and their gems come straight across; which
+  // number each one reads is decided on the Unity side by the `stat` key.
+  'achievements.json': wrap(achieve.ACHIEVEMENTS.map((a) => ({
+    id: a.id, name: a.name, desc: a.desc, stat: a.stat,
+    tiers: a.tiers, gems: a.gems, unit: a.unit ?? '',
+  }))),
+
+  // 마일스톤 — one-time rewards for passing a mark. The web builds the list procedurally, so it is
+  // flattened here rather than re-derived: the two would drift the first time either side changed.
+  'milestones.json': wrap(milestone.MILESTONES.map((m) => ({
+    id: m.id, kind: m.kind, target: m.target, name: m.name, desc: m.desc,
+    gems: m.reward.gems ?? 0, cards: m.reward.cards ?? 0,
+  }))),
+
   'balance.json': {
     upgradeCostBase: BALANCE.UPGRADE_COST_BASE, upgradeCostGrowth: BALANCE.UPGRADE_COST_GROWTH,
     monsterHpBase: BALANCE.MONSTER_HP_BASE,     monsterHpGrowth: BALANCE.MONSTER_HP_GROWTH,
