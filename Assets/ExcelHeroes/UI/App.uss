@@ -192,6 +192,7 @@
 }
 
 .name-box {
+    flex-shrink: 0;
     -unity-text-align: middle-right;
     font-size: 26px;
     color: rgb(150, 150, 150);
@@ -199,6 +200,7 @@
 }
 
 .formula-expand {
+    flex-shrink: 0;
     width: 70px;
     -unity-text-align: middle-center;
     font-size: 30px;
@@ -206,6 +208,7 @@
 }
 
 .fx {
+    flex-shrink: 0;
     width: 84px;
     -unity-text-align: middle-center;
     font-size: 32px;
@@ -217,11 +220,14 @@
 
 .formula {
     flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
     padding-left: 20px;
     font-size: 30px;
     color: rgb(34, 34, 34);
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ---------------------------------------------------------------- sheet tabs */
@@ -273,11 +279,11 @@
 
 .sheet-tab__badge {
     position: absolute;
-    top: 14px;
+    top: 12px;
     right: 10px;
-    min-width: 40px;
-    height: 40px;
-    border-radius: 20px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 22px;
     background-color: rgb(196, 43, 28);
     color: rgb(255, 255, 255);
     font-size: 26px;

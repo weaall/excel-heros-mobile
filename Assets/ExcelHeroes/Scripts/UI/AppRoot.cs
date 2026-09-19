@@ -105,6 +105,9 @@ namespace ExcelHeroes.UI
             Bind("tabCodex", Sheet.Codex);
             Bind("tabChart", Sheet.Chart);
 
+            // Keeps the chrome clear of the notch and the gesture bar.
+            (gameObject.GetComponent<SafeArea>() ?? gameObject.AddComponent<SafeArea>()).Bind(root);
+
             _stealth = root.Q<Button>("stealthToggle");
             if (_stealth != null) _stealth.clicked += ToggleStealth;
 
