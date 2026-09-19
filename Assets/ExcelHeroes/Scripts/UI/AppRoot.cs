@@ -48,7 +48,7 @@ namespace ExcelHeroes.UI
     [RequireComponent(typeof(UIDocument))]
     public class AppRoot : MonoBehaviour
     {
-        public enum Sheet { Home, Roster, Gacha, Quests, Story, Album, Codex, Chart }
+        public enum Sheet { Home, Roster, Party, Gacha, Quests, Story, Album, Codex, Chart }
 
         public VisualElement Overlay { get; private set; }
 
@@ -87,6 +87,7 @@ namespace ExcelHeroes.UI
 
             _screens[Sheet.Home] = new BattleScreen(this);
             _screens[Sheet.Roster] = new RosterScreen(this);
+            _screens[Sheet.Party] = new PartyScreen(this);
             _screens[Sheet.Gacha] = new GachaScreen(this);
             _screens[Sheet.Quests] = new DailyScreen(this);
             _screens[Sheet.Story] = new StoryScreen(this);
@@ -101,6 +102,7 @@ namespace ExcelHeroes.UI
             // screen players never learn exists.
             Bind("tabHome", Sheet.Home);
             Bind("tabRoster", Sheet.Roster);
+            Bind("tabParty", Sheet.Party);
             Bind("tabQuests", Sheet.Quests);
             Bind("tabStory", Sheet.Story);
             Bind("tabAlbum", Sheet.Album);
@@ -124,6 +126,7 @@ namespace ExcelHeroes.UI
             Glyph("gemIcon", Icons.Gem);
             Glyph("tabHomeIcon", Icons.Battle);
             Glyph("tabRosterIcon", Icons.Roster);
+            Glyph("tabPartyIcon", Icons.Shield);
             Glyph("tabQuestsIcon", Icons.Tasks);
             Glyph("tabStoryIcon", Icons.Story);
             Glyph("tabAlbumIcon", Icons.Album);
@@ -234,6 +237,7 @@ namespace ExcelHeroes.UI
         static string TitleOf(Sheet sheet) => sheet switch
         {
             Sheet.Roster => "인사 명단",
+            Sheet.Party => "편성",
             Sheet.Gacha => "모집",
             Sheet.Quests => "일일 업무",
             Sheet.Story => "사내 메신저",
@@ -252,36 +256,6 @@ namespace ExcelHeroes.UI
         public void SetStatus(string text) { if (_status != null) _status.text = text; }
 
         public void Rebuild() => Show(_sheet);
-
-        /// <summary>
-        /// The screens the rail has no room for. Four tabs is what fits down the side at a size a
-        /// thumb can find without looking; the rest live behind 더보기.
-        /// </summary>
-        static readonly (Sheet Sheet, string Name)[] MoreSheets =
-        {
-            (Sheet.Home, "메인 전투"), (Sheet.Roster, "인사 명단"),
-            (Sheet.Gacha, "모집"), (Sheet.Quests, "일일 업무"),
-            (Sheet.Story, "사내 메신저"), (Sheet.Album, "사원 앨범"),
-            (Sheet.Codex, "오류 도감"), (Sheet.Chart, "통계"),
-        };
-
-        void OpenSheetList()
-        {
-            AudioService.Play("tap", 0.5f);
-            var pane = UiKit.Div("sheet-list");
-            UiKit.Text("전체 메뉴", "sheet-list__title", pane);
-
-            foreach (var (sheet, name) in MoreSheets)
-            {
-                var target = sheet;
-                var row = UiKit.Btn(name, "sheet-list__row",
-                    () => { CloseOverlay(); Show(target); }, pane);
-                row.EnableInClassList("sheet-list__row--active", target == _sheet);
-            }
-
-            UiKit.Btn("닫기", "btn btn--ghost", CloseOverlay, pane);
-            OpenOverlay(pane);
-        }
 
         public void OpenDetail(string heroId)
         {

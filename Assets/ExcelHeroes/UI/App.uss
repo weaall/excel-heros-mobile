@@ -982,25 +982,26 @@
 
 .party-slots {
     flex-direction: row;
-    justify-content: space-between;
-    margin-bottom: 26px;
+    flex-grow: 1;
+    min-height: 0;
+    align-items: stretch;
 }
 
 .slot {
-    width: 304px;
-    height: 419px;
-    border-radius: 19px;
-    border-width: 2px;
-    border-color: rgb(191, 191, 191);
-    background-color: rgb(250, 250, 250);
-    overflow: hidden;
-    justify-content: flex-end;
+    flex-grow: 1;
+    flex-basis: 0;
+    width: auto;
+    height: auto;
+    margin: 6px;
 }
 
 .slot--empty {
+    background-color: var(--ex-surface-sunken);
+    border-width: 4px;
+    border-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-md);
     align-items: center;
     justify-content: center;
-    border-color: rgb(226, 239, 218);
 }
 
 .slot__plus { font-size: 70px; color: rgb(160, 160, 160); }
@@ -1013,21 +1014,22 @@
 
 .power-readout {
     flex-direction: row;
-    align-items: flex-end;
-    margin-bottom: 13px;
+    align-items: baseline;
+    flex-shrink: 0;
+    margin-bottom: var(--ex-space-2);
+    padding-left: var(--ex-space-2);
 }
 
 .power-readout__value {
-    font-size: 83px;
+    font-size: 58px;
     -unity-font-style: bold;
-    color: rgb(176, 132, 10);
+    color: var(--ex-gold);
 }
 
 .power-readout__label {
-    font-size: 35px;
-    color: rgb(107, 107, 107);
-    margin-left: 16px;
-    margin-bottom: 16px;
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
+    margin-left: var(--ex-space-2);
 }
 
 /* ---------------------------------------------------------------- battle */
@@ -3265,3 +3267,39 @@
 
 .reveal-points__label { font-size: var(--ex-text-xs); color: rgba(255, 255, 255, 0.7); margin-right: var(--ex-space-2); }
 .reveal-points__value { font-size: var(--ex-text-sm); -unity-font-style: bold; color: rgb(255, 255, 255); }
+
+/* ---------------------------------------------------------------- 편성
+
+   The line-up on the left at a size where a face reads, what it adds up to on the right — the
+   arrangement the reference's own 부대 편성 uses. */
+
+.party-cols { flex-direction: row; flex-grow: 1; min-height: 0; padding: var(--ex-space-2); }
+
+.party-cols__left {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    margin-right: var(--ex-space-2);
+}
+
+.party-cols__right { width: 34%; flex-shrink: 0; }
+
+.party-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    margin-top: var(--ex-space-2);
+}
+
+.party-actions .btn { margin-left: var(--ex-space-2); }
+
+.slot__hint { font-size: var(--ex-text-xs); color: var(--ex-ink-muted); margin-top: 6px; }
+
+.picker-grid { height: 620px; }
+
+/* Inside the 편성 column everything steps down a size, so the composition's last row is on the
+   screen rather than a pixel past the bottom of it. */
+.party-cols__right .panel { padding: var(--ex-space-2); margin-bottom: var(--ex-space-2); }
+.party-cols__right .section-title { font-size: var(--ex-text-sm); margin-bottom: var(--ex-space-1); }
+.party-cols__right .stat-row { height: 56px; }
+.party-cols__right .synergy-line { font-size: var(--ex-text-xs); }

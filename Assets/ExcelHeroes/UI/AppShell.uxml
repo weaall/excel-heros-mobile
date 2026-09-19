@@ -70,6 +70,10 @@
                 <ui:Label name="tabRosterIcon" text="" class="navtab__icon icon" />
                 <ui:Label text="인사" class="navtab__label" />
             </ui:Button>
+            <ui:Button name="tabParty" class="navtab">
+                <ui:Label name="tabPartyIcon" text="" class="navtab__icon icon" />
+                <ui:Label text="편성" class="navtab__label" />
+            </ui:Button>
             <ui:Button name="tabQuests" class="navtab">
                 <ui:Label name="tabQuestsIcon" text="" class="navtab__icon icon" />
                 <ui:Label text="업무" class="navtab__label" />

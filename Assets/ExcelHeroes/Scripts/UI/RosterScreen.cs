@@ -25,31 +25,8 @@ namespace ExcelHeroes.UI
 
         public RosterScreen(AppRoot app) { _app = app; }
 
-        public IEnumerable<RibbonItem> Ribbon()
-        {
-            yield return new RibbonItem(Icons.Roster, "선택 영역 편집", OpenParty, "편성");
-            yield return new RibbonItem(Icons.Upgrade, "자동 합계", UpgradeParty, "일괄 강화");
-        }
-
-        /// <summary>
-        /// 자동 합계 — spend gold on the party until it runs out, cheapest level first, which is what
-        /// the web build's button does. Levelling one hero to the cap and stranding the rest is the
-        /// wrong shape: the party's weakest link is what the stage checks.
-        /// </summary>
-        void UpgradeParty()
-        {
-            foreach (var member in Game.Player.PartyMembers())
-                StatMath.LevelUpMax(Game.Player, member, 999);
-            Game.Touch();
-        }
-
-        void OpenParty()
-        {
-            var pane = UiKit.Div("task-pane");
-            pane.Add(new PartyScreen(_app).Build());
-            UiKit.Btn("닫기", "btn btn--ghost", _app.CloseOverlay, pane);
-            _app.OpenOverlay(pane);
-        }
+        // 편성 and 일괄 강화 used to hang off the ribbon, which went with the Excel chrome.
+        // They live on the 편성 screen now, which is where a player looks for them anyway.
 
         public VisualElement Build()
         {

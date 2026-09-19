@@ -34,14 +34,22 @@ namespace ExcelHeroes.UI
             _root.Clear();
             var p = Game.Player;
 
-            var slots = UiKit.Div("party-slots", _root);
-            foreach (var id in p.party)
+            // Two columns, as the reference's 부대 편성 is: the line-up on the left at a size where
+            // you can read a face, everything the line-up adds up to on the right.
+            var cols = UiKit.Div("party-cols", _root);
+            var left = UiKit.Div("party-cols__left", cols);
+            var right = UiKit.Div("party-cols__right", cols);
+
+            var slots = UiKit.Div("party-slots", left);
+            for (var i = 0; i < p.party.Count; i++)
             {
+                var id = p.party[i];
                 if (string.IsNullOrEmpty(id))
                 {
                     var empty = UiKit.Div("slot slot--empty", slots);
                     UiKit.Text("+", "slot__plus", empty);
-                    empty.RegisterCallback<ClickEvent>(_ => _app.Show(AppRoot.Sheet.Roster));
+                    UiKit.Text("비어 있음", "slot__hint", empty);
+                    empty.RegisterCallback<ClickEvent>(_ => OpenPicker());
                     continue;
                 }
 
@@ -53,13 +61,25 @@ namespace ExcelHeroes.UI
                 slots.Add(card);
             }
 
+            // One button under the line-up, which is where the reference puts 자동 and 확인.
+            var actions = UiKit.Div("party-actions", left);
+            UiKit.Btn("대기 인원에서 채우기", "btn", OpenPicker, actions);
+            var bulk = UiKit.Btn("골드 소진까지 일괄 강화", "btn btn--primary", () =>
+            {
+                foreach (var member in Game.Player.PartyMembers())
+                    StatMath.LevelUpMax(Game.Player, member, 999);
+                AudioService.Play("upgrade", 0.6f);
+                Game.Touch();
+            }, actions);
+            bulk.SetEnabled(p.PartyCount() > 0);
+
             var power = p.PartyMembers().Sum(StatMath.Power);
-            var readout = UiKit.Div("power-readout", _root);
+            var readout = UiKit.Div("power-readout", right);
             UiKit.Text(power.ToString("N0"), "power-readout__value", readout);
             UiKit.Text("총 전투력", "power-readout__label", readout);
 
             var syn = StatMath.Synergy(p);
-            var panel = UiKit.Div("panel", _root);
+            var panel = UiKit.Div("panel", right);
             UiKit.Text("부문 시너지", "section-title", panel);
             if (syn.lines.Count == 0)
             {
@@ -71,34 +91,45 @@ namespace ExcelHeroes.UI
                 UiKit.Text($"합계 · 공격 +{syn.atkBonus:P0} 체력 +{syn.hpBonus:P0}", "section-title", panel);
             }
 
-            var composition = UiKit.Div("panel", _root);
+            var composition = UiKit.Div("panel", right);
             UiKit.Text("편성 구성", "section-title", composition);
             foreach (var role in GameData.Roles)
             {
                 var n = p.PartyMembers().Count(o => GameData.Hero(o.id)?.role == role.id);
                 UiKit.StatRow(role.name, n > 0 ? $"{n}명" : "없음", composition);
             }
+        }
 
-            var bench = UiKit.Div("panel", _root);
-            UiKit.Text("대기 인원", "section-title", bench);
-            var benchGrid = UiKit.Div("roster-grid", bench);
-            var benched = p.owned.Where(o => !p.party.Contains(o.id)).ToList();
-            if (benched.Count == 0)
+        /// <summary>
+        /// 대기 인원, as a panel rather than as a second grid under the line-up. Nothing scrolls
+        /// held sideways, and a bench of fifty is a page of its own however it is arranged.
+        /// </summary>
+        void OpenPicker()
+        {
+            var p = Game.Player;
+            var pane = UiKit.Div("picker");
+            UiKit.Text("대기 인원", "section-title", pane);
+
+            var benched = p.owned.Where(o => !p.party.Contains(o.id))
+                                 .OrderByDescending(StatMath.Power).ToList();
+
+            var pages = new Pages<OwnedHero>(pane, "roster-grid picker-grid", 12)
+                .Empty("대기 중인 사원이 없습니다");
+            pages.Fill(benched, (o, grid) =>
             {
-                UiKit.Text("대기 중인 사원이 없습니다.", "muted", bench);
-            }
-            else
-            {
-                foreach (var o in benched.OrderByDescending(o => StatMath.Power(o)))
+                var def = GameData.Hero(o.id);
+                if (def == null) return;
+                grid.Add(UiKit.Card(def, o, () =>
                 {
-                    var def = GameData.Hero(o.id);
-                    if (def == null) continue;
-                    benchGrid.Add(UiKit.Card(def, o, () =>
-                    {
-                        if (Game.Player.AddToParty(o.id)) Game.Touch();
-                    }));
-                }
-            }
+                    if (!Game.Player.AddToParty(o.id)) return;
+                    AudioService.Play("tap", 0.6f);
+                    Game.Touch();
+                    _app.CloseOverlay();
+                }));
+            });
+
+            UiKit.Btn("닫기", "btn btn--ghost", _app.CloseOverlay, pane);
+            _app.OpenOverlay(pane);
         }
     }
 }
