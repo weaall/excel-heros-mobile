@@ -131,6 +131,12 @@ namespace ExcelHeroes.Core
 
         public EquipItem Item(int id) => items.FirstOrDefault(it => it.id == id);
 
+        /// <summary>
+        /// 승진 — the job 김인턴 currently holds, which IS their definition: grade, role, trait and
+        /// skill all come from it, and a promotion changes all four at once. Empty means 인턴.
+        /// </summary>
+        public string mainJob = "intern";
+
         /// <summary>스킨 — what each hero has unlocked and what they are wearing.</summary>
         public List<SkinState> skins = new();
 
@@ -289,6 +295,11 @@ namespace ExcelHeroes.Core
                 lastSeenUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             };
             for (var i = 0; i < (b?.partySize ?? 5); i++) s.party.Add("");
+
+            // 김인턴 is not pulled, they are the player. They start owned and fielded, because a
+            // game about a man being promoted through a company cannot open with him absent.
+            s.owned.Add(new OwnedHero(GameData.MainId));
+            if (s.party.Count > 0) s.party[0] = GameData.MainId;
             return s;
         }
 

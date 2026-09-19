@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.IO;
 using ExcelHeroes.UI;
 using UnityEngine;
@@ -50,7 +51,10 @@ namespace ExcelHeroes.Core
             static void SeedPartyForCapture()
             {
                 var p = Game.Player;
-                if (p == null || p.owned.Count > 0) return;
+                // Every save now starts with 김인턴 in it, so "has anyone" is no longer the same
+                // question as "has anyone been recruited". Seed when the roster is only him.
+                if (p == null) return;
+                if (p.owned.Any(o => o.id != Data.GameData.MainId)) return;
 
                 foreach (var grade in new[] { "S", "A", "B", "C", "D" })
                 {
@@ -142,6 +146,16 @@ namespace ExcelHeroes.Core
                     app.OpenDetail(lead, "skin");
                     yield return Shoot($"{n++:00}-Skins");
                     app.OpenDetail(lead, "info");
+                    app.CloseOverlay();
+                }
+
+                // 승진 belongs to one hero only, so it needs its own open rather than riding on
+                // whichever card happens to be first in the roster.
+                if (Game.Player.Owns(Data.GameData.MainId))
+                {
+                    app.OpenDetail(Data.GameData.MainId, "promo");
+                    yield return Shoot($"{n++:00}-Promotion");
+                    app.OpenDetail(Data.GameData.MainId, "info");
                     app.CloseOverlay();
                 }
 

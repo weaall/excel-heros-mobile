@@ -278,6 +278,12 @@ namespace ExcelHeroes.Data
         public float heroAtkGrowth, heroHpGrowth;
         public float[] starMult;
         public int[] levelCapByStar;
+
+        // 승진 gates, one entry per job tier (인턴 0 … 과장 3). Cards are spent; the stage and the
+        // level are only checked — the web's note calls a promotion a graduation, not a purchase.
+        public int[] mainPromoteCards;
+        public int[] mainPromoteStage;
+        public int[] mainPromoteLevel;
         public float enhancePerLevel;
         public float traitPerStar;
         public int monsterAtkRampFull, monsterAtkRampByStage;

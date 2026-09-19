@@ -206,6 +206,7 @@ namespace ExcelHeroes.UI
             Tab(tabs, "bond", "호감도", heroId, onClose);
             Tab(tabs, "equip", "비품", heroId, onClose);
             Tab(tabs, "skin", "스킨", heroId, onClose);
+            if (heroId == GameData.MainId) Tab(tabs, "promo", "승진", heroId, onClose);
 
             var body = UiKit.Div("detail__body", right);
 
@@ -354,6 +355,7 @@ namespace ExcelHeroes.UI
             if (owned != null && _tab == "equip") BuildEquip(body, heroId, onClose);
 
             if (owned != null && _tab == "skin") BuildSkins(body, heroId, onClose);
+            if (heroId == GameData.MainId && _tab == "promo") BuildPromotion(body, onClose);
 
             // 편성 is the one action that belongs to the whole sheet rather than to a tab, so it
             // sits on its own row at the foot, where the reference keeps 확인.
@@ -554,6 +556,89 @@ namespace ExcelHeroes.UI
         /// <summary>Opens the sheet on a named tab. The screenshot driver uses it to reach the
         /// panes a default open never shows.</summary>
         public void ShowTab(string tab) => _tab = tab;
+
+        /// <summary>
+        /// 승진 — the main hero's career, and the one fork in this game that cannot be undone.
+        ///
+        /// Three conditions are listed whether they are met or not, because the panel's job before
+        /// a promotion is possible is to say what to go and do. Right after 사원 the three tracks
+        /// appear as three buttons with what each one is for written under it, and the confirm says
+        /// plainly that the other two close for good.
+        /// </summary>
+        void BuildPromotion(VisualElement body, System.Action onClose)
+        {
+            var p = Game.Player;
+            var job = PromotionService.Job(p);
+            var info = PromotionService.For(p);
+
+            if (info.Maxed)
+            {
+                UiKit.Text("더 오를 자리가 없습니다. 트랙을 끝까지 걸었습니다.", "muted", body);
+                return;
+            }
+
+            var me = p.Find(GameData.MainId);
+            var cond = UiKit.Div("panel", body);
+            UiKit.Text($"{job?.title} → 승진 조건", "section-title", cond);
+            Condition(cond, $"강화 카드 {info.Cards:N0}", $"{p.cards:N0} / {info.Cards:N0}", info.HasCards);
+            Condition(cond, $"최고 클리어 {info.Stage}", $"{p.maxCleared} / {info.Stage}", info.HasStage);
+            Condition(cond, $"레벨 {info.Level}", $"{me?.level ?? 0} / {info.Level}", info.HasLevel);
+
+            // The fork. One option is a promotion; three is a decision, and it says so.
+            if (info.Options.Count > 1)
+                UiKit.Text("한 번 고르면 되돌릴 수 없습니다.", "muted", body);
+
+            foreach (var next in info.Options)
+            {
+                var row = UiKit.Div("promo-row", body);
+                var text = UiKit.Div("promo-row__text", row);
+                UiKit.Text($"{next.title}　({next.grade}급)", "promo-row__name", text);
+                UiKit.Text(PromotionService.TrackDesc(next.track), "promo-row__desc", text);
+
+                var target = next;
+                var go = UiKit.Btn(info.Ok ? "승진" : "조건 미달",
+                    info.Ok ? "promo-row__btn promo-row__btn--go" : "promo-row__btn",
+                    () => ConfirmPromotion(target, info, onClose), row);
+                go.SetEnabled(info.Ok);
+            }
+        }
+
+        /// <summary>One requirement line: what it is, where the player is, and whether it is met.</summary>
+        void Condition(VisualElement parent, string what, string progress, bool met)
+        {
+            var row = UiKit.Div("promo-cond" + (met ? " promo-cond--met" : ""), parent);
+            UiKit.Text(met ? "✓" : "·", "promo-cond__mark", row);
+            UiKit.Text(what, "promo-cond__what", row);
+            UiKit.Text(progress, "promo-cond__num", row);
+        }
+
+        /// <summary>
+        /// The confirm. It exists because the track choice is permanent — the other two tracks are
+        /// gone for this save, not merely later — and a mis-tap on a button labelled 승진 would
+        /// otherwise decide the rest of the run.
+        /// </summary>
+        void ConfirmPromotion(MainJobDef target, PromotionService.Info info, System.Action onClose)
+        {
+            var pane = UiKit.Div("onboard__card idle");
+            UiKit.Text($"{target.title}(으)로 승진", "onboard__title", pane);
+            UiKit.Text($"강화 카드 {info.Cards:N0}장을 사용합니다.", "muted", pane);
+            if (info.Options.Count > 1)
+                UiKit.Text($"{PromotionService.TrackName(target.track)}을(를) 선택합니다. " +
+                           "나머지 트랙은 이 저장 파일에서 다시 고를 수 없습니다.", "muted", pane);
+
+            var row = UiKit.Div("party-actions", pane);
+            UiKit.Btn("취소", "btn", () => _app.CloseOverlay(), row);
+            UiKit.Btn("승진", "btn btn--primary", () =>
+            {
+                if (!PromotionService.Promote(Game.Player, target.id)) { _app.CloseOverlay(); return; }
+                AudioService.Play("victory", 0.7f);
+                _app.SetStatus($"김인턴이 {target.title}(으)로 승진했습니다");
+                Game.Touch();
+                _app.CloseOverlay();
+            }, row);
+
+            _app.OpenOverlay(pane);
+        }
 
         /// <summary>
         /// 스킨 — the two alternate looks, and the row that puts one on.

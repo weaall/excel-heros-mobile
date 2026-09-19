@@ -195,6 +195,9 @@ const files = {
     storyGems: BALANCE.STORY?.gems ?? 30,
     heroAtkGrowth: BALANCE.HERO_ATK_GROWTH, heroHpGrowth: BALANCE.HERO_HP_GROWTH,
     starMult: BALANCE.STAR_MULT, levelCapByStar: BALANCE.LEVEL_CAP_BY_STAR,
+    // 승진 gates, indexed by job tier. Cards are spent; stage and level are only checked.
+    mainPromoteCards: BALANCE.MAIN_PROMOTE_CARDS, mainPromoteStage: BALANCE.MAIN_PROMOTE_STAGE,
+    mainPromoteLevel: BALANCE.MAIN_PROMOTE_LEVEL,
     enhancePerLevel: BALANCE.ENHANCE_PER_LEVEL,
     traitPerStar: BALANCE.TRAIT_STAR?.perStar ?? 0.12,
     monsterAtkRampFull: BALANCE.MONSTER_ATK_RAMP?.full ?? 5,

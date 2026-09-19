@@ -35,6 +35,24 @@
   260,
   320
  ],
+ "mainPromoteCards": [
+  20,
+  60,
+  150,
+  400
+ ],
+ "mainPromoteStage": [
+  5,
+  15,
+  30,
+  50
+ ],
+ "mainPromoteLevel": [
+  15,
+  40,
+  80,
+  140
+ ],
  "enhancePerLevel": 0.04,
  "traitPerStar": 0.12,
  "monsterAtkRampFull": 5,

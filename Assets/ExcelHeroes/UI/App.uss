@@ -1691,6 +1691,62 @@
     -unity-font-style: bold;
 }
 
+/* ---------------------------------------------------------------- 승진
+   One row per next job, and one line per condition. Both are lists of "here is what you need and
+   here is where you are", which is the only useful shape for a gate. */
+.promo-row {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 86px;
+    margin-bottom: 6px;
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
+    background-color: var(--ex-surface-raised);
+    border-left-width: 6px;
+    border-left-color: var(--ex-accent);
+    border-radius: var(--ex-rad-md);
+}
+
+.promo-row__text { flex-grow: 1; flex-shrink: 1; }
+.promo-row__name { font-size: 28px; -unity-font-style: bold; color: var(--ex-ink); }
+.promo-row__desc { font-size: 21px; color: var(--ex-ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.promo-row__btn {
+    flex-shrink: 0;
+    min-width: 200px;
+    height: 62px;
+    font-size: 24px;
+    -unity-text-align: middle-center;
+    color: var(--ex-ink);
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-color: var(--ex-line);
+    border-radius: var(--ex-rad-md);
+}
+
+.promo-row__btn--go {
+    color: var(--ex-accent-ink);
+    background-color: var(--ex-accent);
+    border-color: var(--ex-accent);
+    -unity-font-style: bold;
+}
+
+.promo-row__btn:disabled {
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    color: rgb(160, 165, 174);
+}
+
+.promo-cond { flex-direction: row; align-items: center; flex-shrink: 0; height: 50px; }
+.promo-cond__mark { width: 40px; font-size: 26px; -unity-text-align: middle-center; color: rgb(170, 176, 186); }
+.promo-cond__what { flex-grow: 1; font-size: 24px; color: var(--ex-ink-muted); }
+.promo-cond__num { flex-shrink: 0; font-size: 24px; color: var(--ex-ink-muted); }
+
+.promo-cond--met .promo-cond__mark { color: rgb(33, 150, 96); }
+.promo-cond--met .promo-cond__what,
+.promo-cond--met .promo-cond__num { color: var(--ex-ink); -unity-font-style: bold; }
+
 .skin-row__btn:disabled {
     background-color: var(--ex-surface-sunken);
     border-color: var(--ex-line);

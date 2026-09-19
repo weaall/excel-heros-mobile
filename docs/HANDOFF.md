@@ -91,8 +91,30 @@ rather than rebuilt from the data:
 
 | 스킨 | `skinsOf` / `unlockSkin` / `equipSkin` + `src/data/skins.js` | two per hero; 퇴근 사복 is earned at 호감도 Lv 10 and cannot be bought, 회사 정장 costs gems and cannot be earned |
 
+| 승진 | `mainPromotionInfo` / `promoteMain` + `MAIN_JOBS` | 11 jobs, three tracks, the fork after 사원 is permanent |
+
 **Not yet.** Cloud sync (needs a mobile OAuth decision — the client secret is never usable), the
-roster's table view, the promotion track (see below).
+roster's table view.
+
+### 김인턴 was not in the game
+
+`mainJobs.json` exported all eleven jobs — grade, role, trait, skill, next — and nothing read
+`GameData.MainJobs`. The save had no job field. The main hero was in no roster and no party: a game
+about a man being promoted through a company did not contain the man.
+
+`GameData.Hero("main")` now returns the current JOB's definition, and that one choke point is the
+whole trick — stats, card art, sprite, 편성 and 스킨 all go through it, so nothing else has to know
+the main hero is special. 인턴 is D grade and melee; 영업부장 is the same man, S grade, with a
+different skill. One promotion changes all of it.
+
+New saves start with him owned and in slot 1. Old saves get him on load, because he is never in the
+recruit pool and an empty first slot would have no way to be filled.
+
+**One condition from the web is deliberately dropped.** It also requires the tier's 강화 한계 to be
+filled, where 강화 is a per-hero card upgrade separate from levelling. This build has no such
+concept — the cap comes from ★ alone — so there is nothing to check, and inventing one would invent
+a currency. The web's own note says that condition means "finish this tier first", and
+`MAIN_PROMOTE_LEVEL` already says that in a unit this build has.
 
 ### The skin art was never missing
 

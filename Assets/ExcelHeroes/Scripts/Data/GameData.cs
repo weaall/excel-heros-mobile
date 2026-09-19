@@ -40,6 +40,9 @@ namespace ExcelHeroes.Data
         public static DivisionFile Synergy { get; private set; }
         public static string MainId { get; private set; } = "main";
 
+        public static MainJobDef MainJob(string id) =>
+            id == null ? null : MainJobs.Find(j => j.id == id);
+
         static Dictionary<string, GradeDef> _grades;
         static Dictionary<string, RoleDef> _roles;
         static Dictionary<string, SkillDef> _skills;
@@ -110,7 +113,21 @@ namespace ExcelHeroes.Data
         public static RoleDef Role(string id) => id != null && _roles.TryGetValue(id, out var v) ? v : null;
         public static SkillDef Skill(string id) => id != null && _skills.TryGetValue(id, out var v) ? v : null;
         public static TraitDef Trait(string id) => id != null && _traits.TryGetValue(id, out var v) ? v : null;
-        public static HeroDef Hero(string id) => id != null && _heroes.TryGetValue(id, out var v) ? v : null;
+        /// <summary>
+        /// A hero's definition — and for the main hero, the definition of the JOB they currently
+        /// hold, because that is what their definition is. 김인턴 is D grade and melee; 영업부장 is
+        /// the same man, S grade, with a different skill. One promotion changes all of it.
+        ///
+        /// Resolving it here rather than at every call site is the whole point: stats, the card
+        /// art, the battle sprite, 편성 and 스킨 all go through this, and none of them has to know
+        /// the main hero is special.
+        /// </summary>
+        public static HeroDef Hero(string id)
+        {
+            if (id == null) return null;
+            if (id == MainId) return Core.PromotionService.AsHero(Core.Game.Player);
+            return _heroes.TryGetValue(id, out var v) ? v : null;
+        }
         public static DivisionDef Division(string id) => id != null && _divisions.TryGetValue(id, out var v) ? v : null;
         public static PerkDef Perk(string divisionId) => divisionId != null && _perks.TryGetValue(divisionId, out var v) ? v : null;
 
@@ -197,23 +214,33 @@ namespace ExcelHeroes.Data
         /// 모집 deliberately does not: a reveal shows the card as it was pulled.
         /// </summary>
         public static Sprite WornCardArt(string heroId) =>
-            CardArt(heroId, Core.SkinService.Active(Core.Game.Player, heroId));
+            CardArt(DefId(heroId), Core.SkinService.Active(Core.Game.Player, heroId));
 
         /// <summary>Frame 0 of whatever this hero is wearing. Skin strips are baked per outfit
         /// because a skin changes the doll's clothes, not just its palette.</summary>
         public static Sprite WornSprite(string heroId)
         {
+            var id = DefId(heroId);
             var active = Core.SkinService.Active(Core.Game.Player, heroId);
-            if (string.IsNullOrEmpty(active)) return BattleSprite(heroId);
-            return BattleFrames($"{heroId}__{active}")?[0] ?? BattleSprite(heroId);
+            if (string.IsNullOrEmpty(active)) return BattleSprite(id);
+            return BattleFrames($"{id}__{active}")?[0] ?? BattleSprite(id);
         }
+
+        /// <summary>
+        /// The id the ART is filed under. For the 55 recruits that is their own id; for the main
+        /// hero it is the job they hold, because a promotion gives them a different picture and a
+        /// different doll. Nothing is baked under "main".
+        /// </summary>
+        public static string DefId(string heroId) =>
+            heroId == MainId ? Hero(heroId)?.id ?? heroId : heroId;
 
         /// <summary>The nine frames of whatever this hero is wearing.</summary>
         public static Sprite[] WornFrames(string heroId)
         {
+            var id = DefId(heroId);
             var active = Core.SkinService.Active(Core.Game.Player, heroId);
-            if (string.IsNullOrEmpty(active)) return BattleFrames(heroId);
-            return BattleFrames($"{heroId}__{active}") ?? BattleFrames(heroId);
+            if (string.IsNullOrEmpty(active)) return BattleFrames(id);
+            return BattleFrames($"{id}__{active}") ?? BattleFrames(id);
         }
 
         /// <summary>The outfits this hero actually has art for, base first.</summary>

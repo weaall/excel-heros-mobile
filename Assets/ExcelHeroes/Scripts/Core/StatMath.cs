@@ -157,10 +157,10 @@ namespace ExcelHeroes.Core
             foreach (var o in members)
             {
                 var def = GameData.Hero(o.id);
-                if (def == null) continue;
+                if (def == null || string.IsNullOrEmpty(def.division)) continue;
                 byDivision.TryGetValue(def.division, out var n);
                 byDivision[def.division] = n + 1;
-                roles.Add(def.role);
+                if (!string.IsNullOrEmpty(def.role)) roles.Add(def.role);
             }
 
             foreach (var (divisionId, count) in byDivision.OrderByDescending(kv => kv.Value))
