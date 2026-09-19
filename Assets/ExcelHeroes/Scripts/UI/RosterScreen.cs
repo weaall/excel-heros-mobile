@@ -357,6 +357,19 @@ namespace ExcelHeroes.UI
             if (owned != null)
             {
                 var foot = UiKit.Div("detail__foot", right);
+
+                // 방출 lives on the 비품 page rather than beside 편성: it is the destructive one,
+                // and putting it next to the button a player presses every session is asking for
+                // the mis-tap that loses a card.
+                if (_tab == "equip")
+                {
+                    var can = DismissService.Can(Game.Player, heroId);
+                    var cards = DismissService.Cards(Game.Player, heroId);
+                    var release = UiKit.Btn(
+                        can ? $"방출 · 강화 카드 +{cards}" : DismissService.Blocked(Game.Player, heroId),
+                        "btn", () => ConfirmRelease(heroId, onClose), foot);
+                    release.SetEnabled(can);
+                }
                 var inParty = Game.Player.party.Contains(heroId);
                 UiKit.Btn(inParty ? "편성에서 빼기" : "편성에 넣기",
                     inParty ? "btn" : "btn btn--primary", () =>
@@ -370,6 +383,40 @@ namespace ExcelHeroes.UI
 
             UiKit.Btn(Icons.Close, "detail__close icon", () => Close(onClose), view);
             return view;
+        }
+
+        /// <summary>
+        /// Asks before releasing. A collection game that lets a mis-tap delete a card someone
+        /// waited a hundred pulls for has taken away the reason to keep playing.
+        /// </summary>
+        void ConfirmRelease(string heroId, System.Action onClose)
+        {
+            var p = Game.Player;
+            var def = GameData.Hero(heroId);
+            var cards = DismissService.Cards(p, heroId);
+            var gold = DismissService.LevelRefund(p, heroId);
+
+            var pane = UiKit.Div("onboard__card idle");
+            UiKit.Text("사원 방출", "onboard__title", pane);
+            UiKit.Text($"{def?.name}을(를) 방출하고 강화 카드 {cards}장" +
+                       (gold > 0 ? $", 레벨 골드 ₩{gold:N0}을 돌려받습니다." : "을 받습니다."),
+                "muted", pane);
+            UiKit.Text("★, 레벨, 조각은 사라집니다. 착용 중인 비품은 창고로 돌아갑니다.", "muted", pane);
+
+            var row = UiKit.Div("party-actions", pane);
+            UiKit.Btn("취소", "btn", _app.CloseOverlay, row);
+            UiKit.Btn("방출한다", "btn btn--primary", () =>
+            {
+                var (got, back) = DismissService.Release(Game.Player, heroId);
+                if (got <= 0) { _app.CloseOverlay(); return; }
+                AudioService.Play("tap", 0.6f);
+                _app.SetStatus($"방출 · 강화 카드 +{got}" + (back > 0 ? $" · 골드 +{back:N0}" : ""));
+                Game.Touch();
+                _app.CloseOverlay();
+                Close(onClose);
+            }, row);
+
+            _app.OpenOverlay(pane);
         }
 
         /// <summary>

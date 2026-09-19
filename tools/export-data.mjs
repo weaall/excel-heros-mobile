@@ -225,6 +225,10 @@ const files = {
     // paying gems per kill. The per-kill value rises with phase on purpose: deeper stages take
     // longer per body, so without it a once-a-day reward shrinks as the run progresses.
     // 회사 이전 — the reset that trades the run for permanent shares.
+    // 방출 — cards paid per shard by grade, plus a flat bonus for the card itself.
+    shardCardGrades: Object.keys(BALANCE.SHARD_CARD_VALUE ?? {}),
+    shardCardValues: Object.values(BALANCE.SHARD_CARD_VALUE ?? {}),
+    dismissCardBonus: BALANCE.DISMISS_CARD_BONUS ?? 10,
     prestigeMinCleared: BALANCE.PRESTIGE?.minCleared ?? 30,
     prestigeBonusPerShare: BALANCE.PRESTIGE?.bonusPerShare ?? 0.03,
     equipDropChance: BALANCE.EQUIP?.dropChance ?? 0.35,

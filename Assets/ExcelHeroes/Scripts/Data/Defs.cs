@@ -295,6 +295,9 @@ namespace ExcelHeroes.Data
         public float offlineEfficiency;
         public long offlineMinSec;
         public int adPerDay;
+        public List<string> shardCardGrades = new();
+        public List<int> shardCardValues = new();
+        public int dismissCardBonus;
         public int prestigeMinCleared;
         public float prestigeBonusPerShare;
         public float equipDropChance, equipBossDropChance, equipPctPerLevel, equipUpgradeGrowth;
