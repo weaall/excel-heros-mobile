@@ -54,7 +54,7 @@ namespace ExcelHeroes.UI
 
         UIDocument _doc;
         VisualElement _content;
-        Label _gems, _gold, _dailyBadge, _status;
+        Label _gems, _gold, _dailyBadge, _status, _stage, _plateSub;
         readonly Dictionary<Sheet, IScreen> _screens = new();
         readonly Dictionary<Sheet, Button> _tabs = new();
         readonly Dictionary<Sheet, string> _tabNames = new();
@@ -78,6 +78,8 @@ namespace ExcelHeroes.UI
             _gold = root.Q<Label>("goldValue");
             _status = root.Q<Label>("statusText");
             _dailyBadge = root.Q<Label>("dailyBadge");
+            _stage = root.Q<Label>("stageValue");
+            _plateSub = root.Q<Label>("plateSub");
 
             _screens[Sheet.Home] = new BattleScreen(this);
             _screens[Sheet.Roster] = new RosterScreen(this);
@@ -89,16 +91,18 @@ namespace ExcelHeroes.UI
             _screens[Sheet.Chart] = new ChartScreen(this);
             _detail = new HeroDetail(this);
 
-            // Four tabs along the bottom, because four short words is what fits on a phone without
-            // the strip scrolling. The other four sheets live behind the sheet-list button, which
-            // is where Excel for Android keeps sheets that do not fit either.
+            // Every screen on the bar, which is how the reference arranges its lobby: 카페,
+            // 스케줄, 학생, 편성, 서클, 제조, 상점, 모집, all visible, nothing behind a menu. This
+            // build had four down a rail and four behind 더보기 — and a screen behind a menu is a
+            // screen players never learn exists.
             Bind("tabHome", Sheet.Home);
             Bind("tabRoster", Sheet.Roster);
-            Bind("tabGacha", Sheet.Gacha);
             Bind("tabQuests", Sheet.Quests);
-
-            var sheetList = root.Q<Button>("sheetListBtn");
-            if (sheetList != null) sheetList.clicked += OpenSheetList;
+            Bind("tabStory", Sheet.Story);
+            Bind("tabAlbum", Sheet.Album);
+            Bind("tabCodex", Sheet.Codex);
+            Bind("tabChart", Sheet.Chart);
+            Bind("tabGacha", Sheet.Gacha);
 
             // Glyphs come from the Material Symbols font rather than from PNGs, so an icon that
             // has to be white here and grey there is one character rather than two images.
@@ -107,9 +111,12 @@ namespace ExcelHeroes.UI
             Glyph("gemIcon", Icons.Gem);
             Glyph("tabHomeIcon", Icons.Battle);
             Glyph("tabRosterIcon", Icons.Roster);
-            Glyph("tabGachaIcon", Icons.Gacha);
             Glyph("tabQuestsIcon", Icons.Tasks);
-            Glyph("moreIcon", Icons.Sheets);
+            Glyph("tabStoryIcon", Icons.Story);
+            Glyph("tabAlbumIcon", Icons.Album);
+            Glyph("tabCodexIcon", Icons.Codex);
+            Glyph("tabChartIcon", Icons.Chart);
+            Glyph("tabGachaIcon", Icons.Gacha);
 
             // Keeps the chrome clear of the notch and the gesture bar.
             (gameObject.GetComponent<SafeArea>() ?? gameObject.AddComponent<SafeArea>()).Bind(root);
@@ -174,6 +181,8 @@ namespace ExcelHeroes.UI
             if (Game.Player == null) return;
             _gems.text = Game.Player.gems.ToString("N0");
             _gold.text = Game.Player.gold.ToString("N0");
+            if (_stage != null) _stage.text = Game.Player.stage.ToString();
+            if (_plateSub != null) _plateSub.text = $"사원 {Game.Player.owned.Count}명";
             if (_dailyBadge == null) return;
             var n = QuestService.ReadyCount(Game.Player);
             _dailyBadge.text = n.ToString();
@@ -182,6 +191,15 @@ namespace ExcelHeroes.UI
 
         public void Show(Sheet sheet)
         {
+            // A panel belongs to the screen that opened it. Changing screens under an open one left
+            // it hanging over the new sheet, which is how a capture of 메신저 came back showing the
+            // menu that had been used to reach it.
+            if (Overlay != null && !Overlay.ClassListContains("hidden"))
+            {
+                Overlay.Clear();
+                Overlay.AddToClassList("hidden");
+            }
+
             _sheet = sheet;
             _current = _screens[sheet];
             _content.Clear();
@@ -189,7 +207,8 @@ namespace ExcelHeroes.UI
             UpdateStatus();
 
             foreach (var pair in _tabs)
-                pair.Value.EnableInClassList("rail__tab--active", pair.Key == sheet);
+                pair.Value.EnableInClassList("navtab--active",
+                    pair.Key == sheet && !pair.Value.ClassListContains("navcta"));
         }
 
         /// <summary>Locked while a reveal is playing so a sheet change cannot strand the overlay.</summary>

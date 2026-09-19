@@ -421,7 +421,7 @@ namespace ExcelHeroes.UI
         // stands on the road however tall the sheet happens to be.
         // Up from 0.84: the gold strip is anchored along the bottom now, and at the old line
         // the party stood behind it.
-        const float GroundAnchor = 0.70f;
+        const float GroundAnchor = 0.60f;
 
         // The window on the field, in the simulation's own units.
         //

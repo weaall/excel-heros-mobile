@@ -38,7 +38,7 @@ namespace ExcelHeroes.UI
             _root.Clear();
             var p = Game.Player;
 
-            var head = UiKit.Div("panel", _root);
+            var head = UiKit.Div("ep-head", _root);
             UiKit.Text("에피소드", "section-title", head);
             var read = GameData.Episodes.Count(e => p.readEpisodes.Contains(e.id));
             UiKit.Text($"{read} / {GameData.Episodes.Count} 읽음 · 처음 읽으면 보석 {GameData.Balance.storyGems}",

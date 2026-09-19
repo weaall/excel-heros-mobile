@@ -23,25 +23,32 @@
 
 .root {
     flex-grow: 1;
+    background-color: var(--ex-surface);
 
-    --ex-surface: rgb(255, 255, 255);
-    --ex-surface-raised: rgb(246, 247, 249);
-    --ex-surface-sunken: rgb(238, 240, 243);
-    --ex-ink: rgb(30, 32, 38);
-    --ex-ink-muted: rgb(112, 118, 128);
-    --ex-line: rgb(216, 219, 224);
-    --ex-line-strong: rgb(178, 182, 190);
+    --ex-surface: rgb(244, 247, 251);
+    --ex-surface-raised: rgb(255, 255, 255);
+    --ex-surface-sunken: rgb(233, 238, 245);
 
-    /* The accent is the Excel green. The disguise is the whole premise, so the game's primary
-       action and the chrome it hides behind are deliberately the same colour. */
-    --ex-accent: rgb(33, 115, 70);
-    --ex-accent-deep: rgb(22, 82, 50);
+    --ex-ink: rgb(30, 38, 54);
+    --ex-ink-muted: rgb(120, 132, 152);
+
+    --ex-line: rgb(214, 222, 233);
+    --ex-line-strong: rgb(183, 194, 210);
+
+    /* The chrome: a deep navy plate, the colour the reference puts behind its top bar. */
+    --ex-navy: rgb(26, 40, 66);
+    --ex-navy-deep: rgb(18, 28, 48);
+    --ex-navy-line: rgb(52, 72, 108);
+
+    /* The primary: the blue its confirm buttons and its lit tabs are. */
+    --ex-accent: rgb(56, 124, 214);
+    --ex-accent-deep: rgb(32, 86, 164);
     --ex-accent-ink: rgb(255, 255, 255);
-    --ex-accent-wash: rgb(233, 245, 238);
-    --ex-danger: rgb(196, 43, 28);
-    --ex-gold: rgb(202, 148, 22);
+    --ex-accent-wash: rgb(226, 238, 253);
 
-    /* 4px grid. */
+    --ex-danger: rgb(226, 62, 74);
+    --ex-gold: rgb(247, 181, 41);
+
     --ex-space-1: 8px;
     --ex-space-2: 16px;
     --ex-space-3: 24px;
@@ -49,11 +56,10 @@
     --ex-space-5: 48px;
     --ex-space-6: 64px;
 
-    --ex-rad-sm: 6px;
-    --ex-rad-md: 12px;
-    --ex-rad-lg: 20px;
+    --ex-rad-sm: 8px;
+    --ex-rad-md: 16px;
+    --ex-rad-lg: 24px;
 
-    /* Touch targets. 120px is 40dp, 136px is 45dp — the floor for anything a thumb has to find. */
     --ex-tap: 120px;
     --ex-tap-lg: 136px;
 
@@ -62,10 +68,6 @@
     --ex-text-base: 38px;
     --ex-text-lg: 48px;
     --ex-text-xl: 64px;
-
-    background-color: var(--ex-surface);
-    color: var(--ex-ink);
-    font-size: var(--ex-text-base);
 }
 
 /* ---------------------------------------------------------------- components
@@ -164,16 +166,49 @@
     font-size: 46px;
 }
 
+/* The player plate: a dark badge with the phase on a coloured tab, top left, where the reference
+   puts the sensei's level. It is the one place on the chrome that says who is playing.
+   ---------------------------------------------------------------------------------- */
+.plate {
+    flex-direction: row;
+    align-items: center;
+    height: 80px;
+    padding-right: var(--ex-space-3);
+    background-color: var(--ex-navy-deep);
+    border-width: 3px;
+    border-color: var(--ex-navy-line);
+    border-radius: var(--ex-rad-sm);
+}
+
+.plate__rank {
+    align-items: center;
+    justify-content: center;
+    width: 86px;
+    height: 100%;
+    background-color: var(--ex-accent);
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.plate__rank-word { font-size: 18px; color: rgba(255, 255, 255, 0.75); }
+.plate__rank-num { font-size: 34px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+
+.plate__body { justify-content: center; padding-left: var(--ex-space-2); }
+.plate__name { font-size: 30px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+.plate__sub { font-size: 22px; color: rgba(255, 255, 255, 0.6); }
+
 /* The top bar: what you have, and nothing else. It used to be an Excel app bar with a file name
    and a row of document actions, none of which did anything. */
 .topbar {
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-    height: 104px;
-    padding-left: var(--ex-space-4);
+    height: 112px;
+    padding-left: var(--ex-space-2);
     padding-right: var(--ex-space-2);
-    background-color: rgb(24, 27, 34);
+    background-color: var(--ex-navy);
+    border-bottom-width: 3px;
+    border-bottom-color: var(--ex-navy-deep);
 }
 
 .topbar__title {
@@ -183,10 +218,13 @@
 }
 
 .topbar__btn {
-    width: var(--ex-tap);
-    height: var(--ex-tap);
-    background-color: rgba(0, 0, 0, 0);
-    border-width: 0;
+    width: 84px;
+    height: 84px;
+    margin-left: var(--ex-space-2);
+    background-color: rgba(255, 255, 255, 0.12);
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.24);
+    border-radius: var(--ex-rad-sm);
     color: rgb(255, 255, 255);
     font-size: 40px;
 }
@@ -197,17 +235,19 @@
 .chip {
     flex-direction: row;
     align-items: center;
-    height: 62px;
-    margin-left: var(--ex-space-3);
-    padding-left: var(--ex-space-2);
+    height: 72px;
+    margin-left: var(--ex-space-2);
+    padding-left: var(--ex-space-1);
     padding-right: var(--ex-space-3);
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 31px;
+    background-color: rgb(255, 255, 255);
+    border-width: 3px;
+    border-color: rgb(214, 226, 242);
+    border-radius: 36px;
 }
 
-.chip__icon { font-size: 34px; height: 58px; color: var(--ex-gold); margin-right: var(--ex-space-1); }
-.chip__icon--gem { color: rgb(110, 190, 255); }
-.chip__value { font-size: var(--ex-text-sm); -unity-font-style: bold; color: rgb(255, 255, 255); }
+.chip__icon { font-size: 40px; height: 64px; width: 64px; color: var(--ex-gold); margin-right: var(--ex-space-1); }
+.chip__icon--gem { color: rgb(64, 156, 236); }
+.chip__value { font-size: var(--ex-text-sm); -unity-font-style: bold; color: var(--ex-ink); }
 
 /* ---------------------------------------------------------------- navigation rail
 
@@ -215,49 +255,65 @@
    to reach — so navigation runs down the side, not along the bottom where a portrait phone puts
    it. Each tab is an icon over a word, which survives being glanced at. */
 
-.middle { flex-direction: row; flex-grow: 1; min-height: 0; }
 
-.rail {
-    width: 168px;
+
+
+
+/* The active tab is lit and marked on the edge it is attached to. */
+
+
+
+
+
+/* ---------------------------------------------------------------- navigation
+
+   A row of icon-over-label buttons along the bottom, every screen on it, exactly as the reference
+   arranges its lobby. What was here was four tabs down a rail with the other four behind a 더보기
+   menu — and a screen behind a menu is a screen nobody opens. */
+
+.navbar {
+    flex-direction: row;
+    align-items: center;
     flex-shrink: 0;
-    background-color: rgb(32, 36, 45);
-    padding-top: var(--ex-space-2);
-    padding-bottom: var(--ex-space-2);
+    height: 158px;
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
+    background-color: var(--ex-navy);
+    border-top-width: 3px;
+    border-top-color: var(--ex-navy-line);
 }
 
-.rail__tab {
-    height: 150px;
+.navtab {
+    width: 168px;
+    height: 132px;
+    margin-right: 6px;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
-    border-left-width: 6px;
-    border-left-color: rgba(0, 0, 0, 0);
+    border-radius: var(--ex-rad-sm);
     align-items: center;
     justify-content: center;
 }
 
-.rail__tab:hover { background-color: rgba(255, 255, 255, 0.07); }
+.navtab:hover { background-color: rgba(255, 255, 255, 0.08); }
 
-/* The active tab is lit and marked on the edge it is attached to. */
-.rail__tab--active {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-left-color: var(--ex-accent);
-}
+/* The lit tab, the way the reference lights one: a filled plate, not a hairline. */
+.navtab--active { background-color: var(--ex-accent); }
 
-.rail__icon { font-size: 52px; color: rgba(255, 255, 255, 0.55); }
-.rail__tab--active .rail__icon { color: rgb(255, 255, 255); }
+.navtab__icon { font-size: 54px; height: 62px; color: rgba(255, 255, 255, 0.66); }
+.navtab--active .navtab__icon { color: rgb(255, 255, 255); }
 
-.rail__label {
+.navtab__label {
     font-size: var(--ex-text-xs);
-    color: rgba(255, 255, 255, 0.55);
-    margin-top: var(--ex-space-1);
+    color: rgba(255, 255, 255, 0.66);
+    margin-top: 2px;
 }
 
-.rail__tab--active .rail__label { color: rgb(255, 255, 255); -unity-font-style: bold; }
+.navtab--active .navtab__label { color: rgb(255, 255, 255); -unity-font-style: bold; }
 
-.rail__badge {
+.navtab__badge {
     position: absolute;
-    top: 22px;
-    right: 34px;
+    top: 12px;
+    right: 30px;
     min-width: 40px;
     height: 40px;
     border-radius: 20px;
@@ -267,12 +323,37 @@
     -unity-text-align: middle-center;
 }
 
+/* One loud button in the corner the thumb rests on, carrying the thing the game sells. */
+.navcta {
+    width: 300px;
+    height: 132px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--ex-gold);
+    border-width: 3px;
+    border-color: rgb(255, 214, 122);
+    border-bottom-width: 8px;
+    border-bottom-color: rgb(196, 136, 18);
+    border-radius: var(--ex-rad-md);
+}
+
+.navcta:hover { background-color: rgb(255, 199, 74); }
+
+.navcta__icon { font-size: 52px; height: 62px; color: rgb(72, 44, 0); margin-right: var(--ex-space-1); }
+
+.navcta__label {
+    font-size: var(--ex-text-base);
+    -unity-font-style: bold;
+    color: rgb(72, 44, 0);
+}
+
 /* ---------------------------------------------------------------- content */
 
 .sheet {
     flex-grow: 1;
     flex-shrink: 1;
-    min-width: 0;
+    min-height: 0;
     background-color: var(--ex-surface);
     overflow: hidden;
 }
@@ -282,13 +363,11 @@
 /* A thin line along the bottom for whatever just happened — a reward collected, a run finished. */
 .statusbar {
     flex-shrink: 0;
-    height: 52px;
-    padding-left: var(--ex-space-4);
-    font-size: var(--ex-text-xs);
-    color: var(--ex-ink-muted);
-    background-color: var(--ex-surface-raised);
-    border-top-width: 1px;
-    border-top-color: var(--ex-line);
+    height: 44px;
+    padding-left: var(--ex-space-3);
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.72);
+    background-color: var(--ex-navy-deep);
     -unity-text-align: middle-left;
 }
 
@@ -702,6 +781,9 @@
     flex-grow: 1;
     background-color: rgb(238, 238, 238);
     -unity-background-scale-mode: scale-and-crop;
+    /* Anchored to the top: the face is what identifies a card, and a centred crop on a 2:3
+       illustration in a cell this wide lands squarely on the chest. */
+    background-position-y: top;
 }
 
 .card__grade {
@@ -993,11 +1075,12 @@
     left: 0;
     top: 0;
     right: 0;
-    height: 116px;
+    height: 104px;
     flex-direction: row;
     align-items: center;
-    padding-left: var(--ex-space-4);
+    padding-left: var(--ex-space-3);
     padding-right: var(--ex-space-3);
+    background-color: rgba(12, 18, 32, 0.55);
 }
 
 .battle__wave {
@@ -1304,13 +1387,20 @@
 
 .ep--locked { opacity: 0.45; }
 
-.ep__cast { flex-direction: row; margin-bottom: 16px; }
+.ep__cast {
+    flex-direction: row;
+    flex-shrink: 0;
+    height: 86px;
+    margin-bottom: var(--ex-space-1);
+    overflow: hidden;
+}
 
 .ep__face {
-    width: 102px;
-    height: 102px;
-    border-radius: 51px;
-    margin-right: -14px;
+    width: 86px;
+    height: 86px;
+    flex-shrink: 0;
+    border-radius: 43px;
+    margin-right: -12px;
     border-width: 2px;
     border-color: rgb(212, 212, 212);
     background-color: rgb(238, 238, 238);
@@ -1437,20 +1527,24 @@
 .album__scroll { flex-grow: 1; }
 
 .album__grid {
+    flex-grow: 1;
     flex-direction: row;
     flex-wrap: wrap;
-    padding: 19px;
+    align-content: flex-start;
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
 }
 
 /* Three across on a 1080-wide phone, at the art's own 2:3 — cropping a card to a square is what
    made the thumbnails look mismatched. */
 .album__cell {
-    width: 33%;
-    padding: 10px;
+    width: 15.6%;
+    height: 48%;
+    margin: 0.4%;
 }
 
 .album__art {
-    height: 752px;
+    flex-grow: 1;
     background-color: rgb(238, 238, 238);
     border-width: 1px;
     border-color: rgb(212, 212, 212);
@@ -1458,9 +1552,12 @@
 }
 
 .album__name {
-    font-size: 32px;
+    font-size: var(--ex-text-xs);
+    height: 40px;
     -unity-text-align: middle-center;
-    padding-top: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .album__cell--locked .album__art { opacity: 0.18; }
@@ -1561,11 +1658,14 @@
 
 /* A chart object dropped on a sheet: a plain white box with a border and a shadowless edge. */
 .chart-obj {
+    flex-grow: 1;
+    flex-basis: 0;
     background-color: rgb(255, 255, 255);
     border-width: 1px;
     border-color: rgb(191, 191, 191);
-    padding: 22px;
-    margin-bottom: 26px;
+    padding: var(--ex-space-2);
+    margin-left: 6px;
+    margin-right: 6px;
 }
 
 .chart-obj__title {
@@ -1764,9 +1864,12 @@
     margin-right: 16px;
 }
 
+/* flex-shrink:0 because the letterbox squeezes its column, and a shrunk line box clips Korean
+   descenders rather than wrapping. */
 .prologue__title {
     font-size: 40px;
     height: 56px;
+    flex-shrink: 0;
     color: rgb(255, 255, 255);
     -unity-font-style: bold;
 }
@@ -1834,10 +1937,10 @@
    these same lines become recalculation progress. */
 .battle-log {
     position: absolute;
-    left: var(--ex-space-4);
-    top: 124px;
+    left: var(--ex-space-3);
+    top: 216px;
     width: 40%;
-    height: 148px;
+    height: 132px;
 }
 
 .log-row {
@@ -1947,7 +2050,7 @@
     right: var(--ex-space-2);
     bottom: var(--ex-space-2);
     flex-direction: row;
-    height: 160px;
+    height: 136px;
 }
 
 .upgrade {
@@ -2302,7 +2405,7 @@
 .stamp-day {
     flex-grow: 1;
     flex-basis: 0;
-    height: 132px;
+    height: 116px;
     margin-left: 3px;
     margin-right: 3px;
     align-items: center;
@@ -2323,7 +2426,7 @@
 }
 
 .stamp-day__n { font-size: 24px; color: rgb(110, 114, 122); }
-.stamp-day__gems { font-size: 26px; -unity-font-style: bold; color: rgb(52, 96, 178); margin-top: 4px; }
+.stamp-day__gems { font-size: 24px; height: 34px; -unity-font-style: bold; color: rgb(60, 62, 70); }
 
 /* The stamp itself: a red approval mark at an angle, the way an actual 도장 lands. */
 .stamp-day__mark {
@@ -2353,14 +2456,14 @@
 .gacha__scroll { flex-grow: 1; }
 
 .banner {
-    height: 800px;
-    flex-shrink: 0;
+    flex-grow: 1;
     justify-content: flex-end;
-    padding-bottom: 40px;
-    padding-left: 40px;
+    padding-bottom: var(--ex-space-3);
+    padding-left: var(--ex-space-3);
     background-color: rgb(26, 37, 48);
     -unity-background-scale-mode: scale-and-crop;
     background-position-y: top;
+    border-radius: var(--ex-rad-lg);
     overflow: hidden;
 }
 
@@ -2394,8 +2497,8 @@
 }
 
 .banner__plate {
-    width: 700px;
-    padding: 26px 30px 26px 30px;
+    width: 78%;
+    padding: 20px 26px 20px 26px;
     background-color: rgb(255, 255, 255);
     border-left-width: 12px;
 }
@@ -2417,8 +2520,8 @@
 
 .pickup {
     flex-direction: row;
+    height: 62%;
     flex-shrink: 0;
-    padding: 28px 28px 0 28px;
 }
 
 .pcard {
@@ -2434,7 +2537,7 @@
 }
 
 .pcard__art {
-    height: 320px;
+    flex-grow: 1;
     background-color: rgb(232, 234, 238);
     -unity-background-scale-mode: scale-and-crop;
     background-position-y: top;
@@ -2678,7 +2781,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 132px;
+    top: 148px;
     font-size: 52px;
     -unity-font-style: bold;
     -unity-text-align: upper-center;
@@ -2717,10 +2820,8 @@
    rather than as one long column of panels. */
 .qs-block {
     flex-shrink: 0;
-    margin-left: var(--ex-space-3);
-    margin-right: var(--ex-space-3);
-    margin-top: var(--ex-space-3);
-    padding: var(--ex-space-4);
+    margin-bottom: var(--ex-space-2);
+    padding: var(--ex-space-2);
     background-color: var(--ex-surface);
     border-width: 2px;
     border-bottom-width: 6px;
@@ -2734,8 +2835,8 @@
     flex-direction: row;
     align-items: baseline;
     flex-shrink: 0;
-    padding-bottom: var(--ex-space-2);
-    margin-bottom: var(--ex-space-3);
+    padding-bottom: var(--ex-space-1);
+    margin-bottom: var(--ex-space-1);
     border-bottom-width: 2px;
     border-bottom-color: var(--ex-line);
 }
@@ -2762,8 +2863,8 @@
 .qrow {
     flex-direction: row;
     align-items: center;
-    padding-top: 14px;
-    padding-bottom: 14px;
+    flex-shrink: 0;
+    height: 112px;
     border-bottom-width: 1px;
     border-bottom-color: rgb(234, 234, 234);
 }
@@ -2771,27 +2872,27 @@
 .qrow--done { opacity: 0.55; }
 
 .qrow__text { flex-grow: 1; flex-shrink: 1; }
-.qrow__name { font-size: 30px; -unity-font-style: bold; color: rgb(40, 42, 48); }
-.qrow__desc { font-size: 24px; color: rgb(140, 145, 155); margin-top: 2px; }
+.qrow__name { font-size: 26px; -unity-font-style: bold; color: rgb(40, 42, 48); }
+.qrow__desc { font-size: 21px; color: rgb(140, 145, 155); }
 
 .qrow__track {
-    height: 10px;
-    margin-top: 10px;
+    height: 8px;
+    margin-top: 5px;
     margin-right: 20px;
     background-color: rgb(228, 230, 234);
-    border-radius: 5px;
+    border-radius: 4px;
     overflow: hidden;
 }
 
 .qrow__fill { height: 100%; background-color: rgb(33, 115, 70); }
 
-.qrow__meta { font-size: 24px; color: rgb(110, 115, 125); margin-top: 8px; }
+.qrow__meta { font-size: 21px; color: rgb(110, 115, 125); margin-top: 2px; }
 
 .qrow__claim {
     flex-shrink: 0;
-    min-width: 150px;
-    height: var(--ex-tap);
-    font-size: var(--ex-text-sm);
+    min-width: 140px;
+    height: 68px;
+    font-size: var(--ex-text-xs);
     -unity-font-style: bold;
     -unity-text-align: middle-center;
     color: var(--ex-accent-ink);
@@ -2957,6 +3058,26 @@
 
 .ep {
     width: 31.3%;
-    height: 47%;
+    height: 46%;
     margin: 1%;
+    padding: var(--ex-space-2);
+    justify-content: space-between;
+    overflow: hidden;
 }
+
+/* Inside an episode card the type steps down a size: the card is a third of the frame wide. */
+.ep .section-title { font-size: 30px; margin-bottom: 2px; }
+.ep .muted { font-size: 24px; }
+.ep .btn { flex-shrink: 0; height: 84px; margin-top: var(--ex-space-1); }
+
+/* The screen's own heading is a line, not a panel taking a fifth of the frame. */
+.ep-head {
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: baseline;
+    padding-left: var(--ex-space-3);
+    padding-right: var(--ex-space-3);
+    padding-top: var(--ex-space-2);
+}
+
+.ep-head .section-title { margin-bottom: 0; margin-right: var(--ex-space-2); }
