@@ -35,6 +35,57 @@ namespace ExcelHeroes.EditorTools
         [MenuItem("Excel Heroes/Rebuild Project Setup")]
         public static void RunFromMenu() => Run(interactive: true);
 
+        /// <summary>
+        /// Re-attaches PanelSettings to the scene's UIDocument and saves.
+        ///
+        /// This exists because the built game came up running, logging and throwing nothing — and
+        /// completely blank. UIDocument had its UXML but its panelSettings was null, and a UIDocument
+        /// without PanelSettings renders nothing at all. Nothing in the project reports that: it is
+        /// not an error, just an empty screen.
+        ///
+        /// The original assignment did not survive scene serialisation, so this sets it, marks both
+        /// the component and the scene dirty, and verifies the reference is actually on disk
+        /// afterwards rather than assuming the save worked.
+        /// </summary>
+        [MenuItem("Excel Heroes/Repair Scene Wiring")]
+        public static void RepairScene()
+        {
+            var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelPath);
+            var uxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UxmlPath);
+            if (panel == null || uxml == null)
+            {
+                Debug.LogError($"[ExcelHeroes] missing asset — panel={panel != null} uxml={uxml != null}");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var doc = Object.FindFirstObjectByType<UIDocument>();
+            if (doc == null)
+            {
+                var go = new GameObject("App");
+                doc = go.AddComponent<UIDocument>();
+                go.AddComponent<AppRoot>();
+            }
+            if (doc.GetComponent<AppRoot>() == null) doc.gameObject.AddComponent<AppRoot>();
+
+            doc.panelSettings = panel;
+            doc.visualTreeAsset = uxml;
+
+            EditorUtility.SetDirty(doc);
+            EditorUtility.SetDirty(doc.gameObject);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+
+            // Verify against the file rather than trusting the setter — that is what went wrong.
+            var panelGuid = AssetDatabase.AssetPathToGUID(PanelPath);
+            var text = System.IO.File.ReadAllText(ScenePath);
+            var wired = text.Contains(panelGuid);
+            Debug.Log($"[ExcelHeroes] scene repaired — panelSettings on disk: {wired} (guid {panelGuid})");
+            if (!wired) EditorApplication.Exit(1);
+        }
+
         static void Run(bool interactive)
         {
             var panel = EnsurePanelSettings();

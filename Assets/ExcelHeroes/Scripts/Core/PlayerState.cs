@@ -59,6 +59,10 @@ namespace ExcelHeroes.Core
         public int streak;
         public bool allClearClaimed;
 
+        // 위장 모드. Persisted because someone who turns it on is at work and will still be at work
+        // when they next open the app; coming back un-disguised is the one failure that matters.
+        public bool stealth;
+
         public static PlayerState New()
         {
             var b = GameData.Balance;

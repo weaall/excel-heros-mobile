@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using ExcelHeroes.Core;
@@ -14,7 +15,8 @@ namespace ExcelHeroes.UI
     /// </summary>
     public class RosterScreen : IScreen
     {
-        public string Title => "인사 명단";
+        public string Cell => "B2";
+        public string Formula => "=IFERROR(VLOOKUP(A2,직원_목록!$A:$L,8,FALSE),\"\")";
 
         readonly AppRoot _app;
         VisualElement _root;
@@ -22,6 +24,32 @@ namespace ExcelHeroes.UI
         ScrollView _scroll;
 
         public RosterScreen(AppRoot app) { _app = app; }
+
+        public IEnumerable<RibbonItem> Ribbon()
+        {
+            yield return new RibbonItem("▤", "선택 영역 편집", OpenParty, "편성");
+            yield return new RibbonItem("Σ", "자동 합계", UpgradeParty, "일괄 강화");
+        }
+
+        /// <summary>
+        /// 자동 합계 — spend gold on the party until it runs out, cheapest level first, which is what
+        /// the web build's button does. Levelling one hero to the cap and stranding the rest is the
+        /// wrong shape: the party's weakest link is what the stage checks.
+        /// </summary>
+        void UpgradeParty()
+        {
+            foreach (var member in Game.Player.PartyMembers())
+                StatMath.LevelUpMax(Game.Player, member, 999);
+            Game.Touch();
+        }
+
+        void OpenParty()
+        {
+            var pane = UiKit.Div("task-pane");
+            pane.Add(new PartyScreen(_app).Build());
+            UiKit.Btn("닫기", "btn btn--ghost", _app.CloseOverlay, pane);
+            _app.OpenOverlay(pane);
+        }
 
         public VisualElement Build()
         {
@@ -68,7 +96,6 @@ namespace ExcelHeroes.UI
     public class HeroDetail
     {
         readonly AppRoot _app;
-        Coroutine _motion;
 
         public HeroDetail(AppRoot app) { _app = app; }
 
@@ -84,9 +111,22 @@ namespace ExcelHeroes.UI
             var art = UiKit.Div("detail__art", view);
             UiKit.SetArt(art, GameData.CardArt(heroId));
 
-            var motionLayer = UiKit.Div("detail__art-motion", view);
-            var frames = GameData.CardMotion(heroId);
-            if (frames.Count > 0) _motion = _app.StartCoroutine(Breathe(motionLayer, frames));
+            // Outfits, not motion frames: the web build ships three illustrations per hero and no
+            // in-between poses, and a generated tween between two drawings of the same face lands
+            // in the uncanny gap rather than reading as breathing.
+            var skins = GameData.SkinsOf(heroId);
+            if (skins.Count > 1)
+            {
+                var slot = 0;
+                var switcher = UiKit.Div("detail__skins", view);
+                foreach (var skin in skins)
+                {
+                    var which = skin;
+                    var label = which switch { "casual" => "캐주얼", "formal" => "정장", _ => "기본" };
+                    UiKit.Btn(label, "detail__skin", () => UiKit.SetArt(art, GameData.CardArt(heroId, which)), switcher);
+                    slot++;
+                }
+            }
 
             UiKit.Div("detail__scrim", view);
 
@@ -244,34 +284,8 @@ namespace ExcelHeroes.UI
         }
 
         /// <summary>Rebuilds the sheet in place so levelling shows the new numbers immediately.</summary>
-        void Reopen(string heroId, System.Action onClose)
-        {
-            if (_motion != null) { _app.StopCoroutine(_motion); _motion = null; }
-            _app.OpenDetail(heroId);
-        }
+        void Reopen(string heroId, System.Action onClose) => _app.OpenDetail(heroId);
 
-        void Close(System.Action onClose)
-        {
-            if (_motion != null) { _app.StopCoroutine(_motion); _motion = null; }
-            onClose?.Invoke();
-        }
-
-        /// <summary>
-        /// Holds the base art, then fades a motion frame in and back out on a loose rhythm. USS owns
-        /// the fade duration; this only decides which frame is next and when.
-        /// </summary>
-        static IEnumerator Breathe(VisualElement layer, System.Collections.Generic.List<Sprite> frames)
-        {
-            var i = 0;
-            while (true)
-            {
-                yield return new WaitForSeconds(Random.Range(1.6f, 3.2f));
-                UiKit.SetArt(layer, frames[i % frames.Count]);
-                i++;
-                layer.AddToClassList("detail__art-motion--on");
-                yield return new WaitForSeconds(1.3f);
-                layer.RemoveFromClassList("detail__art-motion--on");
-            }
-        }
+        void Close(System.Action onClose) => onClose?.Invoke();
     }
 }

@@ -17,7 +17,8 @@ namespace ExcelHeroes.UI
     /// </summary>
     public class GachaScreen : IScreen
     {
-        public string Title => "모집";
+        public string Cell => "D4";
+        public string Formula => "=QUERY(외부_데이터!A:F, \"select * where C is not null\")";
 
         readonly AppRoot _app;
         VisualElement _root, _pickup;
@@ -72,14 +73,19 @@ namespace ExcelHeroes.UI
 
         public GachaScreen(AppRoot app) { _app = app; }
 
+        public IEnumerable<RibbonItem> Ribbon()
+        {
+            yield return new RibbonItem("⇩", "1행 가져오기", () => Pull(1), $"◈{GachaService.CostFor(1)}");
+            yield return new RibbonItem("⇓", "10행 가져오기", () => Pull(10), $"◈{GachaService.CostFor(10)}");
+        }
+
         public VisualElement Build()
         {
             _root = UiKit.Div("gacha");
-            UiKit.Div("gacha__bg", _root);
 
             var banner = UiKit.Div("gacha__banner", _root);
-            UiKit.Text("사원 모집 공고", "gacha__banner-title", banner);
-            UiKit.Text("스프레드시트 괴물과 싸울 사람을 찾습니다", "gacha__banner-sub", banner);
+            UiKit.Text("외부 데이터 가져오기", "gacha__banner-title", banner);
+            UiKit.Text("인사 시스템에서 사원 레코드를 가져옵니다", "gacha__banner-sub", banner);
 
             _pickup = UiKit.Div(null, _root);
             BuildPickup();
@@ -113,8 +119,8 @@ namespace ExcelHeroes.UI
             _total.text = $"모집 포인트 {p.sparkPoints:N0}";
             if (_pickup != null) BuildPickup();
 
-            _one.text = $"1회 모집 · ◈{GachaService.CostFor(1)}";
-            _ten.text = $"10회 모집 · ◈{GachaService.CostFor(10)}";
+            _one.text = $"1행 가져오기 · ◈{GachaService.CostFor(1)}";
+            _ten.text = $"10행 가져오기 · ◈{GachaService.CostFor(10)}";
             _one.SetEnabled(GachaService.CanAfford(p, 1));
             _ten.SetEnabled(GachaService.CanAfford(p, 10));
         }

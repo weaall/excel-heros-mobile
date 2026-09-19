@@ -18,7 +18,8 @@ namespace ExcelHeroes.UI
     /// </summary>
     public class BattleScreen : IScreen
     {
-        public string Title => "출근";
+        public string Cell => "A1";
+        public string Formula => "=SUMIFS(Sheet2!D:D,Sheet2!A:A,\"Q3\",Sheet2!B:B,\">0\")";
 
         readonly AppRoot _app;
         VisualElement _root, _stage, _exBar, _resultView;
@@ -31,6 +32,15 @@ namespace ExcelHeroes.UI
         readonly List<(VisualElement el, float life)> _floaters = new();
 
         public BattleScreen(AppRoot app) { _app = app; }
+
+        // 홈 리본: the two things a player reaches for mid-run, in Excel's words for them.
+        public IEnumerable<RibbonItem> Ribbon()
+        {
+            yield return new RibbonItem("▶", "선택 영역 재계산", Start, "다시 출근");
+            yield return new RibbonItem("Σ", "자동 합계", () => _app.Show(AppRoot.Sheet.Roster), "강화하러");
+            yield return RibbonItem.Sep;
+            yield return new RibbonItem("▤", "선택 영역", () => _app.Show(AppRoot.Sheet.Roster), "편성");
+        }
 
         public VisualElement Build()
         {
@@ -68,7 +78,7 @@ namespace ExcelHeroes.UI
                 var empty = UiKit.Div("panel", _stage);
                 UiKit.Text("편성된 사원이 없습니다.", "section-title", empty);
                 UiKit.Text("먼저 모집하고 편성 탭에서 파티를 짜 주세요.", "muted", empty);
-                UiKit.Btn("모집하러 가기", "btn btn--primary", () => _app.Show(AppRoot.Tab.Gacha), empty);
+                UiKit.Btn("모집하러 가기", "btn btn--primary", () => _app.Show(AppRoot.Sheet.Gacha), empty);
                 return;
             }
 
@@ -179,6 +189,11 @@ namespace ExcelHeroes.UI
             }
         }
 
+        // Kept in step with .fighter / .fighter__body in App.uss: a 16x28 sprite at 4x, on rows tall
+        // enough to clear it.
+        const float FighterWidth = 110f;
+        const float RowHeight = 136f;
+
         void LayoutFighters()
         {
             var width = _stage.resolvedStyle.width;
@@ -195,10 +210,14 @@ namespace ExcelHeroes.UI
                 }
 
                 var t = Mathf.Clamp01(c.x / BattleSim.LaneCells);
-                el.style.left = t * (width - 120f);
-                // Slight vertical stagger so a five-stack never hides itself behind one silhouette.
+                el.style.left = t * (width - FighterWidth);
+
+                // One fighter per worksheet row. The first version staggered them by 34px, which is
+                // a fifth of a sprite's height, so a five-hero party read as one smear — and once
+                // the monsters closed in, nine sprites shared the same spot. Rows also mean the
+                // side-view line stays a line: x is still distance, y is only identity.
                 var lane = c.side == Side.Hero ? _sim.Heroes.IndexOf(c) : _sim.Monsters.IndexOf(c);
-                el.style.top = height * 0.42f + Mathf.Max(0, lane) * 34f;
+                el.style.top = height * 0.08f + Mathf.Max(0, lane) * RowHeight;
 
                 var fill = el.Q(className: "fighter__hpfill");
                 if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);
@@ -338,7 +357,7 @@ namespace ExcelHeroes.UI
             }
 
             UiKit.Btn("다시", "btn btn--primary", Start, _resultView);
-            UiKit.Btn("모집하러 가기", "btn", () => _app.Show(AppRoot.Tab.Gacha), _resultView);
+            UiKit.Btn("모집하러 가기", "btn", () => _app.Show(AppRoot.Sheet.Gacha), _resultView);
         }
     }
 }

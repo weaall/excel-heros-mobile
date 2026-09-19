@@ -98,6 +98,7 @@ namespace ExcelHeroes.EditorTools
             Line("=== Excel Heroes self test ===");
 
             GameData.Load();
+            CheckSceneWiring();
             CheckData();
             CheckGachaRates();
             CheckPity();
@@ -119,6 +120,55 @@ namespace ExcelHeroes.EditorTools
         {
             if (!ok) _failures++;
             Line($"  [{(ok ? "ok" : "FAIL")}] {what}");
+        }
+
+        /// <summary>
+        /// The wiring, checked against the scene file rather than against the API.
+        ///
+        /// This exists because the game shipped once with UIDocument.panelSettings null. It ran, it
+        /// logged, it threw nothing, every one of the eighty logic checks passed — and the screen was
+        /// blank, because a UIDocument without PanelSettings silently renders nothing. Correct logic
+        /// with a disconnected wire is not a game, and nothing else here was looking at the wires.
+        ///
+        /// It reads the serialised scene because that is what failed: the assignment appeared to
+        /// succeed in code and did not survive the save.
+        /// </summary>
+        static void CheckSceneWiring()
+        {
+            Line("-- scene wiring --");
+            const string scenePath = "Assets/ExcelHeroes/Scenes/Main.unity";
+            const string panelPath = "Assets/ExcelHeroes/UI/PanelSettings.asset";
+            const string uxmlPath = "Assets/ExcelHeroes/UI/AppShell.uxml";
+
+            Check(System.IO.File.Exists(scenePath), "Main.unity exists");
+            if (!System.IO.File.Exists(scenePath)) return;
+
+            var scene = System.IO.File.ReadAllText(scenePath);
+            var panelGuid = AssetDatabase.AssetPathToGUID(panelPath);
+            var uxmlGuid = AssetDatabase.AssetPathToGUID(uxmlPath);
+
+            Check(!string.IsNullOrEmpty(panelGuid), "PanelSettings asset exists");
+            Check(!string.IsNullOrEmpty(uxmlGuid), "AppShell.uxml exists");
+
+            // The two references that decide whether anything renders at all.
+            Check(!scene.Contains("m_PanelSettings: {fileID: 0}"),
+                "UIDocument.panelSettings is assigned (null here means a blank screen, with no error)");
+            Check(scene.Contains(panelGuid), "the scene points at OUR PanelSettings");
+            Check(scene.Contains(uxmlGuid), "the scene points at OUR AppShell.uxml");
+
+            var panel = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.PanelSettings>(panelPath);
+            Check(panel != null && panel.themeStyleSheet != null,
+                "PanelSettings has a theme (without one, controls draw no text)");
+            Check(panel != null && panel.targetTexture == null,
+                "PanelSettings draws to the screen, not to a render texture");
+
+            Check(EditorBuildSettings.scenes.Any(s => s.enabled && s.path == scenePath),
+                "Main.unity is enabled in Build Settings");
+
+            // The shell needs these names; the screens query them and would take a null otherwise.
+            var uxml = System.IO.File.Exists(uxmlPath) ? System.IO.File.ReadAllText(uxmlPath) : "";
+            foreach (var name in new[] { "content", "overlay", "sheetTabs", "formula", "gemValue", "goldValue" })
+                Check(uxml.Contains($"name=\"{name}\""), $"AppShell defines #{name}");
         }
 
         static void CheckData()

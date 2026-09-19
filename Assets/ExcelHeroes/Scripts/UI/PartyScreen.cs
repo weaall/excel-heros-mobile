@@ -13,7 +13,8 @@ namespace ExcelHeroes.UI
     /// </summary>
     public class PartyScreen : IScreen
     {
-        public string Title => "편성";
+        public string Cell => "F2";
+        public string Formula => "=선택 영역 요약";
 
         readonly AppRoot _app;
         VisualElement _root;
@@ -40,7 +41,7 @@ namespace ExcelHeroes.UI
                 {
                     var empty = UiKit.Div("slot slot--empty", slots);
                     UiKit.Text("+", "slot__plus", empty);
-                    empty.RegisterCallback<ClickEvent>(_ => _app.Show(AppRoot.Tab.Roster));
+                    empty.RegisterCallback<ClickEvent>(_ => _app.Show(AppRoot.Sheet.Roster));
                     continue;
                 }
 

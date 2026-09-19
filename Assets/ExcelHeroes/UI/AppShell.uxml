@@ -1,52 +1,75 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:Style src="App.uss" />
+    <!--
+      The web build is not a game with a spreadsheet theme; it is a spreadsheet that happens to be a
+      game, and that is the whole premise — it has to survive being looked at over your shoulder at
+      work. So the shell is Excel's, in Excel's order: title bar, ribbon tabs, ribbon, formula bar,
+      the sheet, and the sheet tabs along the bottom. The sheet tabs ARE the navigation.
+
+      On a phone the ribbon and the sheet tabs scroll sideways rather than wrap, which is what
+      Excel Mobile itself does, so nothing about the disguise looks invented.
+    -->
     <ui:VisualElement name="root" class="root">
-        <ui:VisualElement name="topbar" class="topbar">
-            <ui:Label name="screenTitle" text="모집" class="topbar__title" />
-            <ui:VisualElement name="gemChip" class="currency currency--gem">
-                <ui:Label text="◈" class="currency__icon" />
-                <ui:Label name="gemValue" text="0" class="currency__value" />
+
+        <ui:VisualElement name="titlebar" class="titlebar">
+            <ui:Label text="X" class="app-icon" />
+            <ui:Label text="통합 문서1 - Excel" class="title-text" />
+            <ui:VisualElement class="spacer" />
+            <ui:Label name="autosave" text="자동 저장 켬" class="autosave" />
+            <!-- The stealth switch is pinned here because it has to be reachable in one thumb
+                 movement without looking; on the desktop build it was Esc, which a phone has not got. -->
+            <ui:Button name="stealthToggle" class="tb-btn tb-btn--stealth" text="⛶" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="ribbonTabs" class="ribbon-tabs">
+            <ui:Button name="rtFile" text="파일" class="ribbon-tab ribbon-tab--file" />
+            <ui:Button name="rtHome" text="홈" class="ribbon-tab ribbon-tab--active" />
+            <ui:Button name="rtInsert" text="삽입" class="ribbon-tab" />
+            <ui:Button name="rtData" text="데이터" class="ribbon-tab" />
+            <ui:Button name="rtReview" text="검토" class="ribbon-tab">
+                <ui:Label name="questDot" text="" class="ribbon-dot hidden" />
+            </ui:Button>
+            <ui:Button name="rtView" text="보기" class="ribbon-tab" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="ribbon" class="ribbon" />
+
+        <ui:VisualElement name="formulaBar" class="formula-bar">
+            <ui:Label name="nameBox" text="A1" class="name-box" />
+            <ui:Label text="fx" class="fx" />
+            <ui:Label name="formula" text="=SUM(Hero_ATK)" class="formula" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="content" class="sheet" />
+
+        <ui:VisualElement name="statusbar" class="statusbar">
+            <ui:Label name="statusText" text="준비" class="status-text" />
+            <ui:VisualElement class="spacer" />
+            <ui:VisualElement name="gemChip" class="cell-stat">
+                <ui:Label text="◈" class="cell-stat__icon" />
+                <ui:Label name="gemValue" text="0" class="cell-stat__value" />
             </ui:VisualElement>
-            <ui:VisualElement name="goldChip" class="currency currency--gold">
-                <ui:Label text="₩" class="currency__icon" />
-                <ui:Label name="goldValue" text="0" class="currency__value" />
+            <ui:VisualElement name="goldChip" class="cell-stat">
+                <ui:Label text="₩" class="cell-stat__icon" />
+                <ui:Label name="goldValue" text="0" class="cell-stat__value" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <ui:VisualElement name="content" class="screen" />
+        <ui:ScrollView name="sheetTabsScroll" mode="Horizontal" class="sheet-tabs-scroll">
+            <ui:VisualElement name="sheetTabs" class="sheet-tabs">
+                <ui:Button name="tabHome" text="메인_전투" class="sheet-tab sheet-tab--active" />
+                <ui:Button name="tabRoster" text="인사_명단" class="sheet-tab" />
+                <ui:Button name="tabGacha" text="데이터_가져오기" class="sheet-tab" />
+                <ui:Button name="tabQuests" text="일일_업무" class="sheet-tab">
+                    <ui:Label name="dailyBadge" text="" class="sheet-tab__badge hidden" />
+                </ui:Button>
+                <ui:Button name="tabStory" text="사내_메신저" class="sheet-tab" />
+                <ui:Button name="tabAlbum" text="사원_앨범" class="sheet-tab" />
+                <ui:Button name="tabCodex" text="오류_도감" class="sheet-tab" />
+                <ui:Button name="tabChart" text="통계_차트" class="sheet-tab" />
+            </ui:VisualElement>
+        </ui:ScrollView>
 
-        <ui:VisualElement name="navbar" class="navbar">
-            <ui:Button name="navHome" class="nav-button">
-                <ui:Label text="⌂" class="nav-button__icon" />
-                <ui:Label text="내 자리" class="nav-button__label" />
-            </ui:Button>
-            <ui:Button name="navGacha" class="nav-button">
-                <ui:Label text="◈" class="nav-button__icon" />
-                <ui:Label text="모집" class="nav-button__label" />
-            </ui:Button>
-            <ui:Button name="navRoster" class="nav-button">
-                <ui:Label text="▤" class="nav-button__icon" />
-                <ui:Label text="인사명단" class="nav-button__label" />
-            </ui:Button>
-            <ui:Button name="navParty" class="nav-button">
-                <ui:Label text="⌬" class="nav-button__icon" />
-                <ui:Label text="편성" class="nav-button__label" />
-            </ui:Button>
-            <ui:Button name="navBattle" class="nav-button">
-                <ui:Label text="⚔" class="nav-button__icon" />
-                <ui:Label text="출근" class="nav-button__label" />
-            </ui:Button>
-            <ui:Button name="navDaily" class="nav-button">
-                <ui:Label text="✓" class="nav-button__icon" />
-                <ui:Label text="일일" class="nav-button__label" />
-                <ui:Label name="dailyBadge" text="" class="nav-badge hidden" />
-            </ui:Button>
-            <ui:Button name="navStory" class="nav-button">
-                <ui:Label text="✉" class="nav-button__icon" />
-                <ui:Label text="메신저" class="nav-button__label" />
-            </ui:Button>
-        </ui:VisualElement>
-
-        <ui:VisualElement name="overlay" class="hidden" />
+        <ui:VisualElement name="overlay" class="overlay hidden" />
     </ui:VisualElement>
 </ui:UXML>

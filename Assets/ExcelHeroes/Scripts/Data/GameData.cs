@@ -161,31 +161,56 @@ namespace ExcelHeroes.Data
 
         public static IEnumerable<HeroDef> OfGrade(string gradeId) => Heroes.Where(h => h.grade == gradeId);
 
-        /// <summary>Card art lives at Resources/Art/Cards/&lt;id&gt;.png; falls back to a neutral placeholder.</summary>
-        public static Sprite CardArt(string heroId)
+        /// <summary>
+        /// Card art lives at Resources/Art/Cards/&lt;id&gt;.png, with the two alternate outfits at
+        /// &lt;id&gt;__casual and &lt;id&gt;__formal. These are the web build's own illustrations, half
+        /// size — nothing here is generated, because generated replacements lost the likeness.
+        /// </summary>
+        public static Sprite CardArt(string heroId, string skin = null)
         {
-            var s = Resources.Load<Sprite>($"Art/Cards/{heroId}");
-            return s != null ? s : Resources.Load<Sprite>("Art/Cards/_placeholder");
+            var key = string.IsNullOrEmpty(skin) ? heroId : $"{heroId}__{skin}";
+            var s = Resources.Load<Sprite>($"Art/Cards/{key}");
+            if (s == null && !string.IsNullOrEmpty(skin)) s = Resources.Load<Sprite>($"Art/Cards/{heroId}");
+            return s;
         }
 
-        /// <summary>
-        /// The chibi the lane battle draws. Null until that hero's sprite has been generated, which
-        /// the battle screen falls back from — a half-finished sprite set must not blank the fight.
-        /// </summary>
-        public static Sprite BattleSprite(string heroId) =>
-            Resources.Load<Sprite>($"Art/Sprites/{heroId}");
+        public static readonly string[] Skins = { "", "casual", "formal" };
 
-        /// <summary>The extra frames used to make a card breathe/blink on the detail screen. May be empty.</summary>
-        public static List<Sprite> CardMotion(string heroId)
+        /// <summary>The outfits this hero actually has art for, base first.</summary>
+        public static List<string> SkinsOf(string heroId)
         {
-            var list = new List<Sprite>();
-            foreach (var pose in new[] { "breathe", "blink", "talk", "smile" })
-            {
-                var s = Resources.Load<Sprite>($"Art/Cards/{heroId}__{pose}");
-                if (s != null) list.Add(s);
-            }
+            var list = new List<string>();
+            foreach (var skin in Skins)
+                if (Resources.Load<Sprite>(string.IsNullOrEmpty(skin) ? $"Art/Cards/{heroId}" : $"Art/Cards/{heroId}__{skin}") != null)
+                    list.Add(skin);
             return list;
         }
+
+        // The battle sprite is one 144x28 strip of nine 16x28 frames: idle 0-3, walk 4-7, hit 8.
+        // That layout comes straight from the web build's sprite builder, and the frames are sliced
+        // here rather than baked apart so the whole cast costs one texture per hero.
+        public const int SpriteFrameW = 16, SpriteFrameH = 28, SpriteFrames = 9;
+        static readonly Dictionary<string, Sprite[]> FrameCache = new();
+
+        /// <summary>The hero's nine battle frames, or null if that hero has no sprite yet.</summary>
+        public static Sprite[] BattleFrames(string heroId)
+        {
+            if (FrameCache.TryGetValue(heroId, out var cached)) return cached;
+
+            var strip = Resources.Load<Sprite>($"Art/Sprites/{heroId}");
+            if (strip == null) { FrameCache[heroId] = null; return null; }
+
+            var tex = strip.texture;
+            var frames = new Sprite[SpriteFrames];
+            for (var i = 0; i < SpriteFrames; i++)
+                frames[i] = Sprite.Create(tex, new Rect(i * SpriteFrameW, 0, SpriteFrameW, SpriteFrameH),
+                                          new Vector2(0.5f, 0f), SpriteFrameH);
+            FrameCache[heroId] = frames;
+            return frames;
+        }
+
+        /// <summary>Frame 0 — the standing pose, for anywhere a small hero icon is wanted.</summary>
+        public static Sprite BattleSprite(string heroId) => BattleFrames(heroId)?[0];
 
         /// <summary>Fills {p} in a skill description with the hero's own power value.</summary>
         public static string SkillText(HeroDef h)

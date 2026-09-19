@@ -17,7 +17,8 @@ namespace ExcelHeroes.UI
     /// </summary>
     public class StoryScreen : IScreen
     {
-        public string Title => "사내 메신저";
+        public string Cell => "A6";
+        public string Formula => "=TEXTJOIN(CHAR(10),TRUE,수신_메일!B2:B40)";
 
         readonly AppRoot _app;
         VisualElement _root;

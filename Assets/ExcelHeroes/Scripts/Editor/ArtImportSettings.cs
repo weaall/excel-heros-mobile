@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEditor;
 
 namespace ExcelHeroes.EditorTools
@@ -19,16 +20,31 @@ namespace ExcelHeroes.EditorTools
     {
         const string ArtRoot = "Assets/ExcelHeroes/Resources/Art/";
         const string SpriteRoot = ArtRoot + "Sprites/";
-        public const string Stamp = "excel-heroes-art-v3";
+        const string SheetRoot = ArtRoot + "Sheets/";
+        public const string Stamp = "excel-heroes-art-v4";
 
         void OnPreprocessTexture()
         {
             if (!assetPath.StartsWith(ArtRoot)) return;
-            // Sprites carry their own rules (SpriteChromaKey) — do not fight over them here.
-            if (assetPath.StartsWith(SpriteRoot)) return;
-
             var importer = (TextureImporter)assetImporter;
             if (importer.userData == Stamp) return;
+
+            // Pixel art has to be left alone: point filtering, no compression, no mip chain. A
+            // 144x28 strip costs 16 KB uncompressed, so there is nothing to save by block-compressing
+            // it, and DXT would smear the one-pixel outlines that make the sprites readable at all.
+            if (assetPath.StartsWith(SpriteRoot) || assetPath.StartsWith(SheetRoot))
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.filterMode = FilterMode.Point;
+                importer.mipmapEnabled = false;
+                importer.alphaIsTransparency = true;
+                importer.isReadable = false;
+                importer.maxTextureSize = 2048;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.userData = Stamp;
+                return;
+            }
 
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;

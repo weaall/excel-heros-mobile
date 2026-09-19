@@ -1,20 +1,187 @@
 /* Excel Heroes - shared runtime styling.
-   Portrait phone layout. The look is "spreadsheet at night": deep navy panels, thin cell borders,
-   gold for anything the player earns, and rarity colour reserved for cards. */
+   Portrait phone. The look is Microsoft Excel, not a game with a spreadsheet motif: white sheet,
+   #217346 chrome, hairline cell borders, and small dense type. That is the premise — the game has
+   to survive being looked at over your shoulder — so the chrome is the product, not decoration. */
 
 /* ---------------------------------------------------------------- shell */
 
 .root {
     flex-grow: 1;
-    background-color: rgb(9, 12, 22);
-    color: rgb(232, 236, 244);
+    background-color: rgb(255, 255, 255);
+    color: rgb(34, 34, 34);
     font-size: 26px;
 }
 
-.screen {
+.spacer { flex-grow: 1; }
+
+/* ---------------------------------------------------------------- title bar */
+
+.titlebar {
+    flex-direction: row;
+    align-items: center;
+    height: 72px;
+    padding-left: 16px;
+    padding-right: 10px;
+    background-color: rgb(33, 115, 70);
+}
+
+.app-icon {
+    width: 40px;
+    height: 40px;
+    -unity-text-align: middle-center;
+    background-color: rgb(255, 255, 255);
+    color: rgb(33, 115, 70);
+    -unity-font-style: bold;
+    font-size: 26px;
+    border-radius: 4px;
+    margin-right: 12px;
+}
+
+.title-text { color: rgb(255, 255, 255); font-size: 26px; }
+
+.autosave {
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    opacity: 0.9;
+    margin-right: 8px;
+}
+
+.tb-btn {
+    height: 52px;
+    min-width: 52px;
+    background-color: rgba(255, 255, 255, 0.18);
+    border-width: 0;
+    border-radius: 6px;
+    color: rgb(255, 255, 255);
+    font-size: 28px;
+}
+
+.tb-btn:hover { background-color: rgba(255, 255, 255, 0.3); }
+
+/* ---------------------------------------------------------------- ribbon */
+
+.ribbon-tabs {
+    flex-direction: row;
+    height: 60px;
+    background-color: rgb(33, 115, 70);
+    padding-left: 8px;
+}
+
+.ribbon-tab {
+    height: 60px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    color: rgb(255, 255, 255);
+    font-size: 24px;
+}
+
+.ribbon-tab--file { -unity-font-style: bold; }
+
+.ribbon-tab--active {
+    background-color: rgb(243, 243, 243);
+    color: rgb(34, 34, 34);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.ribbon-dot {
+    position: absolute;
+    top: 10px;
+    right: 8px;
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    background-color: rgb(196, 43, 28);
+}
+
+.ribbon {
+    flex-direction: row;
+    align-items: center;
+    min-height: 96px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: rgb(243, 243, 243);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(191, 191, 191);
+}
+
+.rb-btn {
+    height: 76px;
+    min-width: 108px;
+    margin-right: 8px;
+    padding-left: 14px;
+    padding-right: 14px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: 4px;
+    color: rgb(34, 34, 34);
+    font-size: 22px;
+}
+
+.rb-btn:hover { background-color: rgb(226, 239, 218); border-color: rgb(191, 191, 191); }
+.rb-btn:disabled { opacity: 0.45; }
+.rb-btn__icon { font-size: 28px; color: rgb(33, 115, 70); }
+.rb-btn__sub { font-size: 18px; color: rgb(107, 107, 107); }
+
+.rb-sep {
+    width: 1px;
+    height: 64px;
+    margin-left: 6px;
+    margin-right: 10px;
+    background-color: rgb(212, 212, 212);
+}
+
+/* ---------------------------------------------------------------- formula bar */
+
+.formula-bar {
+    flex-direction: row;
+    align-items: center;
+    height: 56px;
+    background-color: rgb(255, 255, 255);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(212, 212, 212);
+}
+
+.name-box {
+    width: 150px;
+    height: 56px;
+    -unity-text-align: middle-center;
+    font-size: 22px;
+    border-right-width: 1px;
+    border-right-color: rgb(212, 212, 212);
+}
+
+.fx {
+    width: 56px;
+    -unity-text-align: middle-center;
+    font-size: 22px;
+    color: rgb(107, 107, 107);
+    -unity-font-style: italic;
+    border-right-width: 1px;
+    border-right-color: rgb(212, 212, 212);
+}
+
+.formula {
+    flex-grow: 1;
+    padding-left: 14px;
+    font-size: 22px;
+    color: rgb(34, 34, 34);
+}
+
+/* ---------------------------------------------------------------- sheet + status */
+
+.sheet {
     flex-grow: 1;
     overflow: hidden;
+    background-color: rgb(255, 255, 255);
 }
+
+.screen { flex-grow: 1; overflow: hidden; }
 
 .screen-body {
     flex-grow: 1;
@@ -24,92 +191,100 @@
     padding-right: 20px;
 }
 
-/* ---------------------------------------------------------------- top bar */
-
-.topbar {
+.statusbar {
     flex-direction: row;
     align-items: center;
-    height: 96px;
-    padding-left: 20px;
-    padding-right: 20px;
-    background-color: rgb(14, 19, 34);
-    border-bottom-width: 2px;
-    border-bottom-color: rgb(34, 44, 70);
+    height: 52px;
+    padding-left: 16px;
+    padding-right: 12px;
+    background-color: rgb(243, 243, 243);
+    border-top-width: 1px;
+    border-top-color: rgb(212, 212, 212);
 }
 
-.topbar__title {
-    flex-grow: 1;
-    font-size: 30px;
-    -unity-font-style: bold;
-    color: rgb(212, 160, 23);
-}
+.status-text { font-size: 20px; color: rgb(107, 107, 107); }
 
-.currency {
+.cell-stat {
     flex-direction: row;
     align-items: center;
-    margin-left: 18px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    padding-left: 14px;
-    padding-right: 14px;
-    background-color: rgb(20, 27, 46);
-    border-radius: 18px;
-    border-width: 1px;
-    border-color: rgb(44, 57, 88);
+    margin-left: 16px;
 }
 
-.currency__icon {
-    font-size: 24px;
-    margin-right: 8px;
+.cell-stat__icon { font-size: 20px; margin-right: 6px; color: rgb(107, 107, 107); }
+.cell-stat__value { font-size: 22px; -unity-font-style: bold; }
+
+#gemChip .cell-stat__value { color: rgb(31, 111, 235); }
+#goldChip .cell-stat__value { color: rgb(150, 112, 8); }
+
+/* ---------------------------------------------------------------- sheet tabs */
+
+/* Excel Mobile scrolls its sheet tabs rather than wrapping them, so eight tabs on a phone is
+   ordinary rather than a sign that something has been squeezed in. */
+.sheet-tabs-scroll {
+    height: 76px;
+    flex-shrink: 0;
+    background-color: rgb(243, 243, 243);
+    border-top-width: 1px;
+    border-top-color: rgb(212, 212, 212);
 }
 
-.currency__value {
-    font-size: 26px;
-    -unity-font-style: bold;
-}
+.sheet-tabs { flex-direction: row; align-items: center; height: 76px; }
 
-.currency--gem .currency__value { color: rgb(126, 198, 255); }
-.currency--gold .currency__value { color: rgb(240, 196, 70); }
-
-/* ---------------------------------------------------------------- bottom nav */
-
-.navbar {
-    flex-direction: row;
-    height: 132px;
-    background-color: rgb(14, 19, 34);
-    border-top-width: 2px;
-    border-top-color: rgb(34, 44, 70);
-}
-
-.nav-button {
-    flex-grow: 1;
-    align-items: center;
-    justify-content: center;
+.sheet-tab {
+    height: 76px;
+    padding-left: 22px;
+    padding-right: 22px;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
-    margin: 0;
-    padding: 0;
-    color: rgb(126, 138, 166);
-    transition-duration: 0.15s;
+    border-right-width: 1px;
+    border-right-color: rgb(212, 212, 212);
+    color: rgb(70, 70, 70);
+    font-size: 23px;
 }
 
-.nav-button:hover { color: rgb(200, 210, 230); }
-
-.nav-button--active {
-    color: rgb(212, 160, 23);
-    background-color: rgb(20, 27, 46);
+.sheet-tab--active {
+    background-color: rgb(255, 255, 255);
+    color: rgb(33, 115, 70);
+    -unity-font-style: bold;
+    border-bottom-width: 4px;
+    border-bottom-color: rgb(33, 115, 70);
 }
 
-.nav-button__icon { font-size: 34px; }
-.nav-button__label { font-size: 20px; margin-top: 4px; }
+.sheet-tab__badge {
+    position: absolute;
+    top: 10px;
+    right: 8px;
+    min-width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background-color: rgb(196, 43, 28);
+    color: rgb(255, 255, 255);
+    font-size: 18px;
+    -unity-text-align: middle-center;
+}
+
+/* ---------------------------------------------------------------- overlay */
+
+/* The result panel used to be bare text floating on the battle, because the overlay was only a
+   full-screen box with no surface of its own. It dims what is behind it and centres one card. */
+.overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    align-items: center;
+    justify-content: center;
+}
 
 /* ---------------------------------------------------------------- generic pieces */
 
 .panel {
-    background-color: rgb(16, 22, 38);
+    background-color: rgb(250, 250, 250);
     border-radius: 16px;
     border-width: 1px;
-    border-color: rgb(38, 49, 78);
+    border-color: rgb(212, 212, 212);
     padding: 20px;
     margin-bottom: 16px;
 }
@@ -117,39 +292,39 @@
 .section-title {
     font-size: 24px;
     -unity-font-style: bold;
-    color: rgb(150, 164, 196);
+    color: rgb(107, 107, 107);
     margin-bottom: 10px;
 }
 
-.muted { color: rgb(126, 138, 166); }
+.muted { color: rgb(128, 128, 128); }
 .hidden { display: none; }
 
 .btn {
     height: 88px;
-    background-color: rgb(30, 41, 68);
+    background-color: rgb(238, 238, 238);
     border-radius: 14px;
     border-width: 1px;
-    border-color: rgb(54, 70, 108);
-    color: rgb(226, 232, 244);
+    border-color: rgb(191, 191, 191);
+    color: rgb(34, 34, 34);
     font-size: 28px;
     -unity-font-style: bold;
     transition-duration: 0.12s;
 }
 
-.btn:hover { background-color: rgb(40, 54, 88); }
+.btn:hover { background-color: rgb(226, 239, 218); }
 .btn:disabled { opacity: 0.4; }
 
 .btn--primary {
-    background-color: rgb(196, 146, 20);
-    border-color: rgb(240, 196, 70);
-    color: rgb(20, 16, 6);
+    background-color: rgb(150, 112, 8);
+    border-color: rgb(176, 132, 10);
+    color: rgb(253, 246, 227);
 }
 
-.btn--primary:hover { background-color: rgb(226, 172, 32); }
+.btn--primary:hover { background-color: rgb(24, 92, 55); }
 
 .btn--ghost {
     background-color: rgba(0, 0, 0, 0);
-    border-color: rgb(54, 70, 108);
+    border-color: rgb(191, 191, 191);
 }
 
 /* ---------------------------------------------------------------- home */
@@ -185,7 +360,7 @@
     right: 0;
     bottom: 0;
     height: 620px;
-    background-color: rgba(6, 9, 18, 0.62);
+    background-color: rgba(255, 255, 255, 0.62);
 }
 
 .home__strip {
@@ -204,14 +379,14 @@
     padding-bottom: 10px;
     margin-left: 5px;
     margin-right: 5px;
-    background-color: rgba(8, 11, 20, 0.72);
+    background-color: rgba(255, 255, 255, 0.72);
     border-radius: 14px;
     border-width: 1px;
-    border-color: rgba(84, 106, 150, 0.6);
+    border-color: rgba(191, 191, 191, 0.6);
 }
 
-.home__stat-value { font-size: 30px; -unity-font-style: bold; color: rgb(240, 196, 70); }
-.home__stat-key { font-size: 19px; color: rgb(168, 182, 210); }
+.home__stat-value { font-size: 30px; -unity-font-style: bold; color: rgb(176, 132, 10); }
+.home__stat-key { font-size: 19px; color: rgb(107, 107, 107); }
 
 .home__bubble {
     position: absolute;
@@ -219,33 +394,33 @@
     right: 20px;
     bottom: 240px;
     padding: 20px;
-    background-color: rgba(8, 11, 20, 0.82);
+    background-color: rgba(255, 255, 255, 0.82);
     border-radius: 18px;
     border-width: 1px;
-    border-color: rgba(84, 106, 150, 0.7);
+    border-color: rgba(191, 191, 191, 0.7);
 }
 
-.home__who { font-size: 24px; color: rgb(212, 160, 23); -unity-font-style: bold; }
+.home__who { font-size: 24px; color: rgb(33, 115, 70); -unity-font-style: bold; }
 
 .home__speech {
     font-size: 27px;
     white-space: normal;
     margin-top: 8px;
-    color: rgb(238, 242, 250);
+    color: rgb(34, 34, 34);
 }
 
 .home__bond { margin-top: 16px; }
-.home__bond-level { font-size: 20px; color: rgb(255, 170, 190); }
+.home__bond-level { font-size: 20px; color: rgb(200, 60, 110); }
 
 .home__bond-track {
     height: 10px;
     margin-top: 6px;
-    background-color: rgba(40, 52, 82, 0.9);
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: 5px;
     overflow: hidden;
 }
 
-.home__bond-fill { height: 100%; background-color: rgb(255, 122, 158); }
+.home__bond-fill { height: 100%; background-color: rgb(200, 60, 110); }
 
 .home__actions {
     position: absolute;
@@ -286,7 +461,7 @@
 }
 
 .pickup__plate {
-    background-color: rgba(6, 9, 18, 0.86);
+    background-color: rgba(255, 255, 255, 0.86);
     padding: 8px;
     align-items: center;
 }
@@ -302,16 +477,16 @@
     border-radius: 12px;
     font-size: 18px;
     -unity-font-style: bold;
-    background-color: rgb(226, 72, 112);
-    color: rgb(255, 240, 245);
+    background-color: rgb(196, 43, 28);
+    color: rgb(120, 40, 70);
 }
 
 .pickup__name { font-size: 21px; -unity-font-style: bold; }
-.pickup__spark { font-size: 18px; color: rgb(126, 198, 255); }
+.pickup__spark { font-size: 18px; color: rgb(31, 111, 235); }
 
 .pickup__timer {
     font-size: 21px;
-    color: rgb(255, 170, 190);
+    color: rgb(200, 60, 110);
     -unity-text-align: middle-center;
     margin-bottom: 6px;
 }
@@ -321,17 +496,8 @@
 .gacha {
     flex-grow: 1;
     align-items: center;
-    justify-content: flex-end;
-}
-
-.gacha__bg {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/gacha_bg.png");
-    -unity-background-scale-mode: scale-and-crop;
+    justify-content: flex-start;
+    background-color: rgb(255, 255, 255);
 }
 
 .gacha__banner {
@@ -343,12 +509,12 @@
 .gacha__banner-title {
     font-size: 40px;
     -unity-font-style: bold;
-    color: rgb(244, 214, 120);
+    color: rgb(196, 152, 20);
 }
 
 .gacha__banner-sub {
     font-size: 22px;
-    color: rgb(168, 182, 210);
+    color: rgb(107, 107, 107);
     margin-top: 6px;
 }
 
@@ -366,10 +532,10 @@
     padding-bottom: 6px;
     padding-left: 16px;
     padding-right: 16px;
-    background-color: rgba(10, 14, 26, 0.75);
+    background-color: rgba(255, 255, 255, 0.75);
     border-radius: 16px;
     border-width: 1px;
-    border-color: rgb(58, 74, 112);
+    border-color: rgb(191, 191, 191);
     font-size: 22px;
 }
 
@@ -388,7 +554,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: rgba(4, 6, 12, 0.94);
+    background-color: rgba(255, 255, 255, 0.94);
     align-items: center;
     justify-content: center;
 }
@@ -415,7 +581,7 @@
 .reveal__plate {
     width: 100%;
     padding: 18px;
-    background-color: rgba(6, 9, 18, 0.86);
+    background-color: rgba(255, 255, 255, 0.86);
     align-items: center;
 }
 
@@ -430,11 +596,11 @@
     margin-top: 2px;
 }
 
-.reveal__nick { font-size: 22px; color: rgb(168, 182, 210); }
+.reveal__nick { font-size: 22px; color: rgb(107, 107, 107); }
 
 .reveal__line {
     font-size: 22px;
-    color: rgb(200, 210, 230);
+    color: rgb(70, 70, 70);
     margin-top: 10px;
     white-space: normal;
     -unity-text-align: middle-center;
@@ -448,14 +614,14 @@
     padding-right: 14px;
     border-radius: 14px;
     font-size: 20px;
-    background-color: rgb(196, 146, 20);
-    color: rgb(20, 16, 6);
+    background-color: rgb(150, 112, 8);
+    color: rgb(253, 246, 227);
 }
 
 .reveal__hint {
     margin-top: 28px;
     font-size: 24px;
-    color: rgb(150, 164, 196);
+    color: rgb(107, 107, 107);
 }
 
 /* --- the tell -------------------------------------------------------------
@@ -541,7 +707,7 @@
 }
 
 .reveal-grid__plate {
-    background-color: rgba(6, 9, 18, 0.86);
+    background-color: rgba(255, 255, 255, 0.86);
     padding-top: 4px;
     padding-bottom: 4px;
     align-items: center;
@@ -599,7 +765,7 @@
     -unity-text-align: middle-center;
     font-size: 24px;
     -unity-font-style: bold;
-    color: rgb(12, 14, 20);
+    color: rgb(255, 255, 255);
 }
 
 .card__role {
@@ -607,72 +773,58 @@
     padding-right: 10px;
     height: 34px;
     border-radius: 17px;
-    background-color: rgba(8, 11, 20, 0.8);
+    background-color: rgba(255, 255, 255, 0.8);
     -unity-text-align: middle-center;
     font-size: 19px;
 }
 
 .card__plate {
-    background-color: rgba(6, 9, 18, 0.88);
+    background-color: rgba(255, 255, 255, 0.88);
     padding: 8px;
 }
 
 .card__name { font-size: 21px; -unity-font-style: bold; }
-.card__stars { font-size: 19px; color: rgb(240, 196, 70); }
+.card__stars { font-size: 19px; color: rgb(176, 132, 10); }
 
 .card__copies {
     font-size: 18px;
-    color: rgb(126, 198, 255);
+    color: rgb(31, 111, 235);
 }
 
 /* ---------------------------------------------------------------- hero detail */
 
+/* The card detail is a sheet, not a poster: the illustration sits in a fixed header and everything
+   below it is ordinary white rows. The first version floated text straight on the art with a dark
+   scrim, which was unreadable the moment the theme went light — and the panel had no background at
+   all, so the roster grid showed through it. */
 .detail {
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: rgba(4, 6, 12, 0.96);
+    background-color: rgb(255, 255, 255);
 }
 
 .detail__art {
-    height: 900px;
-    -unity-background-scale-mode: scale-and-crop;
+    height: 720px;
+    background-color: rgb(238, 238, 238);
+    -unity-background-scale-mode: scale-to-fit;
 }
 
-/* stacked with the base art so a cross-fade can run between them */
-.detail__art-motion {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 900px;
-    -unity-background-scale-mode: scale-and-crop;
-    opacity: 0;
-    transition-duration: 0.9s;
-}
-
-.detail__art-motion--on { opacity: 1; }
-
-.detail__scrim {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 700px;
-    height: 200px;
-    background-color: rgba(9, 12, 22, 0.55);
-}
+.detail__scrim { display: none; }
 
 .detail__head {
-    position: absolute;
-    left: 24px;
-    right: 24px;
-    top: 720px;
+    padding: 14px 24px;
+    background-color: rgb(243, 243, 243);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-top-color: rgb(212, 212, 212);
+    border-bottom-color: rgb(212, 212, 212);
 }
 
-.detail__name { font-size: 46px; -unity-font-style: bold; }
-.detail__nick { font-size: 24px; color: rgb(212, 160, 23); }
+.detail__name { font-size: 40px; -unity-font-style: bold; }
+.detail__nick { font-size: 24px; color: rgb(107, 107, 107); }
 
 .detail__body {
     flex-grow: 1;
@@ -685,10 +837,10 @@
     padding-top: 10px;
     padding-bottom: 10px;
     border-bottom-width: 1px;
-    border-bottom-color: rgb(30, 40, 64);
+    border-bottom-color: rgb(238, 238, 238);
 }
 
-.stat-row__key { color: rgb(150, 164, 196); font-size: 24px; }
+.stat-row__key { color: rgb(107, 107, 107); font-size: 24px; }
 .stat-row__value { font-size: 24px; -unity-font-style: bold; }
 
 .detail__close {
@@ -698,10 +850,10 @@
     width: 72px;
     height: 72px;
     border-radius: 36px;
-    background-color: rgba(8, 11, 20, 0.8);
+    background-color: rgba(255, 255, 255, 0.8);
     border-width: 1px;
-    border-color: rgb(54, 70, 108);
-    color: rgb(226, 232, 244);
+    border-color: rgb(191, 191, 191);
+    color: rgb(34, 34, 34);
     font-size: 32px;
 }
 
@@ -718,8 +870,8 @@
     height: 262px;
     border-radius: 12px;
     border-width: 2px;
-    border-color: rgb(54, 70, 108);
-    background-color: rgb(16, 22, 38);
+    border-color: rgb(191, 191, 191);
+    background-color: rgb(250, 250, 250);
     overflow: hidden;
     justify-content: flex-end;
 }
@@ -727,14 +879,14 @@
 .slot--empty {
     align-items: center;
     justify-content: center;
-    border-color: rgb(40, 52, 82);
+    border-color: rgb(226, 239, 218);
 }
 
-.slot__plus { font-size: 44px; color: rgb(70, 88, 130); }
+.slot__plus { font-size: 44px; color: rgb(160, 160, 160); }
 
 .synergy-line {
     font-size: 22px;
-    color: rgb(126, 214, 168);
+    color: rgb(24, 92, 55);
     margin-bottom: 4px;
 }
 
@@ -747,12 +899,12 @@
 .power-readout__value {
     font-size: 52px;
     -unity-font-style: bold;
-    color: rgb(240, 196, 70);
+    color: rgb(176, 132, 10);
 }
 
 .power-readout__label {
     font-size: 22px;
-    color: rgb(150, 164, 196);
+    color: rgb(107, 107, 107);
     margin-left: 10px;
     margin-bottom: 10px;
 }
@@ -763,77 +915,77 @@
     flex-grow: 1;
 }
 
+/* The battlefield is the worksheet. A painted landscape was both off-premise and unreadable behind
+   16x28 pixel sprites; a tiled cell grid gives them a surface to stand on and survives the disguise,
+   because what a passer-by sees is cells. */
 .battle__stage {
     flex-grow: 1;
-    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/battle_bg.png");
-    -unity-background-scale-mode: scale-and-crop;
+    background-color: rgb(255, 255, 255);
+    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/cell_grid.png");
+    background-repeat: repeat;
+    background-size: 64px 64px;
     overflow: hidden;
 }
 
 .fighter {
     position: absolute;
-    width: 120px;
+    width: 110px;
     align-items: center;
 }
 
+/* Pixel sprites want whole-number scale and no crop. 16x28 at 6x is 96x168, which reads clearly at
+   arm's length on a phone and still lines the cast up on one baseline. */
 .fighter__body {
-    width: 100px;
-    height: 100px;
-    border-radius: 50px;
-    border-width: 3px;
-    overflow: hidden;
-    -unity-background-scale-mode: scale-and-crop;
+    width: 64px;
+    height: 112px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-color: rgba(0, 0, 0, 0);
 }
 
-/* A real chibi needs no circle to hide the crop, and wants to stand rather than fill. */
 .fighter__body--chibi {
-    width: 132px;
-    height: 132px;
-    border-radius: 0;
+    width: 64px;
+    height: 112px;
     border-width: 0;
     background-color: rgba(0, 0, 0, 0);
     -unity-background-scale-mode: scale-to-fit;
 }
 
-.fighter--hero .fighter__body { border-color: rgb(126, 198, 255); }
-.fighter--monster .fighter__body {
-    border-color: rgb(226, 108, 108);
-    background-color: rgb(58, 26, 34);
-}
+/* Monsters face the party: the tileset draws everything facing right. */
+.fighter--monster .fighter__body { scale: -1 1; }
 
 .fighter--dead { opacity: 0.25; }
 
 .fighter__hpbar {
-    width: 104px;
+    width: 84px;
     height: 10px;
     margin-top: 6px;
-    background-color: rgba(8, 11, 20, 0.85);
+    background-color: rgba(255, 255, 255, 0.85);
     border-radius: 5px;
     overflow: hidden;
 }
 
 .fighter__hpfill {
     height: 100%;
-    background-color: rgb(96, 208, 128);
+    background-color: rgb(33, 115, 70);
 }
 
-.fighter--monster .fighter__hpfill { background-color: rgb(226, 108, 108); }
+.fighter--monster .fighter__hpfill { background-color: rgb(196, 43, 28); }
 
 .fighter__name {
     font-size: 17px;
     margin-top: 4px;
-    color: rgb(212, 220, 238);
+    color: rgb(70, 70, 70);
 }
 
 .floater {
     position: absolute;
     font-size: 28px;
     -unity-font-style: bold;
-    color: rgb(255, 228, 130);
+    color: rgb(150, 112, 8);
 }
 
-.floater--heal { color: rgb(126, 232, 168); }
-.floater--skill { color: rgb(150, 210, 255); font-size: 24px; }
+.floater--heal { color: rgb(24, 92, 55); }
+.floater--skill { color: rgb(31, 111, 235); font-size: 24px; }
 
 .battle__hud {
     height: 90px;
@@ -841,26 +993,26 @@
     align-items: center;
     padding-left: 20px;
     padding-right: 20px;
-    background-color: rgb(14, 19, 34);
+    background-color: rgb(243, 243, 243);
 }
 
 .battle__wave {
     flex-grow: 1;
     font-size: 26px;
     -unity-font-style: bold;
-    color: rgb(232, 236, 244);
+    color: rgb(34, 34, 34);
     transition-duration: 0.3s;
 }
 
 /* 야근: overtime has started and the errors are hitting harder every second */
-.battle__wave--enraged { color: rgb(255, 122, 122); }
+.battle__wave--enraged { color: rgb(196, 43, 28); }
 
 .ex-bar {
     flex-direction: row;
     height: 160px;
     align-items: center;
     justify-content: center;
-    background-color: rgb(12, 17, 30);
+    background-color: rgb(250, 250, 250);
     padding-top: 10px;
     padding-bottom: 10px;
 }
@@ -872,8 +1024,8 @@
     margin-right: 7px;
     border-radius: 18px;
     border-width: 3px;
-    border-color: rgb(46, 60, 94);
-    background-color: rgb(20, 27, 46);
+    border-color: rgb(212, 212, 212);
+    background-color: rgb(243, 243, 243);
     overflow: hidden;
     justify-content: flex-end;
     align-items: center;
@@ -881,7 +1033,7 @@
 }
 
 .ex-button--ready {
-    border-color: rgb(240, 196, 70);
+    border-color: rgb(176, 132, 10);
     scale: 1.05 1.05;
 }
 
@@ -908,7 +1060,7 @@
     width: 100%;
     font-size: 17px;
     -unity-text-align: middle-center;
-    background-color: rgba(6, 9, 18, 0.85);
+    background-color: rgba(255, 255, 255, 0.85);
     padding-top: 3px;
     padding-bottom: 3px;
 }
@@ -919,7 +1071,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: rgba(4, 6, 12, 0.92);
+    background-color: rgba(255, 255, 255, 0.92);
     align-items: center;
     justify-content: center;
 }
@@ -930,8 +1082,8 @@
     margin-bottom: 16px;
 }
 
-.result__title--win { color: rgb(240, 196, 70); }
-.result__title--lose { color: rgb(226, 108, 108); }
+.result__title--win { color: rgb(176, 132, 10); }
+.result__title--lose { color: rgb(196, 43, 28); }
 
 /* ---------------------------------------------------------------- daily */
 
@@ -942,15 +1094,15 @@
     height: 44px;
     border-radius: 22px;
     margin-right: 8px;
-    background-color: rgb(24, 32, 52);
+    background-color: rgb(238, 238, 238);
     border-width: 2px;
-    border-color: rgb(54, 70, 108);
+    border-color: rgb(191, 191, 191);
     transition-duration: 0.2s;
 }
 
 .stamp__dot--on {
-    background-color: rgb(212, 160, 23);
-    border-color: rgb(244, 214, 120);
+    background-color: rgb(33, 115, 70);
+    border-color: rgb(196, 152, 20);
 }
 
 .quest--done { opacity: 0.5; }
@@ -958,14 +1110,14 @@
 .quest__track {
     height: 12px;
     margin-top: 10px;
-    background-color: rgb(24, 32, 52);
+    background-color: rgb(238, 238, 238);
     border-radius: 6px;
     overflow: hidden;
 }
 
-.quest__fill { height: 100%; background-color: rgb(126, 198, 255); }
+.quest__fill { height: 100%; background-color: rgb(31, 111, 235); }
 
-.quest__meta { font-size: 21px; color: rgb(168, 182, 210); margin-top: 8px; }
+.quest__meta { font-size: 21px; color: rgb(107, 107, 107); margin-top: 8px; }
 
 /* a count of claimable rewards, parked on the nav button */
 .nav-badge {
@@ -975,8 +1127,8 @@
     min-width: 34px;
     height: 34px;
     border-radius: 17px;
-    background-color: rgb(226, 72, 112);
-    color: rgb(255, 240, 245);
+    background-color: rgb(196, 43, 28);
+    color: rgb(120, 40, 70);
     font-size: 20px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
@@ -1003,22 +1155,21 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/gacha_bg.png");
-    -unity-background-scale-mode: scale-and-crop;
+    background-color: rgb(243, 243, 243);
 }
 
 .onboard__card {
-    background-color: rgba(8, 11, 20, 0.92);
+    background-color: rgba(255, 255, 255, 0.92);
     border-radius: 20px;
     border-width: 1px;
-    border-color: rgba(84, 106, 150, 0.8);
+    border-color: rgba(191, 191, 191, 0.8);
     padding: 30px;
 }
 
 .onboard__title {
     font-size: 44px;
     -unity-font-style: bold;
-    color: rgb(212, 160, 23);
+    color: rgb(33, 115, 70);
     margin-bottom: 18px;
 }
 
@@ -1026,23 +1177,23 @@
     font-size: 27px;
     white-space: normal;
     margin-bottom: 8px;
-    color: rgb(232, 236, 244);
+    color: rgb(34, 34, 34);
 }
 
 .onboard__tip {
     margin-top: 22px;
     margin-bottom: 22px;
     padding: 18px;
-    background-color: rgba(20, 27, 46, 0.9);
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: 14px;
     border-left-width: 4px;
-    border-left-color: rgb(126, 198, 255);
+    border-left-color: rgb(31, 111, 235);
 }
 
 .onboard__tip-title {
     font-size: 26px;
     -unity-font-style: bold;
-    color: rgb(126, 198, 255);
+    color: rgb(31, 111, 235);
     margin-bottom: 4px;
 }
 
@@ -1100,12 +1251,12 @@
 .cutin__skill {
     font-size: 46px;
     -unity-font-style: bold;
-    color: rgb(255, 232, 150);
+    color: rgb(150, 112, 8);
 }
 
 .cutin__line {
     font-size: 26px;
-    color: rgb(238, 242, 250);
+    color: rgb(34, 34, 34);
     max-width: 560px;
     white-space: normal;
     -unity-text-align: upper-right;
@@ -1142,8 +1293,8 @@
     border-radius: 32px;
     margin-right: -14px;
     border-width: 2px;
-    border-color: rgb(38, 49, 78);
-    background-color: rgb(24, 32, 52);
+    border-color: rgb(212, 212, 212);
+    background-color: rgb(238, 238, 238);
     -unity-background-scale-mode: scale-and-crop;
 }
 
@@ -1153,14 +1304,14 @@
     padding-bottom: 14px;
     margin-bottom: 14px;
     border-bottom-width: 1px;
-    border-bottom-color: rgb(38, 49, 78);
+    border-bottom-color: rgb(212, 212, 212);
 }
 
 .chat__title { font-size: 34px; -unity-font-style: bold; }
 
 .chat-room {
     font-size: 22px;
-    color: rgb(126, 198, 255);
+    color: rgb(31, 111, 235);
     margin-top: 4px;
 }
 
@@ -1184,8 +1335,8 @@
     border-radius: 38px;
     margin-right: 12px;
     border-width: 2px;
-    border-color: rgb(48, 62, 96);
-    background-color: rgb(20, 27, 46);
+    border-color: rgb(191, 191, 191);
+    background-color: rgb(243, 243, 243);
     -unity-background-scale-mode: scale-and-crop;
 }
 
@@ -1199,7 +1350,7 @@
 
 .chat-who {
     font-size: 20px;
-    color: rgb(150, 164, 196);
+    color: rgb(107, 107, 107);
     margin-bottom: 5px;
 }
 
@@ -1207,21 +1358,229 @@
     max-width: 660px;
     padding: 15px;
     border-radius: 16px;
-    background-color: rgb(26, 35, 58);
+    background-color: rgb(240, 240, 240);
     font-size: 24px;
     white-space: normal;
 }
 
 .chat-line--mine .chat-bubble {
-    background-color: rgb(92, 72, 22);
-    color: rgb(250, 244, 226);
+    background-color: rgb(226, 239, 218);
+    color: rgb(253, 246, 227);
 }
 
 .chat-line--sys .chat-bubble {
     background-color: rgba(0, 0, 0, 0);
     border-width: 1px;
-    border-color: rgb(54, 70, 108);
-    color: rgb(150, 164, 196);
+    border-color: rgb(191, 191, 191);
+    color: rgb(107, 107, 107);
     font-size: 21px;
     -unity-text-align: middle-center;
+}
+
+/* ---------------------------------------------------------------- sheet furniture */
+
+/* Every sheet opens with a summary strip, the way a real one opens with a header row. */
+.sheet-head {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    background-color: rgb(243, 243, 243);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(212, 212, 212);
+}
+
+.sheet-head__stat { font-size: 22px; -unity-font-style: bold; margin-right: 20px; }
+.sheet-head .muted { font-size: 20px; }
+
+.xl-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 60px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(226, 226, 226);
+}
+
+.xl-row--head {
+    background-color: rgb(243, 243, 243);
+    border-bottom-color: rgb(191, 191, 191);
+}
+
+.xl-row--head .xl-cell { -unity-font-style: bold; color: rgb(70, 70, 70); }
+.xl-row--boss .xl-cell { color: rgb(150, 112, 8); -unity-font-style: bold; }
+.xl-row--locked .xl-cell { color: rgb(170, 170, 170); }
+
+.xl-cell {
+    width: 200px;
+    padding-left: 16px;
+    font-size: 22px;
+    border-right-width: 1px;
+    border-right-color: rgb(226, 226, 226);
+}
+
+.xl-cell--wide { flex-grow: 1; }
+.xl-cell--num { -unity-text-align: middle-right; padding-right: 16px; }
+.xl-body { flex-grow: 1; }
+
+/* ---------------------------------------------------------------- album */
+
+.album { flex-grow: 1; }
+.album__scroll { flex-grow: 1; }
+
+.album__grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 12px;
+}
+
+/* Three across on a 1080-wide phone, at the art's own 2:3 — cropping a card to a square is what
+   made the thumbnails look mismatched. */
+.album__cell {
+    width: 33%;
+    padding: 6px;
+}
+
+.album__art {
+    height: 470px;
+    background-color: rgb(238, 238, 238);
+    border-width: 1px;
+    border-color: rgb(212, 212, 212);
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.album__name {
+    font-size: 20px;
+    -unity-text-align: middle-center;
+    padding-top: 6px;
+}
+
+.album__cell--locked .album__art { opacity: 0.18; }
+.album__cell--locked .album__name { color: rgb(150, 150, 150); }
+
+/* ---------------------------------------------------------------- full-size viewer */
+
+.viewer {
+    width: 96%;
+    height: 94%;
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-color: rgb(191, 191, 191);
+    align-items: center;
+}
+
+/* scale-to-fit, not scale-and-crop: the whole point of the viewer is that nothing is cut off. */
+.viewer__art {
+    flex-grow: 1;
+    width: 100%;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.viewer__caption { align-items: center; padding: 10px; }
+.viewer__name { font-size: 34px; -unity-font-style: bold; color: rgb(33, 115, 70); }
+.viewer__nick { font-size: 22px; color: rgb(107, 107, 107); }
+
+.viewer__skins { flex-direction: row; justify-content: center; padding-bottom: 10px; }
+
+.viewer__skin {
+    height: 64px;
+    min-width: 140px;
+    margin: 0 6px;
+    background-color: rgb(243, 243, 243);
+    border-width: 1px;
+    border-color: rgb(191, 191, 191);
+    border-radius: 4px;
+    font-size: 22px;
+}
+
+.viewer__skin--active {
+    background-color: rgb(226, 239, 218);
+    color: rgb(33, 115, 70);
+    -unity-font-style: bold;
+}
+
+.viewer__close { margin-bottom: 14px; min-width: 200px; }
+
+.detail__skins { flex-direction: row; justify-content: center; padding: 8px; }
+
+.detail__skin {
+    height: 56px;
+    min-width: 120px;
+    margin: 0 5px;
+    background-color: rgb(243, 243, 243);
+    border-width: 1px;
+    border-color: rgb(191, 191, 191);
+    border-radius: 4px;
+    font-size: 20px;
+}
+
+/* ---------------------------------------------------------------- picker */
+
+.picker {
+    width: 86%;
+    max-height: 80%;
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-color: rgb(191, 191, 191);
+    padding: 18px;
+}
+
+.picker__list { flex-grow: 1; }
+
+.picker__row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 88px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(226, 226, 226);
+}
+
+.picker__face {
+    width: 64px;
+    height: 64px;
+    margin-right: 14px;
+    -unity-background-scale-mode: scale-and-crop;
+    border-width: 1px;
+    border-color: rgb(212, 212, 212);
+}
+
+.picker__name { font-size: 24px; }
+
+/* ---------------------------------------------------------------- charts */
+
+.charts { flex-grow: 1; }
+.charts__scroll { flex-grow: 1; padding: 14px; }
+
+/* A chart object dropped on a sheet: a plain white box with a border and a shadowless edge. */
+.chart-obj {
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-color: rgb(191, 191, 191);
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.chart-obj__title {
+    font-size: 24px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    padding-bottom: 10px;
+}
+
+.chart-row { flex-direction: row; align-items: center; height: 48px; }
+.chart-row__label { width: 200px; font-size: 21px; }
+.chart-row__track { flex-grow: 1; height: 26px; background-color: rgb(243, 243, 243); }
+.chart-row__fill { height: 26px; background-color: rgb(33, 115, 70); }
+.chart-row__value { width: 120px; -unity-text-align: middle-right; font-size: 21px; }
+
+/* Excel's 작업 창: a panel docked over the sheet rather than a centred dialog. */
+.task-pane {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 86%;
+    background-color: rgb(255, 255, 255);
+    border-left-width: 1px;
+    border-left-color: rgb(191, 191, 191);
+    padding: 16px;
 }

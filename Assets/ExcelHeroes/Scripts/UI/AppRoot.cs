@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ExcelHeroes.Core;
 using UnityEngine;
@@ -7,32 +8,58 @@ namespace ExcelHeroes.UI
 {
     public interface IScreen
     {
-        string Title { get; }
+        /// <summary>What the name box shows while this sheet is open, e.g. "A1".</summary>
+        string Cell { get; }
+        /// <summary>The formula bar's contents — flavour, but it is the disguise doing the work.</summary>
+        string Formula { get; }
         VisualElement Build();
         void Refresh();
+        /// <summary>Ribbon buttons for this sheet, left to right. Empty means an empty ribbon.</summary>
+        IEnumerable<RibbonItem> Ribbon() => Array.Empty<RibbonItem>();
+    }
+
+    public readonly struct RibbonItem
+    {
+        public readonly string Icon, Label, Sub;
+        public readonly Action Click;
+        public readonly bool Separator;
+
+        public RibbonItem(string icon, string label, Action click, string sub = null)
+        { Icon = icon; Label = label; Click = click; Sub = sub; Separator = false; }
+
+        RibbonItem(bool separator)
+        { Icon = Label = Sub = null; Click = null; Separator = separator; }
+
+        public static RibbonItem Sep => new RibbonItem(true);
     }
 
     /// <summary>
-    /// The single MonoBehaviour that runs the game: loads the database and save, mounts AppShell.uxml
-    /// into the UIDocument, and swaps screens under the shared top bar and bottom nav.
+    /// The single MonoBehaviour that runs the game. It mounts AppShell.uxml — an Excel window — and
+    /// swaps sheets under the shared ribbon and formula bar.
     ///
-    /// Screens are rebuilt on entry rather than kept warm — the roster is 55 cards and the whole tree
-    /// costs less to construct than it does to keep in sync, and rebuilding removes a whole class of
-    /// stale-UI bugs.
+    /// The sheet tabs are the navigation, exactly as in the web build. That is not decoration: the
+    /// premise is that this survives being looked at over your shoulder at work, so the chrome has
+    /// to be Excel's own, down to the tab order and the formula sitting in the bar.
+    ///
+    /// Screens are rebuilt on entry rather than kept warm — the roster is 55 cards and the whole
+    /// tree costs less to construct than it does to keep in sync, and rebuilding removes a whole
+    /// class of stale-UI bugs.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class AppRoot : MonoBehaviour
     {
-        public enum Tab { Home, Gacha, Roster, Party, Battle, Daily, Story }
+        public enum Sheet { Home, Roster, Gacha, Quests, Story, Album, Codex, Chart }
 
         public VisualElement Overlay { get; private set; }
 
         UIDocument _doc;
-        VisualElement _content, _navbar;
-        Label _title, _gems, _gold, _dailyBadge;
-        readonly Dictionary<Tab, IScreen> _screens = new();
-        readonly Dictionary<Tab, Button> _navButtons = new();
-        Tab _tab = Tab.Gacha;
+        VisualElement _content, _ribbon;
+        Label _nameBox, _formula, _gems, _gold, _dailyBadge, _status;
+        Button _stealth;
+        readonly Dictionary<Sheet, IScreen> _screens = new();
+        readonly Dictionary<Sheet, Button> _tabs = new();
+        readonly Dictionary<Sheet, string> _tabNames = new();
+        Sheet _sheet = Sheet.Home;
         IScreen _current;
         HeroDetail _detail;
 
@@ -47,43 +74,50 @@ namespace ExcelHeroes.UI
         {
             var root = _doc.rootVisualElement;
             _content = root.Q<VisualElement>("content");
-            _navbar = root.Q<VisualElement>("navbar");
+            _ribbon = root.Q<VisualElement>("ribbon");
             Overlay = root.Q<VisualElement>("overlay");
-            _title = root.Q<Label>("screenTitle");
+            _nameBox = root.Q<Label>("nameBox");
+            _formula = root.Q<Label>("formula");
             _gems = root.Q<Label>("gemValue");
             _gold = root.Q<Label>("goldValue");
-
-            _screens[Tab.Home] = new HomeScreen(this);
-            _screens[Tab.Gacha] = new GachaScreen(this);
-            _screens[Tab.Roster] = new RosterScreen(this);
-            _screens[Tab.Party] = new PartyScreen(this);
-            _screens[Tab.Battle] = new BattleScreen(this);
-            _screens[Tab.Daily] = new DailyScreen(this);
-            _screens[Tab.Story] = new StoryScreen(this);
-            _detail = new HeroDetail(this);
-
-            Bind("navHome", Tab.Home);
-            Bind("navGacha", Tab.Gacha);
-            Bind("navRoster", Tab.Roster);
-            Bind("navParty", Tab.Party);
-            Bind("navBattle", Tab.Battle);
-            Bind("navDaily", Tab.Daily);
-            Bind("navStory", Tab.Story);
+            _status = root.Q<Label>("statusText");
             _dailyBadge = root.Q<Label>("dailyBadge");
 
-            Game.Changed += OnGameChanged;
-            Show(Tab.Home);
+            _screens[Sheet.Home] = new BattleScreen(this);
+            _screens[Sheet.Roster] = new RosterScreen(this);
+            _screens[Sheet.Gacha] = new GachaScreen(this);
+            _screens[Sheet.Quests] = new DailyScreen(this);
+            _screens[Sheet.Story] = new StoryScreen(this);
+            _screens[Sheet.Album] = new AlbumScreen(this);
+            _screens[Sheet.Codex] = new CodexScreen(this);
+            _screens[Sheet.Chart] = new ChartScreen(this);
+            _detail = new HeroDetail(this);
 
-            // A brand new player lands on an empty home screen, which reads as a broken app rather
-            // than a game waiting to start. Give them the premise and point at the banner.
+            Bind("tabHome", Sheet.Home);
+            Bind("tabRoster", Sheet.Roster);
+            Bind("tabGacha", Sheet.Gacha);
+            Bind("tabQuests", Sheet.Quests);
+            Bind("tabStory", Sheet.Story);
+            Bind("tabAlbum", Sheet.Album);
+            Bind("tabCodex", Sheet.Codex);
+            Bind("tabChart", Sheet.Chart);
+
+            _stealth = root.Q<Button>("stealthToggle");
+            if (_stealth != null) _stealth.clicked += ToggleStealth;
+
+            Game.Changed += OnGameChanged;
+            ApplyStealth();
+            Show(Sheet.Home);
+
             if (Onboarding.Needed(Game.Player)) new Onboarding(this).Show();
 
-            void Bind(string name, Tab tab)
+            void Bind(string name, Sheet sheet)
             {
                 var button = root.Q<Button>(name);
                 if (button == null) return;
-                button.clicked += () => { AudioService.Play("nav", 0.5f); Show(tab); };
-                _navButtons[tab] = button;
+                _tabNames[sheet] = button.text;
+                button.clicked += () => { AudioService.Play("nav", 0.5f); Show(sheet); };
+                _tabs[sheet] = button;
             }
         }
 
@@ -103,56 +137,110 @@ namespace ExcelHeroes.UI
 
         void OnGameChanged()
         {
-            UpdateCurrencies();
+            UpdateStatus();
             _current?.Refresh();
         }
 
-        void UpdateCurrencies()
+        void UpdateStatus()
         {
             if (Game.Player == null) return;
             _gems.text = Game.Player.gems.ToString("N0");
             _gold.text = Game.Player.gold.ToString("N0");
-            UpdateDailyBadge();
-        }
-
-        /// <summary>
-        /// The count of rewards waiting on the daily tab. Without it the whole economy is invisible
-        /// — a player has no way to know they are leaving gems on the table.
-        /// </summary>
-        void UpdateDailyBadge()
-        {
-            if (_dailyBadge == null || Game.Player == null) return;
-            var n = Core.QuestService.ReadyCount(Game.Player);
+            if (_dailyBadge == null) return;
+            var n = QuestService.ReadyCount(Game.Player);
             _dailyBadge.text = n.ToString();
             _dailyBadge.EnableInClassList("hidden", n == 0);
         }
 
-        public void Show(Tab tab)
+        public void Show(Sheet sheet)
         {
-            _tab = tab;
-            _current = _screens[tab];
+            _sheet = sheet;
+            _current = _screens[sheet];
             _content.Clear();
             _content.Add(_current.Build());
-            _title.text = _current.Title;
-            UpdateCurrencies();
+            _nameBox.text = _current.Cell;
+            _formula.text = _current.Formula;
+            BuildRibbon();
+            UpdateStatus();
 
-            foreach (var (key, button) in _navButtons)
-                button.EnableInClassList("nav-button--active", key == tab);
+            foreach (var pair in _tabs)
+                pair.Value.EnableInClassList("sheet-tab--active", pair.Key == sheet);
         }
 
-        /// <summary>Locked while a reveal is playing so a tab change cannot strand the overlay.</summary>
-        public void SetNavEnabled(bool enabled) => _navbar.SetEnabled(enabled);
+        void BuildRibbon()
+        {
+            _ribbon.Clear();
+            foreach (var item in _current.Ribbon())
+            {
+                if (item.Separator) { UiKit.Div("rb-sep", _ribbon); continue; }
+                var captured = item;
+                var b = new Button(() => captured.Click?.Invoke());
+                b.AddToClassList("rb-btn");
+                if (!string.IsNullOrEmpty(item.Icon)) UiKit.Text(item.Icon, "rb-btn__icon", b);
+                UiKit.Text(item.Label, null, b);
+                if (item.Sub != null) UiKit.Text(item.Sub, "rb-btn__sub", b);
+                _ribbon.Add(b);
+            }
+        }
+
+        /// <summary>Locked while a reveal is playing so a sheet change cannot strand the overlay.</summary>
+        public void SetNavEnabled(bool enabled)
+        {
+            foreach (var pair in _tabs) pair.Value.SetEnabled(enabled);
+        }
+
+        public void SetStatus(string text) { if (_status != null) _status.text = text; }
+
+        public void Rebuild() => Show(_sheet);
 
         public void OpenDetail(string heroId)
         {
             Overlay.Clear();
             Overlay.RemoveFromClassList("hidden");
-            Overlay.Add(_detail.Build(heroId, () =>
-            {
-                Overlay.Clear();
-                Overlay.AddToClassList("hidden");
-                _current?.Refresh();
-            }));
+            Overlay.Add(_detail.Build(heroId, CloseOverlay));
         }
+
+        /// <summary>Puts one panel on the dimmed overlay.</summary>
+        public void OpenOverlay(VisualElement panel)
+        {
+            Overlay.Clear();
+            Overlay.RemoveFromClassList("hidden");
+            Overlay.Add(panel);
+        }
+
+        public void CloseOverlay()
+        {
+            Overlay.Clear();
+            Overlay.AddToClassList("hidden");
+            _current?.Refresh();
+        }
+
+        // ------------------------------------------------------------------- stealth
+
+        /// <summary>
+        /// The desktop build hid the game behind Esc. A phone has no Esc, and the point of the
+        /// disguise is that you can reach it without looking, so it is a fixed title-bar button.
+        /// </summary>
+        void ToggleStealth() => SetStealth(!Stealth);
+
+        public void SetStealth(bool on)
+        {
+            Game.Player.stealth = on;
+            Game.Touch();
+            ApplyStealth();
+            Show(_sheet);   // sheets carry their own vocabulary, so rebuild rather than relabel
+        }
+
+        void ApplyStealth()
+        {
+            var on = Stealth;
+            _doc.rootVisualElement.EnableInClassList("stealth", on);
+            if (_stealth != null) _stealth.text = on ? "▣" : "⛶";
+
+            foreach (var pair in _tabs)
+                pair.Value.text = on ? StealthLabels.Tab(pair.Key) : _tabNames[pair.Key];
+        }
+
+        public bool Stealth => Game.Player != null && Game.Player.stealth;
     }
 }

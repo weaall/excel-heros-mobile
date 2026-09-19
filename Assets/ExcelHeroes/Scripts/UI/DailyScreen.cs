@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using ExcelHeroes.Core;
 using ExcelHeroes.Data;
@@ -15,12 +16,18 @@ namespace ExcelHeroes.UI
     /// </summary>
     public class DailyScreen : IScreen
     {
-        public string Title => "일일 업무";
+        public string Cell => "C3";
+        public string Formula => "=COUNTIF(일일_점검!E2:E10,TRUE)";
 
         readonly AppRoot _app;
         VisualElement _root;
 
         public DailyScreen(AppRoot app) { _app = app; }
+
+        public IEnumerable<RibbonItem> Ribbon()
+        {
+            yield return new RibbonItem("✓", "일일 점검", () => _app.Rebuild(), "새로 고침");
+        }
 
         public VisualElement Build()
         {

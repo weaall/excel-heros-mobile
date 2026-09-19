@@ -47,7 +47,7 @@ namespace ExcelHeroes.UI
             {
                 AudioService.Play("nav");
                 Close();
-                _app.Show(AppRoot.Tab.Gacha);
+                _app.Show(AppRoot.Sheet.Gacha);
             }, card);
 
             UiKit.Btn("둘러보기", "btn btn--ghost", Close, card);
