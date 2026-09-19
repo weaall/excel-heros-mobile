@@ -26,8 +26,10 @@ namespace ExcelHeroes.Data
         public static List<MonsterTypeDef> MonsterTypes { get; private set; } = new();
         public static List<BossDef> Bosses { get; private set; } = new();
         public static PickupFile Pickup { get; private set; }
+        public static QuestFile Quests { get; private set; }
 
         static Dictionary<string, AffectionText> _affection = new();
+        static Dictionary<string, QuestDef> _quests = new();
         public static BalanceDef Balance { get; private set; }
         public static DivisionFile Synergy { get; private set; }
         public static string MainId { get; private set; } = "main";
@@ -60,6 +62,8 @@ namespace ExcelHeroes.Data
             Perks = Synergy.perks;
 
             Pickup = Read<PickupFile>("pickup");
+            Quests = Read<QuestFile>("quests");
+            _quests = Quests.items.ToDictionary(q => q.id);
             _affection = Read<Wrapper<AffectionText>>("affection").items.ToDictionary(a => a.id);
 
             var bestiary = Read<MonsterFile>("monsters");
@@ -99,6 +103,9 @@ namespace ExcelHeroes.Data
         public static PerkDef Perk(string divisionId) => divisionId != null && _perks.TryGetValue(divisionId, out var v) ? v : null;
 
         public static int GradeRank(string gradeId) => System.Array.IndexOf(GradeOrder, gradeId);
+
+        public static QuestDef Quest(string id) =>
+            id != null && _quests.TryGetValue(id, out var v) ? v : null;
 
         public static AffectionText Affection(string heroId) =>
             heroId != null && _affection.TryGetValue(heroId, out var v) ? v : null;

@@ -174,6 +174,29 @@ namespace ExcelHeroes.Data
         public List<PickupOrder> orders = new();
     }
 
+    /// <summary>One daily task. `goldKills` is priced in kills-worth-of-gold at the player's stage,
+    /// so a reward stays meaningful however deep they are.</summary>
+    [Serializable]
+    public class QuestDef
+    {
+        public string id;
+        public string name;
+        public string desc;
+        public int target;
+        public int gems;
+        public int goldKills;
+    }
+
+    [Serializable]
+    public class QuestFile
+    {
+        public int perDay;
+        public int loginGems, loginGoldKills;
+        public int streakGemsPerDay, streakMaxDays;
+        public int allClearGems;
+        public List<QuestDef> items = new();
+    }
+
     /// <summary>호감도 unlocks: a second bio line at Lv3 and a private message at Lv5.</summary>
     [Serializable]
     public class AffectionText

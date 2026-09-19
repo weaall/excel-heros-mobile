@@ -121,13 +121,24 @@ namespace ExcelHeroes.UI
 
                     var one = UiKit.Btn($"레벨 +1 · ₩{cost:N0}", "btn", () =>
                     {
-                        if (StatMath.TryLevelUp(Game.Player, owned)) { Game.Touch(); Reopen(heroId, onClose); }
+                        if (StatMath.TryLevelUp(Game.Player, owned))
+                        {
+                            QuestService.Note(Game.Player, "upgrades");
+                            QuestService.Note(Game.Player, "enhance");
+                            Game.Touch(); Reopen(heroId, onClose);
+                        }
                     }, levelPanel);
                     one.SetEnabled(Game.Player.gold >= cost);
 
                     var max = UiKit.Btn("골드 소진까지 강화", "btn btn--primary", () =>
                     {
-                        if (StatMath.LevelUpMax(Game.Player, owned) > 0) { Game.Touch(); Reopen(heroId, onClose); }
+                        var levels = StatMath.LevelUpMax(Game.Player, owned);
+                        if (levels > 0)
+                        {
+                            QuestService.Note(Game.Player, "upgrades", levels);
+                            QuestService.Note(Game.Player, "enhance", levels);
+                            Game.Touch(); Reopen(heroId, onClose);
+                        }
                     }, levelPanel);
                     max.SetEnabled(Game.Player.gold >= cost);
                 }

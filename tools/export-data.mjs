@@ -14,6 +14,7 @@ const load = (rel) => import(pathToFileURL(join(WEB, rel)).href);
 
 const heroes    = await load('src/data/heroes.js');
 const pickup    = await load('src/data/pickup.js');
+const quests    = await load('src/data/quests.js');
 const extra     = await load('src/data/profilesExtra.js');
 const profiles  = await load('src/data/profiles.js');
 const divisions = await load('src/data/divisions.js');
@@ -78,6 +79,20 @@ const files = {
                       pairAtk: SYNERGY.pair.atk, pairHp: SYNERGY.pair.hp,
                       trioAtk: SYNERGY.trio.atk, trioHp: SYNERGY.trio.hp,
                       balancedHp: SYNERGY.balanced.hp },
+  // 일일 업무. Six of nine quests run each day, chosen by a date seed so everyone shares a list.
+  // This is the whole gem economy: a battle win pays 5, and a ten-pull costs 900.
+  'quests.json': {
+    perDay: quests.DAILY_COUNT,
+    loginGems: quests.LOGIN_BONUS?.gems ?? 100,
+    loginGoldKills: quests.LOGIN_BONUS?.goldKills ?? 100,
+    streakGemsPerDay: quests.STREAK?.gemsPerDay ?? 20,
+    streakMaxDays: quests.STREAK?.maxDays ?? 7,
+    allClearGems: quests.ALL_CLEAR_BONUS?.gems ?? 100,
+    items: quests.DAILY_QUESTS.map((q) => ({
+      id: q.id, name: q.name, desc: q.desc, target: q.target,
+      gems: q.reward?.gems ?? 0, goldKills: q.reward?.goldKills ?? 0,
+    })),
+  },
   // 오늘의 픽업. The web build rotates a featured S and A through the whole roster so wanting a
   // particular card becomes "come back on their day" rather than praying. We export the fixed
   // per-grade order it walks, so the Unity client lands on the same hero on the same date.

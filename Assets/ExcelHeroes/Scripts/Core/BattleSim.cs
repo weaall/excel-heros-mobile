@@ -124,6 +124,10 @@ namespace ExcelHeroes.Core
         /// <summary>Monsters put down this run — what 호감도 is paid on.</summary>
         public int Kills { get; private set; }
 
+        /// <summary>Broken out for the daily tasks that ask for elites or chests specifically.</summary>
+        public int EliteKills { get; private set; }
+        public int ChestsOpened { get; private set; }
+
         readonly SynergyResult _synergy;
         readonly int _perWave;
 
@@ -563,6 +567,8 @@ namespace ExcelHeroes.Core
                 if (to.side == Side.Monster)
                 {
                     Kills++;
+                    if (to.elite) EliteKills++;
+                    if (to.name.StartsWith("보물 상자")) ChestsOpened++;
                     var worth = StatMath.StageGold(Stage) * (to.elite ? 3f : to.atk == 0 ? 5f : 1f);
                     GoldEarned += (int)(worth * (1f + _goldBonus));
                 }

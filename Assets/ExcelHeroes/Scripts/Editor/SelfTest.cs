@@ -105,6 +105,7 @@ namespace ExcelHeroes.EditorTools
             CheckSynergy();
             CheckPickup();
             CheckAffection();
+            CheckQuests();
             CheckBattle();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
@@ -330,6 +331,82 @@ namespace ExcelHeroes.EditorTools
 
             var missing = GameData.Heroes.Count(h => GameData.Affection(h.id) == null);
             Check(missing == 0, $"every hero has affection text (missing {missing})");
+        }
+
+        static void CheckQuests()
+        {
+            Line("\n-- daily quests --");
+            var file = GameData.Quests;
+            Check(file != null && file.items.Count > 0, $"{file?.items.Count ?? 0} quests defined");
+            if (file == null) return;
+
+            var today = QuestService.TodayKey();
+            var ids = QuestService.TodayQuestIds(today);
+            Check(ids.Count == file.perDay, $"today runs {ids.Count} of {file.items.Count} quests");
+            Check(ids.Contains("kills"), "오류 처리 is always on the list");
+            Check(ids.Distinct().Count() == ids.Count, "no quest appears twice in a day");
+            Check(ids.All(id => GameData.Quest(id) != null), "every picked quest resolves to a definition");
+
+            // Same day must give the same list, or a restart would reroll the dailies.
+            Check(QuestService.TodayQuestIds(today).SequenceEqual(ids), "the list is stable within a day");
+
+            // Over time every quest must get used, otherwise some are dead content.
+            var seen = new System.Collections.Generic.HashSet<string>();
+            for (var i = 0; i < 120; i++)
+                foreach (var id in QuestService.TodayQuestIds(DateTime.Now.AddDays(i).ToString("yyyy-MM-dd")))
+                    seen.Add(id);
+            Check(seen.Count == file.items.Count, $"every quest appears within 120 days ({seen.Count}/{file.items.Count})");
+
+            // Progress, claiming, and the refusal to double-claim.
+            var p = PlayerState.New();
+            QuestService.EnsureToday(p);
+            var def = GameData.Quest("kills");
+            Check(!QuestService.CanClaim(p, "kills"), "an untouched quest cannot be claimed");
+
+            QuestService.Note(p, "kills", def.target);
+            Check(QuestService.CanClaim(p, "kills"), "hitting the target makes it claimable");
+
+            var gemsBefore = p.gems;
+            var (gems, _) = QuestService.Claim(p, "kills");
+            Check(gems == def.gems && p.gems == gemsBefore + def.gems, $"claiming pays the advertised {def.gems} gems");
+            Check(!QuestService.CanClaim(p, "kills"), "a claimed quest cannot be claimed again");
+
+            // Progress must not overflow past the target — the bar would read wrong.
+            var q = p.quests.First(x => x.id == "kills");
+            Check(q.count <= def.target, $"progress is capped at the target ({q.count}/{def.target})");
+
+            // Check-in and the streak.
+            var s = PlayerState.New();
+            Check(QuestService.CanCheckIn(s), "a fresh player can check in");
+            var (inGems, _) = QuestService.CheckIn(s);
+            Check(inGems >= file.loginGems, $"check-in pays at least the base {file.loginGems}");
+            Check(s.streak == 1, "first check-in starts the streak at 1");
+            Check(!QuestService.CanCheckIn(s), "cannot check in twice in a day");
+
+            // A gap must reset the streak — that is what makes it worth protecting.
+            s.checkInDate = DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd");
+            s.streak = 5;
+            QuestService.CheckIn(s);
+            Check(s.streak == 1, "a missed day resets the streak");
+
+            // The all-clear bonus only after everything else.
+            var a = PlayerState.New();
+            QuestService.EnsureToday(a);
+            Check(!QuestService.CanClaimAllClear(a), "all-clear is locked until every quest is claimed");
+            foreach (var pq in a.quests)
+            {
+                QuestService.Note(a, pq.id, GameData.Quest(pq.id).target);
+                QuestService.Claim(a, pq.id);
+            }
+            Check(QuestService.CanClaimAllClear(a), "all-clear unlocks once every quest is claimed");
+            Check(QuestService.ClaimAllClear(a) == file.allClearGems, $"all-clear pays {file.allClearGems}");
+            Check(!QuestService.CanClaimAllClear(a), "all-clear cannot be claimed twice");
+
+            // The economy this exists to fix: a day's gems against the price of a ten-pull.
+            var dayCeiling = file.loginGems + file.streakMaxDays * file.streakGemsPerDay + file.allClearGems
+                             + ids.Sum(id => GameData.Quest(id).gems);
+            var ten = GameData.Balance.gachaTenCost;
+            Check(dayCeiling * 4 >= ten, $"a day's gems ({dayCeiling}) reach a ten-pull ({ten}) inside a week");
         }
 
         static void CheckBattle()

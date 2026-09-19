@@ -1,0 +1,82 @@
+{
+ "perDay": 6,
+ "loginGems": 100,
+ "loginGoldKills": 100,
+ "streakGemsPerDay": 20,
+ "streakMaxDays": 7,
+ "allClearGems": 100,
+ "items": [
+  {
+   "id": "kills",
+   "name": "오류 100건 처리",
+   "desc": "몬스터 100마리 처치",
+   "target": 100,
+   "gems": 20,
+   "goldKills": 60
+  },
+  {
+   "id": "upgrades",
+   "name": "인사 평가 10회",
+   "desc": "영웅 업그레이드 10회",
+   "target": 10,
+   "gems": 15,
+   "goldKills": 40
+  },
+  {
+   "id": "pull",
+   "name": "데이터 가져오기",
+   "desc": "뽑기 1회",
+   "target": 1,
+   "gems": 30,
+   "goldKills": 0
+  },
+  {
+   "id": "clears",
+   "name": "시트 5장 마감",
+   "desc": "스테이지 5회 클리어",
+   "target": 5,
+   "gems": 30,
+   "goldKills": 80
+  },
+  {
+   "id": "boss",
+   "name": "긴급 티켓 처리",
+   "desc": "보스 1회 처치",
+   "target": 1,
+   "gems": 50,
+   "goldKills": 0
+  },
+  {
+   "id": "enhance",
+   "name": "역량 강화 3회",
+   "desc": "카드 강화 3회",
+   "target": 3,
+   "gems": 15,
+   "goldKills": 40
+  },
+  {
+   "id": "chests",
+   "name": "보물 상자 개봉",
+   "desc": "보물 상자(미믹 포함) 1개",
+   "target": 1,
+   "gems": 25,
+   "goldKills": 0
+  },
+  {
+   "id": "elite",
+   "name": "감사 대응",
+   "desc": "엘리트 몬스터 3마리 처치",
+   "target": 3,
+   "gems": 20,
+   "goldKills": 40
+  },
+  {
+   "id": "combo",
+   "name": "연속 처리",
+   "desc": "콤보 20 달성 1회",
+   "target": 1,
+   "gems": 20,
+   "goldKills": 0
+  }
+ ]
+}

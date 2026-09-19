@@ -23,13 +23,13 @@ namespace ExcelHeroes.UI
     [RequireComponent(typeof(UIDocument))]
     public class AppRoot : MonoBehaviour
     {
-        public enum Tab { Home, Gacha, Roster, Party, Battle, Story }
+        public enum Tab { Home, Gacha, Roster, Party, Battle, Daily, Story }
 
         public VisualElement Overlay { get; private set; }
 
         UIDocument _doc;
         VisualElement _content, _navbar;
-        Label _title, _gems, _gold;
+        Label _title, _gems, _gold, _dailyBadge;
         readonly Dictionary<Tab, IScreen> _screens = new();
         readonly Dictionary<Tab, Button> _navButtons = new();
         Tab _tab = Tab.Gacha;
@@ -58,6 +58,7 @@ namespace ExcelHeroes.UI
             _screens[Tab.Roster] = new RosterScreen(this);
             _screens[Tab.Party] = new PartyScreen(this);
             _screens[Tab.Battle] = new BattleScreen(this);
+            _screens[Tab.Daily] = new DailyScreen(this);
             _screens[Tab.Story] = new StoryScreen(this);
             _detail = new HeroDetail(this);
 
@@ -66,7 +67,9 @@ namespace ExcelHeroes.UI
             Bind("navRoster", Tab.Roster);
             Bind("navParty", Tab.Party);
             Bind("navBattle", Tab.Battle);
+            Bind("navDaily", Tab.Daily);
             Bind("navStory", Tab.Story);
+            _dailyBadge = root.Q<Label>("dailyBadge");
 
             Game.Changed += OnGameChanged;
             Show(Tab.Home);
@@ -105,6 +108,19 @@ namespace ExcelHeroes.UI
             if (Game.Player == null) return;
             _gems.text = Game.Player.gems.ToString("N0");
             _gold.text = Game.Player.gold.ToString("N0");
+            UpdateDailyBadge();
+        }
+
+        /// <summary>
+        /// The count of rewards waiting on the daily tab. Without it the whole economy is invisible
+        /// — a player has no way to know they are leaving gems on the table.
+        /// </summary>
+        void UpdateDailyBadge()
+        {
+            if (_dailyBadge == null || Game.Player == null) return;
+            var n = Core.QuestService.ReadyCount(Game.Player);
+            _dailyBadge.text = n.ToString();
+            _dailyBadge.EnableInClassList("hidden", n == 0);
         }
 
         public void Show(Tab tab)

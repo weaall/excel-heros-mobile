@@ -28,7 +28,8 @@ Game 뷰는 세로 비율(예: 1080×1920)로 맞춰 두세요. 다시 세팅이
 | 카드 상세 | 일러스트가 **모션 프레임과 크로스페이드**되어 숨쉬고 눈을 깜빡입니다. 스탯·스킬·특성·인사기록 |
 | 강화 | 골드로 레벨 업. ★가 상한을 열고(★1=80 … ★5=320) 골드가 거기까지 걸어 올라갑니다 |
 | 편성 | 5인 슬롯, 부문 시너지 계산, 총 전투력, 대기 인원 |
-| 출근(전투) | 라인 오토배틀 + **EX 스킬 수동 발동**. 3웨이브, 마지막은 페이즈별 보스 |
+| 출근(전투) | 라인 오토배틀 + **EX 스킬 수동 발동**. 3웨이브, 마지막은 페이즈별 보스. 5스테이지부터 엘리트, 6% 확률 보물 상자(30%는 미믹) |
+| 일일 업무 | 출근 도장 + 연속 출근(최대 7일) + 9종 중 6종(날짜 시드) + 전체 완료 보너스. 하단 탭에 수령 가능 개수 뱃지 |
 | 사내 메신저 | 채팅 로그 형식 에피소드 20화, 첫 열람 시 보석 지급 |
 
 ## 구조
@@ -39,8 +40,9 @@ Assets/ExcelHeroes/
   Resources/Art/Cards/*.png 캐릭터 카드 일러 55종 (Gemini 생성)
   Resources/Art/UI/*.png    배경 3종 · 등급 프레임 5종 · 로고
   Scripts/Data/             JSON 미러 정의 + GameData 로더
-  Scripts/Core/             PlayerState · SaveService · GachaService · AffectionService · AudioService · StatMath · BattleSim · Game
-  Scripts/UI/               AppRoot + 화면 6종 + HeroDetail + UiKit
+  Scripts/Core/             PlayerState · SaveService · GachaService · AffectionService · QuestService
+                            AudioService · StatMath · BattleSim · Game
+  Scripts/UI/               AppRoot + 화면 7종 + HeroDetail + UiKit
   Scripts/Editor/           ProjectBootstrap · ArtImportSettings
   UI/                       AppShell.uxml · App.uss · ExcelHeroesTheme.tss · PanelSettings.asset
 tools/                      데이터 익스포터 · Gemini 아트 파이프라인
@@ -48,6 +50,23 @@ tools/                      데이터 익스포터 · Gemini 아트 파이프라
 
 **밸런스의 원본은 웹 저장소입니다.** 수치를 바꾸려면 `excel-heros/src/config/balance.js` 를 고치고
 `node tools/export-data.mjs` 를 다시 돌리세요. 이 프로젝트의 JSON은 산출물입니다.
+
+## 경제
+
+보석은 거의 전부 일일 업무에서 나옵니다. 전투 승리는 5개고 10연은 900개라, 일일 업무가
+없으면 10연 한 번에 180전투가 필요합니다 — 게임이 성립하지 않는 수치입니다.
+
+| 수입원 | 보석 |
+| --- | --- |
+| 출근 도장 | 100 |
+| 연속 출근 (최대 7일) | +20/일 |
+| 오늘의 업무 6종 | ~160 |
+| 전체 완료 | 100 |
+| **하루 상한** | **~500** |
+
+10연이 900이니 **이틀에 한 번**입니다. 이 비율을 바꾸려면 웹 빌드의 `quests.js` 나
+`balance.js` 를 고치고 익스포터를 다시 돌리세요. 셀프테스트가
+`하루치 보석 × 4 ≥ 10연 가격` 을 검사하므로, 균형이 깨지면 테스트가 먼저 알려줍니다.
 
 ## 밸런스
 
@@ -103,7 +122,7 @@ node tools/gen-art.mjs ui                       # 배경 · 로고
 ## 아직 없는 것 (다음 마일스톤)
 
 - 서버 없음 — 저장은 `persistentDataPath` 로컬 JSON 한 개
-- 비품/출장/일일 업무/업적 — 웹에는 있으나 아직 미포함
+- 비품/출장/업적 — 웹에는 있으나 아직 미포함
 - 상점, 광고, 인앱결제
 - BGM 없음 — 효과음은 전부 합성이지만 배경음악은 합성으로 해결되지 않습니다 (작곡·라이선스 문제)
 - 안드로이드 빌드 모듈 미설치 (에디터 플레이만 검증됨)

@@ -923,6 +923,57 @@
 .result__title--win { color: rgb(240, 196, 70); }
 .result__title--lose { color: rgb(226, 108, 108); }
 
+/* ---------------------------------------------------------------- daily */
+
+.stamp__row { flex-direction: row; margin-top: 8px; margin-bottom: 8px; }
+
+.stamp__dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    margin-right: 8px;
+    background-color: rgb(24, 32, 52);
+    border-width: 2px;
+    border-color: rgb(54, 70, 108);
+    transition-duration: 0.2s;
+}
+
+.stamp__dot--on {
+    background-color: rgb(212, 160, 23);
+    border-color: rgb(244, 214, 120);
+}
+
+.quest--done { opacity: 0.5; }
+
+.quest__track {
+    height: 12px;
+    margin-top: 10px;
+    background-color: rgb(24, 32, 52);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.quest__fill { height: 100%; background-color: rgb(126, 198, 255); }
+
+.quest__meta { font-size: 21px; color: rgb(168, 182, 210); margin-top: 8px; }
+
+/* a count of claimable rewards, parked on the nav button */
+.nav-badge {
+    position: absolute;
+    right: 18px;
+    top: 14px;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 17px;
+    background-color: rgb(226, 72, 112);
+    color: rgb(255, 240, 245);
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
 /* ---------------------------------------------------------------- story */
 
 .chat-room {

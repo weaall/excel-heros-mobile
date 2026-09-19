@@ -123,6 +123,7 @@ namespace ExcelHeroes.UI
         {
             var results = GachaService.Buy(Game.Player, count);
             if (results == null) return;       // buttons are disabled when broke; this is belt and braces
+            QuestService.Note(Game.Player, "pull", count);
             Game.Touch();
             _app.StartCoroutine(RevealSequence(results));
         }

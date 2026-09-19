@@ -226,6 +226,12 @@ namespace ExcelHeroes.UI
         void ShowResult()
         {
             AudioService.Play(_sim.Won ? "victory" : "defeat");
+
+            // Counted whether or not the run was won: the player still put those errors down.
+            QuestService.Note(Game.Player, "kills", _sim.Kills);
+            QuestService.Note(Game.Player, "elite", _sim.EliteKills);
+            QuestService.Note(Game.Player, "chests", _sim.ChestsOpened);
+
             _resultView = UiKit.Div("result", _root);
             var title = UiKit.Text(_sim.Won ? "업무 완료" : "업무 실패",
                 "result__title " + (_sim.Won ? "result__title--win" : "result__title--lose"), _resultView);
@@ -240,6 +246,9 @@ namespace ExcelHeroes.UI
                 // Everyone who fought gets closer to you. Reported so the bond is visibly a reward
                 // for fielding a card rather than a hidden counter.
                 AffectionService.AwardBattle(Game.Player, _sim.Kills, clearedBoss: true);
+
+                QuestService.Note(Game.Player, "clears");
+                QuestService.Note(Game.Player, "boss");
 
                 UiKit.Text($"골드 +{_sim.GoldEarned:N0} · 보석 +{gems}", null, _resultView);
                 UiKit.Text("파티 전원 호감도 상승", "muted", _resultView);

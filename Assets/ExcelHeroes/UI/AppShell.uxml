@@ -36,6 +36,11 @@
                 <ui:Label text="⚔" class="nav-button__icon" />
                 <ui:Label text="출근" class="nav-button__label" />
             </ui:Button>
+            <ui:Button name="navDaily" class="nav-button">
+                <ui:Label text="✓" class="nav-button__icon" />
+                <ui:Label text="일일" class="nav-button__label" />
+                <ui:Label name="dailyBadge" text="" class="nav-badge hidden" />
+            </ui:Button>
             <ui:Button name="navStory" class="nav-button">
                 <ui:Label text="✉" class="nav-button__icon" />
                 <ui:Label text="메신저" class="nav-button__label" />

@@ -21,6 +21,15 @@ namespace ExcelHeroes.Core
         public OwnedHero(string heroId) { id = heroId; }
     }
 
+    /// <summary>Progress on one of today's tasks.</summary>
+    [Serializable]
+    public class QuestProgress
+    {
+        public string id;
+        public int count;
+        public bool claimed;
+    }
+
     /// <summary>
     /// Everything the player owns. Serialised straight to JSON by SaveService — keep it to plain
     /// fields and lists so JsonUtility can round-trip it.
@@ -42,6 +51,13 @@ namespace ExcelHeroes.Core
         public int stage = 1;                   // highest stage reached
         public string leadHeroId = "";          // the card that greets the player on the home screen
         public List<string> readEpisodes = new();
+
+        // 일일 업무 — rolls over at local midnight, see QuestService.
+        public string dailyDate = "";
+        public List<QuestProgress> quests = new();
+        public string checkInDate = "";
+        public int streak;
+        public bool allClearClaimed;
 
         public static PlayerState New()
         {
