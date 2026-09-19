@@ -48,12 +48,13 @@ namespace ExcelHeroes.UI
     [RequireComponent(typeof(UIDocument))]
     public class AppRoot : MonoBehaviour
     {
-        public enum Sheet { Home, Roster, Party, Gacha, Quests, Story, Album, Codex, Chart }
+        public enum Sheet { Home, Roster, Party, Gacha, Quests, Progress, Story, Album, Codex, Chart }
 
         public VisualElement Overlay { get; private set; }
 
         UIDocument _doc;
         VisualElement _content;
+        Label _progressBadge;
         Label _gems, _gold, _dailyBadge, _status, _stage, _plateSub, _screenTitle;
         VisualElement _plate, _navBack;
         readonly Dictionary<Sheet, IScreen> _screens = new();
@@ -79,6 +80,7 @@ namespace ExcelHeroes.UI
             _gold = root.Q<Label>("goldValue");
             _status = root.Q<Label>("statusText");
             _dailyBadge = root.Q<Label>("dailyBadge");
+            _progressBadge = root.Q<Label>("progressBadge");
             _stage = root.Q<Label>("stageValue");
             _plateSub = root.Q<Label>("plateSub");
             _plate = root.Q<VisualElement>("playerPlate");
@@ -90,6 +92,7 @@ namespace ExcelHeroes.UI
             _screens[Sheet.Party] = new PartyScreen(this);
             _screens[Sheet.Gacha] = new GachaScreen(this);
             _screens[Sheet.Quests] = new DailyScreen(this);
+            _screens[Sheet.Progress] = new ProgressScreen(this);
             _screens[Sheet.Story] = new StoryScreen(this);
             _screens[Sheet.Album] = new AlbumScreen(this);
             _screens[Sheet.Codex] = new CodexScreen(this);
@@ -104,6 +107,7 @@ namespace ExcelHeroes.UI
             Bind("tabRoster", Sheet.Roster);
             Bind("tabParty", Sheet.Party);
             Bind("tabQuests", Sheet.Quests);
+            Bind("tabProgress", Sheet.Progress);
             Bind("tabStory", Sheet.Story);
             Bind("tabAlbum", Sheet.Album);
             Bind("tabCodex", Sheet.Codex);
@@ -128,6 +132,7 @@ namespace ExcelHeroes.UI
             Glyph("tabRosterIcon", Icons.Roster);
             Glyph("tabPartyIcon", Icons.Shield);
             Glyph("tabQuestsIcon", Icons.Tasks);
+            Glyph("tabProgressIcon", Icons.Star);
             Glyph("tabStoryIcon", Icons.Story);
             Glyph("tabAlbumIcon", Icons.Album);
             Glyph("tabCodexIcon", Icons.Codex);
@@ -203,6 +208,11 @@ namespace ExcelHeroes.UI
             var n = QuestService.ReadyCount(Game.Player);
             _dailyBadge.text = n.ToString();
             _dailyBadge.EnableInClassList("hidden", n == 0);
+
+            if (_progressBadge == null) return;
+            var m = ProgressService.ReadyCount(Game.Player);
+            _progressBadge.text = m.ToString();
+            _progressBadge.EnableInClassList("hidden", m == 0);
         }
 
         public void Show(Sheet sheet)
@@ -240,6 +250,7 @@ namespace ExcelHeroes.UI
             Sheet.Party => "편성",
             Sheet.Gacha => "모집",
             Sheet.Quests => "일일 업무",
+            Sheet.Progress => "검토",
             Sheet.Story => "사내 메신저",
             Sheet.Album => "사원 앨범",
             Sheet.Codex => "오류 도감",

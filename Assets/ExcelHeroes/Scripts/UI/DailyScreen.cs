@@ -155,9 +155,11 @@ namespace ExcelHeroes.UI
                 var row = UiKit.Div("qrow", block);
                 row.EnableInClassList("qrow--done", q.claimed);
 
+                // The description line is gone. It restates the name in other words — "몬스터
+                // 100마리 처치" under "오류 100건 처리" — and it was the line that pushed five rows
+                // past the height a landscape frame has for them.
                 var text = UiKit.Div("qrow__text", row);
                 UiKit.Text(def.name, "qrow__name", text);
-                UiKit.Text(def.desc, "qrow__desc", text);
 
                 var track = UiKit.Div("qrow__track", text);
                 var fill = UiKit.Div("qrow__fill", track);

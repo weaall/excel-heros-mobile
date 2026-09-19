@@ -2920,7 +2920,8 @@
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-    height: 112px;
+    height: 108px;
+    overflow: hidden;
     border-bottom-width: 1px;
     border-bottom-color: rgb(234, 234, 234);
 }
@@ -3303,3 +3304,105 @@
 .party-cols__right .section-title { font-size: var(--ex-text-sm); margin-bottom: var(--ex-space-1); }
 .party-cols__right .stat-row { height: 56px; }
 .party-cols__right .synergy-line { font-size: var(--ex-text-xs); }
+
+/* The text column has to be allowed to be narrow, or a long quest name pushes the 수령 button
+   off the end of the row instead of ellipsing. */
+.qrow__text { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.qrow__name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------------------------------------------------------------- 검토
+
+   업적 on the left, 마일스톤 on the right: one has tiers and keeps paying, the other is a mark
+   passed once, and reading them as a single list only ever made sense because the web build had
+   a scroll to put them both in. */
+
+.prog-cols { flex-direction: row; flex-grow: 1; min-height: 0; padding: var(--ex-space-2); }
+
+.prog-cols__left {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    margin-right: var(--ex-space-2);
+}
+
+.prog-cols__right { width: 38%; flex-shrink: 0; }
+
+.prog-head {
+    flex-direction: row;
+    align-items: baseline;
+    flex-shrink: 0;
+    padding-left: var(--ex-space-1);
+}
+
+.prog-head .section-title { margin-bottom: var(--ex-space-1); }
+
+.prog-list { flex-grow: 1; min-height: 0; }
+
+.arow {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 112px;
+    overflow: hidden;
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
+    margin-bottom: var(--ex-space-1);
+    background-color: var(--ex-surface-raised);
+    border-width: 2px;
+    border-color: var(--ex-line);
+    border-bottom-width: 5px;
+    border-bottom-color: var(--ex-line-strong);
+    border-radius: var(--ex-rad-md);
+}
+
+.arow__text { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+
+.arow__name {
+    font-size: var(--ex-text-sm);
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.arow__track {
+    height: 8px;
+    margin-top: 6px;
+    margin-right: var(--ex-space-3);
+    background-color: var(--ex-surface-sunken);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.arow__fill { height: 100%; background-color: var(--ex-accent); }
+
+.arow__meta { font-size: 22px; color: var(--ex-ink-muted); margin-top: 4px; }
+
+.arow__claim {
+    flex-shrink: 0;
+    min-width: 150px;
+    height: 76px;
+    font-size: var(--ex-text-xs);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: var(--ex-accent-ink);
+    background-color: var(--ex-accent);
+    border-width: 2px;
+    border-color: var(--ex-accent);
+    border-bottom-width: 6px;
+    border-bottom-color: var(--ex-accent-deep);
+    border-radius: var(--ex-rad-md);
+}
+
+.arow__done {
+    flex-shrink: 0;
+    min-width: 150px;
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
+    -unity-text-align: middle-center;
+}
+
+.prog-cols__right .panel { padding: var(--ex-space-2); margin-bottom: var(--ex-space-2); }
+.prog-cols__right .section-title { font-size: var(--ex-text-sm); margin-bottom: var(--ex-space-1); }
+.prog-cols__right .stat-row { height: 56px; }

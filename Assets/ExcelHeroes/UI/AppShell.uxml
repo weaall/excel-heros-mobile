@@ -79,6 +79,11 @@
                 <ui:Label text="업무" class="navtab__label" />
                 <ui:Label name="dailyBadge" text="" class="navtab__badge hidden" />
             </ui:Button>
+            <ui:Button name="tabProgress" class="navtab">
+                <ui:Label name="tabProgressIcon" text="" class="navtab__icon icon" />
+                <ui:Label text="검토" class="navtab__label" />
+                <ui:Label name="progressBadge" text="" class="navtab__badge hidden" />
+            </ui:Button>
             <ui:Button name="tabStory" class="navtab">
                 <ui:Label name="tabStoryIcon" text="" class="navtab__icon icon" />
                 <ui:Label text="메신저" class="navtab__label" />
