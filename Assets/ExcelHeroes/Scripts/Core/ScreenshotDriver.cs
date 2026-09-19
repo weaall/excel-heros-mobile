@@ -113,6 +113,19 @@ namespace ExcelHeroes.Core
                     if (sheet == AppRoot.Sheet.Home) yield return new WaitForSeconds(2.5f);
                     yield return Shoot($"{n:00}-{sheet}");
                     n++;
+
+                    // The home sheet gets a second shot a few seconds later. The first one keeps
+                    // landing on an EX cut-in, and a screen that is 40% covered by a portrait tells
+                    // you nothing about the fight underneath it.
+                    // A burst of frames rather than one. Combat effects live for a fifth of a
+                    // second, so a single capture lands on a lull as often as on a hit and says
+                    // nothing about whether the fight has any impact in it.
+                    if (sheet == AppRoot.Sheet.Home)
+                        for (var f = 0; f < 6; f++)
+                        {
+                            yield return new WaitForSeconds(0.55f);
+                            yield return Shoot($"{n:00}-Fight{f}");
+                        }
                 }
 
                 // The two states that have been wrong and invisible: a card opened full size, and

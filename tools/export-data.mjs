@@ -166,6 +166,11 @@ const files = {
       max: t.max, unit: t.unit ?? '',
     })),
     gemDropBase: BALANCE.GEM_DROP?.base ?? 0.005,
+    // 콤보 — every landed hit raises the party's damage a little, and a few seconds without one
+    // gives it all back. It is what makes an uninterrupted run feel different from a stalled one.
+    comboPerHit: BALANCE.COMBO?.perHit ?? 0.005,
+    comboMax: BALANCE.COMBO?.max ?? 0.25,
+    comboDecay: BALANCE.COMBO?.decay ?? 3,
   },
 };
 

@@ -91,5 +91,8 @@
    "unit": ""
   }
  ],
- "gemDropBase": 0.005
+ "gemDropBase": 0.005,
+ "comboPerHit": 0.005,
+ "comboMax": 0.25,
+ "comboDecay": 3
 }

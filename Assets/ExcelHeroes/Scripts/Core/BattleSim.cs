@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExcelHeroes.Data;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace ExcelHeroes.Core
@@ -78,7 +79,13 @@ namespace ExcelHeroes.Core
         public float Progress => Duration <= 0f ? 1f : Math.Clamp(T / Duration, 0f, 1f);
     }
 
-    public enum EventKind { Damage, Heal, Death, Skill, WaveClear, Victory, Defeat, Spawn }
+    public enum EventKind { Damage, Heal, Death, Skill, WaveClear, Victory, Defeat, Spawn, Fx }
+
+    /// <summary>
+    /// The effect vocabulary, straight from the web build's Renderer#drawEffects. The simulation
+    /// names the effect and where it happens; BattleFx decides what it looks like.
+    /// </summary>
+    public enum FxKind { Slash, Puff, Ring, Sparkle, Impact, Crit, Muzzle }
 
     public struct BattleEvent
     {
@@ -87,6 +94,12 @@ namespace ExcelHeroes.Core
         public Combatant target;
         public int amount;
         public string text;
+        public bool crit;
+
+        // Fx only: what to draw, where, in what colour and how big.
+        public FxKind fx;
+        public float x, y, radius;
+        public Color color;
     }
 
     /// <summary>
@@ -193,6 +206,25 @@ namespace ExcelHeroes.Core
         public bool Finished { get; private set; }
         public bool Won { get; private set; }
         public int GoldEarned { get; private set; }
+
+        /// <summary>
+        /// How hard the field is shaking, in pixels, decaying at 30/s — the same number and the
+        /// same decay as the web build's `em.shake`. Bosses landing, enrage and heavy skills all
+        /// push it up; it is most of why a hit there reads as a hit.
+        /// </summary>
+        public float Shake { get; private set; }
+
+        public void AddShake(float amount) => Shake = Math.Max(Shake, amount);
+
+        /// <summary>
+        /// 콤보 — consecutive landed hits, worth a little damage each up to a cap, and reset by a
+        /// few seconds without one. The party gets faster the longer a fight goes well.
+        /// </summary>
+        public int Combo { get; private set; }
+        float _comboTimer;
+
+        public float ComboBonus => Math.Min(GameData.Balance?.comboMax ?? 0.25f,
+                                            Combo * (GameData.Balance?.comboPerHit ?? 0.005f));
 
         /// <summary>Monsters put down this run — what 호감도 is paid on.</summary>
         public int Kills { get; private set; }
@@ -394,6 +426,16 @@ namespace ExcelHeroes.Core
             }
 
             Cost = Math.Min(MaxCost, Cost + CostRate * dt);
+
+            // Same decay rates as the web build: the shake dies in a third of a second, the combo
+            // holds for a few seconds of not landing anything.
+            Shake = Math.Max(0f, Shake - dt * 30f);
+            if (Combo > 0)
+            {
+                _comboTimer -= dt;
+                if (_comboTimer <= 0f) Combo = 0;
+            }
+
             StepShots(dt);
 
             foreach (var c in Heroes.Concat(Monsters)) TickStatus(c, dt);
@@ -534,18 +576,45 @@ namespace ExcelHeroes.Core
             if (a == null || target == null || !a.Alive || !target.Alive) return;
 
             var dmg = a.atk;
+            var crit = false;
             if (a.side == Side.Hero)
             {
+                // Every landed hit so far makes this one hurt a little more, up to the cap.
+                dmg = (int)(dmg * (1f + ComboBonus));
+
                 // 날카로운 지적 stacks with the 영업·마케팅 부문 perk — both are a chance to double.
                 var critChance = Perk("crit") + (a.traitId == "crit" ? a.traitValue : 0f);
-                if (Random.value < critChance) dmg *= 2;
+                if (Random.value < critChance) { dmg *= 2; crit = true; }
 
                 // 보고서 특화 and the 재무·감사 perk both key off "is this a boss".
                 if (target.boss != null)
                     dmg = (int)(dmg * (1f + Perk("boss") + (a.traitId == "focus" ? a.traitValue : 0f)));
             }
 
-            Damage(a, target, dmg);
+            // The impact, before the damage, so the effect is already on screen when the number
+            // pops. A melee swing cuts, a ranged hit puffs — which is the difference the web build
+            // draws and this port had replaced with a class toggle and nothing else.
+            var colour = a.side == Side.Hero
+                ? GameData.Grade(GameData.Hero(a.heroId)?.grade)?.Color ?? Color.white
+                : new Color(0.91f, 0.30f, 0.24f);
+
+            if (shot.Kind == "slash")
+                Fx(FxKind.Slash, target.x, target.y - 6f, colour, a.boss != null || target.boss != null ? 1f : 0f);
+            else
+                Fx(FxKind.Puff, target.x + 10f, target.y - 12f, colour);
+
+            Fx(FxKind.Impact, target.x, target.y - 18f, colour, target.boss != null ? 1f : 0f);
+            if (crit) Fx(FxKind.Crit, target.x, target.y - 30f, new Color(0.95f, 0.77f, 0.25f));
+
+            Damage(a, target, dmg, crit: crit);
+
+            if (a.side == Side.Hero)
+            {
+                Combo++;
+                _comboTimer = GameData.Balance?.comboDecay ?? 3f;
+                AddShake(crit ? 5f : 1.6f);
+            }
+
             if (a.side != Side.Hero) return;
 
             // 전체 회신 — the basic attack splashes onto everything else in reach.
@@ -682,7 +751,11 @@ namespace ExcelHeroes.Core
             return best;
         }
 
-        void Damage(Combatant from, Combatant to, int amount, bool silent = false)
+        /// <summary>Queues one effect for the renderer. `big` is 1 for the heavy version.</summary>
+        void Fx(FxKind kind, float x, float y, Color color, float radius = 0f) =>
+            Events.Enqueue(new BattleEvent { kind = EventKind.Fx, fx = kind, x = x, y = y, color = color, radius = radius });
+
+        void Damage(Combatant from, Combatant to, int amount, bool silent = false, bool crit = false)
         {
             if (!to.Alive || amount <= 0) return;
             if (from != null && from.side == Side.Monster) amount = (int)(amount * EnrageMultiplier);
@@ -696,7 +769,7 @@ namespace ExcelHeroes.Core
             if (amount <= 0) return;
 
             to.hp -= amount;
-            if (!silent) Events.Enqueue(new BattleEvent { kind = EventKind.Damage, actor = from, target = to, amount = amount });
+            if (!silent) Events.Enqueue(new BattleEvent { kind = EventKind.Damage, actor = from, target = to, amount = amount, crit = crit });
             if (to.hp <= 0)
             {
                 to.hp = 0;
@@ -707,6 +780,11 @@ namespace ExcelHeroes.Core
                     Kills++;
                     if (to.elite) EliteKills++;
                     if (to.name.StartsWith("보물 상자")) ChestsOpened++;
+                    // A death is worth a burst and a shove of the camera — the moment the fight
+                    // actually resolves should be the loudest one in it.
+                    Fx(FxKind.Sparkle, to.x, to.y - 20f, new Color(0.98f, 0.85f, 0.45f));
+                    AddShake(to.boss != null ? 10f : to.elite ? 5f : 2f);
+
                     var worth = StatMath.StageGold(Stage) * (to.elite ? 3f : to.atk == 0 ? 5f : 1f);
                     GoldEarned += (int)(worth * (1f + _goldBonus));
 

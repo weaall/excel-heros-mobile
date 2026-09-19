@@ -288,6 +288,7 @@ namespace ExcelHeroes.Data
         public int affectionUnlockSecret, affectionUnlockLine;
         public List<TeamUpgradeDef> teamUpgrades = new();
         public float gemDropBase;
+        public float comboPerHit, comboMax, comboDecay;
     }
 
     /// <summary>

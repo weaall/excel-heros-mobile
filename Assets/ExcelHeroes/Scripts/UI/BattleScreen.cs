@@ -23,6 +23,8 @@ namespace ExcelHeroes.UI
 
         readonly AppRoot _app;
         VisualElement _root, _stage, _exBar, _resultView, _upgradeBar;
+        BattleFx _fx;
+        Label _comboLabel;
         Label _waveLabel;
         Button _autoButton;
 
@@ -30,6 +32,16 @@ namespace ExcelHeroes.UI
         // an idle loop; stopping it on a modal until someone taps 다시 is what made it a menu.
         const float RestartDelay = 2.6f;
         float _restartIn;
+
+        /// <summary>
+        /// 히트스톱 — the simulation is held still for a few frames when something big lands.
+        ///
+        /// It is the oldest trick in action games and the one that does the most for how hard a hit
+        /// feels: the eye reads the pause as weight. It lives here rather than in BattleSim on
+        /// purpose — the headless bench must keep measuring real fight length, and a freeze that
+        /// only the player sees cannot move the balance numbers.
+        /// </summary>
+        float _hitStop;
         bool _resultApplied;
 
         // Ash and office paper drifting across the field, ported from drawAsh in cityBackdrop.js.
@@ -43,7 +55,11 @@ namespace ExcelHeroes.UI
 
         readonly Dictionary<Combatant, VisualElement> _views = new();
         readonly Dictionary<string, (VisualElement button, VisualElement charge)> _exButtons = new();
-        readonly List<(VisualElement el, float life)> _floaters = new();
+        // The y is carried here rather than read back from resolvedStyle: on the frame a floater
+        // is created its resolved top is still 0, so reading it sent every damage number to the top
+        // of the field and it drifted up from there. The numbers were landing nowhere near the
+        // thing that had been hit, which is most of why the hits did not read.
+        readonly List<(VisualElement el, float life, float y)> _floaters = new();
 
         public BattleScreen(AppRoot app) { _app = app; }
 
@@ -67,6 +83,9 @@ namespace ExcelHeroes.UI
             _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
 
             _stage = UiKit.Div("battle__stage", _root);
+
+            // 콤보 — the count sits over the field, because it is about what is happening there.
+            _comboLabel = UiKit.Text("", "combo", _stage);
 
             // 재계산 예산 — the shared pool EX skills are paid from. Segmented rather than smooth so
             // you can read "two more" at a glance without doing arithmetic mid-fight.
@@ -106,6 +125,10 @@ namespace ExcelHeroes.UI
             _shotViews.Clear();
             _motes.Clear();
             _stage.Clear();
+            _comboLabel = UiKit.Text("", "combo", _stage);
+            // The effects layer goes in first so the fighters draw over it — a spark belongs
+            // behind the thing it came off, not painted across its face.
+            _fx = new BattleFx(_stage);
             _exBar.Clear();
             _resultView = null;
 
@@ -151,6 +174,11 @@ namespace ExcelHeroes.UI
                 return false;
             }
 
+            // The previous run's result dialog is on the shared overlay; the new run owns the
+            // screen, so it closes it rather than leaving a stale scoreboard over the field.
+            if (_resultView != null && _resultView.panel != null) _app.CloseOverlay();
+
+            _hitStop = 0f;
             _sim = new BattleSim(Game.Player, Game.Player.stage) { AutoSkill = Game.Player.autoSkill };
             _resultApplied = false;
             _restartIn = 0f;
@@ -267,7 +295,8 @@ namespace ExcelHeroes.UI
                 if (!NewRun()) return;
             }
 
-            if (!_sim.Finished) _sim.Tick(dt);
+            if (_hitStop > 0f) _hitStop -= dt;
+            else if (!_sim.Finished) _sim.Tick(dt);
 
             var visible = _root != null && _root.panel != null;
             if (!visible)
@@ -280,7 +309,10 @@ namespace ExcelHeroes.UI
             }
 
             DrainEvents();
+            _fx?.Tick(dt);
             LayoutFighters(dt);
+            ApplyShake();
+            UpdateCombo();
             UpdateExButtons();
             UpdateFloaters(dt);
             UpdateUpgrades();
@@ -320,12 +352,20 @@ namespace ExcelHeroes.UI
                     case EventKind.Spawn:
                         AddFighterView(e.actor);
                         break;
+                    case EventKind.Fx:
+                        _fx?.Add(e.fx, e.x, e.y, e.color, e.radius);
+                        break;
                     case EventKind.Damage:
-                        Float(e.target, e.amount.ToString("N0"), "floater");
+                        Float(e.target, e.amount.ToString("N0"), e.crit ? "floater floater--crit" : "floater");
                         // Only the party's own hits get a sound; every monster swing too would be mud.
                         if (e.actor != null && e.actor.side == Side.Hero) AudioService.Play("hit", 0.22f);
                         Pulse(e.actor, "fighter__body--swing", 110);
                         Pulse(e.target, "fighter__body--hurt", 90);
+                        // The white flash is what actually sells a hit landing — the eye reads a
+                        // one-frame blowout as contact long before it reads a number appearing.
+                        Pulse(e.target, "fighter__body--flash", 70);
+                        Knock(e.target, e.actor);
+                        if (e.crit) _hitStop = Mathf.Max(_hitStop, 0.07f);
                         break;
                     case EventKind.Heal:
                         Float(e.target, "+" + e.amount.ToString("N0"), "floater floater--heal");
@@ -338,6 +378,10 @@ namespace ExcelHeroes.UI
                         if (e.actor != null && e.actor.side == Side.Hero) PlayCutIn(e.actor, e.text);
                         break;
                     case EventKind.Death:
+                        // A kill is the beat worth stopping for; a monster popping mid-stride is
+                        // the moment the whole exchange was building to.
+                        if (e.target != null && e.target.side == Side.Monster)
+                            _hitStop = Mathf.Max(_hitStop, e.target.boss != null ? 0.18f : 0.09f);
                         if (_views.TryGetValue(e.target, out var dead)) dead.AddToClassList("fighter--dead");
                         if (e.target != null && e.target.side == Side.Monster) Log($"{e.target.name} 처리 완료");
                         else if (e.target != null) Log($"{e.target.name} 이탈");
@@ -453,6 +497,12 @@ namespace ExcelHeroes.UI
             var height = _stage.resolvedStyle.height;
             if (width <= 0f || height <= 0f) return;
 
+            if (_fx != null)
+            {
+                _fx.ScaleX = width / BattleSim.FieldW;
+                _fx.ScaleY = height / CityBackdrop.CanvasH;
+            }
+
             LayoutShots(width, height);
             LayoutMotes(width, height, dt);
 
@@ -480,6 +530,12 @@ namespace ExcelHeroes.UI
                 // 176px wide and an office monster's body 84, so a fighter standing at the right
                 // edge of the field hung off the right edge of the screen by up to a third of
                 // itself — which the field's overflow:hidden then cropped mid-sprite.
+                if (_knock.TryGetValue(c, out var knock) && Mathf.Abs(knock) > 0.2f)
+                {
+                    drawX += knock;
+                    _knock[c] = Mathf.MoveTowards(knock, 0f, dt * 60f);
+                }
+
                 var t = Mathf.Clamp01(drawX / BattleSim.FieldW);
                 var w = el.resolvedStyle.width;
                 if (float.IsNaN(w) || w <= 1f) w = FighterWidth;
@@ -530,6 +586,45 @@ namespace ExcelHeroes.UI
         /// the attacker's lunge and the target's recoil, which together are what turn two circles
         /// exchanging numbers into something that reads as a hit landing.
         /// </summary>
+        /// <summary>
+        /// The whole field jolts, as in the web build — `em.shake` translated onto the canvas
+        /// before anything is drawn. Random each frame so it reads as a jolt and not as a slide.
+        /// </summary>
+        void ApplyShake()
+        {
+            if (_stage == null) return;
+            var s = _sim.Shake;
+            if (s <= 0.01f)
+            {
+                _stage.style.translate = new StyleTranslate(new Translate(0, 0));
+                return;
+            }
+            _stage.style.translate = new StyleTranslate(new Translate(
+                (Random.value - 0.5f) * s, (Random.value - 0.5f) * s));
+        }
+
+        void UpdateCombo()
+        {
+            if (_comboLabel == null) return;
+            var on = _sim.Combo >= 5;
+            _comboLabel.text = on ? $"{_sim.Combo} COMBO" : "";
+            _comboLabel.EnableInClassList("combo--on", on);
+        }
+
+        // How far a hit shoves its target, and how long the shove lasts.
+        const float KnockDistance = 9f;
+        readonly System.Collections.Generic.Dictionary<Combatant, float> _knock = new();
+
+        /// <summary>
+        /// Pushes the target away from whoever hit it, for a moment. Three pixels of recoil is the
+        /// difference between an attack that connects and two sprites overlapping.
+        /// </summary>
+        void Knock(Combatant target, Combatant from)
+        {
+            if (target == null || from == null) return;
+            _knock[target] = from.side == Side.Hero ? KnockDistance : -KnockDistance;
+        }
+
         void Pulse(Combatant who, string cls, long ms)
         {
             if (who == null || !_views.TryGetValue(who, out var el)) return;
@@ -544,15 +639,30 @@ namespace ExcelHeroes.UI
         /// the line they shout — the one moment during play where the card art is the whole screen.
         /// It is deliberately short: at roughly a second it punctuates a fight rather than pausing it.
         /// </summary>
+        // At most one cut-in in this window. Five heroes on auto fire an EX every couple of
+        // seconds between them, so without a gate the band was up more often than it was down and
+        // the thing meant to punctuate the fight became the fight.
+        const float CutInGap = 7f;
+        float _cutInAt = -99f;
+
         void PlayCutIn(Combatant hero, string skillName)
         {
             var def = GameData.Hero(hero.heroId);
             if (def == null || _root == null) return;
 
+            // Only the rare cards get one, and only if the last has had time to clear. A D-grade
+            // basic skill announcing itself with a portrait is what made them all feel cheap.
+            var rank = GameData.GradeRank(def.grade);
+            if (rank < 3 || Time.time - _cutInAt < CutInGap) return;
+            _cutInAt = Time.time;
+
             // A second cut-in landing on top of the first reads as a glitch, so the last one wins.
             _cutIn?.RemoveFromHierarchy();
 
-            var view = UiKit.Div("cutin clips", _root);
+            // Inside the battlefield, not over the whole sheet. An EX skill is something that
+            // happens on the field; taking the app's full height for it covered the chrome, the
+            // upgrade strip and the log, none of which the skill has anything to do with.
+            var view = UiKit.Div("cutin clips", _stage ?? _root);
             _cutIn = view;
 
             var sweep = UiKit.Div("cutin__sweep", view);
@@ -590,21 +700,28 @@ namespace ExcelHeroes.UI
         {
             if (at == null || !_views.TryGetValue(at, out var anchor)) return;
             var el = UiKit.Text(text, classes, _stage);
+            var top = anchor.resolvedStyle.top;
+            if (float.IsNaN(top) || top <= 0f) top = _stage.resolvedStyle.height * GroundFraction - 90f;
             el.style.left = anchor.style.left;
-            el.style.top = anchor.style.top;
-            _floaters.Add((el, 0.9f));
+            el.style.top = top;
+            _floaters.Add((el, 0.9f, top));
         }
 
         void UpdateFloaters(float dt)
         {
             for (var i = _floaters.Count - 1; i >= 0; i--)
             {
-                var (el, life) = _floaters[i];
+                var (el, life, y) = _floaters[i];
                 life -= dt;
                 if (life <= 0f) { el.RemoveFromHierarchy(); _floaters.RemoveAt(i); continue; }
-                el.style.top = el.resolvedStyle.top - 40f * dt;
-                el.style.opacity = Mathf.Clamp01(life / 0.9f);
-                _floaters[i] = (el, life);
+
+                // A quick pop upward that slows, rather than a constant crawl — the first tenth of
+                // a second is where a damage number does its work.
+                var k = 1f - life / 0.9f;
+                y -= 130f * dt * (1f - k * 0.7f);
+                el.style.top = y;
+                el.style.opacity = Mathf.Clamp01(life / 0.45f);
+                _floaters[i] = (el, life, y);
             }
         }
 
@@ -637,19 +754,62 @@ namespace ExcelHeroes.UI
             Game.Touch();
         }
 
+        /// <summary>
+        /// The run's result, as the same Excel dialog the rest of the game interrupts with. It was
+        /// a panel dropped into the battle layout, so it pushed the field and the EX bar around as
+        /// it appeared and read as part of the sheet rather than as a thing that had happened.
+        ///
+        /// It closes itself when the next run starts, so nothing has to be tapped.
+        /// </summary>
         void ShowResult()
         {
             AudioService.Play(_sim.Won ? "victory" : "defeat");
 
-            _resultView = UiKit.Div("result", _root);
-            UiKit.Text(_sim.Won ? "업무 완료" : "업무 실패",
-                "result__title " + (_sim.Won ? "result__title--win" : "result__title--lose"), _resultView);
+            var dialog = UiKit.Div("xl-dialog result-dialog");
+            _resultView = dialog;
 
+            var caption = UiKit.Div("xl-dialog__caption", dialog);
+            UiKit.Text("계산 결과", "xl-dialog__caption-title", caption);
+            UiKit.Div("spacer", caption);
+            UiKit.Btn("✕", "xl-dialog__close", _app.CloseOverlay, caption);
+
+            var body = UiKit.Div("xl-dialog__body", dialog);
+
+            var head = UiKit.Div("xl-dialog__head", body);
+            var icon = UiKit.Text(_sim.Won ? "✓" : "!", "xl-dialog__icon", head);
+            if (!_sim.Won) icon.style.backgroundColor = new Color(0.77f, 0.25f, 0.18f);
+            var headText = UiKit.Div("xl-dialog__head-text", head);
+            UiKit.Text(_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패",
+                "xl-dialog__title", headText);
+            UiKit.Text(_sim.Won ? $"다음 구간은 Phase {Game.Player.stage} 입니다."
+                                : "이 구간을 한 번 더 돌립니다.", "xl-dialog__subtitle", headText);
+
+            // The payout as worksheet rows, because that is what the rest of the disguise looks like.
+            var sheet = UiKit.Div("xl-dialog__sheet", body);
             var gems = _sim.GemsDropped + (_sim.Won ? 5 + _sim.GemBonus : 0);
-            UiKit.Text($"골드 +{_sim.GoldEarned:N0} · 보석 +{gems}", null, _resultView);
-            UiKit.Text(_sim.Won ? $"다음 구간: Phase {Game.Player.stage}" : "이 구간을 한 번 더 돕니다.",
-                "muted", _resultView);
-            UiKit.Text("잠시 후 자동으로 다시 시작합니다", "result__auto", _resultView);
+            Row(sheet, 1, "처리 건수", $"{_sim.Kills:N0}");
+            Row(sheet, 2, "골드", $"+{_sim.GoldEarned:N0}", accent: true);
+            Row(sheet, 3, "보석", $"+{gems:N0}", accent: true);
+
+            UiKit.Text("잠시 후 자동으로 다시 시작합니다.", "xl-dialog__note", body);
+
+            var foot = UiKit.Div("xl-dialog__foot", dialog);
+            UiKit.Btn("편성 보기", "xl-btn", () =>
+            {
+                _app.CloseOverlay();
+                _app.Show(AppRoot.Sheet.Roster);
+            }, foot);
+            UiKit.Btn("계속", "xl-btn xl-btn--default", _app.CloseOverlay, foot);
+
+            _app.OpenOverlay(dialog);
+        }
+
+        static void Row(VisualElement sheet, int n, string label, string value, bool accent = false)
+        {
+            var row = UiKit.Div("xl-row" + (accent ? " xl-row--grant" : ""), sheet);
+            UiKit.Text(n.ToString(), "xl-row__n", row);
+            UiKit.Text(label, "xl-row__cell", row);
+            UiKit.Text(value, "xl-row__value", row);
         }
 
         // ---------------------------------------------------------------- 사무실 개선

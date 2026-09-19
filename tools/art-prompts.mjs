@@ -8,10 +8,27 @@
 //   3. One design per hero. Motion comes from same-pose variants (see posePrompt), never from a
 //      redesign, so the detail screen can cross-fade between frames.
 
+/**
+ * The look, described rather than referenced.
+ *
+ * The ask was "make it taste like Blue Archive". I am not feeding the model Nexon's own character
+ * art to copy from — that is someone else's copyrighted work, and a game that might ship should not
+ * be built on derivatives of it. What actually moves these models is a specific written description
+ * anyway, so this is that description: the rendering decisions that produce the look, named one by
+ * one, instead of a picture to imitate.
+ */
 export const STYLE = [
-  'Style: premium Korean mobile-gacha character art (Blue Archive tier),',
-  'clean confident lineart, crisp cel shading with two shadow steps, soft rim light,',
-  'saturated character colours against a quiet background, high finish, no sketchiness.',
+  'Style: premium Korean mobile-gacha character art, the Blue Archive school of anime illustration.',
+  'Crisp uniform-weight lineart that thins at the ends of a stroke. Cel shading in exactly two steps',
+  'with hard-edged shadow shapes, never a soft airbrushed gradient on skin or cloth.',
+  'A bright key light from the front and slightly above, a coloured rim light along the far shoulder',
+  'and jaw picking the figure off the background, and a warm bounce under the chin.',
+  'Large clean eyes with a bright highlight, a small secondary highlight, and a soft colour gradient',
+  'in the iris; a light blush across the nose. Hair drawn in a few big confident clumps with a glossy',
+  'band across the top, not in thousands of strands.',
+  'Clothing folds simplified to a handful of decisive creases that follow the pose.',
+  'Saturated character colours against a quiet flat background. High finish, no sketchiness,',
+  'no visible brush texture, no painterly rendering, no photorealism, no 3D render look.',
 ].join(' ');
 
 export const NEGATIVE = [
@@ -260,9 +277,11 @@ export const UI_PIECES = {
 };
 
 /**
- * 스킨 — the same person in different clothes. Two per character, the pair the web build ships:
- * 캐주얼 for the weekend and 정장 for the day it matters. Everything that identifies them survives;
- * only the outfit and the pose change, so a player who swaps a skin still sees the same colleague.
+ * 스킨 — the same person in different clothes.
+ *
+ * NOT RUN by default any more: the cast is one illustration per character, with the motion coming
+ * from ArtMotion rather than from a second drawing. Kept because the command still works and the
+ * web build does ship 캐주얼 / 정장 outfits, so this is what to run if they come back.
  */
 const SKIN_OUTFIT = {
   casual: [

@@ -172,25 +172,23 @@ namespace ExcelHeroes.UI
 
             var view = UiKit.Div("detail");
 
+            // The whole illustration, not a crop of it. The card is the thing the player pulled;
+            // showing them the middle third of it in a box of a fixed height is the one place in
+            // the game where cropping is simply wrong. The plate takes its height from the
+            // picture's own aspect ratio, so nothing is cut and there are no bars either.
             var art = UiKit.Div("detail__art", view);
             UiKit.SetArt(art, GameData.CardArt(heroId));
             ArtMotion.Breathe(art);
 
-            // Outfits, not motion frames: the web build ships three illustrations per hero and no
-            // in-between poses, and a generated tween between two drawings of the same face lands
-            // in the uncanny gap rather than reading as breathing.
-            var skins = GameData.SkinsOf(heroId);
-            if (skins.Count > 1)
+            var sprite = GameData.CardArt(heroId);
+            if (sprite != null && sprite.rect.width > 0f)
             {
-                var slot = 0;
-                var switcher = UiKit.Div("detail__skins", view);
-                foreach (var skin in skins)
+                var aspect = sprite.rect.width / sprite.rect.height;
+                art.RegisterCallback<GeometryChangedEvent>(e =>
                 {
-                    var which = skin;
-                    var label = which switch { "casual" => "캐주얼", "formal" => "정장", _ => "기본" };
-                    UiKit.Btn(label, "detail__skin", () => UiKit.SetArt(art, GameData.CardArt(heroId, which)), switcher);
-                    slot++;
-                }
+                    var w = e.newRect.width;
+                    if (w > 1f) art.style.height = w / aspect;
+                });
             }
 
             UiKit.Div("detail__scrim", view);

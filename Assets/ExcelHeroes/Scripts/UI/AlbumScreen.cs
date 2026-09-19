@@ -87,13 +87,18 @@ namespace ExcelHeroes.UI
             UiKit.Text(def.name, "viewer__name", caption);
             UiKit.Text($"{def.nick} · {def.dept}", "viewer__nick", caption);
 
-            var tabs = UiKit.Div("viewer__skins", panel);
+            // One illustration per character now, so the outfit tabs only appear if a hero
+            // actually has more than one — a row containing a single "기본" button is furniture.
             var buttons = new List<Button>();
-            for (var i = 0; i < skins.Count; i++)
+            if (skins.Count > 1)
             {
-                var slot = i;
-                var label = skins[i] switch { "casual" => "캐주얼", "formal" => "정장", _ => "기본" };
-                buttons.Add(UiKit.Btn(label, "viewer__skin", () => { index = slot; Apply(); }, tabs));
+                var tabs = UiKit.Div("viewer__skins", panel);
+                for (var i = 0; i < skins.Count; i++)
+                {
+                    var slot = i;
+                    var label = skins[i] switch { "casual" => "캐주얼", "formal" => "정장", _ => "기본" };
+                    buttons.Add(UiKit.Btn(label, "viewer__skin", () => { index = slot; Apply(); }, tabs));
+                }
             }
 
             UiKit.Btn("닫기", "btn btn--ghost viewer__close", _app.CloseOverlay, panel);

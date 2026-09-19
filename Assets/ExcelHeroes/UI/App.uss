@@ -15,6 +15,14 @@
     font-size: 40px;
 }
 
+/* The whole UI is set in Noto Sans KR. Unity's built-in font has no Hangul at all, so every
+   Korean glyph was coming from whatever fallback the editor happened to pick — which is why the
+   chrome, the card names and the battle log were in three subtly different faces. Text properties
+   inherit, so declaring it once on the root covers the overlays too. */
+.root {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Medium%20SDF.asset");
+}
+
 .spacer { flex-grow: 1; }
 .hidden { display: none; }
 
@@ -293,9 +301,9 @@
     position: absolute;
     top: 10px;
     right: 6px;
-    min-width: 38px;
-    height: 38px;
-    border-radius: 19px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 22px;
     background-color: rgb(196, 43, 28);
     color: rgb(255, 255, 255);
     font-size: 22px;
@@ -722,9 +730,9 @@
     position: absolute;
     left: 8px;
     top: 8px;
-    width: 46px;
-    height: 46px;
-    border-radius: 23px;
+    width: 52px;
+    height: 52px;
+    border-radius: 26px;
     color: rgb(255, 255, 255);
     -unity-font-style: bold;
     font-size: 26px;
@@ -786,14 +794,12 @@
     overflow: hidden;
 }
 
+/* The height is set from the illustration's own aspect ratio in HeroDetail, so the whole card is
+   visible with neither a crop nor letterbox bars. */
 .detail__art {
-    height: 660px;
     flex-shrink: 0;
     background-color: rgb(238, 238, 238);
-    /* Fills the plate and crops the feet rather than leaving grey bars either side of a portrait
-       in a landscape-ish box. Anchored to the top, because the face is what identifies a card. */
-    -unity-background-scale-mode: scale-and-crop;
-    background-position-y: top;
+    -unity-background-scale-mode: stretch-to-fill;
 }
 
 .detail__scrim { display: none; }
@@ -967,11 +973,15 @@
 
 .fighter__name { display: none; }
 
+/* Damage numbers. White on the dark field rather than the old mustard, which was invisible over
+   the road, and with a dark outline so they stay readable over a lit window or a sprite. */
 .floater {
     position: absolute;
-    font-size: 45px;
+    font-size: 42px;
     -unity-font-style: bold;
-    color: rgb(150, 112, 8);
+    color: rgb(255, 255, 255);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(10, 12, 18, 0.9);
 }
 
 .floater--heal { color: rgb(24, 92, 55); }
@@ -1196,12 +1206,20 @@
    it is what makes a skill feel like a person acting rather than a number resolving. */
 
 /* `clips` tells LayoutAudit that children overrunning this box are deliberate. */
+/* The EX cut-in: a band across the bottom of the battlefield, not a takeover of it.
+
+   It used to cover the whole field, so firing a skill hid the fight the skill was part of — the
+   party, the monsters and the effects all disappeared for a second and a quarter behind a portrait.
+   Blue Archive puts its EX portrait in the lower corner for exactly this reason: the moment is
+   worth announcing, but not worth blinding the player through.
+
+   `clips` tells LayoutAudit that children overrunning this box are deliberate. */
 .cutin {
     position: absolute;
     left: 0;
     right: 0;
-    top: 0;
     bottom: 0;
+    height: 46%;
     justify-content: center;
     overflow: hidden;
 }
@@ -1210,24 +1228,30 @@
     position: absolute;
     left: -120%;
     right: 120%;
-    height: 672px;
-    background-color: rgba(240, 196, 70, 0.22);
+    top: 0;
+    bottom: 0;
+    background-color: rgba(18, 20, 28, 0.72);
+    border-top-width: 3px;
+    border-top-color: rgba(240, 196, 70, 0.9);
     transition-duration: 0.28s;
 }
 
 .cutin__sweep--in { left: -10%; right: -10%; }
 
+/* A bust crop anchored to the left of the band, sliding in from off-screen. */
 .cutin__art {
     position: absolute;
-    left: -60%;
-    width: 70%;
-    height: 672px;
+    left: -40%;
+    bottom: 0;
+    width: 46%;
+    height: 150%;
     -unity-background-scale-mode: scale-and-crop;
+    background-position-y: top;
     opacity: 0;
     transition-duration: 0.3s;
 }
 
-.cutin__art--in { left: -4%; opacity: 1; }
+.cutin__art--in { left: -2%; opacity: 1; }
 
 .cutin__plate {
     position: absolute;
@@ -1603,9 +1627,9 @@
     position: absolute;
     top: 6px;
     left: 8px;
-    min-width: 42px;
-    height: 42px;
-    border-radius: 20px;
+    min-width: 48px;
+    height: 48px;
+    border-radius: 24px;
     background-color: rgb(31, 111, 235);
     color: rgb(255, 255, 255);
     font-size: 26px;
@@ -2061,8 +2085,8 @@
 }
 
 .grade-head__tag {
-    min-width: 46px;
-    height: 46px;
+    min-width: 52px;
+    height: 52px;
     -unity-text-align: middle-center;
     -unity-font-style: bold;
     font-size: 28px;
@@ -2420,8 +2444,8 @@
     position: absolute;
     left: 0;
     top: 0;
-    min-width: 58px;
-    height: 58px;
+    min-width: 64px;
+    height: 64px;
     -unity-text-align: middle-center;
     -unity-font-style: bold;
     font-size: 32px;
@@ -2487,7 +2511,7 @@
 .rate-chip {
     flex-direction: row;
     align-items: center;
-    height: 54px;
+    height: 60px;
     margin-right: 10px;
     padding-right: 14px;
     background-color: rgb(243, 245, 247);
@@ -2495,8 +2519,8 @@
 }
 
 .rate-chip__id {
-    width: 50px;
-    height: 54px;
+    width: 56px;
+    height: 60px;
     -unity-text-align: middle-center;
     -unity-font-style: bold;
     font-size: 28px;
@@ -2510,8 +2534,8 @@
 .pity__row { flex-direction: row; align-items: center; height: 62px; }
 
 .pity__tag {
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
     -unity-text-align: middle-center;
     -unity-font-style: bold;
     font-size: 28px;
@@ -2611,3 +2635,48 @@
 }
 
 .battle-empty__go { margin-top: 40px; min-width: 460px; }
+
+
+/* The run's result. Narrower than the onboarding dialog because it carries three numbers, and it
+   never needs to be dismissed — the next run takes it down. */
+.result-dialog { width: 84%; }
+
+
+/* ---------------------------------------------------------------- hit effects */
+
+/* The Painter2D canvas the arcs, bursts and sparks are drawn on. It covers the field and never
+   takes a click; the fighters are added after it, so nothing is painted over a face. */
+.fx-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* One frame of blowout on the thing that just got hit. The eye reads this as contact before it
+   reads the number, which is most of why a hit lands at all. */
+.fighter__body--flash {
+    -unity-background-image-tint-color: rgb(255, 255, 255);
+    scale: 1.12 1.12;
+}
+
+.floater--crit {
+    font-size: 58px;
+    color: rgb(250, 204, 70);
+    -unity-font-style: bold;
+    -unity-text-outline-width: 3px;
+}
+
+/* 콤보. Only appears once a run of hits is worth noticing, so it means something when it does. */
+.combo {
+    position: absolute;
+    right: 18px;
+    top: 14px;
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(250, 204, 70);
+    opacity: 0;
+}
+
+.combo--on { opacity: 1; }
