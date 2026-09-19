@@ -167,7 +167,7 @@ namespace ExcelHeroes.EditorTools
 
             // The shell needs these names; the screens query them and would take a null otherwise.
             var uxml = System.IO.File.Exists(uxmlPath) ? System.IO.File.ReadAllText(uxmlPath) : "";
-            foreach (var name in new[] { "content", "overlay", "sheetTabs", "formula", "gemValue", "goldValue" })
+            foreach (var name in new[] { "content", "overlay", "rail", "statusText", "gemValue", "goldValue" })
                 Check(uxml.Contains($"name=\"{name}\""), $"AppShell defines #{name}");
         }
 

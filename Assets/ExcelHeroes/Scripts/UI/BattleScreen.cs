@@ -22,7 +22,7 @@ namespace ExcelHeroes.UI
         public string Formula => "=SUMIFS(Sheet2!D:D,Sheet2!A:A,\"Q3\",Sheet2!B:B,\">0\")";
 
         readonly AppRoot _app;
-        VisualElement _root, _stage, _resultView, _upgradeBar;
+        VisualElement _root, _stage, _resultView, _upgradeBar, _backdropView;
         BattleFx _fx;
         Label _comboLabel;
         Label _waveLabel;
@@ -75,19 +75,33 @@ namespace ExcelHeroes.UI
         {
             _root = UiKit.Div("battle");
 
-            var hud = UiKit.Div("battle__hud", _root);
-            _waveLabel = UiKit.Text("", "battle__wave", hud);
-            // One toggle, called what it is. The ×1–3 speed control went with it: the run now keeps
-            // going while you are on another sheet, so the reason to fast-forward was gone.
-            _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
-
+            // The field takes the whole frame and the rest floats on it.
+            //
+            // Held sideways it used to share the height with a log box: the fight got the top
+            // half and an empty white panel got the bottom, which is the layout of a tool, not
+            // of a game. A landscape game gives the picture everything and puts the readouts
+            // over it.
             _stage = UiKit.Div("battle__stage", _root);
+
+            // The backdrop is a child rather than this box's own background image, so it can be
+            // taller than the box and hang off the top. Held sideways the sheet is far wider than
+            // the street is tall, so the whole 832-unit field fits across and the sky is what gets
+            // cut — which is what a side-view game does with a wide frame.
+            _backdropView = UiKit.Div("battle__backdrop", _stage);
 
             // 콤보 — the count sits over the field, because it is about what is happening there.
             _comboLabel = UiKit.Text("", "combo", _stage);
 
             // 사무실 개선 — the gold sink, under the field rather than on a sheet of its own,
             // because it is meant to be spent from without leaving the fight that earns it.
+            // Added after the field so they draw over it: UI Toolkit has no z-index, and the
+            // order things are built in is the only thing that decides what is on top.
+            var hud = UiKit.Div("battle__hud", _root);
+            _waveLabel = UiKit.Text("", "battle__wave", hud);
+            // One toggle, called what it is. The ×1–3 speed control went with it: the run now keeps
+            // going while you are on another sheet, so the reason to fast-forward was gone.
+            _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
+
             _upgradeBar = UiKit.Div("upgrades", _root);
 
             _log = UiKit.Scroll("battle-log", _root);
@@ -113,6 +127,12 @@ namespace ExcelHeroes.UI
             _shotViews.Clear();
             _motes.Clear();
             _stage.Clear();
+
+            // Rebuilt here, not kept from Build(): clearing the stage detaches it, and the field
+            // then drew an empty sky over a live reference to an element that was no longer in the
+            // tree. The street has been missing since the first run for exactly this reason.
+            _backdropView = UiKit.Div("battle__backdrop", _stage);
+
             _comboLabel = UiKit.Text("", "combo", _stage);
             // The effects layer goes in first so the fighters draw over it — a spark belongs
             // behind the thing it came off, not painted across its face.
@@ -124,7 +144,7 @@ namespace ExcelHeroes.UI
                 _backdropStage = _sim.Stage;
                 _backdrop = CityBackdrop.Build(_backdropStage);
             }
-            _stage.style.backgroundImage = new StyleBackground(_backdrop);
+            if (_backdropView != null) _backdropView.style.backgroundImage = new StyleBackground(_backdrop);
 
             foreach (var h in _sim.Heroes) AddFighterView(h);
             foreach (var m in _sim.Monsters) AddFighterView(m);
@@ -372,21 +392,23 @@ namespace ExcelHeroes.UI
         {
             if (_log == null) return;
             _logLines.Add(line);
-            if (_logLines.Count > 40) _logLines.RemoveAt(0);
+            // Four lines, because it sits over the fight now rather than in a box of its own —
+            // enough to catch what just happened, not enough to cover the party.
+            if (_logLines.Count > 4) _logLines.RemoveAt(0);
 
             _log.Clear();
             for (var i = 0; i < _logLines.Count; i++)
             {
                 var row = UiKit.Div("log-row", _log);
                 UiKit.Text((i + 1).ToString(), "log-row__n", row);
-                UiKit.Text(_app.Stealth ? StealthLabels.LogLine(i) : _logLines[i], "log-row__text", row);
+                UiKit.Text(_logLines[i], "log-row__text", row);
             }
             _log.scrollOffset = new Vector2(0, float.MaxValue);
         }
 
         // Kept in step with .fighter / .fighter__body in App.uss: a 16x28 sprite at 4x, on rows tall
         // enough to clear it.
-        const float FighterWidth = 92f;
+        const float FighterWidth = 190f;
 
         // The camera does not show the whole 832-unit field any more.
         //
@@ -394,8 +416,22 @@ namespace ExcelHeroes.UI
         // of the field was permanently empty road and every fighter was drawn small to fit space
         // nothing happened in. Showing this window instead is about a 1.3x zoom, which is enough
         // for the sprites to read at arm's length without cropping anyone out of frame.
-        const float ViewX0 = 110f, ViewX1 = 760f;
-        const float ViewW = ViewX1 - ViewX0;
+        // One scale for both axes, taken from the width, so the whole street spans the sheet and
+        // nothing is stretched. The ground line is pinned near the bottom of the box, so the party
+        // stands on the road however tall the sheet happens to be.
+        // Up from 0.84: the gold strip is anchored along the bottom now, and at the old line
+        // the party stood behind it.
+        const float GroundAnchor = 0.70f;
+
+        // The window on the field, in the simulation's own units.
+        //
+        // The party stands around x=200-400 and monsters are fought at roughly 450-650, so showing
+        // all 832 units spent a quarter of the screen on empty road at each end and drew everyone
+        // small to make room for it. Framing 100-740 is a 1.3x zoom onto the part where the fight
+        // actually is, and still leaves a monster room to walk in from the right.
+        const float CamX0 = 100f, CamX1 = 740f;
+
+        float _scale = 1f, _groundY, _camX;
 
         // The party stands on one line, as in the web build, with a six-pixel stagger so a
         // five-stack still reads as five people. Rows were readable but they turned a side-view
@@ -425,10 +461,10 @@ namespace ExcelHeroes.UI
 
                 var k = shot.Progress;
                 var x = Mathf.Lerp(shot.From.x, shot.To.x, k);
-                    el.style.left = Mathf.Clamp01((x - ViewX0) / ViewW) * (width - FighterWidth) + FighterWidth * 0.5f;
+                el.style.left = _camX + x * _scale;
                 // A thrown thing arcs; a slash does not travel at all.
                 var arc = shot.Kind == "slash" ? 0f : Mathf.Sin(k * Mathf.PI) * 30f;
-                el.style.top = height * GroundFraction - 46f - arc;
+                el.style.top = _groundY - 46f - arc;
             }
 
             foreach (var pair in _shotViews.ToList())
@@ -469,13 +505,29 @@ namespace ExcelHeroes.UI
             var height = _stage.resolvedStyle.height;
             if (width <= 0f || height <= 0f) return;
 
+            _scale = width / (CamX1 - CamX0);
+            _camX = -CamX0 * _scale;
+            _groundY = height * GroundAnchor;
+
+            if (_backdropView != null)
+            {
+                // The street is drawn at field scale and slid under the camera, so the road, the
+                // buildings and the sprites all move together when the window changes.
+                _backdropView.style.width = CityBackdrop.CanvasW * _scale;
+                _backdropView.style.height = CityBackdrop.CanvasH * _scale;
+                _backdropView.style.left = _camX;
+                // Line the drawn road up with where the sprites actually stand.
+                _backdropView.style.top = _groundY - CityBackdrop.GroundY * _scale;
+            }
+
             if (_fx != null)
             {
-                // The effects ride the same zoom as the fighters, or a slash lands somewhere the
-                // sprite is not.
-                _fx.ScaleX = width / ViewW;
-                _fx.OffsetX = -ViewX0 * _fx.ScaleX;
-                _fx.ScaleY = height / CityBackdrop.CanvasH;
+                // The effects ride the same mapping as the fighters, or a slash lands somewhere
+                // the sprite is not.
+                _fx.ScaleX = _scale;
+                _fx.ScaleY = _scale;
+                _fx.OffsetX = _camX;
+                _fx.OffsetY = _groundY - CityBackdrop.GroundY * _scale;
             }
 
             LayoutShots(width, height);
@@ -511,10 +563,10 @@ namespace ExcelHeroes.UI
                     _knock[c] = Mathf.MoveTowards(knock, 0f, dt * 60f);
                 }
 
-                var t = Mathf.Clamp01((drawX - ViewX0) / ViewW);
                 var w = el.resolvedStyle.width;
                 if (float.IsNaN(w) || w <= 1f) w = FighterWidth;
-                el.style.left = Mathf.Clamp(t * (width - FighterWidth), 0f, Mathf.Max(0f, width - w));
+                el.style.left = Mathf.Clamp(_camX + drawX * _scale - w * 0.5f,
+                    -w * 0.5f, Mathf.Max(0f, width - w * 0.5f));
 
                 // One fighter per worksheet row. The first version staggered them by 34px, which is
                 // a fifth of a sprite's height, so a five-hero party read as one smear — and once
@@ -522,7 +574,7 @@ namespace ExcelHeroes.UI
                 // side-view line stays a line: x is still distance, y is only identity.
                 var lane = Mathf.Max(0, c.side == Side.Hero ? _sim.Heroes.IndexOf(c) : _sim.Monsters.IndexOf(c));
                 // The sprite is anchored by its feet, so subtract its height to sit ON the ground.
-                var feet = height * GroundFraction + (lane % 2 == 0 ? -StaggerY : StaggerY);
+                var feet = _groundY + (lane % 2 == 0 ? -StaggerY : StaggerY);
                 el.style.top = feet - (c.boss != null ? 138f : 92f);
 
                 var fill = el.Q(className: "fighter__hpfill");
@@ -666,7 +718,7 @@ namespace ExcelHeroes.UI
             if (at == null || !_views.TryGetValue(at, out var anchor)) return;
             var el = UiKit.Text(text, classes, _stage);
             var top = anchor.resolvedStyle.top;
-            if (float.IsNaN(top) || top <= 0f) top = _stage.resolvedStyle.height * GroundFraction - 90f;
+            if (float.IsNaN(top) || top <= 0f) top = _groundY - 90f;
             el.style.left = anchor.style.left;
             el.style.top = top;
             _floaters.Add((el, 0.9f, top));

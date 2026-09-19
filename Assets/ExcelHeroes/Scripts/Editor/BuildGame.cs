@@ -36,9 +36,10 @@ namespace ExcelHeroes.EditorTools
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "kr.qugo.excelheroes");
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
-            // Portrait only: the whole layout is a phone held upright, and a landscape frame would
-            // put a 2:1 battlefield beside a sheet with no room for either.
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            // Landscape. The fight is a 2:1 side view of a street and the web build it comes from
+            // is a desktop window — held upright, the field had to be squeezed into a band with a
+            // sky three times too tall above it, and the sheet had a third of its height spare.
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
 
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             Directory.CreateDirectory("Build/Android");
@@ -59,12 +60,10 @@ namespace ExcelHeroes.EditorTools
         [MenuItem("Excel Heroes/Build Windows Player")]
         public static void Windows()
         {
-            // A desktop player has no device orientation, so the portrait shape has to come from the
-            // default window size instead. Half of 1080x1920 fits on any laptop screen.
-            // 20:9, the shape of a current phone — 1080x2400 halved twice. The window used to be
-            // 16:9, which is a 2016 device, so everything was being checked against the wrong frame.
-            PlayerSettings.defaultScreenWidth = 540;
-            PlayerSettings.defaultScreenHeight = 1200;
+            // A desktop player has no device orientation, so the shape comes from the default
+            // window size: 20:9 on its side, which is a current phone held the way this is played.
+            PlayerSettings.defaultScreenWidth = 1200;
+            PlayerSettings.defaultScreenHeight = 540;
             PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
             PlayerSettings.defaultIsNativeResolution = false;
             PlayerSettings.resizableWindow = true;

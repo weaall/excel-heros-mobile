@@ -22,6 +22,7 @@ namespace ExcelHeroes.UI
 
         readonly AppRoot _app;
         VisualElement _root, _pickup;
+        VisualElement _side;
         Label _pityA, _pityS, _total;
         Button _one, _ten;
 
@@ -49,6 +50,7 @@ namespace ExcelHeroes.UI
         void BuildPickup()
         {
             _pickup.Clear();
+            _side.Clear();
             if (GameData.Pickup == null) return;
 
             var featuredS = GameData.Featured("S", System.DateTime.UtcNow);
@@ -71,7 +73,7 @@ namespace ExcelHeroes.UI
             UiKit.Text("데이터_가져오기", "banner__title", plate);
 
             // ---- the two featured cards -------------------------------------------------
-            var row = UiKit.Div("pickup", _pickup);
+            var row = UiKit.Div("pickup", _side);
             foreach (var grade in new[] { "S", "A" })
             {
                 var hero = GameData.Featured(grade, System.DateTime.UtcNow);
@@ -118,13 +120,18 @@ namespace ExcelHeroes.UI
         {
             _root = UiKit.Div("gacha");
 
-            var scroll = UiKit.Scroll("gacha__scroll", _root);
-            _pickup = UiKit.Div(null, scroll);
+            // Two columns, because the banner is a tall picture and everything else is a stack
+            // of short rows. Stacked, as they were in portrait, the rates and the pity bars sat
+            // below the fold behind a scroll; side by side the whole offer is on one screen, which
+            // is the only way a player can weigh it.
+            var cols = UiKit.Div("gacha__cols", _root);
+            _pickup = UiKit.Div("gacha__left", cols);
+            _side = UiKit.Div("gacha__right", cols);
             BuildPickup();
 
             // Rates and the two pity floors, as one block of numbers under the banner rather than
             // as chips floating over it. Printed, not buried: they are what the banner is selling.
-            var rates = UiKit.Div("rates", scroll);
+            var rates = UiKit.Div("rates", _side);
             var rateRow = UiKit.Div("rates__row", rates);
             foreach (var g in GameData.Grades)
             {

@@ -44,8 +44,8 @@ namespace ExcelHeroes.UI
             UiKit.Text($"{read} / {GameData.Episodes.Count} 읽음 · 처음 읽으면 보석 {GameData.Balance.storyGems}",
                 "muted", head);
 
-            var list = UiKit.Scroll(null, _root);
-            foreach (var ep in GameData.Episodes.OrderBy(e => e.phase))
+            var pages = new Pages<EpisodeDef>(_root, "ep-grid", 6);
+            pages.Fill(GameData.Episodes.OrderBy(e => e.phase).ToList(), (ep, list) =>
             {
                 var unlocked = p.stage >= ep.phase;
                 var wasRead = p.readEpisodes.Contains(ep.id);
@@ -65,10 +65,10 @@ namespace ExcelHeroes.UI
                 UiKit.Text(ep.title, "section-title", row);
                 UiKit.Text(unlocked ? ep.room : $"Phase {ep.phase} 도달 시 해금", "muted", row);
 
-                if (!unlocked) continue;
+                if (!unlocked) return;
                 UiKit.Btn(wasRead ? "다시 읽기" : $"읽기 (보석 +{GameData.Balance.storyGems})", "btn",
                     () => Open(ep), row);
-            }
+            });
         }
 
         void Open(EpisodeDef ep)

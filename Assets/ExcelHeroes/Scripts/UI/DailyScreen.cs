@@ -58,10 +58,16 @@ namespace ExcelHeroes.UI
 
             BuildHead(p);
 
-            var scroll = UiKit.Scroll(null, _root);
-            BuildStamp(scroll, p, file);
-            BuildTasks(scroll, p);
-            BuildAllClear(scroll, p, file);
+            // Two columns: the calendar and the week's bonus on the left, the day's list on
+            // the right. Stacked they needed a scroll, and the thing a player opens this sheet for
+            // — what is ready to collect — was the part below the fold.
+            var cols = UiKit.Div("qs-cols", _root);
+            var left = UiKit.Div("qs-col", cols);
+            var right = UiKit.Div("qs-col qs-col--wide", cols);
+
+            BuildStamp(left, p, file);
+            BuildAllClear(left, p, file);
+            BuildTasks(right, p);
         }
 
         /// <summary>

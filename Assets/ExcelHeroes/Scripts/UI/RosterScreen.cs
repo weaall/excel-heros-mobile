@@ -53,52 +53,93 @@ namespace ExcelHeroes.UI
 
         public VisualElement Build()
         {
-            _root = UiKit.Div("screen-body");
+            _root = UiKit.Div("screen-body roster");
 
-            // 도감 — a number, right-aligned, and nothing else. It was a sentence taking the full
-            // width of the sheet header above a screen whose entire job is showing the cards it
-            // was counting.
-            var head = UiKit.Div("sheet-head sheet-head--tight", _root);
-            UiKit.Text("인사 명단", "sheet-head__title", head);
-            UiKit.Div("spacer", head);
-            _counter = UiKit.Text("", "sheet-head__count", head);
-
-            // ▼ 필터 — the web build's filter bar. Fifty-five cards in one scroll is a haystack:
-            // the question a player actually asks is "who is my B-grade healer", and without this
-            // the only way to answer it is to read every card.
+            // ▼ 필터 — the web build's filter bar, on one line. Fifty-five cards is a haystack: the
+            // question a player asks is "who is my B-grade healer", and without this the only way
+            // to answer it is to read every card. The 등급 row doubles as the grade sections the
+            // list used to be cut into — each chip carries its own owned/total count, so picking
+            // one IS opening that section.
             var bar = UiKit.Div("filter-bar", _root);
-            UiKit.Text("▼ 필터", "filter-bar__label", bar);
-            Chips(bar, "등급", new[] { ("", "전체"), ("S", "S"), ("A", "A"), ("B", "B"), ("C", "C"), ("D", "D") },
-                  () => _grade, v => _grade = v);
-            Chips(bar, "역할", new[] { ("", "전체"), ("tank", "탱커"), ("melee", "근접"), ("ranged", "원거리"), ("healer", "힐러") },
-                  () => _role, v => _role = v);
-            Chips(bar, "보유", new[] { ("", "전체"), ("1", "보유만"), ("0", "미보유"), ("party", "편성") },
-                  () => _owned, v => _owned = v);
+            _gradeRow = UiKit.Div("filter-row", bar);
 
-            _scroll = UiKit.Scroll(null, _root);
+            var right = UiKit.Div("filter-row", bar);
+            Chips(right, "역할", new[] { ("", "전체"), ("tank", "탱커"), ("melee", "근접"), ("ranged", "원거리"), ("healer", "힐러") },
+                  () => _role, v => _role = v);
+            Chips(right, "보유", new[] { ("", "전체"), ("1", "보유만"), ("0", "미보유"), ("party", "편성") },
+                  () => _owned, v => _owned = v);
+            UiKit.Div("spacer", right);
+            _counter = UiKit.Text("", "filter-row__count", right);
+
+            // A fixed grid rather than a scroll. Held sideways there is room for fourteen cards at
+            // a size a thumb can hit, and a page turn keeps a place the way a scroll position does
+            // not — come back to 인사 and you are on the page you left, not at the top again.
+            _grid = UiKit.Div("roster-grid", _root);
+
+            var pager = UiKit.Div("pager", _root);
+            _prev = UiKit.Btn("◀", "pager__btn", () => Turn(-1), pager);
+            _pageLabel = UiKit.Text("", "pager__label", pager);
+            _next = UiKit.Btn("▶", "pager__btn", () => Turn(1), pager);
+
             Refresh();
             return _root;
         }
 
+        /// <summary>Seven across, two down: what fits at a size a thumb can hit without a scroll.</summary>
+        const int PageSize = 14;
+
         string _grade = "", _role = "", _owned = "";
+        int _page;
+        VisualElement _grid, _gradeRow;
+        Button _prev, _next;
+        Label _pageLabel;
+
+        void Turn(int by)
+        {
+            _page += by;
+            AudioService.Play("nav", 0.4f);
+            Refresh();
+        }
 
         /// <summary>One row of the filter bar. Chips rather than dropdowns: a select on a phone is
         /// two taps and a modal, and these are all short lists.</summary>
         void Chips(VisualElement parent, string label, (string Value, string Text)[] options,
                    System.Func<string> get, System.Action<string> set)
         {
-            var row = UiKit.Div("filter-row", parent);
-            UiKit.Text(label, "filter-row__label", row);
+            UiKit.Text(label, "filter-row__label", parent);
             foreach (var (value, text) in options)
             {
                 var v = value;
-                var chip = UiKit.Btn(text, "filter-chip", () => { set(v); Rebuild(); }, row);
+                var chip = UiKit.Btn(text, "filter-chip", () => { set(v); _page = 0; Refresh(); }, parent);
                 chip.EnableInClassList("filter-chip--on", get() == v);
             }
         }
 
-        /// <summary>The filter bar is part of the sheet, so a change rebuilds the whole thing.</summary>
-        void Rebuild() => _app.Rebuild();
+        /// <summary>The 등급 chips, rebuilt each time because each one shows a live count.</summary>
+        void BuildGradeChips(PlayerState p)
+        {
+            _gradeRow.Clear();
+            UiKit.Text("등급", "filter-row__label", _gradeRow);
+
+            Chip("", "전체", GameData.Heroes.Count, GameData.Heroes.Count(h => p.Owns(h.id)));
+            foreach (var grade in GameData.Grades.OrderByDescending(g => GameData.GradeRank(g.id)))
+            {
+                var inGrade = GameData.Heroes.Where(h => h.grade == grade.id).ToList();
+                if (inGrade.Count == 0) continue;
+                var chip = Chip(grade.id, grade.id, inGrade.Count, inGrade.Count(h => p.Owns(h.id)));
+                // The grade's own colour, so the row reads as the grade ladder it is.
+                if (_grade == grade.id) chip.style.backgroundColor = grade.Color;
+            }
+
+            Button Chip(string value, string text, int total, int have)
+            {
+                var v = value;
+                var chip = UiKit.Btn($"{text} {have}/{total}", "filter-chip",
+                    () => { _grade = v; _page = 0; Refresh(); }, _gradeRow);
+                chip.EnableInClassList("filter-chip--on", _grade == v);
+                return chip;
+            }
+        }
 
         public void Refresh()
         {
@@ -113,41 +154,31 @@ namespace ExcelHeroes.UI
                     "0" => !p.Owns(h.id),
                     "party" => p.party.Contains(h.id),
                     _ => true,
-                })).ToList();
+                }))
+                // Best grade first and owned before locked, so the cards worth looking at are on
+                // the first page — the order the grade sections used to give for free.
+                .OrderByDescending(h => GameData.GradeRank(h.grade))
+                .ThenByDescending(h => p.Owns(h.id))
+                .ThenBy(h => h.name)
+                .ToList();
 
+            BuildGradeChips(p);
             _counter.text = $"{p.owned.Count}/{GameData.Heroes.Count}";
 
-            _scroll.Clear();
+            var pages = Mathf.Max(1, Mathf.CeilToInt(shown.Count / (float)PageSize));
+            _page = Mathf.Clamp(_page, 0, pages - 1);
 
-            // One section per grade, best first. Fifty-five cards in a single grid is a wall; the
-            // grade is the axis a player actually sorts by in their head, so it is the axis the
-            // page is cut along — and the header doubles as the "how many S do I have" readout
-            // that used to require counting.
-            foreach (var grade in GameData.Grades.OrderByDescending(g => GameData.GradeRank(g.id)))
-            {
-                var inGrade = shown.Where(h => h.grade == grade.id)
-                                   .OrderByDescending(h => p.Owns(h.id))
-                                   .ThenBy(h => h.name)
-                                   .ToList();
-                if (inGrade.Count == 0) continue;
+            _grid.Clear();
+            foreach (var def in shown.Skip(_page * PageSize).Take(PageSize))
+                _grid.Add(UiKit.Card(def, p.Find(def.id), () => _app.OpenDetail(def.id)));
 
-                var header = UiKit.Div("grade-head", _scroll);
-                var rule = UiKit.Div("grade-head__rule", header);
-                rule.style.backgroundColor = grade.Color;
+            // The last page is padded so four cards do not stretch across a row built for seven.
+            for (var i = shown.Count - _page * PageSize; i < PageSize; i++)
+                UiKit.Div("card card--ghost", _grid);
 
-                var tag = UiKit.Text(grade.id, "grade-head__tag", header);
-                tag.style.backgroundColor = grade.Color;
-                UiKit.Text(grade.label, "grade-head__label", header);
-                UiKit.Div("spacer", header);
-                UiKit.Text($"{inGrade.Count(h => p.Owns(h.id))}/{inGrade.Count}", "grade-head__count", header);
-
-                var grid = UiKit.Div("roster-grid", _scroll);
-                foreach (var def in inGrade)
-                    grid.Add(UiKit.Card(def, p.Find(def.id), () => _app.OpenDetail(def.id)));
-            }
-
-            if (shown.Count == 0)
-                UiKit.Text("조건에 맞는 사원이 없습니다.", "muted filter-empty", _scroll);
+            _pageLabel.text = shown.Count == 0 ? "조건에 맞는 사원이 없습니다" : $"{_page + 1} / {pages}";
+            _prev.SetEnabled(_page > 0);
+            _next.SetEnabled(_page < pages - 1);
         }
     }
 
@@ -180,25 +211,14 @@ namespace ExcelHeroes.UI
             UiKit.SetArt(art, GameData.CardArt(heroId));
             ArtMotion.Breathe(art);
 
-            var sprite = GameData.CardArt(heroId);
-            if (sprite != null && sprite.rect.width > 0f)
-            {
-                var aspect = sprite.rect.width / sprite.rect.height;
-                art.RegisterCallback<GeometryChangedEvent>(e =>
-                {
-                    var w = e.newRect.width;
-                    if (w > 1f) art.style.height = w / aspect;
-                });
-            }
-
-            UiKit.Div("detail__scrim", view);
-
-            var head = UiKit.Div("detail__head", view);
+            // Everything except the picture lives in the right column.
+            var right = UiKit.Div("detail__right", view);
+            var head = UiKit.Div("detail__head", right);
             var name = UiKit.Text(def.name, "detail__name", head);
             name.style.color = grade?.Color ?? Color.white;
             UiKit.Text($"{def.nick} · {def.dept}", "detail__nick", head);
 
-            var body = UiKit.Scroll("detail__body", view);
+            var body = UiKit.Scroll("detail__body", right);
 
             if (owned != null)
             {

@@ -20,14 +20,16 @@ namespace ExcelHeroes.UI
 
         readonly AppRoot _app;
         VisualElement _root;
-        ScrollView _body;
+        VisualElement _body;
 
         public ChartScreen(AppRoot app) => _app = app;
 
         public VisualElement Build()
         {
             _root = UiKit.Div("charts");
-            _body = UiKit.Scroll("charts__scroll", _root);
+            // Three charts side by side rather than one above the other: each is a short list
+            // of bars, and a wide frame fits them all without anything having to move.
+            _body = UiKit.Div("charts__cols", _root);
             Refresh();
             return _root;
         }

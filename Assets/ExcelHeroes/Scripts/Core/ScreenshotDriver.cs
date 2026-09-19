@@ -12,7 +12,7 @@ namespace ExcelHeroes.Core
     /// was by asking a person to look at it. Eighty logic checks passed against an empty screen.
     /// A layout is not verifiable from the outside, so the build verifies itself:
     ///
-    ///   ExcelHeroes.exe -screenshots &lt;dir&gt; [-screen-width 540 -screen-height 960]
+    ///   ExcelHeroes.exe -screenshots &lt;dir&gt; [-screen-width 1080 -screen-height 486]
     ///
     /// It captures the real player, not an editor preview, so what lands in the folder is exactly
     /// what a player sees — wrong fonts, clipped panels, unstyled overlays and all.
@@ -128,8 +128,8 @@ namespace ExcelHeroes.Core
                         }
                 }
 
-                // The two states that have been wrong and invisible: a card opened full size, and
-                // the disguise. Both are overlays over a sheet, so they are captured in place.
+                // The state that has been wrong and invisible: a card opened at full size. It is
+                // an overlay over a screen, so it is captured in place.
                 app.Show(AppRoot.Sheet.Roster);
                 yield return null;
                 var lead = Game.Player.owned.Count > 0 ? Game.Player.owned[0].id : null;
@@ -139,10 +139,6 @@ namespace ExcelHeroes.Core
                     yield return Shoot($"{n++:00}-Detail");
                     app.CloseOverlay();
                 }
-
-                app.SetStealth(true);
-                yield return Shoot($"{n++:00}-Stealth");
-                app.SetStealth(false);
 
                 Debug.Log($"[shots] wrote {n} screenshots to {Directory}");
                 Application.Quit(0);

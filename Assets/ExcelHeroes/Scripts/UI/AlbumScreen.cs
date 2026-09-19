@@ -19,7 +19,8 @@ namespace ExcelHeroes.UI
         public string Formula => "=COUNTA(사원_사진!B:B)";
 
         readonly AppRoot _app;
-        VisualElement _root, _grid;
+        VisualElement _root;
+        Pages<HeroDef> _pages;
         Label _count;
         bool _ownedOnly;
 
@@ -40,8 +41,8 @@ namespace ExcelHeroes.UI
             _count = UiKit.Text("", "sheet-head__stat", head);
             UiKit.Text("일러스트를 누르면 원본 크기로 열립니다", "muted", head);
 
-            var scroll = UiKit.Scroll("album__scroll", _root);
-            _grid = UiKit.Div("album__grid", scroll);
+            // Six illustrations across, two down.
+            _pages = new Pages<HeroDef>(_root, "album__grid", 12).Empty("아직 사원이 없습니다");
 
             Refresh();
             return _root;
@@ -49,24 +50,22 @@ namespace ExcelHeroes.UI
 
         public void Refresh()
         {
-            if (_grid == null) return;
-            _grid.Clear();
+            if (_pages == null) return;
 
             var p = Game.Player;
-            var heroes = GameData.Heroes.Where(h => !_ownedOnly || p.Owns(h.id)).ToList();
             _count.text = $"보유 {p.owned.Count} / {GameData.Heroes.Count}";
 
-            foreach (var def in heroes)
+            _pages.Fill(GameData.Heroes.Where(h => !_ownedOnly || p.Owns(h.id)).ToList(), (def, grid) =>
             {
                 var owned = p.Owns(def.id);
-                var cell = UiKit.Div(owned ? "album__cell" : "album__cell album__cell--locked", _grid);
+                var cell = UiKit.Div(owned ? "album__cell" : "album__cell album__cell--locked", grid);
                 var art = UiKit.Div("album__art", cell);
                 UiKit.SetArt(art, GameData.CardArt(def.id));
                 UiKit.Text(owned ? def.name : "미보유", "album__name", cell);
-                if (!owned) continue;
+                if (!owned) return;
                 var id = def.id;
                 cell.RegisterCallback<ClickEvent>(_ => Open(id));
-            }
+            });
         }
 
         /// <summary>

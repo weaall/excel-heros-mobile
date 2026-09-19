@@ -155,39 +155,34 @@
 
 /* ---------------------------------------------------------------- app bar */
 
-.appbar {
+/* Material Symbols, drawn as text. One variable font covers four thousand icons, scales without a
+   second asset and takes its colour from `color` like any other label — so an icon that is white on
+   the app bar and grey in the tab strip is one glyph rather than two PNGs. */
+.icon {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/MaterialSymbolsOutlined%20SDF.asset");
+    -unity-text-align: middle-center;
+    font-size: 46px;
+}
+
+/* The top bar: what you have, and nothing else. It used to be an Excel app bar with a file name
+   and a row of document actions, none of which did anything. */
+.topbar {
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-    height: 112px;
-    padding-left: 24px;
-    padding-right: 12px;
-    background-color: rgb(33, 115, 70);
+    height: 104px;
+    padding-left: var(--ex-space-4);
+    padding-right: var(--ex-space-2);
+    background-color: rgb(24, 27, 34);
 }
 
-.app-icon {
-    width: 56px;
-    height: 56px;
-    -unity-text-align: middle-center;
-    background-color: rgb(255, 255, 255);
-    color: rgb(33, 115, 70);
+.topbar__title {
+    font-size: var(--ex-text-sm);
     -unity-font-style: bold;
-    font-size: 36px;
-    border-radius: 6px;
-    margin-right: 18px;
+    color: rgba(255, 255, 255, 0.72);
 }
 
-.appbar__title {
-    flex-grow: 1;
-    color: rgb(255, 255, 255);
-    font-size: 38px;
-    -unity-text-align: middle-center;
-}
-.appbar__save { color: rgba(255, 255, 255, 0.85); font-size: 30px; margin-right: 10px; }
-
-/* 120px is 40dp. At the old 84 these were 28dp, which is under the floor for anything a thumb
-   has to hit — and the disguise button is the one control that has to be found without looking. */
-.appbar__btn {
+.topbar__btn {
     width: var(--ex-tap);
     height: var(--ex-tap);
     background-color: rgba(0, 0, 0, 0);
@@ -196,289 +191,106 @@
     font-size: 40px;
 }
 
-.appbar__btn:hover { background-color: rgba(255, 255, 255, 0.18); }
+.topbar__btn:hover { background-color: rgba(255, 255, 255, 0.14); }
 
-/* ---------------------------------------------------------------- worksheet frame */
-
-/* Column letters and row numbers are the whole disguise once the ribbon is gone — they are what a
-   passer-by reads before anything else, so they stay visible on every sheet. */
-.ws-cols {
+/* A currency reads as a coin and a number, not as a spreadsheet cell called 합계. */
+.chip {
     flex-direction: row;
-    flex-shrink: 0;
+    align-items: center;
     height: 62px;
-    background-color: rgb(255, 255, 255);
-    border-bottom-width: 1px;
-    border-bottom-color: rgb(191, 191, 191);
+    margin-left: var(--ex-space-3);
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-3);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 31px;
 }
 
-.ws-corner {
-    width: 74px;
-    -unity-text-align: middle-center;
-    font-size: 26px;
-    color: rgb(140, 140, 140);
-    border-right-width: 1px;
-    border-right-color: rgb(212, 212, 212);
-}
+.chip__icon { font-size: 34px; height: 58px; color: var(--ex-gold); margin-right: var(--ex-space-1); }
+.chip__icon--gem { color: rgb(110, 190, 255); }
+.chip__value { font-size: var(--ex-text-sm); -unity-font-style: bold; color: rgb(255, 255, 255); }
 
-.ws-col {
-    flex-grow: 1;
-    -unity-text-align: middle-center;
-    font-size: 30px;
-    color: rgb(70, 70, 70);
-    border-right-width: 1px;
-    border-right-color: rgb(212, 212, 212);
-}
+/* ---------------------------------------------------------------- navigation rail
 
-.sheet-row { flex-direction: row; flex-grow: 1; min-height: 0; }
+   Held sideways, the thumbs rest at the left and right edges and the bottom is the hardest place
+   to reach — so navigation runs down the side, not along the bottom where a portrait phone puts
+   it. Each tab is an icon over a word, which survives being glanced at. */
 
-.ws-rows {
-    width: 74px;
+.middle { flex-direction: row; flex-grow: 1; min-height: 0; }
+
+.rail {
+    width: 168px;
     flex-shrink: 0;
-    overflow: hidden;
-    background-color: rgb(255, 255, 255);
-    border-right-width: 1px;
-    border-right-color: rgb(212, 212, 212);
+    background-color: rgb(32, 36, 45);
+    padding-top: var(--ex-space-2);
+    padding-bottom: var(--ex-space-2);
 }
 
-.ws-row-num {
-    height: 96px;
-    -unity-text-align: middle-center;
-    font-size: 26px;
-    color: rgb(120, 120, 120);
-    border-bottom-width: 1px;
-    border-bottom-color: rgb(212, 212, 212);
+.rail__tab {
+    height: 150px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-left-width: 6px;
+    border-left-color: rgba(0, 0, 0, 0);
+    align-items: center;
+    justify-content: center;
 }
+
+.rail__tab:hover { background-color: rgba(255, 255, 255, 0.07); }
+
+/* The active tab is lit and marked on the edge it is attached to. */
+.rail__tab--active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: var(--ex-accent);
+}
+
+.rail__icon { font-size: 52px; color: rgba(255, 255, 255, 0.55); }
+.rail__tab--active .rail__icon { color: rgb(255, 255, 255); }
+
+.rail__label {
+    font-size: var(--ex-text-xs);
+    color: rgba(255, 255, 255, 0.55);
+    margin-top: var(--ex-space-1);
+}
+
+.rail__tab--active .rail__label { color: rgb(255, 255, 255); -unity-font-style: bold; }
+
+.rail__badge {
+    position: absolute;
+    top: 22px;
+    right: 34px;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: var(--ex-danger);
+    color: rgb(255, 255, 255);
+    font-size: var(--ex-text-xs);
+    -unity-text-align: middle-center;
+}
+
+/* ---------------------------------------------------------------- content */
 
 .sheet {
     flex-grow: 1;
     flex-shrink: 1;
-    min-height: 0;
-    overflow: hidden;
-    background-color: rgb(255, 255, 255);
-    background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/UI/cell_rule.png");
-    background-repeat: repeat;
-    background-size: 96px 96px;
-}
-
-.screen { flex-grow: 1; overflow: hidden; }
-
-.screen-body {
-    flex-grow: 1;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-left: 28px;
-    padding-right: 28px;
-}
-
-/* ---------------------------------------------------------------- ribbon (bottom sheet) */
-
-/* Tapping 홈 ▲ slides this up over the grid, the way the phone app does. It is not resident
-   chrome — on a phone the ribbon is a thing you summon, not a thing you look past. */
-.ribbon {
-    flex-direction: row;
-    flex-shrink: 0;
-    align-items: center;
-    flex-wrap: wrap;
-    min-height: 168px;
-    padding-top: 12px;
-    padding-bottom: 12px;
-    padding-left: 16px;
-    padding-right: 16px;
-    background-color: rgb(243, 243, 243);
-    border-top-width: 1px;
-    border-top-color: rgb(191, 191, 191);
-}
-
-.rb-btn {
-    height: 136px;
-    min-width: 200px;
-    margin-right: 12px;
-    padding-left: 22px;
-    padding-right: 22px;
-    background-color: rgb(255, 255, 255);
-    border-width: 1px;
-    border-color: rgb(212, 212, 212);
-    border-radius: 6px;
-    color: rgb(34, 34, 34);
-    font-size: 34px;
-}
-
-.rb-btn:hover { background-color: rgb(226, 239, 218); }
-.rb-btn:disabled { opacity: 0.45; }
-/* Ribbon glyphs come from the icon font too, so a ribbon button and an app-bar button are the
-   same drawing at two sizes rather than two different people's idea of an arrow. */
-.rb-btn__icon {
-    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/MaterialSymbolsOutlined%20SDF.asset");
-    font-size: 44px;
-    color: rgb(33, 115, 70);
-}
-.rb-btn__sub { font-size: 28px; color: rgb(107, 107, 107); }
-
-.rb-sep {
-    width: 1px;
-    height: 104px;
-    margin-left: 8px;
-    margin-right: 14px;
-    background-color: rgb(212, 212, 212);
-}
-
-/* ---------------------------------------------------------------- formula bar */
-
-.formula-bar {
-    flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
-    height: 96px;
-    background-color: rgb(255, 255, 255);
-    border-bottom-width: 1px;
-    border-bottom-color: rgb(212, 212, 212);
-}
-
-.name-box {
-    flex-shrink: 0;
-    min-width: 96px;
-    height: 62px;
-    -unity-text-align: middle-center;
-    font-size: 26px;
-    color: rgb(60, 60, 60);
-    background-color: rgb(244, 244, 244);
-    border-width: 1px;
-    border-color: rgb(212, 212, 212);
-    border-radius: 4px;
-    margin-left: 10px;
-    margin-right: 8px;
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-.formula-expand {
-    flex-shrink: 0;
-    width: 52px;
-    -unity-text-align: middle-center;
-    font-size: 30px;
-    color: rgb(107, 107, 107);
-}
-
-.fx {
-    flex-shrink: 0;
-    width: 62px;
-    -unity-text-align: middle-center;
-    font-size: 32px;
-    color: rgb(107, 107, 107);
-    -unity-font-style: italic;
-    border-right-width: 1px;
-    border-right-color: rgb(212, 212, 212);
-}
-
-.formula {
-    flex-grow: 1;
-    flex-shrink: 1;
     min-width: 0;
-    padding-left: 14px;
-    font-size: 27px;
-    color: rgb(34, 34, 34);
+    background-color: var(--ex-surface);
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-/* ---------------------------------------------------------------- sheet tabs */
+.screen-body { flex-grow: 1; min-height: 0; }
 
-/* The sheet tabs are the game's navigation, so unlike the real app they stay put rather than
-   hiding behind a sheet icon — and they sit low, inside thumb reach. */
-.sheet-tabs-row {
-    flex-direction: row;
-    align-items: center;
+/* A thin line along the bottom for whatever just happened — a reward collected, a run finished. */
+.statusbar {
     flex-shrink: 0;
-    height: 118px;
-    background-color: rgb(247, 247, 247);
+    height: 52px;
+    padding-left: var(--ex-space-4);
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
+    background-color: var(--ex-surface-raised);
     border-top-width: 1px;
-    border-top-color: rgb(212, 212, 212);
+    border-top-color: var(--ex-line);
+    -unity-text-align: middle-left;
 }
-
-.sheet-tabs-scroll { flex-grow: 1; height: 118px; }
-
-.sheet-list-btn, .sheet-add-btn {
-    width: 92px;
-    height: 118px;
-    background-color: rgba(0, 0, 0, 0);
-    border-width: 0;
-    color: rgb(107, 107, 107);
-    font-size: 36px;
-}
-
-.sheet-tabs { flex-direction: row; align-items: center; height: 118px; }
-
-.sheet-tab {
-    height: 118px;
-    flex-shrink: 0;
-    white-space: nowrap;
-    padding-left: 34px;
-    padding-right: 34px;
-    padding-top: 12px;
-    background-color: rgba(0, 0, 0, 0);
-    border-width: 0;
-    color: rgb(107, 107, 107);
-    font-size: 33px;
-}
-
-.sheet-tab--active {
-    background-color: rgb(255, 255, 255);
-    color: rgb(24, 92, 55);
-    -unity-font-style: bold;
-    border-bottom-width: 5px;
-    border-bottom-color: rgb(24, 92, 55);
-}
-
-/* Above the label rather than across it. With four short tab names the badge was landing squarely
-   on the second syllable of 업무, which is worse than not having a badge. */
-.sheet-tab__badge {
-    position: absolute;
-    top: 10px;
-    right: 6px;
-    min-width: 44px;
-    height: 44px;
-    border-radius: 22px;
-    background-color: rgb(196, 43, 28);
-    color: rgb(255, 255, 255);
-    font-size: 22px;
-    -unity-text-align: middle-center;
-}
-
-/* ---------------------------------------------------------------- command bar */
-
-.commandbar {
-    flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
-    height: 92px;
-    padding-left: 12px;
-    padding-right: 20px;
-    background-color: rgb(243, 243, 243);
-    border-top-width: 1px;
-    border-top-color: rgb(191, 191, 191);
-}
-
-.cmd-tab {
-    height: 84px;
-    min-width: 168px;
-    background-color: rgba(0, 0, 0, 0);
-    border-width: 0;
-    color: rgb(33, 115, 70);
-    -unity-font-style: bold;
-    font-size: 34px;
-}
-
-.status-text { font-size: 26px; color: rgb(107, 107, 107); margin-left: 18px; }
-
-.cell-stat { flex-direction: row; align-items: center; margin-left: 28px; }
-.cell-stat__icon { font-size: 27px; margin-right: 10px; color: rgb(128, 128, 128); }
-.cell-stat__value { font-size: 29px; color: rgb(70, 70, 70); }
-
-#gemChip .cell-stat__value { color: rgb(70, 70, 70); }
-#goldChip .cell-stat__value { color: rgb(70, 70, 70); }
-
-/* ---------------------------------------------------------------- overlay */
 
 .overlay {
     position: absolute;
@@ -486,7 +298,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.45);
+    background-color: rgba(0, 0, 0, 0.55);
     align-items: center;
     justify-content: center;
 }
@@ -496,15 +308,14 @@
 .sheet-head {
     flex-direction: row;
     align-items: center;
-    flex-wrap: wrap;
     flex-shrink: 0;
-    padding-top: 18px;
-    padding-bottom: 18px;
-    padding-left: 28px;
-    padding-right: 28px;
-    background-color: rgb(243, 243, 243);
-    border-bottom-width: 1px;
-    border-bottom-color: rgb(212, 212, 212);
+    padding-top: var(--ex-space-3);
+    padding-bottom: var(--ex-space-3);
+    padding-left: var(--ex-space-4);
+    padding-right: var(--ex-space-4);
+    background-color: var(--ex-surface);
+    border-bottom-width: 2px;
+    border-bottom-color: var(--ex-line);
 }
 
 .sheet-head__stat { font-size: 36px; -unity-font-style: bold; margin-right: 28px; }
@@ -867,27 +678,30 @@
 /* ---------------------------------------------------------------- roster */
 
 .roster-grid {
+    flex-grow: 1;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    align-content: flex-start;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .card {
-    width: 32%;
-    margin: 0.66%;
+    width: 13.4%;
+    height: 48%;
+    margin: 0.5%;
     background-color: rgb(255, 255, 255);
     border-width: 2px;
-    border-radius: 10px;
+    border-radius: var(--ex-rad-md);
     overflow: hidden;
 }
 
 /* Portrait proportions, cropped from the TOP — the face identifies the card, and a centred crop
    on a 2:3 illustration lands on the chest. */
 .card__art {
-    height: 340px;
+    flex-grow: 1;
     background-color: rgb(238, 238, 238);
     -unity-background-scale-mode: scale-and-crop;
-    background-position-y: top 0;
 }
 
 .card__grade {
@@ -949,10 +763,16 @@
 
 /* A modal, not a second full screen. Tapping a card is a look at one card — taking over the whole
    display for it loses where you were in a list of fifty-five, and on the way back the scroll
-   position went with it. The dim behind it is the overlay's own. */
+   position went with it. The dim behind it is the overlay's own.
+
+   Held sideways it is two columns: the illustration is a tall 2:3 and the stats are a list, so
+   stacking them meant a modal three times the height of the screen. Side by side, each gets the
+   axis it actually wants. */
 .detail {
-    width: 90%;
-    max-height: 88%;
+    flex-direction: row;
+    width: 88%;
+    max-width: 1700px;
+    height: 88%;
     background-color: rgb(255, 255, 255);
     border-radius: 12px;
     border-width: 1px;
@@ -960,15 +780,22 @@
     overflow: hidden;
 }
 
-/* The height is set from the illustration's own aspect ratio in HeroDetail, so the whole card is
-   visible with neither a crop nor letterbox bars. */
+/* The left column: the whole illustration, fitted inside it rather than sized from the modal's
+   width, so nothing is cropped and nothing overflows. */
 .detail__art {
+    width: 38%;
     flex-shrink: 0;
     background-color: rgb(238, 238, 238);
-    -unity-background-scale-mode: stretch-to-fill;
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .detail__scrim { display: none; }
+
+.detail__right {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+}
 
 .detail__head {
     padding: 22px 38px;
@@ -1081,11 +908,15 @@
 /* The battlefield keeps the web build's 2:1 shape — a side-view street band across the top of
    the sheet, with the party's EX buttons below it. The backdrop texture is set from code because
    it is generated per phase. */
+/* The field takes most of the sheet and the log takes the rest — between them there is no dead
+   space. With the EX card row and the cost bar gone this screen had a fifth of its height doing
+   nothing, which on the sheet the player looks at most is the worst place to leave it. */
+/* The field takes the sheet. Its contents are placed from code against a scale taken from this
+   box's width, so the street always spans it and the sky is cropped rather than stretched. */
 .battle__stage {
-    flex-shrink: 0;
     flex-grow: 1;
-    min-height: 540px;
-    max-height: 760px;
+    flex-shrink: 1;
+    min-height: 0;
     background-color: rgb(30, 34, 44);
     -unity-background-scale-mode: stretch-to-fill;
     overflow: hidden;
@@ -1093,22 +924,22 @@
 
 .fighter {
     position: absolute;
-    width: 92px;
+    width: 190px;
     align-items: center;
 }
 
 /* Pixel sprites want whole-number scale and no crop. 16x28 at 6x is 96x168, which reads clearly at
    arm's length on a phone and still lines the cast up on one baseline. */
 .fighter__body {
-    width: 52px;
-    height: 92px;
+    width: 104px;
+    height: 184px;
     -unity-background-scale-mode: scale-to-fit;
     background-color: rgba(0, 0, 0, 0);
 }
 
 .fighter__body--chibi {
-    width: 52px;
-    height: 70px;
+    width: 104px;
+    height: 140px;
     border-width: 0;
     background-color: rgba(0, 0, 0, 0);
     -unity-background-scale-mode: scale-to-fit;
@@ -1118,19 +949,17 @@
 .fighter--monster .fighter__body { scale: -1 1; }
 
 /* Integer multiples only, and the web build's ratio: wave enemies 2x, bosses 3x. */
-.fighter--boss { width: 220px; }
-.fighter--boss .fighter__body { width: 78px; height: 138px; }
-.fighter--boss .fighter__hpbar { width: 110px; }
-.fighter--elite .fighter__body { width: 62px; height: 110px; }
+.fighter--boss { width: 440px; }
+.fighter--boss .fighter__body { width: 156px; height: 276px; }
+.fighter--boss .fighter__hpbar { width: 220px; }
+.fighter--elite .fighter__body { width: 124px; height: 220px; }
 
 .fighter--dead { opacity: 0.25; }
 
 .fighter__hpbar {
-    width: 74px;
-    height: 10px;
-    /* Tight under the feet. At the old 10px the bar floated a sprite-width below its owner once
-       the cast was scaled up, and read as a mark on the road rather than as that thing's health. */
-    margin-top: 2px;
+    width: 112px;
+    height: 16px;
+    margin-top: 4px;
     background-color: rgba(255, 255, 255, 0.85);
     border-radius: 8px;
     overflow: hidden;
@@ -1160,24 +989,27 @@
 .floater--skill { color: rgb(31, 111, 235); font-size: 38px; }
 
 .battle__hud {
-    height: 144px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 116px;
     flex-direction: row;
     align-items: center;
-    padding-left: 32px;
-    padding-right: 32px;
-    background-color: rgb(243, 243, 243);
+    padding-left: var(--ex-space-4);
+    padding-right: var(--ex-space-3);
 }
 
 .battle__wave {
     flex-grow: 1;
-    font-size: 42px;
+    font-size: var(--ex-text-lg);
     -unity-font-style: bold;
-    color: rgb(34, 34, 34);
+    color: rgb(255, 255, 255);
     transition-duration: 0.3s;
 }
 
 /* 야근: overtime has started and the errors are hitting harder every second */
-.battle__wave--enraged { color: rgb(196, 43, 28); }
+.battle__wave--enraged { color: rgb(255, 120, 104); }
 
 .ex-bar {
     flex-direction: row;
@@ -1390,7 +1222,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
+    top: 108px;
     height: 46%;
     justify-content: center;
     overflow: hidden;
@@ -1402,9 +1234,11 @@
     right: 120%;
     top: 0;
     bottom: 0;
-    background-color: rgba(18, 20, 28, 0.72);
+    background-color: rgba(18, 20, 28, 0.62);
     border-top-width: 3px;
     border-top-color: rgba(240, 196, 70, 0.9);
+    border-bottom-width: 3px;
+    border-bottom-color: rgba(240, 196, 70, 0.9);
     transition-duration: 0.28s;
 }
 
@@ -1413,9 +1247,9 @@
 /* A bust crop anchored to the left of the band, sliding in from off-screen. */
 .cutin__art {
     position: absolute;
-    left: -40%;
+    left: -30%;
     bottom: 0;
-    width: 46%;
+    width: 26%;
     height: 150%;
     -unity-background-scale-mode: scale-and-crop;
     background-position-y: top;
@@ -1423,12 +1257,12 @@
     transition-duration: 0.3s;
 }
 
-.cutin__art--in { left: -2%; opacity: 1; }
+.cutin__art--in { left: 1%; opacity: 1; }
 
 .cutin__plate {
     position: absolute;
-    right: 38px;
-    align-items: flex-end;
+    left: 30%;
+    align-items: flex-start;
     opacity: 0;
     transition-duration: 0.3s;
 }
@@ -1438,16 +1272,14 @@
 .cutin__skill {
     font-size: 74px;
     -unity-font-style: bold;
-    color: rgb(150, 112, 8);
+    color: rgb(250, 210, 90);
 }
 
 .cutin__line {
-    font-size: 42px;
-    color: rgb(34, 34, 34);
-    max-width: 896px;
+    font-size: 38px;
+    color: rgba(255, 255, 255, 0.86);
+    max-width: 1100px;
     white-space: normal;
-    -unity-text-align: upper-right;
-    margin-top: 10px;
 }
 
 /* --- hit feedback ------------------------------------------------------- */
@@ -1821,16 +1653,9 @@
 
 
 /* The corner cell's select-all mark, drawn with a border rather than a glyph. */
-.ws-corner {
-    border-bottom-width: 14px;
-    border-bottom-color: rgb(170, 170, 170);
-    border-left-width: 14px;
-    border-left-color: rgba(0, 0, 0, 0);
-}
 
 /* ---------------------------------------------------------------- 위장 모드 시트 */
 
-.stealth-sheet { flex-grow: 1; }
 .xl-row--total { border-top-width: 2px; border-top-color: rgb(70, 70, 70); }
 .xl-row--total .xl-cell { -unity-font-style: bold; }
 .xl-cell--up { color: rgb(24, 92, 55); }
@@ -1903,6 +1728,10 @@
 /* The letterbox. Its height is set from the picture's aspect ratio in PrologueScreen, so the
    left and right edges of the illustration always reach the screen and the spare space ends up
    above and below it instead of being cropped off the sides. */
+.prologue {
+    align-items: center;
+}
+
 .prologue__stage {
     width: 100%;
     background-color: rgb(0, 0, 0);
@@ -1935,7 +1764,12 @@
     margin-right: 16px;
 }
 
-.prologue__title { font-size: 40px; color: rgb(255, 255, 255); -unity-font-style: bold; }
+.prologue__title {
+    font-size: 40px;
+    height: 56px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+}
 
 .prologue__body {
     margin-left: 48px;
@@ -1996,36 +1830,42 @@
 
 /* Rows in the sheet under the field, numbered like cells. In 위장 모드 the same rows carry
    recalculation progress, which is the whole reason the log is here and not in a floating panel. */
+/* The run's own record, in the sheet's rows. It is also what carries the disguise: in 위장 모드
+   these same lines become recalculation progress. */
 .battle-log {
-    flex-shrink: 1;
-    max-height: 420px;
-    background-color: rgb(255, 255, 255);
+    position: absolute;
+    left: var(--ex-space-4);
+    top: 124px;
+    width: 40%;
+    height: 148px;
 }
 
 .log-row {
-    flex-direction: row;
-    align-items: center;
-    height: 54px;
-    border-bottom-width: 1px;
-    border-bottom-color: rgb(238, 238, 238);
+    margin-top: 3px;
 }
 
 .log-row__n {
     width: 74px;
     -unity-text-align: middle-center;
-    font-size: 22px;
-    color: rgb(160, 160, 160);
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
     border-right-width: 1px;
-    border-right-color: rgb(238, 238, 238);
+    border-right-color: var(--ex-line);
 }
 
-.log-row__text { padding-left: 18px; font-size: 24px; color: rgb(70, 70, 70); }
+.log-row__text {
+    font-size: var(--ex-text-xs);
+    color: rgba(255, 255, 255, 0.62);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 /* ---------------------------------------------------------------- 필터 바 */
 
 .filter-bar {
     flex-shrink: 0;
-    padding: 10px 16px 14px 16px;
+    padding: var(--ex-space-2) var(--ex-space-3) var(--ex-space-3) var(--ex-space-3);
     background-color: rgb(250, 250, 250);
     border-bottom-width: 1px;
     border-bottom-color: rgb(212, 212, 212);
@@ -2102,40 +1942,40 @@
 /* The gold sink, as a strip of four cells under the EX bar. Cells, deliberately: this is a
    spreadsheet, and a row of bordered boxes with a number in each is what one looks like. */
 .upgrades {
+    position: absolute;
+    left: var(--ex-space-2);
+    right: var(--ex-space-2);
+    bottom: var(--ex-space-2);
     flex-direction: row;
-    flex-shrink: 0;
-    height: 124px;
-    margin-top: 8px;
-    margin-left: 6px;
-    margin-right: 6px;
+    height: 160px;
 }
 
 .upgrade {
     flex-grow: 1;
     flex-basis: 0;
-    margin-left: 3px;
-    margin-right: 3px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 6px;
-    padding-right: 6px;
-    background-color: rgb(250, 250, 250);
-    border-width: 1px;
-    border-color: rgb(205, 205, 205);
-    border-radius: 4px;
+    margin-left: 6px;
+    margin-right: 6px;
+    padding-left: var(--ex-space-1);
+    padding-right: var(--ex-space-1);
+    background-color: rgba(18, 20, 26, 0.82);
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.16);
+    border-radius: var(--ex-rad-md);
     align-items: center;
     justify-content: center;
 }
 
 /* Affordable is the only state worth colouring: everything else is just a price you cannot pay. */
 .upgrade--ready {
-    background-color: rgb(233, 246, 238);
-    border-color: rgb(33, 115, 70);
+    background-color: rgba(33, 115, 70, 0.92);
+    border-color: rgb(126, 214, 168);
 }
 
+.upgrade--ready .upgrade__name { color: rgba(255, 255, 255, 0.85); }
+
 .upgrade__name {
-    font-size: 24px;
-    color: rgb(60, 62, 70);
+    font-size: var(--ex-text-xs);
+    color: rgba(255, 255, 255, 0.66);
     -unity-text-align: middle-center;
     white-space: nowrap;
     overflow: hidden;
@@ -2143,15 +1983,15 @@
 }
 
 .upgrade__level {
-    font-size: 26px;
+    font-size: var(--ex-text-sm);
     -unity-font-style: bold;
-    color: rgb(33, 115, 70);
+    color: rgb(255, 255, 255);
     margin-top: 4px;
 }
 
 .upgrade__cost {
-    font-size: 23px;
-    color: rgb(126, 130, 140);
+    font-size: var(--ex-text-xs);
+    color: var(--ex-gold);
     margin-top: 2px;
 }
 
@@ -2818,13 +2658,6 @@
 
 /* The Painter2D canvas the arcs, bursts and sparks are drawn on. It covers the field and never
    takes a click; the fighters are added after it, so nothing is painted over a face. */
-.fx-layer {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-}
 
 /* One frame of blowout on the thing that just got hit. The eye reads this as contact before it
    reads the number, which is most of why a hit lands at all. */
@@ -2843,10 +2676,12 @@
 /* 콤보. Only appears once a run of hits is worth noticing, so it means something when it does. */
 .combo {
     position: absolute;
-    right: 18px;
-    top: 14px;
-    font-size: 34px;
+    left: 0;
+    right: 0;
+    top: 132px;
+    font-size: 52px;
     -unity-font-style: bold;
+    -unity-text-align: upper-center;
     color: rgb(250, 204, 70);
     opacity: 0;
 }
@@ -2860,12 +2695,11 @@
    cards and the shared budget bar that used to sit under the field: every skill fires itself, so a
    card you cannot press only tells you the game is thinking. */
 .fighter__skillbar {
-    width: 74px;
-    height: 6px;
-    margin-top: 2px;
-    background-color: rgb(30, 34, 44);
-    border-width: 1px;
-    border-color: rgb(27, 29, 37);
+    width: 112px;
+    height: 10px;
+    margin-top: 3px;
+    background-color: rgba(255, 255, 255, 0.28);
+    border-radius: 6px;
     overflow: hidden;
 }
 
@@ -2981,11 +2815,148 @@
 
 /* ---------------------------------------------------------------- icons */
 
-/* Material Symbols, drawn as text. One variable font covers four thousand icons, scales without a
-   second asset and takes its colour from `color` like any other label — so an icon that is white on
-   the app bar and grey in the tab strip is one glyph rather than two PNGs. */
-.icon {
-    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/MaterialSymbolsOutlined%20SDF.asset");
+
+
+/* The street. Taller than the box it sits in and top-anchored from code so its drawn road meets
+   the sprites' feet; the field's overflow crops the sky above it. */
+.battle__backdrop {
+    position: absolute;
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+/* An empty cell on a short last page, so four cards do not spread across a row built for seven. */
+.card--ghost {
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0);
+}
+
+/* The filter bar carries the grade sections now: each chip is a section with its own count. */
+.filter-bar {
+    flex-shrink: 0;
+    padding-top: var(--ex-space-1);
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
+}
+
+.filter-row {
+    flex-direction: row;
+    align-items: center;
+    height: 72px;
+}
+
+.filter-row__label {
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
+    margin-right: var(--ex-space-1);
+}
+
+.filter-row__count {
+    font-size: var(--ex-text-sm);
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    margin-right: var(--ex-space-1);
+}
+
+.filter-chip {
+    height: 56px;
+    margin-right: 8px;
+    padding-left: 18px;
+    padding-right: 18px;
+    font-size: var(--ex-text-xs);
+    color: var(--ex-ink-muted);
+    background-color: var(--ex-surface-sunken);
+    border-width: 2px;
+    border-color: var(--ex-line);
+    border-radius: 28px;
+}
+
+.filter-chip--on {
+    background-color: var(--ex-accent);
+    border-color: var(--ex-accent-deep);
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+}
+
+/* Page turning, wherever a list is longer than the screen. Held sideways nothing scrolls, so this
+   is how a list gets read. */
+.pager {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    height: 96px;
+}
+
+.pager__btn {
+    width: 96px;
+    height: 72px;
+    font-size: var(--ex-text-sm);
+    color: var(--ex-ink);
+    background-color: var(--ex-surface-sunken);
+    border-width: 2px;
+    border-color: var(--ex-line);
+    border-radius: var(--ex-rad-sm);
+}
+
+.pager__btn:disabled { opacity: 0.35; }
+
+.pager__label {
+    min-width: 260px;
+    font-size: var(--ex-text-sm);
     -unity-text-align: middle-center;
-    font-size: 46px;
+    color: var(--ex-ink-muted);
+}
+
+/* ---------------------------------------------------------------- landscape column layouts
+
+   Nothing in this build scrolls. A list that outgrows the frame turns pages (.pager); everything
+   else is laid out in columns, because the frame is twice as wide as it is tall and stacking is
+   what put content below the fold in the first place. */
+
+.gacha__cols { flex-direction: row; flex-grow: 1; min-height: 0; }
+
+.gacha__left {
+    width: 44%;
+    flex-shrink: 0;
+    padding: var(--ex-space-2);
+}
+
+.gacha__right {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    padding: var(--ex-space-2);
+}
+
+.qs-cols { flex-direction: row; flex-grow: 1; min-height: 0; }
+
+.qs-col {
+    width: 40%;
+    flex-shrink: 0;
+    padding: var(--ex-space-2);
+}
+
+.qs-col--wide { flex-grow: 1; flex-shrink: 1; width: auto; min-width: 0; }
+
+.charts__cols {
+    flex-direction: row;
+    flex-grow: 1;
+    min-height: 0;
+    padding: var(--ex-space-2);
+}
+
+/* Three episode cards across, two down. */
+.ep-grid {
+    flex-grow: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
+}
+
+.ep {
+    width: 31.3%;
+    height: 47%;
+    margin: 1%;
 }

@@ -67,13 +67,33 @@ namespace ExcelHeroes.UI
             _app.OpenOverlay(_root);
         }
 
-        /// <summary>Height follows width, so the left and right edges always reach the screen.</summary>
-        void OnStageMeasured(GeometryChangedEvent e)
+        /// <summary>
+        /// The band is as large as the picture can be without being cut or distorted.
+        ///
+        /// Height used to follow width alone, which is right on a phone held upright and wrong held
+        /// sideways: a 912x624 backdrop across a 2400-wide screen wants to be 1640 tall, and there
+        /// are only 1080. So it takes whichever axis runs out first — the frame letterboxes top and
+        /// bottom in portrait and left and right in landscape, and the picture is never cropped.
+        /// </summary>
+        void Fit()
         {
-            var width = e.newRect.width;
-            if (width <= 1f) return;
-            _stage.style.height = width / _aspect;
+            if (_root == null || _stage == null) return;
+
+            var width = _stage.resolvedStyle.width;
+            if (float.IsNaN(width) || width <= 1f) return;
+
+            var room = _root.resolvedStyle.height * ArtShare;
+            if (float.IsNaN(room) || room <= 1f) { _stage.style.height = width / _aspect; return; }
+
+            var byWidth = width / _aspect;
+            if (byWidth <= room) { _stage.style.height = byWidth; _stage.style.width = Length.Percent(100); }
+            else { _stage.style.height = room; _stage.style.width = room * _aspect; }
         }
+
+        /// <summary>How much of the screen the picture may take before the words need the rest.</summary>
+        const float ArtShare = 0.56f;
+
+        void OnStageMeasured(GeometryChangedEvent e) => Fit();
 
         void Go(int page)
         {
@@ -86,8 +106,7 @@ namespace ExcelHeroes.UI
             if (sprite != null && sprite.rect.height > 0f)
             {
                 _aspect = sprite.rect.width / sprite.rect.height;
-                var width = _stage.resolvedStyle.width;
-                if (width > 1f) _stage.style.height = width / _aspect;
+                Fit();
             }
 
             _title.text = scene.title;

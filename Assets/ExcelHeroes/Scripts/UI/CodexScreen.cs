@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ExcelHeroes.Core;
 using ExcelHeroes.Data;
 using UnityEngine.UIElements;
@@ -18,7 +19,16 @@ namespace ExcelHeroes.UI
 
         readonly AppRoot _app;
         VisualElement _root;
-        ScrollView _body;
+        /// <summary>One printed row: the codex mixes minions and bosses, so the page works on
+        /// what a row actually shows rather than on either definition type.</summary>
+        readonly struct Entry
+        {
+            public readonly string Name, Shape, Phase, Classes;
+            public Entry(string name, string shape, string phase, string classes)
+            { Name = name; Shape = shape; Phase = phase; Classes = classes; }
+        }
+
+        Pages<Entry> _pages;
         Label _count;
 
         public CodexScreen(AppRoot app) => _app = app;
@@ -36,18 +46,19 @@ namespace ExcelHeroes.UI
             UiKit.Text("분류", "xl-cell", header);
             UiKit.Text("출현", "xl-cell xl-cell--num", header);
 
-            _body = UiKit.Scroll("xl-body", _root);
+            // Eight rows is what the frame holds without a scroll; the rest is a page away.
+            _pages = new Pages<Entry>(_root, "xl-body", 8).Empty("아직 만난 오류가 없습니다");
             Refresh();
             return _root;
         }
 
         public void Refresh()
         {
-            if (_body == null) return;
-            _body.Clear();
+            if (_pages == null) return;
 
             var stage = Game.Player.stage;
             var types = GameData.MonsterTypes;
+            var entries = new List<Entry>();
             var found = 0;
 
             for (var i = 0; i < types.Count; i++)
@@ -57,26 +68,30 @@ namespace ExcelHeroes.UI
                 var firstSeen = 1 + i * 2;
                 var known = stage >= firstSeen;
                 if (known) found++;
-
-                var row = UiKit.Div(known ? "xl-row" : "xl-row xl-row--locked", _body);
-                UiKit.Text(known ? types[i].name : "— 미발견 —", "xl-cell xl-cell--wide", row);
-                UiKit.Text(known ? types[i].shape : "", "xl-cell", row);
-                UiKit.Text(known ? $"Phase {firstSeen}" : "", "xl-cell xl-cell--num", row);
+                entries.Add(known
+                    ? new Entry(types[i].name, types[i].shape, $"Phase {firstSeen}", "xl-row")
+                    : new Entry("— 미발견 —", "", "", "xl-row xl-row--locked"));
             }
 
             // Bosses are listed in phase order and one guards the end of each phase, so a boss's
             // index is the phase you meet it in — there is no phase field on the definition itself.
             for (var i = 0; i < GameData.Bosses.Count; i++)
             {
-                var boss = GameData.Bosses[i];
                 var phase = i + 1;
                 var known = stage >= phase;
                 if (known) found++;
-                var row = UiKit.Div(known ? "xl-row xl-row--boss" : "xl-row xl-row--locked", _body);
-                UiKit.Text(known ? boss.name : "— 미발견 —", "xl-cell xl-cell--wide", row);
-                UiKit.Text(known ? "대용량 수식" : "", "xl-cell", row);
-                UiKit.Text(known ? $"Phase {phase}" : "", "xl-cell xl-cell--num", row);
+                entries.Add(known
+                    ? new Entry(GameData.Bosses[i].name, "대용량 수식", $"Phase {phase}", "xl-row xl-row--boss")
+                    : new Entry("— 미발견 —", "", "", "xl-row xl-row--locked"));
             }
+
+            _pages.Fill(entries, (e, body) =>
+            {
+                var row = UiKit.Div(e.Classes, body);
+                UiKit.Text(e.Name, "xl-cell xl-cell--wide", row);
+                UiKit.Text(e.Shape, "xl-cell", row);
+                UiKit.Text(e.Phase, "xl-cell xl-cell--num", row);
+            });
 
             _count.text = $"발견한 오류 {found} / {types.Count + GameData.Bosses.Count}";
         }

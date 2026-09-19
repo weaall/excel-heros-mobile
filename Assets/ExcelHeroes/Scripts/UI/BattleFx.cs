@@ -37,7 +37,7 @@ namespace ExcelHeroes.UI
         public float ScaleX = 1f, ScaleY = 1f;
 
         /// <summary>Shifts field space by the camera window, so effects sit under the sprites.</summary>
-        public float OffsetX;
+        public float OffsetX, OffsetY;
 
         /// <summary>
         /// How much bigger to draw an effect than the source does.
@@ -106,7 +106,7 @@ namespace ExcelHeroes.UI
             {
                 var k = Mathf.Clamp01(f.T / f.Life);
                 var x = f.X * ScaleX + OffsetX;
-                var y = f.Y * ScaleY;
+                var y = f.Y * ScaleY + OffsetY;
                 var fade = 1f - k;
 
                 switch (f.Kind)
