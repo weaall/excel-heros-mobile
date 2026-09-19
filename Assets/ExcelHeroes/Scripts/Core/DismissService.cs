@@ -50,6 +50,51 @@ namespace ExcelHeroes.Core
             return (b.dismissCardBonus + owned.copies) * per;
         }
 
+        /// <summary>
+        /// Whether this card's levels would be swept. The button that offers the sweep asks the
+        /// same question, so it lives here: a button that lights up for a hero the sweep then skips
+        /// reports "회수할 레벨이 없습니다" and looks broken.
+        /// </summary>
+        public static bool CanReclaim(PlayerState p, OwnedHero o) =>
+            o != null && o.level > 1
+            && o.id != GameData.MainId
+            && !p.party.Contains(o.id)
+            && !DispatchService.IsAway(p, o.id)
+            && !p.favorites.Contains(o.id);
+
+        /// <summary>
+        /// 대기 사원 레벨 회수 — takes every bench hero back to level 1 and returns the gold.
+        ///
+        /// Levelling the wrong card is the mistake this game makes easiest: gold spent on a D at
+        /// Phase 3 is gold not spent on the S pulled at Phase 12, and without this the only way to
+        /// get it back is 방출, which destroys the card. The refund is full, so moving gold between
+        /// cards costs nothing but the tap.
+        ///
+        /// Four kinds of hero are left alone: 김인턴, anyone in the party, anyone away on 출장, and
+        /// anyone the player has marked 즐겨찾기 — that mark means "I left this one levelled on
+        /// purpose", and a sweep that ignored it would be the thing it exists to prevent.
+        /// </summary>
+        public static (int Heroes, int Gold) ReclaimBench(PlayerState p)
+        {
+            var heroes = 0;
+            var gold = 0;
+
+            foreach (var o in p.owned.ToList())
+            {
+                if (!CanReclaim(p, o)) continue;
+
+                var back = LevelRefund(p, o.id);
+                if (back <= 0) continue;
+
+                p.gold += back;
+                o.level = 1;
+                gold += back;
+                heroes++;
+            }
+
+            return (heroes, gold);
+        }
+
         /// <summary>Gold back from the levels bought on this card — every level, at its own price.</summary>
         public static int LevelRefund(PlayerState p, string heroId)
         {
@@ -57,9 +102,17 @@ namespace ExcelHeroes.Core
             if (owned == null) return 0;
 
             var b = GameData.Balance;
+
+            // The grade tier belongs here. StatMath.LevelUpCost charges base * TIER * growth^(l-1)
+            // and this was refunding base * growth^(l-1), so dismissing an S card handed back a
+            // fifth of what levelling it had cost. The refund has to mirror the charge exactly or
+            // the two drift apart silently — nothing fails, the player is simply robbed.
+            var tier = Math.Max(1, GameData.GradeRank(GameData.Hero(heroId)?.grade) + 1);
+            var rate = b.levelRefund <= 0f ? 1f : b.levelRefund;
+
             long gold = 0;
             for (var lv = 1; lv < owned.level; lv++)
-                gold += (long)Mathf.Floor(b.upgradeCostBase * Mathf.Pow(b.upgradeCostGrowth, lv - 1));
+                gold += (long)Mathf.Floor(b.upgradeCostBase * tier * Mathf.Pow(b.upgradeCostGrowth, lv - 1) * rate);
             return (int)Mathf.Min(gold, int.MaxValue - p.gold);
         }
 

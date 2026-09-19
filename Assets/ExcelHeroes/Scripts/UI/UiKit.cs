@@ -107,6 +107,13 @@ namespace ExcelHeroes.UI
                 var stars = Text(Stars(owned.star), "card__stars", art);
                 stars.style.color = grade?.Color ?? Color.white;
                 Text($"Lv {owned.level}", "card__level", art);
+
+                // 즐겨찾기 has to be legible from the grid. Its only effect is that 레벨 회수
+                // skips this card, and a sweep you cannot predict from the screen you press it
+                // on is a sweep nobody presses twice. "보존" rather than a star, because ★ on a
+                // card already means 승급.
+                if (Game.Player != null && Game.Player.favorites.Contains(def.id))
+                    Text("보존", "card__keep", art);
             }
 
             var plate = Div("card__plate", card);

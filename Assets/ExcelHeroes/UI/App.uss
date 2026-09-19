@@ -872,6 +872,21 @@
     font-size: 20px;
 }
 
+/* Sits under the role pill, the one corner of the art no badge had claimed. Amber rather than
+   the grade colour, so it reads as a mark the player put there rather than a property of the
+   card. */
+.card__keep {
+    position: absolute;
+    right: 8px;
+    top: 66px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background-color: rgba(228, 158, 42, 0.92);
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    font-size: 20px;
+}
+
 .card__plate {
     position: absolute;
     left: 0;
@@ -3194,6 +3209,7 @@
     font-size: var(--ex-text-sm);
     -unity-font-style: bold;
     color: var(--ex-ink);
+    margin-left: var(--ex-space-2);
     margin-right: var(--ex-space-1);
 }
 
@@ -3398,6 +3414,20 @@
     border-top-color: var(--ex-line);
 }
 
+/* The two answers to "what should happen to this card" sit side by side. Margin on both sides
+   of each button keeps the outer gutters symmetric without a :first-child selector, which USS
+   does not have. */
+.detail__acts { flex-direction: row; }
+
+.detail__acts > .btn {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: var(--ex-space-1);
+    margin-right: var(--ex-space-1);
+}
+
+.detail__release { margin-bottom: var(--ex-space-2); }
+
 /* The hairline and the + that close every currency pill in the reference. */
 .chip__rule {
     width: 3px;
@@ -3544,6 +3574,19 @@
 }
 
 .head-btn:hover { background-color: var(--ex-accent-deep); }
+
+/* An action button that shares a row with filter chips. A filled accent button is the same
+   shape and the same colour as a SELECTED chip, so on 인사 the sweep button read as "this
+   filter is on" — an action has to be told apart from a state at a glance. Outlined: accent
+   ink on the surface, so it is clearly pressable and clearly not a chip. */
+.head-btn--quiet {
+    color: var(--ex-accent);
+    background-color: var(--ex-surface);
+}
+
+.head-btn--quiet:hover { background-color: var(--ex-surface-sunken); }
+
+.head-btn--quiet:disabled { color: var(--ex-ink-muted); border-color: var(--ex-line); }
 
 .prog-list { flex-grow: 1; min-height: 0; }
 

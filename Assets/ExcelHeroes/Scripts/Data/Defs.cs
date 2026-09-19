@@ -303,6 +303,9 @@ namespace ExcelHeroes.Data
         public int[] skillCostValues;
 
         // 스카우트 and 조각 변환.
+        /// <summary>How much of the gold spent on levels comes back. 1.0 = all of it.</summary>
+        public float levelRefund;
+
         public int scoutPerDay;
         public float scoutCostPct;
         public int scoutMinCost;

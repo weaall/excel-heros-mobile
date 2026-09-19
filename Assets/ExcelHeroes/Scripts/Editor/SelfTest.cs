@@ -112,10 +112,53 @@ namespace ExcelHeroes.EditorTools
             CheckGatesAreReachable();
             CheckSaveTransfer();
             CheckAutoParty();
+            CheckRefund();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
             if (_failures == 0) Debug.Log(Log.ToString());
             else Debug.LogError(Log.ToString());
+        }
+
+        /// <summary>
+        /// 레벨 환급 — that what comes back equals what went in.
+        ///
+        /// This shipped wrong: the charge included the grade tier and the refund did not, so an S
+        /// card handed back a fifth of what levelling it cost. Nothing failed and no screen looked
+        /// wrong — the player was simply short. A refund and its charge have to be checked against
+        /// each other, because either one alone always looks reasonable.
+        /// </summary>
+        static void CheckRefund()
+        {
+            Line("\n-- level refund --");
+
+            foreach (var grade in new[] { "D", "A", "S" })
+            {
+                var def = GameData.Heroes.FirstOrDefault(h => h.grade == grade);
+                if (def == null) continue;
+
+                var p = PlayerState.New();
+                p.gold = int.MaxValue / 4;
+                p.owned.Add(new OwnedHero(def.id));
+                var hero = p.Find(def.id);
+
+                // Spend, level by level, exactly as the game does.
+                var spent = 0L;
+                for (var i = 0; i < 20; i++)
+                {
+                    var cost = StatMath.LevelUpCost(hero);
+                    spent += cost;
+                    p.gold -= cost;
+                    hero.level++;
+                }
+
+                var back = DismissService.LevelRefund(p, def.id);
+                var rate = GameData.Balance.levelRefund <= 0f ? 1f : GameData.Balance.levelRefund;
+                var want = (long)(spent * rate);
+
+                // Per-level flooring means the two differ by at most one coin per level.
+                Check(System.Math.Abs(back - want) <= 20,
+                      $"{grade}: paid {spent:N0}, refunds {back:N0} (expected about {want:N0})");
+            }
         }
 
         /// <summary>

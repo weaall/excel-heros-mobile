@@ -146,6 +146,12 @@ namespace ExcelHeroes.Core
         /// </summary>
         public string mainJob = "intern";
 
+        /// <summary>
+        /// 즐겨찾기 — cards the player has deliberately kept. 레벨 회수 skips these, which is the
+        /// whole point of the mark: "I levelled this one on purpose, leave it alone".
+        /// </summary>
+        public List<string> favorites = new();
+
         /// <summary>스킨 — what each hero has unlocked and what they are wearing.</summary>
         public List<SkinState> skins = new();
 

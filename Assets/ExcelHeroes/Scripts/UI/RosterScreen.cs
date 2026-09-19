@@ -46,6 +46,21 @@ namespace ExcelHeroes.UI
             Chips(right, "보유", new[] { ("", "전체"), ("1", "보유만"), ("0", "미보유"), ("party", "편성") },
                   () => _owned, v => _owned = v);
             UiKit.Div("spacer", right);
+
+            // 레벨 회수 lives on the roster because that is where a player sees the low-grade card
+            // they levelled at Phase 3 and now regrets. The refund is full, so gold can move to a
+            // better card for the cost of one tap.
+            var reclaim = UiKit.Btn("↺ 대기 레벨 회수", "head-btn head-btn--quiet", () =>
+            {
+                var (heroes, gold) = DismissService.ReclaimBench(Game.Player);
+                _app.SetStatus(heroes > 0
+                    ? $"대기 사원 {heroes}명 레벨 회수 · 골드 +{gold:N0} (전액 환급)"
+                    : "회수할 레벨이 없습니다");
+                if (heroes > 0) AudioService.Play("bond");
+                Game.Touch();
+            }, right);
+            reclaim.SetEnabled(Game.Player.owned.Any(o => DismissService.CanReclaim(Game.Player, o)));
+
             _counter = UiKit.Text("", "filter-row__count", right);
 
             // A fixed grid rather than a scroll. Held sideways there is room for fourteen cards at
@@ -357,9 +372,25 @@ namespace ExcelHeroes.UI
                     var cards = DismissService.Cards(Game.Player, heroId);
                     var release = UiKit.Btn(
                         can ? $"방출 · 강화 카드 +{cards}" : DismissService.Blocked(Game.Player, heroId),
-                        "btn", () => ConfirmRelease(heroId, onClose), foot);
+                        "btn detail__release", () => ConfirmRelease(heroId, onClose), foot);
                     release.SetEnabled(can);
                 }
+                // 즐겨찾기 and 편성 share one row: both answer "what should happen to this one",
+                // and on a landscape sheet two full-width buttons stacked eat a third of the
+                // panel to say what fits comfortably side by side. 방출 stays on its own line
+                // above — its label is a whole sentence when it is blocked, and a sentence in a
+                // third of a row is an ellipsis.
+                var acts = UiKit.Div("detail__acts", foot);
+
+                var fav = Game.Player.favorites.Contains(heroId);
+                UiKit.Btn(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기", "btn", () =>
+                {
+                    if (fav) Game.Player.favorites.Remove(heroId);
+                    else Game.Player.favorites.Add(heroId);
+                    Game.Touch();
+                    Reopen(heroId, onClose);
+                }, acts);
+
                 var inParty = Game.Player.party.Contains(heroId);
                 UiKit.Btn(inParty ? "편성에서 빼기" : "편성에 넣기",
                     inParty ? "btn" : "btn btn--primary", () =>
@@ -368,7 +399,7 @@ namespace ExcelHeroes.UI
                     else Game.Player.AddToParty(heroId);
                     Game.Touch();
                     Close(onClose);
-                }, foot);
+                }, acts);
             }
 
             UiKit.Btn(Icons.Close, "detail__close icon", () => Close(onClose), view);

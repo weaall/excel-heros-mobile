@@ -97,6 +97,7 @@
   32,
   50
  ],
+ "levelRefund": 1,
  "scoutPerDay": 3,
  "scoutCostPct": 0.35,
  "scoutMinCost": 50000,

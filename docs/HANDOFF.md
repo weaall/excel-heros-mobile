@@ -98,6 +98,7 @@ rather than rebuilt from the data:
 | 세이브 이동 | `exportSave` / `importSave` | base64, same format as the web, so a code crosses between them |
 | 자동 편성 | `autoParty` / `partyScore` | seed on role, hill-climb on score; role coverage outranks raw power |
 | 비품 자동 장착 | `bestLoadout` / `autoEquip` / `autoEquipParty` | best-per-slot vs a full same-grade set, higher total wins |
+| 레벨 회수 | `levelGold` / `LEVEL_REFUND` | full refund, bench only — skips 김인턴, the party, 출장, and 즐겨찾기, which the grid shows as a 보존 badge |
 
 ### Gold is an `int` here and a double in the web — decide what to do about it
 
@@ -321,6 +322,13 @@ card is a small face.
   illustration instead, and only where one is shown large.
 - **No attack/armour typing.** Blue Archive's six-by-six table is real depth, but it is a second
   and third stat axis on top of grade, role, star and division, and these fights last ten seconds.
+- **Levelling costs more per grade here than it does on the web, and that stays.** The web's
+  `upgradeCost(level)` takes only the level; this build multiplies by a grade tier (D=1 … S=5)
+  because the balance bench found that without a gold sink that scales with the card, the monster
+  curve at 1.18 per stage runs away from the party within a handful of stages. It is a real
+  divergence from the web and the only one in the gold economy, so it is written down here rather
+  than left to be discovered. Anything that undoes a level charge — 환급, 레벨 다운, 방출 — must
+  carry the same tier, which is exactly what one of the shipped bugs below got wrong.
 - **The battle log lives in the sheet's rows**, not a floating panel, because those same rows carry
   the disguise when the boss key is on.
 
@@ -350,6 +358,7 @@ than trusting that a port of it works.
 - **A percentage margin resolves against the parent's WIDTH, not its height.** `margin: 1%` on the
   episode cards was 24px of vertical gap on a 2400-wide frame, which is what pushed the second row
   into the pager.
+- **강화 환급이 청구의 1/5만 돌려주고 있었다.** `StatMath.LevelUpCost` charges `base × tier × growth^(l-1)`, where tier is 1 for a D and 5 for an S; `DismissService.LevelRefund` paid back `base × growth^(l-1)`. Nothing threw, no screen looked wrong, and the number on the button was a plausible amount of gold — the player was simply short. A refund and the charge it undoes have to be read against each other, because either one alone always looks reasonable. `CheckRefund` now levels a D, an A and an S twenty times each and compares the two sums.
 - **Ten labels were squeezing their own line height by 2–9px.** Nothing looked wrong in a capture;
   the audit measured `MeasureTextSize` against `contentRect` and named all ten.
 

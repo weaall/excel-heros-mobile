@@ -82,6 +82,11 @@ namespace ExcelHeroes.Core
                         copies = grade == "S" ? 3 : 0,
                     });
                     p.AddToParty(def.id);
+
+                    // One card marked 즐겨찾기, so the 보존 badge on the grid is something a
+                    // capture can actually be checked against. A badge that only appears in a
+                    // state the driver never builds is a badge nobody has ever seen.
+                    if (grade == "A") p.favorites.Add(def.id);
                 }
             }
 
