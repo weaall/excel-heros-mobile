@@ -289,6 +289,8 @@ namespace ExcelHeroes.Data
         public List<TeamUpgradeDef> teamUpgrades = new();
         public float gemDropBase;
         public float comboPerHit, comboMax, comboDecay;
+        public float tankChance, tankChancePerStar, tankChanceMax;
+        public float tankReduce, tankReducePerStar, tankReduceMax, tankSaveCd;
     }
 
     /// <summary>

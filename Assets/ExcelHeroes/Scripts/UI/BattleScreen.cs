@@ -22,7 +22,7 @@ namespace ExcelHeroes.UI
         public string Formula => "=SUMIFS(Sheet2!D:D,Sheet2!A:A,\"Q3\",Sheet2!B:B,\">0\")";
 
         readonly AppRoot _app;
-        VisualElement _root, _stage, _exBar, _resultView, _upgradeBar;
+        VisualElement _root, _stage, _resultView, _upgradeBar;
         BattleFx _fx;
         Label _comboLabel;
         Label _waveLabel;
@@ -54,7 +54,6 @@ namespace ExcelHeroes.UI
         BattleSim _sim;
 
         readonly Dictionary<Combatant, VisualElement> _views = new();
-        readonly Dictionary<string, (VisualElement button, VisualElement charge)> _exButtons = new();
         // The y is carried here rather than read back from resolvedStyle: on the frame a floater
         // is created its resolved top is still 0, so reading it sent every damage number to the top
         // of the field and it drifted up from there. The numbers were landing nowhere near the
@@ -87,17 +86,7 @@ namespace ExcelHeroes.UI
             // 콤보 — the count sits over the field, because it is about what is happening there.
             _comboLabel = UiKit.Text("", "combo", _stage);
 
-            // 재계산 예산 — the shared pool EX skills are paid from. Segmented rather than smooth so
-            // you can read "two more" at a glance without doing arithmetic mid-fight.
-            var costRow = UiKit.Div("cost-row", _root);
-            _costValue = UiKit.Text("0", "cost-row__value", costRow);
-            var track = UiKit.Div("cost-row__track", costRow);
-            for (var i = 0; i < (int)BattleSim.MaxCost; i++)
-                _costCells.Add(UiKit.Div("cost-cell", track));
-
-            _exBar = UiKit.Div("ex-bar", _root);
-
-            // 사무실 개선 — the gold sink, under the EX bar rather than on a sheet of its own,
+            // 사무실 개선 — the gold sink, under the field rather than on a sheet of its own,
             // because it is meant to be spent from without leaving the fight that earns it.
             _upgradeBar = UiKit.Div("upgrades", _root);
 
@@ -120,7 +109,6 @@ namespace ExcelHeroes.UI
             if (_stage == null || _sim == null) return;
 
             _views.Clear();
-            _exButtons.Clear();
             _floaters.Clear();
             _shotViews.Clear();
             _motes.Clear();
@@ -129,7 +117,6 @@ namespace ExcelHeroes.UI
             // The effects layer goes in first so the fighters draw over it — a spark belongs
             // behind the thing it came off, not painted across its face.
             _fx = new BattleFx(_stage);
-            _exBar.Clear();
             _resultView = null;
 
             if (_backdropStage != _sim.Stage || _backdrop == null)
@@ -141,11 +128,7 @@ namespace ExcelHeroes.UI
 
             foreach (var h in _sim.Heroes) AddFighterView(h);
             foreach (var m in _sim.Monsters) AddFighterView(m);
-            foreach (var h in _sim.Heroes) AddExButton(h);
         }
-
-        Label _costValue;
-        readonly System.Collections.Generic.List<VisualElement> _costCells = new();
 
         void ToggleAuto()
         {
@@ -173,10 +156,6 @@ namespace ExcelHeroes.UI
                 ShowEmptyParty();
                 return false;
             }
-
-            // The previous run's result dialog is on the shared overlay; the new run owns the
-            // screen, so it closes it rather than leaving a stale scoreboard over the field.
-            if (_resultView != null && _resultView.panel != null) _app.CloseOverlay();
 
             _hitStop = 0f;
             _sim = new BattleSim(Game.Player, Game.Player.stage) { AutoSkill = Game.Player.autoSkill };
@@ -245,29 +224,13 @@ namespace ExcelHeroes.UI
             }
             var bar = UiKit.Div("fighter__hpbar", el);
             UiKit.Div("fighter__hpfill", bar);
+
+            // Heroes carry a second, blue bar under the first: the charge on their skill, which
+            // fires on its own the moment it is full.
+            if (c.side == Side.Hero && c.skillCooldown > 0f)
+                UiKit.Div("fighter__skillfill", UiKit.Div("fighter__skillbar", el));
             UiKit.Text(c.name, "fighter__name", el);
             _views[c] = el;
-        }
-
-        void AddExButton(Combatant h)
-        {
-            if (h.skillCooldown <= 0f)
-            {
-                // Below ★2 the skill is still locked; show the slot so the upgrade path is visible.
-                var locked = UiKit.Div("ex-button ex-button--spent", _exBar);
-                UiKit.SetArt(UiKit.Div("ex-button__art", locked), GameData.CardArt(h.heroId));
-                UiKit.Text($"★{GameData.Balance.skillUnlockStar} 해금", "ex-button__label", locked);
-                return;
-            }
-
-            var def = GameData.Hero(h.heroId);
-            var btn = UiKit.Div("ex-button", _exBar);
-            UiKit.SetArt(UiKit.Div("ex-button__art", btn), GameData.CardArt(h.heroId));
-            var charge = UiKit.Div("ex-button__charge", btn);
-            UiKit.Text(BattleSim.CostOf(h).ToString(), "ex-button__cost", btn);
-            UiKit.Text(def?.skillName ?? "스킬", "ex-button__label", btn);
-            btn.RegisterCallback<ClickEvent>(_ => _sim?.FireSkill(h));
-            _exButtons[h.heroId] = (btn, charge);
         }
 
         /// <summary>Gold changed somewhere else, so the prices on the upgrade strip did too.</summary>
@@ -313,7 +276,7 @@ namespace ExcelHeroes.UI
             LayoutFighters(dt);
             ApplyShake();
             UpdateCombo();
-            UpdateExButtons();
+            UpdateSkillGauges();
             UpdateFloaters(dt);
             UpdateUpgrades();
 
@@ -568,36 +531,26 @@ namespace ExcelHeroes.UI
             }
         }
 
-        void UpdateExButtons()
+        /// <summary>
+        /// The blue gauge under each hero's health, filling towards their next skill.
+        ///
+        /// It replaces the row of EX cards and the shared budget bar underneath the field. Those
+        /// were a Blue Archive hand of cards grafted onto a fight nobody plays: every skill here
+        /// fires itself, so a card you cannot press is a card that only tells you the game is
+        /// thinking. On the fighter, the same information is where the player is already looking.
+        /// </summary>
+        void UpdateSkillGauges()
         {
-            foreach (var h in _sim.Heroes)
+            foreach (var (c, el) in _views)
             {
-                if (!_exButtons.TryGetValue(h.heroId, out var pair)) continue;
-                pair.charge.style.height = Length.Percent(h.SkillCharge * 100f);
-                var affordable = _sim.CanAfford(h);
-                pair.button.EnableInClassList("ex-button--ready", h.SkillReady && affordable);
-                // Charged but unaffordable is its own state: the card is waiting on budget, not on
-                // its own cooldown, and dimming it the same as a dead slot hides that difference.
-                pair.button.EnableInClassList("ex-button--poor", h.SkillReady && !affordable);
-                pair.button.EnableInClassList("ex-button--spent", !h.Alive);
-            }
-
-            var cost = _sim.Cost;
-            _costValue.text = ((int)cost).ToString();
-            for (var i = 0; i < _costCells.Count; i++)
-            {
-                _costCells[i].EnableInClassList("cost-cell--full", cost >= i + 1);
-                // The partly-charged cell shows the fraction, so the bar moves continuously rather
-                // than jumping once a second.
-                _costCells[i].EnableInClassList("cost-cell--part", cost > i && cost < i + 1);
+                if (c.side != Side.Hero) continue;
+                var fill = el.Q(className: "fighter__skillfill");
+                if (fill == null) continue;
+                fill.style.width = Length.Percent(c.SkillCharge * 100f);
+                fill.EnableInClassList("fighter__skillfill--ready", c.SkillReady);
             }
         }
 
-        /// <summary>
-        /// Flicks a class on for a moment. USS owns the movement; this only decides when. Used for
-        /// the attacker's lunge and the target's recoil, which together are what turn two circles
-        /// exchanging numbers into something that reads as a hit landing.
-        /// </summary>
         /// <summary>
         /// The whole field jolts, as in the web build — `em.shake` translated onto the canvas
         /// before anything is drawn. Random each frame so it reads as a jolt and not as a slide.
@@ -773,47 +726,21 @@ namespace ExcelHeroes.UI
         ///
         /// It closes itself when the next run starts, so nothing has to be tapped.
         /// </summary>
+        /// <summary>
+        /// The run is over. There is nothing to report and nobody to report it to: this is an auto
+        /// battle that restarts itself, so a dialog is a thing to dismiss between two fights the
+        /// player did not start either. The payout already landed in the counters along the bottom;
+        /// the log gets one line and the next run begins.
+        /// </summary>
         void ShowResult()
         {
             AudioService.Play(_sim.Won ? "victory" : "defeat");
+            _resultView = _root;   // marks the result as reported for this run
 
-            var dialog = UiKit.Div("xl-dialog result-dialog");
-            _resultView = dialog;
-
-            var caption = UiKit.Div("xl-dialog__caption", dialog);
-            UiKit.Text("계산 결과", "xl-dialog__caption-title", caption);
-            UiKit.Div("spacer", caption);
-            UiKit.Btn("✕", "xl-dialog__close", _app.CloseOverlay, caption);
-
-            var body = UiKit.Div("xl-dialog__body", dialog);
-
-            var head = UiKit.Div("xl-dialog__head", body);
-            var icon = UiKit.Text(_sim.Won ? "✓" : "!", "xl-dialog__icon", head);
-            if (!_sim.Won) icon.style.backgroundColor = new Color(0.77f, 0.25f, 0.18f);
-            var headText = UiKit.Div("xl-dialog__head-text", head);
-            UiKit.Text(_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패",
-                "xl-dialog__title", headText);
-            UiKit.Text(_sim.Won ? $"다음 구간은 Phase {Game.Player.stage} 입니다."
-                                : "이 구간을 한 번 더 돌립니다.", "xl-dialog__subtitle", headText);
-
-            // The payout as worksheet rows, because that is what the rest of the disguise looks like.
-            var sheet = UiKit.Div("xl-dialog__sheet", body);
             var gems = _sim.GemsDropped + (_sim.Won ? 5 + _sim.GemBonus : 0);
-            Row(sheet, 1, "처리 건수", $"{_sim.Kills:N0}");
-            Row(sheet, 2, "골드", $"+{_sim.GoldEarned:N0}", accent: true);
-            Row(sheet, 3, "보석", $"+{gems:N0}", accent: true);
-
-            UiKit.Text("잠시 후 자동으로 다시 시작합니다.", "xl-dialog__note", body);
-
-            var foot = UiKit.Div("xl-dialog__foot", dialog);
-            UiKit.Btn("편성 보기", "xl-btn", () =>
-            {
-                _app.CloseOverlay();
-                _app.Show(AppRoot.Sheet.Roster);
-            }, foot);
-            UiKit.Btn("계속", "xl-btn xl-btn--default", _app.CloseOverlay, foot);
-
-            _app.OpenOverlay(dialog);
+            Log(_sim.Won
+                ? $"전 구간 처리 완료 — 골드 +{_sim.GoldEarned:N0} · 보석 +{gems}"
+                : $"처리 실패 — 골드 +{_sim.GoldEarned:N0} · 보석 +{gems}");
         }
 
         static void Row(VisualElement sheet, int n, string label, string value, bool accent = false)

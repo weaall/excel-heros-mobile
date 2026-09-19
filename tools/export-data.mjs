@@ -171,6 +171,15 @@ const files = {
     comboPerHit: BALANCE.COMBO?.perHit ?? 0.005,
     comboMax: BALANCE.COMBO?.max ?? 0.25,
     comboDecay: BALANCE.COMBO?.decay ?? 3,
+    // 엄호 — the tank intercepting a hit meant for someone else. Chance and reduction both climb
+    // with the tank's star; saveCd gates the guaranteed save on a killing blow.
+    tankChance: BALANCE.TANK?.chance ?? 0.3,
+    tankChancePerStar: BALANCE.TANK?.chancePerStar ?? 0.07,
+    tankChanceMax: BALANCE.TANK?.chanceMax ?? 0.6,
+    tankReduce: BALANCE.TANK?.reduce ?? 0.25,
+    tankReducePerStar: BALANCE.TANK?.reducePerStar ?? 0.05,
+    tankReduceMax: BALANCE.TANK?.reduceMax ?? 0.5,
+    tankSaveCd: BALANCE.TANK?.saveCd ?? 6,
   },
 };
 

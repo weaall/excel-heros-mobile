@@ -28,6 +28,8 @@ namespace ExcelHeroes.Core
         public bool Alive => hp > 0;
 
         // hero loadout
+        public int star = 1;            // ★, kept on the combatant because 엄호 scales with it
+        public float guardAt = -999f;   // when this tank last spent its guaranteed save
         public string traitId;          // 특성, resolved once at setup; value already scaled by ★
         public float traitValue;
         public float skillPower;        // ★-boosted, from StatMath.SkillPower
@@ -202,7 +204,14 @@ namespace ExcelHeroes.Core
             };
         }
 
-        public bool CanAfford(Combatant h) => Cost >= CostOf(h);
+        /// <summary>
+        /// Kept so nothing has to be rewritten to ask it, but there is no budget any more: a skill
+        /// costs nothing and fires the moment its own gauge is full. The shared pool was a Blue
+        /// Archive idea layered on top of the web build's per-hero cooldown, and with the EX cards
+        /// gone it had nowhere to show itself — a charged skill that silently would not fire reads
+        /// as a bug, not as a resource.
+        /// </summary>
+        public bool CanAfford(Combatant h) => true;
         public bool Finished { get; private set; }
         public bool Won { get; private set; }
         public int GoldEarned { get; private set; }
@@ -275,6 +284,7 @@ namespace ExcelHeroes.Core
                     traitId = def.trait,
                     traitValue = traitValue,
                     skillPower = StatMath.SkillPower(owned),
+                    star = owned.star,
                 };
 
                 // 빠른 손놀림 shortens this hero's own swing; 철벽 멘탈 is a standing damage cut.
@@ -425,7 +435,6 @@ namespace ExcelHeroes.Core
                 return;
             }
 
-            Cost = Math.Min(MaxCost, Cost + CostRate * dt);
 
             // Same decay rates as the web build: the shake dies in a third of a second, the combo
             // holds for a few seconds of not landing anything.
@@ -443,7 +452,7 @@ namespace ExcelHeroes.Core
             foreach (var h in Heroes.Where(h => h.Alive))
             {
                 if (h.skillCooldown > 0f && h.skillTimer > 0f) h.skillTimer -= dt;
-                if (AutoSkill && h.SkillReady && CanAfford(h) && WorthFiring(h)) FireSkill(h);
+                if (AutoSkill && h.SkillReady && WorthFiring(h)) FireSkill(h);
                 StepHero(h, dt);
                 StepAttack(h, dt, Monsters);
             }
@@ -606,7 +615,8 @@ namespace ExcelHeroes.Core
             Fx(FxKind.Impact, target.x, target.y - 18f, colour, target.boss != null ? 1f : 0f);
             if (crit) Fx(FxKind.Crit, target.x, target.y - 30f, new Color(0.95f, 0.77f, 0.25f));
 
-            Damage(a, target, dmg, crit: crit);
+            if (a.side == Side.Hero) Damage(a, target, dmg, crit: crit);
+            else SplitToTank(a, target, dmg, crit);
 
             if (a.side == Side.Hero)
             {
@@ -755,6 +765,52 @@ namespace ExcelHeroes.Core
         void Fx(FxKind kind, float x, float y, Color color, float radius = 0f) =>
             Events.Enqueue(new BattleEvent { kind = EventKind.Fx, fx = kind, x = x, y = y, color = color, radius = radius });
 
+        /// <summary>
+        /// 엄호 — the tank in front steps in front of a hit meant for someone else.
+        ///
+        /// Ported from the web build's #splitToTank. It is not a damage share: it either happens or
+        /// it does not, and when it does the ally takes nothing at all while the tank eats the whole
+        /// hit at a reduction. Both the chance and the reduction climb with the tank's ★.
+        ///
+        /// The part that matters is the second rule. A pure chance roll left the tank worth *less*
+        /// than another attacker in the web build's own measurements, because healing covers chip
+        /// damage and only a one-shot actually loses a fight — and a coin flip cannot be relied on to
+        /// catch the one-shot. So a blow that would put a colleague down is intercepted for certain,
+        /// on a cooldown. That is what makes fielding a tank a decision rather than a tax.
+        /// </summary>
+        void SplitToTank(Combatant from, Combatant to, int amount, bool crit)
+        {
+            var b = GameData.Balance;
+            if (b == null || to.side != Side.Hero || to.role == "tank") { Damage(from, to, amount, crit: crit); return; }
+
+            // The frontmost living tank that is not the target.
+            Combatant tank = null;
+            foreach (var h in Heroes)
+                if (h.Alive && h.role == "tank" && h != to && (tank == null || h.x > tank.x)) tank = h;
+            if (tank == null) { Damage(from, to, amount, crit: crit); return; }
+
+            var step = Math.Max(0, tank.star - 1);
+            var chance = Math.Min(b.tankChanceMax, b.tankChance + b.tankChancePerStar * step);
+            var reduce = Math.Min(b.tankReduceMax, b.tankReduce + b.tankReducePerStar * step);
+            var taken = (int)(amount * (1f - reduce));
+
+            var lethal = amount >= to.hp;
+            if (lethal && Elapsed >= tank.guardAt + b.tankSaveCd && tank.hp > taken)
+            {
+                tank.guardAt = Elapsed;
+                Damage(from, tank, taken);
+                Fx(FxKind.Ring, tank.x, tank.y - 10f, new Color(0.36f, 0.68f, 0.89f), 70f);
+                Events.Enqueue(new BattleEvent { kind = EventKind.Skill, actor = tank, text = "엄호!" });
+                return;
+            }
+
+            if (Random.value >= chance) { Damage(from, to, amount, crit: crit); return; }
+
+            Damage(from, tank, taken);
+            Fx(FxKind.Puff, tank.x, tank.y - 14f, new Color(0.36f, 0.68f, 0.89f));
+            Events.Enqueue(new BattleEvent { kind = EventKind.Skill, actor = tank, text = "엄호" });
+        }
+
         void Damage(Combatant from, Combatant to, int amount, bool silent = false, bool crit = false)
         {
             if (!to.Alive || amount <= 0) return;
@@ -809,8 +865,7 @@ namespace ExcelHeroes.Core
         /// <summary>Player-facing: fire a charged EX skill. Safe to call when not ready — it no-ops.</summary>
         public bool FireSkill(Combatant h)
         {
-            if (!h.SkillReady || !CanAfford(h)) return false;
-            Cost -= CostOf(h);
+            if (!h.SkillReady) return false;
             var def = GameData.Hero(h.heroId);
             var skill = GameData.Skill(def?.skillType);
             if (def == null || skill == null) return false;

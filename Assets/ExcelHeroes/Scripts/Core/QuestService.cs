@@ -138,6 +138,37 @@ namespace ExcelHeroes.Core
         }
 
         /// <summary>How many of today's tasks are finished — drives the badge on the nav bar.</summary>
+        /// <summary>
+        /// 한꺼번에 수령 — everything claimable, in one press.
+        ///
+        /// The web build puts this button in the sheet header and it is the only way anyone
+        /// actually collects: six tasks each with their own 수령 button is six taps for something
+        /// nobody is deciding anything about. Returns what was collected so the caller can say so.
+        /// </summary>
+        public static (int count, int gems, int gold) ClaimEverything(PlayerState p)
+        {
+            int count = 0, gems = 0, gold = 0;
+
+            foreach (var q in p.quests.ToList())
+            {
+                if (!CanClaim(p, q.id)) continue;
+                var (g, w) = Claim(p, q.id);
+                count++; gems += g; gold += w;
+            }
+
+            if (CanClaimAllClear(p))
+            {
+                var bonus = ClaimAllClear(p);
+                if (bonus > 0) { count++; gems += bonus; }
+            }
+
+            return (count, gems, gold);
+        }
+
+        /// <summary>Everything the 한꺼번에 수령 button would collect right now.</summary>
+        public static int ClaimableCount(PlayerState p) =>
+            p.quests.Count(q => CanClaim(p, q.id)) + (CanClaimAllClear(p) ? 1 : 0);
+
         public static int ReadyCount(PlayerState p) =>
             p.quests.Count(q => !q.claimed && IsDone(p, q.id)) + (CanClaimAllClear(p) ? 1 : 0)
             + (CanCheckIn(p) ? 1 : 0);

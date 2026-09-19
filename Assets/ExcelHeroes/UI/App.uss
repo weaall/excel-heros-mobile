@@ -2682,3 +2682,116 @@
 }
 
 .combo--on { opacity: 1; }
+
+
+/* ---------------------------------------------------------------- skill gauge */
+
+/* The blue bar under a hero's health, filling towards their next skill. It replaces the row of EX
+   cards and the shared budget bar that used to sit under the field: every skill fires itself, so a
+   card you cannot press only tells you the game is thinking. */
+.fighter__skillbar {
+    width: 74px;
+    height: 6px;
+    margin-top: 2px;
+    background-color: rgb(30, 34, 44);
+    border-width: 1px;
+    border-color: rgb(27, 29, 37);
+    overflow: hidden;
+}
+
+.fighter__skillfill {
+    height: 100%;
+    background-color: rgb(58, 132, 214);
+}
+
+/* Full: it is about to go off, so it says so. */
+.fighter__skillfill--ready { background-color: rgb(120, 198, 255); }
+
+/* ---------------------------------------------------------------- daily sheet */
+
+/* Sections, the web's `qs-block`: a titled card per group so the sheet reads as a list of things
+   rather than as one long column of panels. */
+.qs-block {
+    flex-shrink: 0;
+    margin: 14px 14px 0 14px;
+    padding: 20px 18px 20px 18px;
+    background-color: rgb(252, 252, 252);
+    border-width: 1px;
+    border-color: rgb(212, 212, 212);
+    border-radius: 6px;
+}
+
+.qs-title {
+    flex-direction: row;
+    align-items: baseline;
+    margin-bottom: 16px;
+}
+
+.qs-title__name {
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(38, 40, 46);
+    margin-right: 14px;
+}
+
+.qs-title__note {
+    font-size: 24px;
+    color: rgb(140, 145, 155);
+    flex-shrink: 1;
+    white-space: normal;
+}
+
+.sheet-head__sub { font-size: 24px; color: rgb(140, 145, 155); }
+
+.claim-all { min-width: 300px; height: 92px; font-size: 30px; }
+
+/* One task per row: the text block grows, the button stays put on the right. */
+.qrow {
+    flex-direction: row;
+    align-items: center;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(234, 234, 234);
+}
+
+.qrow--done { opacity: 0.55; }
+
+.qrow__text { flex-grow: 1; flex-shrink: 1; }
+.qrow__name { font-size: 30px; -unity-font-style: bold; color: rgb(40, 42, 48); }
+.qrow__desc { font-size: 24px; color: rgb(140, 145, 155); margin-top: 2px; }
+
+.qrow__track {
+    height: 10px;
+    margin-top: 10px;
+    margin-right: 20px;
+    background-color: rgb(228, 230, 234);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.qrow__fill { height: 100%; background-color: rgb(33, 115, 70); }
+
+.qrow__meta { font-size: 24px; color: rgb(110, 115, 125); margin-top: 8px; }
+
+.qrow__claim {
+    flex-shrink: 0;
+    min-width: 128px;
+    height: 74px;
+    font-size: 28px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    background-color: rgb(33, 115, 70);
+    border-width: 0;
+    border-bottom-width: 5px;
+    border-bottom-color: rgb(22, 82, 50);
+    border-radius: 6px;
+}
+
+.qrow__claim:disabled {
+    background-color: rgb(224, 226, 230);
+    border-bottom-color: rgb(200, 202, 208);
+    color: rgb(150, 154, 162);
+}
+
+.qrow__done { flex-shrink: 0; min-width: 128px; -unity-text-align: middle-center; font-size: 26px; color: rgb(150, 154, 162); }
