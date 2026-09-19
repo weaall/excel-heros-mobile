@@ -63,6 +63,20 @@ namespace ExcelHeroes.UI
 
             // One button under the line-up, which is where the reference puts 자동 and 확인.
             var actions = UiKit.Div("party-actions", left);
+
+            // 자동 편성 goes first because it is the one most players will press. Choosing by hand
+            // means opening 55 cards, and the best party is not the five biggest numbers — 부문
+            // 시너지, a healer and a spread of roles all beat raw 전투력, and none of them shows on
+            // a card by itself.
+            var auto = UiKit.Btn("자동 편성", "btn", () =>
+            {
+                AutoPartyService.Auto(Game.Player);
+                AudioService.Play("bond");
+                _app.SetStatus($"자동 편성 · 편성 점수 {AutoPartyService.Score(Game.Player, Game.Player.party):N0}");
+                Game.Touch();
+            }, actions);
+            auto.SetEnabled(p.owned.Any(o => o.id != GameData.MainId));
+
             UiKit.Btn("대기 인원에서 채우기", "btn", OpenPicker, actions);
             var bulk = UiKit.Btn("골드 소진까지 일괄 강화", "btn btn--primary", () =>
             {

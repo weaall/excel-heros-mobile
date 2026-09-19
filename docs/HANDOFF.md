@@ -96,6 +96,7 @@ rather than rebuilt from the data:
 | 스킬 레벨 | `upgradeSkill` / `skillLevelInfo` | five levels, +10% power and -3% charge each |
 | 스카우트 · 조각 변환 | `scoutShard` / `scoutInfo` / `convertShards` | gold buys a duplicate 3x a day; spares become 강화 카드 |
 | 세이브 이동 | `exportSave` / `importSave` | base64, same format as the web, so a code crosses between them |
+| 자동 편성 | `autoParty` / `partyScore` | seed on role, hill-climb on score; role coverage outranks raw power |
 
 ### Gold is an `int` here and a double in the web — decide what to do about it
 
@@ -122,8 +123,8 @@ An audit of the web's `GameManager` API against this build found **18 missing fe
 The table above had been read as a complete list and it never was one. Still missing, in rough order
 of how much they matter:
 
-- **편의**: 자동 편성 (`autoParty`), 비품 자동 장착 (`autoEquip`/`autoEquipParty`/`bestLoadout`),
-  즐겨찾기 (`toggleFavorite`)
+- **편의**: 비품 자동 장착 (`autoEquip`/`autoEquipParty`/`bestLoadout`), 즐겨찾기
+  (`toggleFavorite`)
 - **되돌리기**: 레벨·강화 환급 (`resetHeroLevel`, `downgradeHero`, `downgradeEnhance`,
   `reclaimBenchLevels`)
 - **설정**: 자동 진행 (`setAutoAdvance`/`setSafeAdvance`), 자동 강화 (`setAutoUpgrade`)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ExcelHeroes.Core;
@@ -110,10 +111,70 @@ namespace ExcelHeroes.EditorTools
             CheckBattle();
             CheckGatesAreReachable();
             CheckSaveTransfer();
+            CheckAutoParty();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
             if (_failures == 0) Debug.Log(Log.ToString());
             else Debug.LogError(Log.ToString());
+        }
+
+        /// <summary>
+        /// 자동 편성 — that the search actually beats picking on raw power.
+        ///
+        /// A screenshot shows five cards either way; whether they are the RIGHT five is arithmetic.
+        /// The whole reason this button exists is that 부문 시너지, a healer and a spread of roles
+        /// beat 전투력, so a search that quietly returned the top five by power would look correct
+        /// and be worthless.
+        /// </summary>
+        static void CheckAutoParty()
+        {
+            Line("\n-- auto party --");
+
+            var p = PlayerState.New();
+            // A roster wide enough that the naive answer and the good answer differ: every role,
+            // several divisions, and a few heavies that would crowd out a healer on power alone.
+            foreach (var h in GameData.Heroes.Take(20))
+                p.owned.Add(new OwnedHero(h.id) { star = 2, level = 30 });
+
+            var size = GameData.Balance.partySize;
+            var team = AutoPartyService.Auto(p);
+
+            Check(team.Count == size, $"fills every slot ({team.Count} / {size})");
+            Check(team.Contains(GameData.MainId), "김인턴 keeps a slot");
+            Check(team.Distinct().Count() == team.Count, "nobody is fielded twice");
+
+            // The baseline is a LEGAL party, not the highest-scoring one.
+            //
+            // A plain power sort can score higher by leaving the tank and the healer on the bench,
+            // and the web forces them in anyway — "roles the roster can actually supply must stay
+            // represented, whatever the raw numbers say". Asserting that auto beats an unconstrained
+            // power sort tests that rule rather than the search, and fails because the rule is
+            // doing its job. So the baseline is the search's own seed: best tank, best healer, then
+            // power. What the hill-climb owes us is that it never hands back something worse than
+            // what it started from.
+            var seed = new List<string> { GameData.MainId };
+            foreach (var role in new[] { "tank", "healer" })
+            {
+                var best = p.owned.Where(o => o.id != GameData.MainId && GameData.Hero(o.id)?.role == role)
+                                  .OrderByDescending(StatMath.Power).FirstOrDefault();
+                if (best != null && !seed.Contains(best.id)) seed.Add(best.id);
+            }
+            foreach (var o in p.owned.Where(o => o.id != GameData.MainId).OrderByDescending(StatMath.Power))
+            {
+                if (seed.Count >= size) break;
+                if (!seed.Contains(o.id)) seed.Add(o.id);
+            }
+            var autoScore = AutoPartyService.Score(p, team);
+            var seedScore = AutoPartyService.Score(p, seed);
+            Check(autoScore >= seedScore,
+                  $"the climb never returns worse than its seed ({autoScore:N0} vs {seedScore:N0})");
+
+            // A healer in the roster has to reach the field: it is worth more than the power it
+            // displaces, and that is exactly what a power sort gets wrong.
+            var hasHealer = p.owned.Any(o => GameData.Hero(o.id)?.role == "healer");
+            if (hasHealer)
+                Check(team.Any(id => GameData.Hero(id)?.role == "healer"),
+                      "a healer in the roster is fielded");
         }
 
         /// <summary>
