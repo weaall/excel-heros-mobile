@@ -65,6 +65,20 @@ namespace ExcelHeroes.UI
         /// A roster/party card. `owned` may be null, which renders the silhouette used for cards the
         /// player has not pulled yet.
         /// </summary>
+        /// <summary>
+        /// A roster card, arranged the way Blue Archive arranges its own.
+        ///
+        /// Checked against a real screenshot of its battle HUD, where the EX skill cards are the
+        /// same object in miniature: a bust crop of the portrait, a number badge in the top corner,
+        /// and nothing written across the picture itself. What this build had instead was the whole
+        /// 2:3 illustration squashed into a square — so every card was a torso, the faces were cut
+        /// off at the top, and the metadata sat in rows of text underneath, which is why three of
+        /// them filled the screen.
+        ///
+        /// So: the crop is anchored to the top, because the face is the part that identifies a
+        /// card; the grade and role become corner badges over the art; and the stars go on a plate
+        /// at the foot of the portrait rather than on a line of their own.
+        /// </summary>
         public static VisualElement Card(HeroDef def, OwnedHero owned, Action onClick = null, string extraClasses = null)
         {
             var grade = GameData.Grade(def.grade);
@@ -75,22 +89,25 @@ namespace ExcelHeroes.UI
             var art = Div("card__art", card);
             SetArt(art, GameData.CardArt(def.id));
 
-            var top = Div("card__top", card);
-            var badge = Text(def.grade, "card__grade", top);
+            // Badges sit on the art, in the corners, as they do in the source.
+            var badge = Text(def.grade, "card__grade", art);
             badge.style.backgroundColor = grade?.Color ?? Color.gray;
-            Text(RoleName(def.role), "card__role", top);
+            Text(RoleName(def.role), "card__role", art);
+
+            if (owned != null)
+            {
+                var stars = Text(Stars(owned.star), "card__stars", art);
+                stars.style.color = grade?.Color ?? Color.white;
+                Text($"Lv {owned.level}", "card__level", art);
+            }
 
             var plate = Div("card__plate", card);
             Text(def.name, "card__name", plate);
-            if (owned != null)
-            {
-                Text(Stars(owned.star), "card__stars", plate);
-                var need = GachaService.PromoteCost(owned);
-                if (need > 0) Text($"승급 {owned.copies}/{need}", "card__copies", plate);
-            }
+            if (owned == null) Text("미보유", "card__sub muted", plate);
             else
             {
-                Text("미보유", "card__stars muted", plate);
+                var need = GachaService.PromoteCost(owned);
+                Text(need > 0 ? $"승급 {owned.copies}/{need}" : "최대 ★", "card__sub", plate);
             }
 
             if (onClick != null) card.RegisterCallback<ClickEvent>(_ => onClick());
