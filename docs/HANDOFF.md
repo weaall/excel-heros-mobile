@@ -1,7 +1,12 @@
 # Excel Heroes (Unity) — where this is
 
-A port of the web build (`C:\Users\user\excel-heros`) to a portrait phone. The web repo is the
-source of truth for balance, art and combat, and is **never modified** — it is the live game.
+A port of the web build (`C:\Users\user\excel-heros`) to a **landscape** phone. The web repo is
+the source of truth for balance, art and combat, and is **never modified** — it is the live game.
+
+The Excel disguise is gone. So is the portrait layout, and so is scrolling: held sideways, a list
+that outgrows the frame turns pages (`Pages<T>` + `.pager`) and anything that is not a list is laid
+out in columns. The chrome is copied from Blue Archive's own screens — see
+`docs/BLUE_ARCHIVE_NOTES.md`, which records what was read off each one.
 
 ## The one thing to understand
 
@@ -16,7 +21,7 @@ The build checks itself. There is no step where a person has to look at the scre
 
 ```bash
 # every sheet, the card viewer, the disguise and whatever a new save opens on
-Build/Windows/ExcelHeroes.exe -screenshots <dir> -screen-width 486 -screen-height 1080 -logFile <log>
+Build/Windows/ExcelHeroes.exe -screenshots <dir> -screen-width 1080 -screen-height 486 -logFile <log>
 grep "\[shots\]" <log>     # clipping: text wider than its box, elements off the edge
 ```
 
@@ -67,14 +72,46 @@ than only on its own, the roster cut into grade sections with the card detail as
 check-in stamp as a day card, and the summon screen rebuilt against a design reference in
 `docs/design/pickup.md`.
 
-**Not yet.** Equipment, dispatch, achievements, milestones, skin equipping, cloud sync — all of
-which exist in the web build and have tests there. The roster's table view.
+Since the landscape pass, every web system that is only code is ported, each from its web source
+rather than rebuilt from the data:
+
+| system | from | notes |
+|---|---|---|
+| 편성 | — | a screen on the bar. It had become unreachable when the ribbon went. |
+| 업적 · 마일스톤 | `AchievementManager.js`, `MilestoneManager.js` | data and save fields already existed; nothing read them |
+| 백그라운드 정산 | `idleReport` / `offlineGold` | 10h cap at 0.6x. Measured once in `Game.Boot` — the first save overwrites the timestamp |
+| 광고 보상 | `adOffers` / `adReward` | five offers, every one FLAT. No SDK: `Grant` is what a real one would call |
+| 출장 | `dispatchInfo` / `startDispatch` / `claimDispatch` | real-time clock, so it survives the daily reset |
+| 야근 모드 | `startOvertime` / `endOvertime` | `BattleSim.Overtime`: thicker, softer, a wipe does not end it |
+| 비품 | the `EQUIP` block | four slots, set bonus, gold upgrades, dismantling. Feeds `StatMath` |
+| 회사 이전 | `prestigeShares` / `prestige` | keeps the roster and everything spent on it; clears the run |
+| 방출 | `dismiss` | guarded: not the main hero, not the party, not a card with no spare shards |
+| 승산 | `challengeForecast` | **ETA only** — see below |
+| 보석 코드 | `codes.js` | local redemption record; the web's is per account on its Worker |
+
+**Not yet.** Skin equipping (the skin art was deleted; `tools/gen-art.mjs skins` has to run first),
+cloud sync (needs a mobile OAuth decision — the client secret is never usable), the roster's table
+view.
+
+**Deliberately not ported.** The 도전/파밍 toggle. Its meaning in the web depends on a boss
+appearing only on boss stages; here every stage is two waves and a boss, so a toggle with that name
+would not mean the same thing. Rebuilding the wave structure to match is its own piece of work.
+
+### 승산 has no label on purpose
+
+The 유리/접전/불리 thresholds (`FORECAST.boss` = [3,15]) were measured against the WEB's encounter.
+This build's fight is a different shape, so the same ratio means something else and the label read
+불리 on a stage the party clears every run. It is gone; the ETA stays, which by the web's own note
+was always the part carrying information — the odds read 유리 97% of the time, while the time per
+stage grows continuously and that growth is the wall. Calibrating a label honestly means benching
+this sim.
 
 ## Blocked
 
 - **APK.** The Android module is installed without its SDK, NDK and JDK, so `BuildGame.Android`
   fails with `Android SDK not found`. Unity Hub → 6000.0.82f1 → add modules → Android SDK & NDK
-  Tools + OpenJDK. The same install is what an emulator needs.
+  Tools + OpenJDK. The same install is what an emulator needs. **This is the top of the list**:
+  nothing about how the game feels in a hand has been checked even once.
 - **Safe area is untested.** `Screen.safeArea` returns the whole screen on desktop, so `SafeArea.cs`
   has never actually inset anything. It needs a device or an emulator with a cutout.
 - Nothing on the art side. The HF route is no longer the only one: `tools/gen-art.mjs` runs the
@@ -105,3 +142,23 @@ card is a small face.
   and third stat axis on top of grade, role, star and division, and these fights last ten seconds.
 - **The battle log lives in the sheet's rows**, not a floating panel, because those same rows carry
   the disguise when the boss key is on.
+
+## Bugs this port has hidden, and how they were found
+
+All six were invisible to the compiler and to the tests; every one came out of looking at a capture
+or at the data. It is the argument for the screenshot driver, and for reading the web source rather
+than trusting that a port of it works.
+
+- **The city backdrop had never once been drawn.** `AttachViews` clears the stage, which detached
+  the element `Build` had made, and every run since painted an empty sky over a live reference to
+  something no longer in the tree.
+- **모집's odds deleted themselves.** `BuildPickup` cleared the whole column and `Refresh` calls
+  `BuildPickup`, so every refresh took the rate chips and pity bars with it.
+- **`.icon` beat every icon size in the file.** Same specificity, declared last, so a 52px rail
+  glyph and a 34px currency glyph both came out 46px.
+- **`maxCleared` was never written.** The achievement, the milestones and the equipment drop table
+  all read it.
+- **Six balance blocks were not being exported at all** — `AD_OFFERS`, the offline constants,
+  `DISPATCH`, `OVERTIME`, `EQUIP`, `PRESTIGE`. Each was found by trying to use it.
+- **편성 and 일괄 강화 became unreachable** when the Excel ribbon was removed, because they hung
+  off it. A dead `IScreen` compiles perfectly.
