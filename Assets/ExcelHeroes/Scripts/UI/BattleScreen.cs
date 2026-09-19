@@ -147,6 +147,8 @@ namespace ExcelHeroes.UI
                         Float(e.target, e.amount.ToString("N0"), "floater");
                         // Only the party's own hits get a sound; every monster swing too would be mud.
                         if (e.actor != null && e.actor.side == Side.Hero) AudioService.Play("hit", 0.22f);
+                        Pulse(e.actor, "fighter__body--swing", 110);
+                        Pulse(e.target, "fighter__body--hurt", 90);
                         break;
                     case EventKind.Heal:
                         Float(e.target, "+" + e.amount.ToString("N0"), "floater floater--heal");
@@ -155,6 +157,8 @@ namespace ExcelHeroes.UI
                     case EventKind.Skill:
                         Float(e.actor, e.text, "floater floater--skill");
                         AudioService.Play("skill", 0.55f);
+                        // A boss shouting its move gets the floater; a hero firing EX gets the screen.
+                        if (e.actor != null && e.actor.side == Side.Hero) PlayCutIn(e.actor, e.text);
                         break;
                     case EventKind.Death:
                         if (_views.TryGetValue(e.target, out var dead)) dead.AddToClassList("fighter--dead");
@@ -200,6 +204,67 @@ namespace ExcelHeroes.UI
                 pair.button.EnableInClassList("ex-button--spent", !h.Alive);
             }
         }
+
+        /// <summary>
+        /// Flicks a class on for a moment. USS owns the movement; this only decides when. Used for
+        /// the attacker's lunge and the target's recoil, which together are what turn two circles
+        /// exchanging numbers into something that reads as a hit landing.
+        /// </summary>
+        void Pulse(Combatant who, string cls, long ms)
+        {
+            if (who == null || !_views.TryGetValue(who, out var el)) return;
+            var body = el.Q(className: "fighter__body");
+            if (body == null) return;
+            body.AddToClassList(cls);
+            body.schedule.Execute(() => body.RemoveFromClassList(cls)).ExecuteLater(ms);
+        }
+
+        /// <summary>
+        /// The EX cut-in. The hero's own illustration sweeps in at full size with the skill name and
+        /// the line they shout — the one moment during play where the card art is the whole screen.
+        /// It is deliberately short: at roughly a second it punctuates a fight rather than pausing it.
+        /// </summary>
+        void PlayCutIn(Combatant hero, string skillName)
+        {
+            var def = GameData.Hero(hero.heroId);
+            if (def == null || _root == null) return;
+
+            // A second cut-in landing on top of the first reads as a glitch, so the last one wins.
+            _cutIn?.RemoveFromHierarchy();
+
+            var view = UiKit.Div("cutin", _root);
+            _cutIn = view;
+
+            var sweep = UiKit.Div("cutin__sweep", view);
+            var art = UiKit.Div("cutin__art", view);
+            UiKit.SetArt(art, GameData.CardArt(def.id));
+
+            var plate = UiKit.Div("cutin__plate", view);
+            UiKit.Text(skillName ?? def.skillName, "cutin__skill", plate);
+            if (!string.IsNullOrEmpty(def.ult)) UiKit.Text($"“{def.ult}”", "cutin__line", plate);
+
+            view.schedule.Execute(() =>
+            {
+                sweep.AddToClassList("cutin__sweep--in");
+                art.AddToClassList("cutin__art--in");
+                plate.AddToClassList("cutin__plate--in");
+            }).ExecuteLater(16);
+
+            view.schedule.Execute(() =>
+            {
+                art.RemoveFromClassList("cutin__art--in");
+                plate.RemoveFromClassList("cutin__plate--in");
+                sweep.RemoveFromClassList("cutin__sweep--in");
+            }).ExecuteLater(880);
+
+            view.schedule.Execute(() =>
+            {
+                view.RemoveFromHierarchy();
+                if (_cutIn == view) _cutIn = null;
+            }).ExecuteLater(1250);
+        }
+
+        VisualElement _cutIn;
 
         void Float(Combatant at, string text, string classes)
         {

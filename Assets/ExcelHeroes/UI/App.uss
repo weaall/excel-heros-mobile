@@ -974,6 +974,86 @@
     padding-right: 8px;
 }
 
+/* ---------------------------------------------------------------- EX cut-in */
+
+/* The signature moment: firing a skill throws the character's own illustration across the
+   screen shouting their line. It is the one time the art is at full size during play, and
+   it is what makes a skill feel like a person acting rather than a number resolving. */
+
+.cutin {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cutin__sweep {
+    position: absolute;
+    left: -120%;
+    right: 120%;
+    height: 420px;
+    background-color: rgba(240, 196, 70, 0.22);
+    transition-duration: 0.28s;
+}
+
+.cutin__sweep--in { left: -10%; right: -10%; }
+
+.cutin__art {
+    position: absolute;
+    left: -60%;
+    width: 70%;
+    height: 420px;
+    -unity-background-scale-mode: scale-and-crop;
+    opacity: 0;
+    transition-duration: 0.3s;
+}
+
+.cutin__art--in { left: -4%; opacity: 1; }
+
+.cutin__plate {
+    position: absolute;
+    right: 24px;
+    align-items: flex-end;
+    opacity: 0;
+    transition-duration: 0.3s;
+}
+
+.cutin__plate--in { opacity: 1; }
+
+.cutin__skill {
+    font-size: 46px;
+    -unity-font-style: bold;
+    color: rgb(255, 232, 150);
+}
+
+.cutin__line {
+    font-size: 26px;
+    color: rgb(238, 242, 250);
+    max-width: 560px;
+    white-space: normal;
+    -unity-text-align: upper-right;
+    margin-top: 6px;
+}
+
+/* --- hit feedback ------------------------------------------------------- */
+
+.fighter__body { transition-duration: 0.09s; }
+
+/* a lunge towards the enemy on the swing, so an attack has a body behind it */
+.fighter--hero .fighter__body--swing { translate: 22px 0; }
+.fighter--monster .fighter__body--swing { translate: -22px 0; }
+
+.fighter__body--hurt { scale: 1.18 1.18; }
+
+.fighter--dead {
+    opacity: 0.25;
+    transition-duration: 0.35s;
+    scale: 0.82 0.82;
+}
+
 /* ---------------------------------------------------------------- story */
 
 /* episode list */
