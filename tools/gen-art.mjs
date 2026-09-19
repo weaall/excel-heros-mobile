@@ -1,5 +1,6 @@
 // Gemini art pipeline for Excel Heroes (Unity).
 //   node tools/gen-art.mjs cards  [--only a,b] [--limit N] [--force] [--concurrency 4]
+//   node tools/gen-art.mjs skins  [--only a,b] [--limit N] [--force]   (run AFTER cards)
 //   node tools/gen-art.mjs poses  [--only a,b] [--force]
 //   node tools/gen-art.mjs frames [--force]
 //   node tools/gen-art.mjs ui     [--force]
@@ -9,7 +10,7 @@ import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { genImage, refFromFile, writeOut, pool } from './gemini.mjs';
-import { cardPrompt, posePrompt, spritePrompt, framePrompt, POSES, UI_PIECES } from './art-prompts.mjs';
+import { cardPrompt, skinPrompt, posePrompt, spritePrompt, framePrompt, POSES, UI_PIECES } from './art-prompts.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -26,7 +27,13 @@ const CONC  = Number(flag('concurrency', 3));
 const ONLY  = flag('only') ? new Set(flag('only').split(',').map((s) => s.trim())) : null;
 const LIMIT = flag('limit') ? Number(flag('limit')) : Infinity;
 
-const heroes = JSON.parse(readFileSync(join(DATA, 'heroes.json'), 'utf8')).items;
+// The cast is the roster plus the eleven 승진 jobs the player themself moves through — both have
+// cards, and regenerating one without the other leaves the art half in the old style.
+const roster = JSON.parse(readFileSync(join(DATA, 'heroes.json'), 'utf8')).items;
+const jobs = JSON.parse(readFileSync(join(DATA, 'mainJobs.json'), 'utf8')).items;
+const heroes = [...roster, ...jobs.map((j) => ({
+  ...j, nick: j.title ?? j.name, dept: j.name, bio: j.title ?? '', gender: 'M', division: j.division ?? 'admin',
+}))];
 const grades = JSON.parse(readFileSync(join(DATA, 'grades.json'), 'utf8')).items;
 const gradeColour = Object.fromEntries(grades.map((g) => [g.id, g.color]));
 
@@ -41,6 +48,32 @@ function webRef(id) {
 
 const report = (label) => (done, total, r) =>
   console.log(`[${String(done).padStart(3)}/${total}] ${label} ${r.ok ? 'ok  ' + r.value : 'FAIL ' + r.error.message.slice(0, 140)}`);
+
+/**
+ * The two outfit skins per character. Run after `cards`, never before: they use the freshly
+ * generated base card as the identity reference, so a stale base would propagate the old style
+ * into the skins and the pair would not look like the same person.
+ */
+async function skins() {
+  const wanted = heroes.filter((h) => !ONLY || ONLY.has(h.id));
+  const list = [];
+  for (const h of wanted)
+    for (const skin of ['casual', 'formal']) {
+      const id = `${h.id}__${skin}`;
+      if (FORCE || !existsSync(join(ART, 'Cards', `${id}.png`))) list.push({ h, skin, id });
+    }
+  console.log(`skins: ${list.slice(0, LIMIT).length} to generate (concurrency ${CONC})`);
+  const jobs2 = list.slice(0, LIMIT).map(({ h, skin, id }) => async () => {
+    const base = join(ART, 'Cards', `${h.id}.png`);
+    if (!existsSync(base)) throw new Error(`no base card for ${h.id} — run cards first`);
+    const [img] = await genImage(skinPrompt(h, skin), {
+      model: 'gemini-3-pro-image', refs: [refFromFile(base)], aspectRatio: '3:4',
+    });
+    writeOut(join(ART, 'Cards', `${id}.png`), img.buffer);
+    return `${id} ${(img.buffer.length / 1024).toFixed(0)}KB`;
+  });
+  summarise(await pool(jobs2, CONC, report('skin')));
+}
 
 async function cards() {
   let list = heroes.filter((h) => !ONLY || ONLY.has(h.id));
@@ -128,6 +161,6 @@ function summarise(res) {
 mkdirSync(join(ART, 'Cards'), { recursive: true });
 mkdirSync(join(ART, 'Sprites'), { recursive: true });
 mkdirSync(join(ART, 'UI'), { recursive: true });
-const table = { cards, poses, sprites, frames, ui };
-if (!table[cmd]) { console.log('usage: node tools/gen-art.mjs <cards|poses|frames|ui> [--only ids] [--limit N] [--force]'); process.exit(1); }
+const table = { cards, skins, poses, sprites, frames, ui };
+if (!table[cmd]) { console.log('usage: node tools/gen-art.mjs <cards|skins|poses|frames|ui> [--only ids] [--limit N] [--force]'); process.exit(1); }
 await table[cmd]();

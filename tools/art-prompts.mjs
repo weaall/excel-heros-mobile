@@ -21,24 +21,34 @@ export const NEGATIVE = [
   'No extra limbs, no duplicated faces, no cropped head, no cropped halo.',
 ].join(' ');
 
-/** The signature read. One per division so a player can tell a tech card from a finance card at a glance. */
+/**
+ * The halo is LIGHT, not hardware.
+ *
+ * The first pass built it out of objects — brushed steel, coin edges, orbiting paper clips — and
+ * every card came back wearing a prop. What the halo is meant to say is that this person has stayed
+ * late fixing someone else's spreadsheet, and a machined ring says the opposite. So: a ring of soft
+ * light, its colour set by the division, thin enough that it never competes with the face.
+ */
 const HALO = {
-  admin:   'a slim brushed-steel ring, slate blue, with tiny paper-clip and document shapes orbiting it slowly',
-  ops:     'a sturdy woven green ring like a safety cord, with small shield and leaf shapes set along it',
-  people:  'a warm orange ring with small heart and approval-stamp glyphs set into it like gemstones',
-  finance: 'a heavy polished gold ring with coin edges and fine tick marks like a ruler around its rim',
-  tech:    'a glowing cyan ring made of circuit traces and bracket shapes, with a faint scanline sweeping around it',
-  market:  'a vivid red ring with a rising arrow chasing around it and small graph spikes along the outside',
-  exec:    'a double ring, an inner gold band and an outer violet band, with a crown silhouette rising from the top',
+  admin:   'cool slate-blue light',
+  ops:     'soft green light',
+  people:  'warm amber light',
+  finance: 'pale gold light',
+  tech:    'clear cyan light',
+  market:  'warm red-orange light',
+  exec:    'white-gold light with a faint violet inner edge',
 };
 
-/** Rarity is told through the halo and the light on the character, not through background detail. */
+/**
+ * Rarity climbs through the halo, but quietly. Even at S it is a ring of light over someone's head,
+ * not a set piece — the instruction that keeps mattering is that it must not dominate the face.
+ */
 const GRADE_HALO_POWER = {
-  D: 'the halo is thin, matte and barely glowing',
-  C: 'the halo glows gently and a few motes drift off it',
-  B: 'the halo glows clearly, slowly rotating, shedding small light fragments',
-  A: 'the halo is thick and bright, double-layered, casting visible light down onto the hair and shoulders',
-  S: 'the halo is enormous and radiant, multi-layered with a second counter-rotating ring, pouring volumetric light down over the whole figure',
+  D: 'a thin, faint ring of light, barely brighter than the air around it',
+  C: 'a soft clean ring of light with a gentle bloom',
+  B: 'a clear ring of light, slightly brighter at its edges, a few small motes drifting from it',
+  A: 'a luminous ring of light with a faint second ring just inside it, casting a soft glow on the hair',
+  S: 'a radiant ring of light with a slow inner and outer ring, shedding fine light particles and laying a warm glow across the hair and shoulders',
 };
 
 /** Deliberately plain. Flat colour plus a hint of grid, nothing to compete with the character. */
@@ -50,12 +60,59 @@ const GRADE_BG = {
   S: 'flat deep navy backdrop, a faint golden spreadsheet grid, strong radial golden glow behind the figure',
 };
 
-const ROLE_POSE = {
-  tank:   'planted wide stance, one arm forward as if bracing a door shut, steady unmoving expression',
-  melee:  'forward-leaning ready stance, weight on the front foot, caught mid-step',
-  ranged: 'poised upright, one arm extended forward at shoulder height as if presenting a figure',
-  healer: 'open welcoming posture, one hand raised palm-up with a soft glow above it, calm expression',
+/**
+ * A pose is a moment out of a movement, not a stance held for a photograph.
+ *
+ * The first pass keyed the pose off the role alone, which produced ten cards doing the same thing:
+ * torso twisted, one arm flung out to the right. A role is four buckets across fifty-five people,
+ * so it can only ever give four poses. The bank below is picked per character, with the role
+ * deciding which half of the bank it draws from, so two tanks brace differently.
+ */
+const POSE_BANK = {
+  tank: [
+    'shoulder-charging something off-frame, front arm braced across the chest, head down and eyes up',
+    'planted low with both arms spread wide to block, knees bent, looking off to one side',
+    'turning to shield someone behind them, one arm thrown back protectively, chin over the shoulder',
+    'rising out of a crouch with a fist clenched at the hip, coat still settling from the movement',
+  ],
+  melee: [
+    'mid-lunge with the body coiled low, one arm cocked back to strike, hair thrown forward',
+    'landing from a jump, one knee up, one hand touching down, looking up past the camera',
+    'spinning through a turn, jacket flaring, arms crossed tight against the body',
+    'caught at the top of a downward swing, arms overhead, weight on the back foot',
+  ],
+  ranged: [
+    'leaning back and away while aiming something forward and down, head tilted, one eye narrowed',
+    'twisting at the waist to look behind, one arm still pointing the way they came from',
+    'crouched low with the forearms up, glancing sideways at the camera',
+    'stepping back with the hips angled away and the shoulders turned in, head lowered, eyes up',
+  ],
+  healer: [
+    'kneeling on one knee with both hands cupped low, light pooling in them, eyes closed',
+    'reaching up and out with one hand as if catching something falling, body arched back',
+    'half-turned away with a hand pressed to the chest, looking back over the shoulder',
+    'seated on an unseen edge, legs crossed, leaning forward on one arm, chin tucked',
+  ],
 };
+
+/**
+ * On top of the pose, a per-character attitude so a row of ten pulls is not ten variations of one
+ * mood. Both are chosen by hashing the id, so a hero's pose and mood never change between runs.
+ */
+const ATTITUDE = [
+  'confident and fired up, grinning through the effort',
+  'coolly composed, eyes half-lowered, faintly amused',
+  'sharp and challenging, chin raised, meeting the viewer sideways',
+  'poised and elegant, a slight sensual arch through the back and hip',
+  'fierce and shouting, full of fight',
+  'quietly focused, lips pressed, entirely absorbed in the task',
+  'playful and teasing, head tilted, glancing back over the shoulder',
+  'weary but unbroken, a tired half-smile',
+];
+
+const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
+const poseFor = (id, role) => { const bank = POSE_BANK[role] ?? POSE_BANK.melee; return bank[hash(id) % bank.length]; };
+const attitudeFor = (id) => ATTITUDE[hash(id + '!') % ATTITUDE.length];
 
 const GENDER = { M: 'a Korean man', F: 'a Korean woman' };
 
@@ -63,26 +120,45 @@ const GENDER = { M: 'a Korean man', F: 'a Korean woman' };
 export function cardPrompt(h, { hasRef }) {
   const who = GENDER[h.gender] ?? 'a Korean office worker';
   const identity = hasRef
-    ? 'Redraw the character from the reference image. Keep the SAME identity: same face, hairstyle, hair colour, skin tone, outfit design, outfit colours and accessories. Only the rendering quality, the pose, the halo and the background change.'
+    ? 'Redraw the character from the reference image. Keep the SAME identity: same face, hairstyle, hair colour, skin tone, outfit design, outfit colours and accessories. Only the rendering quality, the pose, the framing, the halo and the background change — and those change completely.'
     : 'Design a character matching the description below.';
   const accents = [h.colorHair, h.colorBody, h.colorPants, h.colorAccent].filter(Boolean).join(', ')
     || 'corporate navy and warm grey';
   return [
+    // The crop leads, and is repeated at the end. Stated once in the middle of the prompt it was
+    // simply ignored: the model kept pulling back to a full body with the feet in, which is the
+    // default for a character illustration and the reason every face came out small.
+    'FRAMING (decide this first): a COWBOY SHOT — the bottom edge of the image cuts straight across',
+    'the THIGHS. Head to mid-thigh only. No feet, no shoes, no floor, no full body. The head is large,',
+    'roughly one fifth of the image height, and the figure fills the frame from edge to edge.',
+    '',
     identity,
     '',
     'SUBJECT: ' + who + ', ' + h.nick + ' - ' + h.bio + ' Department: ' + h.dept + '.',
     'Wearing realistic modern Korean office attire suited to that job, not fantasy armour, not a costume.',
-    'POSE: knee-up three-quarter view facing the camera, ' + (ROLE_POSE[h.role] ?? ROLE_POSE.melee) + '.',
+    'POSE (within that crop): ' + poseFor(h.id, h.role) + '.',
+    'ATTITUDE: ' + attitudeFor(h.id) + '.',
+    'The character must NOT stare straight down the lens — the head is turned, tilted or looking',
+    'past the camera. A dead-on symmetrical pose is wrong for every card.',
+    'Render it as a single frame paused out of that movement: the limbs at an angle to the camera,',
+    'strong foreshortening, hair and clothing still carrying the motion. 2D illustration throughout —',
+    'cel-shaded anime art, not a 3D render — but with the depth and dynamism of a 3D action shot.',
     '',
-    'HALO (most important element): floating horizontally above the head, clearly separated from the hair,',
-    (HALO[h.division] ?? HALO.admin) + '. ' + GRADE_HALO_POWER[h.grade] + '.',
+    'HALO: a ring of pure light floating above the head, clearly separated from the hair, tilted with',
+    'the head rather than pinned flat to the camera. Colour: ' + (HALO[h.division] ?? HALO.admin) + '.',
+    GRADE_HALO_POWER[h.grade] + '.',
+    'It is made of light only — never metal, never a solid object, nothing orbiting it, no attached',
+    'props or symbols. It is a quiet accent, not the subject: it must never outshine the face.',
     'The halo must be fully inside the frame with clear space above it.',
     '',
     'BACKGROUND (keep it quiet): ' + (GRADE_BG[h.grade] ?? GRADE_BG.D) + '. Nothing else in the background at all.',
     'Character colour accents: ' + accents + '.',
     '',
     STYLE,
-    'Vertical portrait composition, character centred, figure from the knees up, generous headroom for the halo.',
+    'Vertical composition. Check the crop once more: cowboy shot, cut at the thighs, no feet in frame,',
+    'head large and near the top with just enough room for the halo above it.',
+    'The face is LARGE in frame, clearly lit and unobstructed — front-lit, never lost in shadow.',
+    'Avoid the stock pose of one straight arm thrust out to the side; every card must read differently.',
     NEGATIVE,
   ].join('\n');
 }
@@ -182,3 +258,47 @@ export const UI_PIECES = {
     NEGATIVE,
   ].join('\n'),
 };
+
+/**
+ * 스킨 — the same person in different clothes. Two per character, the pair the web build ships:
+ * 캐주얼 for the weekend and 정장 for the day it matters. Everything that identifies them survives;
+ * only the outfit and the pose change, so a player who swaps a skin still sees the same colleague.
+ */
+const SKIN_OUTFIT = {
+  casual: [
+    'Weekend clothes: a relaxed modern Korean casual outfit suited to their personality —',
+    'oversized knit, hoodie, denim, a light jacket, whatever fits who they are. Comfortable, not scruffy.',
+    'Keep any accessory that identifies them (glasses, earrings, a hair clip, the lanyard if it is theirs).',
+  ].join(' '),
+  formal: [
+    'Formal wear: a sharply tailored suit, dress or gown in their own colours — the outfit for a',
+    'board presentation or a company dinner. Immaculate, structured, a little more dramatic than daywear.',
+  ].join(' '),
+};
+
+export function skinPrompt(h, skin) {
+  return [
+    'FRAMING (decide this first): a COWBOY SHOT — the bottom edge of the image cuts straight across',
+    'the THIGHS. Head to mid-thigh only. No feet, no shoes, no floor, no full body. The head is large,',
+    'roughly one fifth of the image height, and the figure fills the frame from edge to edge.',
+    '',
+    'Redraw the character in the reference image wearing different clothes. Keep the SAME identity:',
+    'same face, same hairstyle and hair colour, same skin tone, same eye colour, same build.',
+    'The reference is the definitive look of this person — a stranger must not appear.',
+    '',
+    (SKIN_OUTFIT[skin] ?? SKIN_OUTFIT.casual),
+    '',
+    'POSE: a different moment from the reference, and a relaxed one — this is them off duty rather',
+    'than mid-fight. ' + attitudeFor(h.id + skin) + '. The head is turned or tilted, never staring',
+    'straight down the lens.',
+    '',
+    'HALO: keep the ring of light above the head, same colour and strength as the reference.',
+    'Light only — never metal, never a solid object, and never brighter than the face.',
+    '',
+    'BACKGROUND (keep it quiet): ' + (GRADE_BG[h.grade] ?? GRADE_BG.D) + '. Nothing else at all.',
+    '',
+    STYLE,
+    'The face is LARGE in frame, clearly lit and unobstructed — front-lit, never lost in shadow.',
+    NEGATIVE,
+  ].join('\n');
+}
