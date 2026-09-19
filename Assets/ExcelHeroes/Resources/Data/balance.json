@@ -53,6 +53,13 @@
   80,
   140
  ],
+ "mainLevelCapByTier": [
+  80,
+  140,
+  200,
+  260,
+  320
+ ],
  "enhancePerLevel": 0.04,
  "traitPerStar": 0.12,
  "monsterAtkRampFull": 5,

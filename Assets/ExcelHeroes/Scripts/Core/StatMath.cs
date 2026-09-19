@@ -38,6 +38,25 @@ namespace ExcelHeroes.Core
             return t[Math.Clamp(star, 1, t.Length) - 1];
         }
 
+        /// <summary>
+        /// A hero's level ceiling — from ★ for the 55 recruits, and from the JOB TIER for the main
+        /// hero, which is the web's rule and not an embellishment: "주인공은 ★ 대신 직급으로 열린다".
+        ///
+        /// It has to work that way. ★ is bought with duplicates, 김인턴 is never in the recruit
+        /// pool, so he can never be given one. Capping him by ★ leaves him stuck at 80 forever —
+        /// and 과장 → 부장 needs level 140, so the last promotion would simply be unreachable.
+        /// </summary>
+        public static int LevelCap(OwnedHero o)
+        {
+            if (o == null) return 80;
+            if (o.id != GameData.MainId) return LevelCap(o.star);
+
+            var t = GameData.Balance.mainLevelCapByTier;
+            var tier = PromotionService.Job(Game.Player)?.tier ?? 0;
+            if (t == null || t.Length == 0) return LevelCap(o.star);
+            return t[Math.Clamp(tier, 0, t.Length - 1)];
+        }
+
         public static int Atk(OwnedHero o)
         {
             var def = GameData.Hero(o.id);
@@ -116,7 +135,7 @@ namespace ExcelHeroes.Core
             return Math.Max(1, (int)MathF.Floor(b.upgradeCostBase * tier * MathF.Pow(b.upgradeCostGrowth, Math.Max(1, o.level) - 1)));
         }
 
-        public static bool AtLevelCap(OwnedHero o) => o.level >= LevelCap(o.star);
+        public static bool AtLevelCap(OwnedHero o) => o.level >= LevelCap(o);
 
         /// <summary>Spends gold for one level. Returns false when capped or short of gold.</summary>
         public static bool TryLevelUp(PlayerState player, OwnedHero o)

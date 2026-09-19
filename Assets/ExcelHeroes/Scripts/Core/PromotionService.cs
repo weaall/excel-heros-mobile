@@ -141,7 +141,7 @@ namespace ExcelHeroes.Core
             // The one case worth interrupting for: the main hero is stuck at their level cap and
             // cannot go further without promoting, which in this build stalls the whole party.
             var me = p.Find(GameData.MainId);
-            if (me != null && me.level >= StatMath.LevelCap(me.star)) return "레벨 상한 · 승진이 필요합니다";
+            if (me != null && StatMath.AtLevelCap(me)) return "레벨 상한 · 승진이 필요합니다";
             return "";
         }
     }

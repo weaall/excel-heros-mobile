@@ -198,6 +198,9 @@ const files = {
     // 승진 gates, indexed by job tier. Cards are spent; stage and level are only checked.
     mainPromoteCards: BALANCE.MAIN_PROMOTE_CARDS, mainPromoteStage: BALANCE.MAIN_PROMOTE_STAGE,
     mainPromoteLevel: BALANCE.MAIN_PROMOTE_LEVEL,
+    // 주인공은 ★ 대신 직급으로 열린다 — the main hero's level cap comes from job tier, not stars,
+    // because he is never in the recruit pool and so can never be given a duplicate.
+    mainLevelCapByTier: BALANCE.MAIN_LEVEL_CAP_BY_TIER,
     enhancePerLevel: BALANCE.ENHANCE_PER_LEVEL,
     traitPerStar: BALANCE.TRAIT_STAR?.perStar ?? 0.12,
     monsterAtkRampFull: BALANCE.MONSTER_ATK_RAMP?.full ?? 5,

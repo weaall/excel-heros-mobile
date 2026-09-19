@@ -216,7 +216,7 @@ namespace ExcelHeroes.UI
                 UiKit.StatRow("공격력", StatMath.Atk(owned).ToString("N0"), body);
                 UiKit.StatRow("체력", StatMath.Hp(owned).ToString("N0"), body);
                 UiKit.StatRow("전투력", StatMath.Power(owned).ToString("N0"), body);
-                UiKit.StatRow("레벨", $"{owned.level} / {StatMath.LevelCap(owned.star)}", body);
+                UiKit.StatRow("레벨", $"{owned.level} / {StatMath.LevelCap(owned)}", body);
                 var need = GachaService.PromoteCost(owned);
                 UiKit.StatRow("승급", need > 0 ? $"중복 {owned.copies} / {need}장" : "최대 ★", body);
             }

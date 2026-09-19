@@ -116,6 +116,19 @@ concept — the cap comes from ★ alone — so there is nothing to check, and i
 a currency. The web's own note says that condition means "finish this tier first", and
 `MAIN_PROMOTE_LEVEL` already says that in a unit this build has.
 
+**The main hero's level cap comes from his JOB TIER, not from ★** — `MAIN_LEVEL_CAP_BY_TIER`
+[80, 140, 200, 260, 320], and the web's note on it reads 주인공은 ★ 대신 직급으로 열린다.
+
+This is not decoration, it is what makes the track finishable. ★ is bought with duplicates, and
+김인턴 is never in the recruit pool, so he can never be given one: he is ★1 for the whole game. The
+first port of this capped him by ★ like everyone else, which pinned him at level 80 — and 과장 →
+부장 needs level 140. The last promotion was unreachable, and would have shipped that way.
+
+Nothing on screen was wrong and every test passed. It came out of putting two balance tables side
+by side and doing the arithmetic on whether each gate can actually be met. Worth repeating for any
+other gate ported from the web: **check that the condition is satisfiable in THIS build's model**,
+because the two builds do not level the same way.
+
 ### The skin art was never missing
 
 This file used to say skin equipping was blocked because the art had been deleted and

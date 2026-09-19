@@ -284,6 +284,9 @@ namespace ExcelHeroes.Data
         public int[] mainPromoteCards;
         public int[] mainPromoteStage;
         public int[] mainPromoteLevel;
+
+        /// <summary>주인공은 ★ 대신 직급으로 열린다 — the main hero's level ceiling, per job tier.</summary>
+        public int[] mainLevelCapByTier;
         public float enhancePerLevel;
         public float traitPerStar;
         public int monsterAtkRampFull, monsterAtkRampByStage;
