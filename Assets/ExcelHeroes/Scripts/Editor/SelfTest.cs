@@ -108,10 +108,68 @@ namespace ExcelHeroes.EditorTools
             CheckAffection();
             CheckQuests();
             CheckBattle();
+            CheckGatesAreReachable();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
             if (_failures == 0) Debug.Log(Log.ToString());
             else Debug.LogError(Log.ToString());
+        }
+
+        /// <summary>
+        /// Every gate ported from the web, checked against THIS build's ceilings.
+        ///
+        /// This exists because of a real bug that shipped. 과장 → 부장 requires level 140, and the
+        /// main hero was capped by ★ like everyone else — but ★ is bought with duplicates and he is
+        /// never in the recruit pool, so he is ★1 forever and stopped at 80. The last promotion was
+        /// unreachable. Every screen rendered correctly, every other check passed, and the wall was
+        /// forty hours into a save.
+        ///
+        /// The two builds do not level the same way, so a requirement copied across can be
+        /// satisfiable there and impossible here. That is arithmetic, and arithmetic is cheap to
+        /// check, so it is checked on every run rather than remembered.
+        /// </summary>
+        static void CheckGatesAreReachable()
+        {
+            Line("\n-- gates are reachable --");
+            var b = GameData.Balance;
+
+            // 승진: each tier's level requirement against the ceiling that tier actually opens.
+            var need = b.mainPromoteLevel;
+            var caps = b.mainLevelCapByTier;
+            if (need == null || caps == null || need.Length == 0 || caps.Length == 0)
+                Check(false, "승진 tables exported (mainPromoteLevel / mainLevelCapByTier)");
+            else
+                for (var tier = 0; tier < need.Length; tier++)
+                {
+                    var cap = caps[System.Math.Min(tier, caps.Length - 1)];
+                    Check(need[tier] <= cap,
+                          $"승진 tier {tier}: needs level {need[tier]}, tier caps at {cap}");
+                }
+
+            // 스킨: an affection unlock past the affection ceiling can never be earned, and the
+            // skin would sit in the panel forever saying what to do about it.
+            foreach (var sk in GameData.SkinDefs)
+            {
+                if (sk.unlockAffection <= 0) continue;
+                Check(sk.unlockAffection <= b.affectionMax,
+                      $"스킨 {sk.heroDefId}/{sk.id}: needs 호감도 Lv {sk.unlockAffection}, max is {b.affectionMax}");
+            }
+
+            // A skin has to have art baked for it, or equipping it silently shows the base look.
+            var missingSkinArt = 0;
+            foreach (var sk in GameData.SkinDefs)
+                if (Resources.Load<Sprite>($"Art/Cards/{sk.heroDefId}__{sk.id}") == null) missingSkinArt++;
+            Check(missingSkinArt == 0, $"every skin has an illustration ({GameData.SkinDefs.Count} skins, {missingSkinArt} missing)");
+
+            // 비품 upgrades cannot be asked to go past their own maximum.
+            Check(b.equipMaxLevel > 0, $"비품 upgrade ceiling is set ({b.equipMaxLevel})");
+
+            // The main hero must have a doll under every job he can hold, or he fights as a
+            // circle of card art the moment he is promoted into one that has none.
+            var missingJobArt = 0;
+            foreach (var job in GameData.MainJobs)
+                if (Resources.Load<Sprite>($"Art/Sprites/{job.id}") == null) missingJobArt++;
+            Check(missingJobArt == 0, $"every job has a battle sprite ({GameData.MainJobs.Count} jobs, {missingJobArt} missing)");
         }
 
         static void Line(string s) => Log.AppendLine(s);
