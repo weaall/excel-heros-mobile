@@ -89,9 +89,47 @@ rather than rebuilt from the data:
 | 승산 | `challengeForecast` | **ETA only** — see below |
 | 보석 코드 | `codes.js` | local redemption record; the web's is per account on its Worker |
 
-**Not yet.** Skin equipping (the skin art was deleted; `tools/gen-art.mjs skins` has to run first),
-cloud sync (needs a mobile OAuth decision — the client secret is never usable), the roster's table
-view.
+| 스킨 | `skinsOf` / `unlockSkin` / `equipSkin` + `src/data/skins.js` | two per hero; 퇴근 사복 is earned at 호감도 Lv 10 and cannot be bought, 회사 정장 costs gems and cannot be earned |
+
+**Not yet.** Cloud sync (needs a mobile OAuth decision — the client secret is never usable), the
+roster's table view, the promotion track (see below).
+
+### The skin art was never missing
+
+This file used to say skin equipping was blocked because the art had been deleted and
+`tools/gen-art.mjs skins` had to run first. That was wrong twice over: the generator is abandoned
+(the web build is the art source — see the memory note), and the web has had 66 casual and 66
+formal illustrations in `assets/cards` the whole time. `bake-art.mjs cards` already copied every
+PNG it found; the last bake simply predated them.
+
+The sprites did need new code. A skin is not a recolour — the web's paper doll changes CLOTHES for
+it, so 퇴근 사복 is a hoodie or a cardigan rather than the same suit in another palette — and
+`buildDollStrip(id, skin, grade)` has always taken a skin. Now 132 skin strips bake alongside the
+bases.
+
+### 김인턴 had no pixel doll at all
+
+`bakeSprites` looped `HEROES`, and the main hero's eleven job definitions (인턴 through 부장 on all
+three tracks) live in `MAIN_JOBS`, not `HEROES`. So the protagonist — the one character on screen
+in every single fight — was falling back to card art in a circle while all 55 others had a sprite.
+66 dolls bake now.
+
+**Their skins still do not work**, and the reason is worth knowing: skins are filed under the
+DEFINITION id, and the main hero's definition is their job, which changes on promotion. The
+promotion track is not ported — the save has no job field and `GameData.MainJobs` is loaded and
+never read — so `SkinService.For("main")` finds nothing and the tab says so. The 22 job skin strips
+are already baked and waiting for the track.
+
+### The card art in this build was stale
+
+Re-running `bake-art.mjs cards` changed the pixels of all 66 base illustrations, and nothing in
+that function was touched. The web re-added `assets/cards` in its most recent commit, so Unity had
+been showing an older set. Re-bake after any web art change; the bake is the only thing that
+notices.
+
+**Size.** `Resources/Art/Cards` is now 133 MB of source PNG across 198 files. Everything under
+`Resources/` ships. That is a mobile build-size problem waiting to be measured, and it has not
+been.
 
 **Deliberately not ported.** The 도전/파밍 toggle. Its meaning in the web depends on a boss
 appearing only on boss stages; here every stage is two waves and a boss, so a toggle with that name

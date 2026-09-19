@@ -1637,6 +1637,66 @@
 /* A boss is the one entry in its phase you had to beat, so it gets the border that says so. */
 .mcard--boss { border-color: var(--ex-gold); }
 
+/* ---------------------------------------------------------------- 스킨
+   One row per look. The left border carries the skin's own frame colour, which is the web build's
+   way of telling 퇴근 사복 from 회사 정장 at a glance. */
+.skin-row {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 104px;
+    margin-bottom: var(--ex-space-1);
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
+    background-color: var(--ex-surface-raised);
+    border-left-width: 6px;
+    border-left-color: var(--ex-line);
+    border-radius: var(--ex-rad-md);
+}
+
+.skin-row--on { background-color: var(--ex-accent-wash); }
+.skin-row--locked { background-color: var(--ex-surface-sunken); }
+
+.skin-row__text { flex-grow: 1; flex-shrink: 1; }
+.skin-row__name { font-size: 28px; -unity-font-style: bold; color: var(--ex-ink); }
+.skin-row__desc { font-size: 21px; color: var(--ex-ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.skin-row__on {
+    flex-shrink: 0;
+    min-width: 150px;
+    height: 62px;
+    font-size: 24px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: var(--ex-accent-deep);
+}
+
+.skin-row__btn {
+    flex-shrink: 0;
+    min-width: 200px;
+    height: 62px;
+    font-size: 24px;
+    -unity-text-align: middle-center;
+    color: var(--ex-ink);
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-color: var(--ex-line);
+    border-radius: var(--ex-rad-md);
+}
+
+.skin-row__btn--buy {
+    color: var(--ex-accent-ink);
+    background-color: var(--ex-accent);
+    border-color: var(--ex-accent);
+    -unity-font-style: bold;
+}
+
+.skin-row__btn:disabled {
+    background-color: var(--ex-surface-sunken);
+    border-color: var(--ex-line);
+    color: rgb(160, 165, 174);
+}
+
 /* ---------------------------------------------------------------- album */
 
 .album { flex-grow: 1; }

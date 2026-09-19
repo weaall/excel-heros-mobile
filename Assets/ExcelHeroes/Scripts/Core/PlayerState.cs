@@ -5,6 +5,19 @@ using ExcelHeroes.Data;
 
 namespace ExcelHeroes.Core
 {
+    /// <summary>
+    /// What one hero has unlocked and what they are wearing. JsonUtility cannot serialise a
+    /// dictionary, so this is a row per hero rather than a map keyed by id — the same shape every
+    /// other keyed record in this save takes.
+    /// </summary>
+    [Serializable]
+    public class SkinState
+    {
+        public string heroId;
+        public List<string> owned = new();
+        public string active;      // null or "" = the hero's own look
+    }
+
     /// <summary>One owned card. Duplicates stack as `copies`, which is what buys the next ★.</summary>
     /// <summary>One piece of 비품 in the bag. Level is bought with gold; grade never changes.</summary>
     [Serializable]
@@ -117,6 +130,9 @@ namespace ExcelHeroes.Core
         }
 
         public EquipItem Item(int id) => items.FirstOrDefault(it => it.id == id);
+
+        /// <summary>스킨 — what each hero has unlocked and what they are wearing.</summary>
+        public List<SkinState> skins = new();
 
         /// <summary>
         /// Codes already used. Local only: the web records this per account on the Worker, and

@@ -1,0 +1,1192 @@
+{
+ "items": [
+  {
+   "heroDefId": "staff_park",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "staff_park",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "parttime",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "parttime",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "guard",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "guard",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "barista",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "barista",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "courier",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "courier",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "contract",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "contract",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "vlookup",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "vlookup",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "pivot",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "pivot",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "macro",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "macro",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "hr_jung",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "hr_jung",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "audit_han",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "audit_han",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "acct_lead",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "acct_lead",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "dev_lead",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "dev_lead",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "ga_lead",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "ga_lead",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "welfare",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "welfare",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cfo",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cfo",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cto",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cto",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "coo",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "coo",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "ceo",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "ceo",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "chairman",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "chairman",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "helpdesk",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "helpdesk",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cleaner",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cleaner",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "sales_kang",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "sales_kang",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "legal_yoon",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "legal_yoon",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "pm_lead",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "pm_lead",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "design_lead",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "design_lead",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cmo",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cmo",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "founder",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "founder",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "intern_seo",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "intern_seo",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "pr_yoo",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "pr_yoo",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "nurse_han",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "nurse_han",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "lab_park",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "lab_park",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "chro",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "chro",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cso",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cso",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "ai_lead",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "ai_lead",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "union_chief",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "union_chief",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "hacker",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "hacker",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "intern_min",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "intern_min",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "security_yang",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "security_yang",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "mail_cho",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "mail_cho",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "qa_lee",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "qa_lee",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "reception_go",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "reception_go",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "trainer_seok",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "trainer_seok",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "translator_ji",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "translator_ji",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "secretary_yun",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "secretary_yun",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "logistics_bae",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "logistics_bae",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cro",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cro",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cpo",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cpo",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "ir_lead",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "ir_lead",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "labor_atty",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "labor_atty",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "bd_lead",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "bd_lead",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cdo",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cdo",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "cco",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "cco",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "chief_of_staff",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "chief_of_staff",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "chairwoman",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "chairwoman",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "intern",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "intern",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "staff",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "staff",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "sales_senior",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "sales_senior",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "sales_manager",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "sales_manager",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "sales",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "sales",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "finance_senior",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "finance_senior",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "finance_manager",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "finance_manager",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "finance",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "finance",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "admin_senior",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "admin_senior",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "admin_manager",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "admin_manager",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  },
+  {
+   "heroDefId": "admin",
+   "id": "casual",
+   "name": "퇴근 사복",
+   "desc": "호감도 Lv 10 달성 보상 · 편안한 퇴근 복장",
+   "frame": "#e84393",
+   "unlockAffection": 10,
+   "unlockGems": 0
+  },
+  {
+   "heroDefId": "admin",
+   "id": "formal",
+   "name": "회사 정장",
+   "desc": "보석 300 · 창립기념일용 네이비 정장과 금색 배지",
+   "frame": "#d4a017",
+   "unlockAffection": 0,
+   "unlockGems": 300
+  }
+ ]
+}

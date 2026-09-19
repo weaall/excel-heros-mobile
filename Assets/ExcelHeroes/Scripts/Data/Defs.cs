@@ -321,6 +321,27 @@ namespace ExcelHeroes.Data
     }
 
     /// <summary>
+    /// 스킨 — one alternate look for one hero. Two exist per hero: 퇴근 사복, unlocked by reaching
+    /// a 호감도 level, and 회사 정장, bought with gems.
+    ///
+    /// The colours are not here on purpose. A skin in the web build swaps the paper doll's OUTFIT,
+    /// not just its palette — 퇴근 사복 is a hoodie or a cardigan rather than the same suit in
+    /// another colour — so the strip is baked by `tools/bake-art.mjs` and loaded from
+    /// `Art/Sprites/&lt;hero&gt;__&lt;skin&gt;.png`. What this record carries is the unlock rule.
+    /// </summary>
+    [Serializable]
+    public class SkinDef
+    {
+        public string heroDefId;
+        public string id;
+        public string name;
+        public string desc;
+        public string frame;            // hex, the border colour the web draws around an equipped skin
+        public int unlockAffection;     // 0 = not an affection skin
+        public int unlockGems;          // 0 = not bought
+    }
+
+    /// <summary>
     /// A promo code. The table ships with the game on purpose — the web build's own note says to
     /// treat a code as a coupon you chose to publish, never as a secret.
     /// </summary>

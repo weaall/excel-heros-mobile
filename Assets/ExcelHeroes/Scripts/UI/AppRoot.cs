@@ -373,8 +373,9 @@ namespace ExcelHeroes.UI
             OpenOverlay(pane);
         }
 
-        public void OpenDetail(string heroId)
+        public void OpenDetail(string heroId, string tab = null)
         {
+            if (!string.IsNullOrEmpty(tab)) _detail.ShowTab(tab);
             Overlay.Clear();
             Overlay.RemoveFromClassList("hidden");
             Overlay.Add(_detail.Build(heroId, CloseOverlay));

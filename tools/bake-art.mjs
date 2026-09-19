@@ -26,27 +26,42 @@ install(WEB);
 
 // ---------------------------------------------------------------- sprites --
 async function bakeSprites() {
-  const { HEROES } = await import(`file://${webPath('src/data/heroes.js')}`);
+  const { HEROES, MAIN_JOBS } = await import(`file://${webPath('src/data/heroes.js')}`);
   const { HERO_MAP } = await import(`file://${webPath('src/data/packSprites.js')}`);
   const { buildHeroStrip } = await import(`file://${webPath('src/data/heroSkins.js')}`);
   const { buildDollStrip, hasDoll } = await import(`file://${webPath('src/data/dollSprites.js')}`);
+  const { skinsOf } = await import(`file://${webPath('src/data/skins.js')}`);
 
   const sheet = loadImage(webPath('assets/sprites/0x72/sheet.png'));
   const out = path.join(ART, 'Sprites');
   fs.rmSync(out, { recursive: true, force: true });
   mkdir(out);
 
-  let dolls = 0, recoloured = 0, skipped = 0;
-  for (const def of HEROES) {
+  let dolls = 0, recoloured = 0, skipped = 0, skins = 0;
+  for (const def of [...HEROES, ...Object.values(MAIN_JOBS)]) {
     const m = HERO_MAP[def.id];
-    if (!m) { skipped++; console.warn(`  no sprite mapping: ${def.id}`); continue; }
+    // A job has no 0x72 base to recolour and does not need one: every one of them has a doll.
+    if (!m && !hasDoll(def.id)) { skipped++; console.warn(`  no sprite mapping: ${def.id}`); continue; }
     // Hand-drawn dolls win over the recoloured base — same precedence as heroStrip() in the web.
     const doll = hasDoll(def.id) ? buildDollStrip(def.id, null, def.grade) : null;
     const strip = doll ?? buildHeroStrip(sheet, def, m);
+    if (!strip) { skipped++; continue; }
     doll ? dolls++ : recoloured++;
     savePNG(path.join(out, `${def.id}.png`), strip);
+
+    // One strip per skin as well. The doll builder takes the skin and swaps the outfit for it —
+    // 퇴근 사복 is a hoodie or a cardigan, not the same suit in another colour — so a skin cannot
+    // be faked at runtime by tinting the base strip.
+    for (const sk of skinsOf(def.id)) {
+      const skinStrip = hasDoll(def.id)
+        ? buildDollStrip(def.id, sk, def.grade)
+        : m ? buildHeroStrip(sheet, { ...def, skin: sk }, m) : null;
+      if (!skinStrip) continue;
+      savePNG(path.join(out, `${def.id}__${sk.id}.png`), skinStrip);
+      skins++;
+    }
   }
-  console.log(`sprites: ${dolls} paper dolls + ${recoloured} recoloured bases${skipped ? `, ${skipped} unmapped` : ''} -> ${out}`);
+  console.log(`sprites: ${dolls} paper dolls + ${recoloured} recoloured bases + ${skins} skins${skipped ? `, ${skipped} unmapped` : ''} -> ${out}`);
 }
 
 // ---------------------------------------------------------------- monsters --

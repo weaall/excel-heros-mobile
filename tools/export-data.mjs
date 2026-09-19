@@ -25,6 +25,7 @@ const achieve   = await load('src/data/achievements.js');
 const milestone = await load('src/data/milestones.js');
 const equipment = await load('src/data/equipment.js').catch(() => ({}));
 const codesMod  = await load('src/data/codes.js').catch(() => ({}));
+const skinsMod  = await load('src/data/skins.js').catch(() => ({}));
 
 const { GRADES, ROLES, SKILLS, TRAITS, HEROES, MAIN_JOBS, MAIN_ID } = heroes;
 const { PROFILES } = profiles;
@@ -168,6 +169,17 @@ const files = {
     id, label: c.label ?? '', gems: c.gems ?? 0, cards: c.cards ?? 0, gold: c.gold ?? 0,
     until: c.until ?? '',
   }))),
+
+  // 스킨 — two per hero: 퇴근 사복 unlocked by 호감도, 회사 정장 bought with gems. The palette
+  // and the doll overrides stay in the web build: Unity reads the BAKED strip
+  // (Art/Sprites/<hero>__<skin>.png), so it needs the unlock rules and the names, not the colours.
+  'skins.json': wrap(Object.entries(skinsMod.SKINS ?? {}).flatMap(([heroDefId, list]) =>
+    list.map((sk) => ({
+      heroDefId, id: sk.id, name: sk.name ?? '', desc: sk.desc ?? '',
+      frame: sk.frame ?? '',
+      unlockAffection: sk.unlock?.affection ?? 0,
+      unlockGems: sk.unlock?.gems ?? 0,
+    })))),
 
   'balance.json': {
     upgradeCostBase: BALANCE.UPGRADE_COST_BASE, upgradeCostGrowth: BALANCE.UPGRADE_COST_GROWTH,

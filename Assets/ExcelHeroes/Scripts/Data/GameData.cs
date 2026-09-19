@@ -32,6 +32,7 @@ namespace ExcelHeroes.Data
         public static List<MilestoneDef> Milestones { get; private set; } = new();
         public static EquipmentFile Equipment { get; private set; } = new();
         public static List<CodeDef> Codes { get; private set; } = new();
+        public static List<SkinDef> SkinDefs { get; private set; } = new();
 
         static Dictionary<string, AffectionText> _affection = new();
         static Dictionary<string, QuestDef> _quests = new();
@@ -73,6 +74,7 @@ namespace ExcelHeroes.Data
             Milestones = Read<Wrapper<MilestoneDef>>("milestones").items;
             Equipment = Read<EquipmentFile>("equipment");
             Codes = Read<Wrapper<CodeDef>>("codes").items;
+            SkinDefs = Read<Wrapper<SkinDef>>("skins").items;
             _quests = Quests.items.ToDictionary(q => q.id);
             _affection = Read<Wrapper<AffectionText>>("affection").items.ToDictionary(a => a.id);
 
@@ -185,6 +187,34 @@ namespace ExcelHeroes.Data
         }
 
         public static readonly string[] Skins = { "", "casual", "formal" };
+
+        /// <summary>
+        /// The art for whatever this hero is WEARING, rather than the look they were drawn with.
+        ///
+        /// Anywhere the player is looking at their own roster — the card grid, 편성, the detail
+        /// sheet, the fight — should go through here, because an equipped skin that only shows on
+        /// the screen where you equipped it is not equipped in any sense the player can see.
+        /// 모집 deliberately does not: a reveal shows the card as it was pulled.
+        /// </summary>
+        public static Sprite WornCardArt(string heroId) =>
+            CardArt(heroId, Core.SkinService.Active(Core.Game.Player, heroId));
+
+        /// <summary>Frame 0 of whatever this hero is wearing. Skin strips are baked per outfit
+        /// because a skin changes the doll's clothes, not just its palette.</summary>
+        public static Sprite WornSprite(string heroId)
+        {
+            var active = Core.SkinService.Active(Core.Game.Player, heroId);
+            if (string.IsNullOrEmpty(active)) return BattleSprite(heroId);
+            return BattleFrames($"{heroId}__{active}")?[0] ?? BattleSprite(heroId);
+        }
+
+        /// <summary>The nine frames of whatever this hero is wearing.</summary>
+        public static Sprite[] WornFrames(string heroId)
+        {
+            var active = Core.SkinService.Active(Core.Game.Player, heroId);
+            if (string.IsNullOrEmpty(active)) return BattleFrames(heroId);
+            return BattleFrames($"{heroId}__{active}") ?? BattleFrames(heroId);
+        }
 
         /// <summary>The outfits this hero actually has art for, base first.</summary>
         public static List<string> SkinsOf(string heroId)

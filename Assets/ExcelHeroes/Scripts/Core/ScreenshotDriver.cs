@@ -135,8 +135,13 @@ namespace ExcelHeroes.Core
                 var lead = Game.Player.owned.Count > 0 ? Game.Player.owned[0].id : null;
                 if (lead != null)
                 {
-                    app.OpenDetail(lead);
+                    app.OpenDetail(lead, "info");
                     yield return Shoot($"{n++:00}-Detail");
+
+                    // 스킨 is a pane of its own and a default open never reaches it.
+                    app.OpenDetail(lead, "skin");
+                    yield return Shoot($"{n++:00}-Skins");
+                    app.OpenDetail(lead, "info");
                     app.CloseOverlay();
                 }
 

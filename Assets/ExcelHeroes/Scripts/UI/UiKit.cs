@@ -93,7 +93,9 @@ namespace ExcelHeroes.UI
                 card.style.borderLeftColor = card.style.borderRightColor = grade?.Color ?? Color.gray;
 
             var art = Div("card__art", card);
-            SetArt(art, GameData.CardArt(def.id));
+            // An owned hero wears what they have equipped; a locked one has nothing equipped
+            // and falls straight through to the base art.
+            SetArt(art, owned == null ? GameData.CardArt(def.id) : GameData.WornCardArt(def.id));
 
             // Badges sit on the art, in the corners, as they do in the source.
             var badge = Text(def.grade, "card__grade", art);

@@ -185,7 +185,7 @@ namespace ExcelHeroes.UI
             // the game where cropping is simply wrong. The plate takes its height from the
             // picture's own aspect ratio, so nothing is cut and there are no bars either.
             var art = UiKit.Div("detail__art", view);
-            UiKit.SetArt(art, GameData.CardArt(heroId));
+            UiKit.SetArt(art, GameData.WornCardArt(heroId));
             ArtMotion.Breathe(art);
 
             // Everything except the picture lives in the right column.
@@ -205,6 +205,7 @@ namespace ExcelHeroes.UI
             Tab(tabs, "power", "강화", heroId, onClose);
             Tab(tabs, "bond", "호감도", heroId, onClose);
             Tab(tabs, "equip", "비품", heroId, onClose);
+            Tab(tabs, "skin", "스킨", heroId, onClose);
 
             var body = UiKit.Div("detail__body", right);
 
@@ -351,6 +352,8 @@ namespace ExcelHeroes.UI
             }
 
             if (owned != null && _tab == "equip") BuildEquip(body, heroId, onClose);
+
+            if (owned != null && _tab == "skin") BuildSkins(body, heroId, onClose);
 
             // 편성 is the one action that belongs to the whole sheet rather than to a tab, so it
             // sits on its own row at the foot, where the reference keeps 확인.
@@ -547,6 +550,87 @@ namespace ExcelHeroes.UI
         /// <summary>Which of the three pages is open. Kept across a reopen so levelling a hero
         /// does not throw you back to the stat page you levelled them from.</summary>
         string _tab = "info";
+
+        /// <summary>Opens the sheet on a named tab. The screenshot driver uses it to reach the
+        /// panes a default open never shows.</summary>
+        public void ShowTab(string tab) => _tab = tab;
+
+        /// <summary>
+        /// 스킨 — the two alternate looks, and the row that puts one on.
+        ///
+        /// The two unlock in ways that cannot substitute for each other, and the rows say which:
+        /// 퇴근 사복 is the reward at the top of 호감도 and cannot be bought, 회사 정장 is bought
+        /// with gems and cannot be earned. A locked row stays visible and states its price or its
+        /// requirement, because a skin nobody can see is a skin nobody levels towards.
+        /// </summary>
+        void BuildSkins(VisualElement body, string heroId, System.Action onClose)
+        {
+            var p = Game.Player;
+            var skins = SkinService.For(heroId);
+            if (skins.Count == 0)
+            {
+                UiKit.Text("이 사원에게는 스킨이 없습니다.", "muted", body);
+                return;
+            }
+
+            // 기본 — taking a skin OFF needs a row of its own, or the only way back to the hero's
+            // own look is to not have unlocked anything.
+            var active = SkinService.Active(p, heroId);
+            var baseRow = UiKit.Div("skin-row" + (active.Length == 0 ? " skin-row--on" : ""), body);
+            var baseText = UiKit.Div("skin-row__text", baseRow);
+            UiKit.Text("기본", "skin-row__name", baseText);
+            UiKit.Text("처음 그려진 모습", "skin-row__desc", baseText);
+            if (active.Length == 0) UiKit.Text("착용 중", "skin-row__on", baseRow);
+            else
+                UiKit.Btn("착용", "skin-row__btn", () =>
+                {
+                    SkinService.Equip(p, heroId, null);
+                    Game.Touch();
+                    Reopen(heroId, onClose);
+                }, baseRow);
+
+            foreach (var sk in skins)
+            {
+                var owned = SkinService.Owns(p, heroId, sk.id);
+                var on = owned && active == sk.id;
+
+                var row = UiKit.Div("skin-row" + (on ? " skin-row--on" : "") + (owned ? "" : " skin-row--locked"), body);
+                if (ColorUtility.TryParseHtmlString(sk.frame, out var frame)) row.style.borderLeftColor = frame;
+
+                var text = UiKit.Div("skin-row__text", row);
+                UiKit.Text(sk.name, "skin-row__name", text);
+                UiKit.Text(sk.desc, "skin-row__desc", text);
+
+                if (on) { UiKit.Text("착용 중", "skin-row__on", row); continue; }
+
+                if (owned)
+                {
+                    UiKit.Btn("착용", "skin-row__btn", () =>
+                    {
+                        SkinService.Equip(p, heroId, sk.id);
+                        Game.Touch();
+                        Reopen(heroId, onClose);
+                    }, row);
+                    continue;
+                }
+
+                var why = SkinService.Blocked(p, heroId, sk);
+                var can = why.Length == 0;
+                var label = can
+                    ? (sk.unlockGems > 0 ? $"◈{sk.unlockGems} 해금" : "해금")
+                    : why;
+                var btn = UiKit.Btn(label, can ? "skin-row__btn skin-row__btn--buy" : "skin-row__btn", () =>
+                {
+                    if (!SkinService.Unlock(p, heroId, sk.id)) return;
+                    SkinService.Equip(p, heroId, sk.id);
+                    AudioService.Play("bond");
+                    _app.SetStatus($"{GameData.Hero(heroId)?.name} 스킨 「{sk.name}」 해금");
+                    Game.Touch();
+                    Reopen(heroId, onClose);
+                }, row);
+                btn.SetEnabled(can);
+            }
+        }
 
         void Tab(VisualElement parent, string id, string label, string heroId, System.Action onClose)
         {
