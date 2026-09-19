@@ -32,6 +32,11 @@ namespace ExcelHeroes.UI
         int _speedIndex;
         public float Speed => Speeds[_speedIndex];
 
+        // Ash and office paper drifting across the field, ported from drawAsh in cityBackdrop.js.
+        // A still battlefield reads as a screenshot; this is what makes it read as weather.
+        readonly System.Collections.Generic.List<VisualElement> _motes = new();
+        float _moteT;
+
         ScrollView _log;
         readonly System.Collections.Generic.List<string> _logLines = new();
         BattleSim _sim;
@@ -201,7 +206,7 @@ namespace ExcelHeroes.UI
                     if (!_sim.Finished) _sim.Tick(dt);
 
             DrainEvents();
-            LayoutFighters();
+            LayoutFighters(dt);
             UpdateExButtons();
             UpdateFloaters(dt);
 
@@ -328,13 +333,34 @@ namespace ExcelHeroes.UI
             }
         }
 
-        void LayoutFighters()
+        const int MoteCount = 26;
+
+        void LayoutMotes(float width, float height, float dt)
+        {
+            if (_motes.Count == 0)
+                for (var i = 0; i < MoteCount; i++)
+                    _motes.Add(UiKit.Div(i % 5 == 0 ? "mote mote--paper" : "mote", _stage));
+
+            _moteT += dt;
+            for (var i = 0; i < _motes.Count; i++)
+            {
+                // Straight from the source: each speck has its own speed from its index, and the
+                // whole field wraps, so nothing ever needs spawning or destroying.
+                var x = (i * 137f + _moteT * (8f + i % 5 * 3f)) % (width + 40f) - 20f;
+                var y = (i * 71f + _moteT * (14f + i % 3 * 6f)) % (height + 20f) - 10f;
+                _motes[i].style.left = x;
+                _motes[i].style.top = y;
+            }
+        }
+
+        void LayoutFighters(float dt = 0f)
         {
             var width = _stage.resolvedStyle.width;
             var height = _stage.resolvedStyle.height;
             if (width <= 0f || height <= 0f) return;
 
             LayoutShots(width, height);
+            LayoutMotes(width, height, dt);
 
             foreach (var (c, el) in _views.ToList())
             {
