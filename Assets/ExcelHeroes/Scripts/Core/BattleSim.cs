@@ -33,6 +33,15 @@ namespace ExcelHeroes.Core
         public bool elite;              // crowned wave enemy: tougher, pays better
         public string typeId;           // monster type, for its sprite; null on heroes
 
+        // Ported from the web build's entity: where a dashing melee hero is headed (0 = home),
+        // whether a monster has finished walking in, and how far out it stops.
+        public float y;
+        public float dashTo;
+        public float dashT;
+        public bool arrived;
+        public float standoff;
+        public bool shoots;             // ranged monster: fires instead of closing
+
         // boss script state
         public BossDef boss;            // null for everything that is not a boss
         public int attackCount;
@@ -75,15 +84,25 @@ namespace ExcelHeroes.Core
     /// </summary>
     public class BattleSim
     {
-        public const float LaneCells = 13f;
-        const float HeroFrontX = 4.5f;
+        // Field geometry, in the web build's own pixels on its 832x416 canvas. Abstract "lane cells"
+        // were a reimplementation, and they produced a different fight: heroes walked forward to
+        // meet the wave. The web build is explicit that they do not — "the party stands in one row
+        // on the left and never actually moves" — melee heroes dash out to strike and snap back.
+        public const float FieldW = 832f;
+        public const float CellW = 64f;
+        public const float GroundY = 318f;
+        const float FrontX = 400f;            // x of the front-most hero
+        const float LineGap = 60f;            // spacing between heroes in the line
+        const float MeleeReach = 9f * CellW;  // melee and tanks reach any monster that has arrived
+        const float DashGap = 38f;            // how close a dashing melee hero stops
+        const float MonsterSpeed = 170f;      // px/s
 
-        // --- pacing (measured with Excel Heroes ▸ Run Balance Bench) -----------------------------
-        // Monsters used to amble in at 1.6 cells/s, which spent ~16s of a 40s fight on nobody
-        // attacking anybody. Faster approach, fewer bodies per wave, and a boss that is a wall rather
-        // than a sponge — same total health, far less dead air.
-        const float MonsterSpeed = 2.8f;
-        const float HeroSpeed = 3.2f;         // melee closes a little faster than the wave advances
+        /// <summary>Formation order: tanks at the front, ranged at the back.</summary>
+        static int RolePriority(string role) => role switch
+        {
+            "tank" => 0, "melee" => 1, "healer" => 2, _ => 3,
+        };
+
         const float BossHpMultiplier = 4f;
 
         /// <summary>
@@ -195,9 +214,10 @@ namespace ExcelHeroes.Core
                     maxHp = (int)(StatMath.Hp(owned) * (1f + _synergy.hpBonus)),
                     atk = (int)(StatMath.Atk(owned) * (1f + _synergy.atkBonus)),
                     interval = role.interval,
-                    range = role.range,
-                    x = HeroFrontX - slot * 0.75f,
-                    homeX = HeroFrontX - slot * 0.75f,
+                    range = def.role is "tank" or "melee" ? MeleeReach : role.range * CellW,
+                    x = FrontX - slot * LineGap,
+                    homeX = FrontX - slot * LineGap,
+                    y = GroundY + (slot % 2 == 1 ? 6f : -6f),
                     skillCooldown = cooldown,
                     skillTimer = cooldown * 0.35f,   // a little charge at the bell so wave 1 has a beat
                     traitId = def.trait,
@@ -245,7 +265,7 @@ namespace ExcelHeroes.Core
         {
             Wave++;
             if (Wave == WaveCount) SpawnBoss();
-            else for (var i = 0; i < MinionsThisWave; i++) Spawn(NewMinion(i), LaneCells + i * 1.1f);
+            else for (var i = 0; i < MinionsThisWave; i++) Spawn(NewMinion(i), FieldW + 60f + i * 58f);
         }
 
         const int EliteFromStage = 5;
@@ -291,7 +311,11 @@ namespace ExcelHeroes.Core
                 maxHp = elite ? (int)(hp * 2.5f) : hp,
                 atk = elite ? (int)(atk * 1.35f) : atk,
                 interval = 1.1f,
-                range = 1.1f,
+                // Ranged monsters hang back and shoot; melee ones close to arm's length, each a
+                // little further out than the last so the wave arrives as a line.
+                range = (elite ? 1.2f : 0.9f) * CellW,
+                standoff = 0.9f * 0.9f * CellW + slot * 34f,
+                y = GroundY + (slot % 2 == 1 ? 10f : -8f),
                 elite = elite,
             };
             m.hp = m.maxHp;
@@ -321,7 +345,7 @@ namespace ExcelHeroes.Core
                 boss = def,
             };
             b.hp = b.maxHp;
-            Spawn(b, LaneCells);
+            Spawn(b, FieldW + 60f);
         }
 
         void Spawn(Combatant m, float x)
@@ -358,11 +382,15 @@ namespace ExcelHeroes.Core
             // Snapshotted: a boss's 증원 요청 adds to Monsters from inside this loop.
             foreach (var m in Monsters.Where(m => m.Alive).ToList())
             {
-                var target = FrontHero();
-                if (target == null) continue;
-                var reach = target.x + m.range;
-                if (m.x > reach) m.x = Math.Max(reach, m.x - MonsterSpeed * dt);
-                else StepAttack(m, dt, Heroes);
+                var front = FrontHero();
+                if (front == null) continue;
+
+                // Monsters hold a standoff from the front of the line rather than walking onto it,
+                // which is what keeps a wave readable as a line instead of a pile.
+                var stopX = front.x + m.standoff;
+                if (m.x > stopX + 2f) { m.x = Math.Max(stopX, m.x - MonsterSpeed * dt); continue; }
+                m.arrived = true;
+                StepAttack(m, dt, Heroes);
             }
 
             Monsters.RemoveAll(m => !m.Alive);
@@ -418,32 +446,44 @@ namespace ExcelHeroes.Core
         /// Between waves everyone drifts home, so the party re-forms instead of trailing across the
         /// lane in whatever order the last fight left them.
         /// </summary>
+        /// <summary>
+        /// The party does not walk. In the web build the line holds its formation and the dungeon
+        /// scrolls under it; a melee hero lunges out to strike and snaps back, which is a 0.45s
+        /// animation rather than movement. My first version had heroes advancing to meet the wave,
+        /// and that is a different fight — the formation dissolved the moment anything arrived.
+        /// </summary>
         void StepHero(Combatant h, float dt)
         {
-            var target = NearestTarget(h, Monsters);
-            if (target == null)
-            {
-                if (Math.Abs(h.x - h.homeX) > 0.05f)
-                    h.x += Math.Sign(h.homeX - h.x) * Math.Min(HeroSpeed * dt, Math.Abs(h.homeX - h.x));
-                return;
-            }
-
-            // Long-range roles already have the whole lane covered; only short reach needs to walk.
-            if (h.range >= 5f) return;
-
-            var wanted = target.x - h.range * 0.85f;   // stop just inside reach, not on top of them
-            if (h.x < wanted) h.x = Math.Min(wanted, h.x + HeroSpeed * dt);
+            if (h.dashT <= 0f) { h.dashTo = 0f; return; }
+            h.dashT -= dt;
+            if (h.dashT <= 0f) { h.dashT = 0f; h.dashTo = 0f; }
         }
 
         void StepAttack(Combatant a, float dt, List<Combatant> enemies)
         {
             var target = NearestTarget(a, enemies);
             if (target == null) return;
-            if (Math.Abs(target.x - a.x) > a.range) return;
+
+            var dist = target.x - a.x;
+            if (a.side == Side.Hero)
+            {
+                // Ported verbatim: a hero can reach a monster that has finished walking in, or one
+                // that is close enough to lunge at, and ranged roles are never blocked on arrival.
+                var reaches = Math.Abs(dist) <= a.range
+                              && (target.arrived || a.role is "ranged" or "healer" || Math.Abs(dist) < 110f);
+                if (!reaches) return;
+            }
+            else if (Math.Abs(dist) > a.range) return;
 
             a.attackTimer -= dt * Math.Max(0.2f, 1f + a.hasteAmount - a.slowAmount);
             if (a.attackTimer > 0f) return;
             a.attackTimer = a.interval;
+
+            if (a.side == Side.Hero && a.role is not ("ranged" or "healer"))
+            {
+                a.dashTo = target.x - DashGap;   // lunge out; the renderer eases it and back
+                a.dashT = 0.45f;
+            }
 
             var dmg = a.atk;
             if (a.side == Side.Hero)
@@ -521,7 +561,7 @@ namespace ExcelHeroes.Core
                     break;
                 }
                 case "summon":   // adds, which is the fight asking whether the party brought any AoE
-                    for (var i = 0; i < 2; i++) Spawn(NewMinion(i), Math.Min(LaneCells, b.x + 1f + i * 0.9f));
+                    for (var i = 0; i < 2; i++) Spawn(NewMinion(i), Math.Min(FieldW + 60f, b.x + 64f + i * 58f));
                     break;
             }
         }

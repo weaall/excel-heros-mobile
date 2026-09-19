@@ -256,7 +256,18 @@ namespace ExcelHeroes.UI
                     continue;
                 }
 
-                var t = Mathf.Clamp01(c.x / BattleSim.LaneCells);
+                // The lunge is drawn, not simulated: out during the wind-up, back on the recovery.
+                var drawX = c.x;
+                if (c.dashT > 0f && c.dashTo != 0f)
+                {
+                    var k = 1f - c.dashT / 0.45f;
+                    var reach = k < 0.3f ? Mathf.Sin(k / 0.3f * Mathf.PI * 0.5f)
+                              : k < 0.55f ? 1f
+                              : Mathf.Max(0f, 1f - (k - 0.55f) / 0.35f);
+                    drawX = Mathf.Lerp(c.homeX, c.dashTo, reach);
+                }
+
+                var t = Mathf.Clamp01(drawX / BattleSim.FieldW);
                 el.style.left = t * (width - FighterWidth);
 
                 // One fighter per worksheet row. The first version staggered them by 34px, which is
