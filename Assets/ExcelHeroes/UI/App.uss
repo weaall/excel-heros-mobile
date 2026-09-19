@@ -2520,24 +2520,27 @@
 
 .pickup {
     flex-direction: row;
-    height: 62%;
-    flex-shrink: 0;
+    flex-grow: 1;
+    min-height: 0;
+    margin-bottom: var(--ex-space-2);
 }
 
 .pcard {
+    flex-direction: row;
     flex-grow: 1;
     flex-basis: 0;
-    margin-left: 10px;
-    margin-right: 10px;
-    background-color: rgb(255, 255, 255);
-    border-radius: 12px;
+    margin-left: 8px;
+    margin-right: 8px;
+    background-color: var(--ex-surface-raised);
+    border-radius: var(--ex-rad-md);
     /* Rarity and elevation in one stroke — the colour is set per card from grades.json. */
-    border-bottom-width: 16px;
+    border-bottom-width: 12px;
     overflow: hidden;
 }
 
 .pcard__art {
-    flex-grow: 1;
+    width: 42%;
+    flex-shrink: 0;
     background-color: rgb(232, 234, 238);
     -unity-background-scale-mode: scale-and-crop;
     background-position-y: top;
@@ -2556,12 +2559,17 @@
     border-bottom-right-radius: 10px;
 }
 
-.pcard__foot { padding: 18px 22px 20px 22px; }
+.pcard__foot {
+    flex-grow: 1;
+    min-width: 0;
+    justify-content: center;
+    padding: var(--ex-space-2);
+}
 
 .pcard__name {
-    font-size: 38px;
+    font-size: var(--ex-text-sm);
     -unity-font-style: bold;
-    color: rgb(26, 37, 48);
+    color: var(--ex-ink);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2606,12 +2614,9 @@
 /* ---- rates and the two pity floors ---- */
 
 .rates {
-    margin-left: var(--ex-space-3);
-    margin-right: var(--ex-space-3);
-    margin-top: var(--ex-space-3);
-    margin-bottom: var(--ex-space-3);
-    padding: var(--ex-space-4);
-    background-color: var(--ex-surface);
+    flex-shrink: 0;
+    padding: var(--ex-space-2);
+    background-color: var(--ex-surface-raised);
     border-width: 2px;
     border-bottom-width: 6px;
     border-color: var(--ex-line);
@@ -3081,3 +3086,7 @@
 }
 
 .ep-head .section-title { margin-bottom: 0; margin-right: var(--ex-space-2); }
+
+/* The cards half of the 모집 column; the rates block sits under it and is not its child, so a
+   rebuild of the cards cannot take the odds with it. */
+.gacha__cards { flex-grow: 1; min-height: 0; }

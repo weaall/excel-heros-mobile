@@ -22,7 +22,7 @@ namespace ExcelHeroes.UI
 
         readonly AppRoot _app;
         VisualElement _root, _pickup;
-        VisualElement _side;
+        VisualElement _side, _cards;
         Label _pityA, _pityS, _total;
         Button _one, _ten;
 
@@ -50,7 +50,10 @@ namespace ExcelHeroes.UI
         void BuildPickup()
         {
             _pickup.Clear();
-            _side.Clear();
+            // Only the cards, not the whole column: this used to clear _side, and since Refresh
+            // rebuilds the pickup, every refresh deleted the rates and the two pity bars that had
+            // been added underneath. The odds the banner is selling were simply not on the screen.
+            _cards.Clear();
             if (GameData.Pickup == null) return;
 
             var featuredS = GameData.Featured("S", System.DateTime.UtcNow);
@@ -73,7 +76,7 @@ namespace ExcelHeroes.UI
             UiKit.Text("데이터_가져오기", "banner__title", plate);
 
             // ---- the two featured cards -------------------------------------------------
-            var row = UiKit.Div("pickup", _side);
+            var row = UiKit.Div("pickup", _cards);
             foreach (var grade in new[] { "S", "A" })
             {
                 var hero = GameData.Featured(grade, System.DateTime.UtcNow);
@@ -127,6 +130,7 @@ namespace ExcelHeroes.UI
             var cols = UiKit.Div("gacha__cols", _root);
             _pickup = UiKit.Div("gacha__left", cols);
             _side = UiKit.Div("gacha__right", cols);
+            _cards = UiKit.Div("gacha__cards", _side);
             BuildPickup();
 
             // Rates and the two pity floors, as one block of numbers under the banner rather than
