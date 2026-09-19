@@ -132,7 +132,7 @@ namespace ExcelHeroes.UI
                 previous = line.who;
             }
 
-            UiKit.Btn("✕", "detail__close", () =>
+            UiKit.Btn(Icons.Close, "detail__close icon", () =>
             {
                 overlay.Clear();
                 overlay.AddToClassList("hidden");

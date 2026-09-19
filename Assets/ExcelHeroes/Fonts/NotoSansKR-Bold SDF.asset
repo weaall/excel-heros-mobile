@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!21 &-3390899350462801257
+--- !u!21 &-1523772415420641102
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 0
@@ -24,7 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: -2365268809436588514}
+        m_Texture: {fileID: -557274744368938479}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -57,7 +57,7 @@ Material:
     - _UnderlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!28 &-2365268809436588514
+--- !u!28 &-557274744368938479
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -116,7 +116,7 @@ MonoBehaviour:
   m_Name: NotoSansKR-Bold SDF
   m_EditorClassIdentifier: 
   m_Version: 1.1.0
-  m_Material: {fileID: -3390899350462801257}
+  m_Material: {fileID: -1523772415420641102}
   m_SourceFontFileGUID: 144d701c490624249bafcff57fd5fa56
   m_fontAssetCreationEditorSettings:
     sourceFontFileGUID: 
@@ -166,7 +166,7 @@ MonoBehaviour:
   m_GlyphTable: []
   m_CharacterTable: []
   m_AtlasTextures:
-  - {fileID: -2365268809436588514}
+  - {fileID: -557274744368938479}
   m_AtlasTextureIndex: 0
   m_IsMultiAtlasTexturesEnabled: 1
   m_GetFontFeatures: 1

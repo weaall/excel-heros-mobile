@@ -27,8 +27,8 @@ namespace ExcelHeroes.UI
 
         public IEnumerable<RibbonItem> Ribbon()
         {
-            yield return new RibbonItem("▤", "선택 영역 편집", OpenParty, "편성");
-            yield return new RibbonItem("Σ", "자동 합계", UpgradeParty, "일괄 강화");
+            yield return new RibbonItem(Icons.Roster, "선택 영역 편집", OpenParty, "편성");
+            yield return new RibbonItem(Icons.Upgrade, "자동 합계", UpgradeParty, "일괄 강화");
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace ExcelHeroes.UI
                 }, body);
             }
 
-            UiKit.Btn("✕", "detail__close", () => Close(onClose), view);
+            UiKit.Btn(Icons.Close, "detail__close icon", () => Close(onClose), view);
             return view;
         }
 

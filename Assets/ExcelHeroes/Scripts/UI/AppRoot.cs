@@ -107,6 +107,17 @@ namespace ExcelHeroes.UI
             var sheetList = root.Q<Button>("sheetListBtn");
             if (sheetList != null) sheetList.clicked += OpenSheetList;
 
+            // The chrome's glyphs come from the Material Symbols font rather than from PNGs I
+            // drew or from whatever Unity's default font happened to have — several of the old
+            // ones rendered as an empty box, which is how the disguise button went missing.
+            Glyph("backBtn", Icons.Back);
+            Glyph("searchBtn", Icons.Search);
+            Glyph("undoBtn", Icons.Undo);
+            Glyph("overflowBtn", Icons.Overflow);
+            Glyph("sheetListBtn", Icons.Sheets);
+            Glyph("addSheetBtn", Icons.Add);
+            Glyph("formulaExpand", Icons.Expand);
+
             // Keeps the chrome clear of the notch and the gesture bar.
             (gameObject.GetComponent<SafeArea>() ?? gameObject.AddComponent<SafeArea>()).Bind(root);
 
@@ -137,6 +148,13 @@ namespace ExcelHeroes.UI
             if (PrologueScreen.Needed(Game.Player))
                 new PrologueScreen(this, ShowOnboardingIfNeeded).Show();
             else ShowOnboardingIfNeeded();
+
+            void Glyph(string name, string ch)
+            {
+                var e = root.Q<VisualElement>(name);
+                if (e is Button b) b.text = ch;
+                else if (e is Label l) l.text = ch;
+            }
 
             void Bind(string name, Sheet sheet)
             {
@@ -342,11 +360,8 @@ namespace ExcelHeroes.UI
         {
             var on = Stealth;
             _doc.rootVisualElement.EnableInClassList("stealth", on);
-            if (_stealth != null)
-            {
-                _stealth.EnableInClassList("icon--bosskey", !on);
-                _stealth.EnableInClassList("icon--bosskey-on", on);
-            }
+            // An eye, open or shut. The disguise is literally "do not look at this".
+            if (_stealth != null) _stealth.text = on ? Icons.BossKeyOn : Icons.BossKey;
 
             foreach (var pair in _tabs)
                 pair.Value.text = on ? StealthLabels.Tab(pair.Key) : _tabNames[pair.Key];

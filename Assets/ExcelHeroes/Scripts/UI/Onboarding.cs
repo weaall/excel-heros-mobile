@@ -36,7 +36,7 @@ namespace ExcelHeroes.UI
             var caption = UiKit.Div("xl-dialog__caption", dialog);
             UiKit.Text("신규 통합 문서 설정", "xl-dialog__caption-title", caption);
             UiKit.Div("spacer", caption);
-            UiKit.Btn("✕", "xl-dialog__close", Close, caption);
+            UiKit.Btn(Icons.Close, "xl-dialog__close icon", Close, caption);
 
             var body = UiKit.Div("xl-dialog__body", dialog);
 

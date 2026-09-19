@@ -176,7 +176,13 @@
 
 .rb-btn:hover { background-color: rgb(226, 239, 218); }
 .rb-btn:disabled { opacity: 0.45; }
-.rb-btn__icon { font-size: 44px; color: rgb(33, 115, 70); }
+/* Ribbon glyphs come from the icon font too, so a ribbon button and an app-bar button are the
+   same drawing at two sizes rather than two different people's idea of an arrow. */
+.rb-btn__icon {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/MaterialSymbolsOutlined%20SDF.asset");
+    font-size: 44px;
+    color: rgb(33, 115, 70);
+}
 .rb-btn__sub { font-size: 28px; color: rgb(107, 107, 107); }
 
 .rb-sep {
@@ -1648,14 +1654,7 @@
 /* Drawn, not typed. Unity's default font has no glyph for a search loupe or a window, so those
    characters rendered as missing-glyph boxes — the boss key looked like it was simply absent. */
 .icon { -unity-background-scale-mode: scale-to-fit; }
-.icon--back { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/back.png"); }
-.icon--search { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/search.png"); }
-.icon--undo { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/undo.png"); }
-.icon--bosskey { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/bosskey.png"); }
-.icon--bosskey-on { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/bosskey_on.png"); }
-.icon--overflow { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/overflow.png"); }
-.icon--sheets { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/sheets.png"); }
-.icon--add { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/add.png"); }
+
 
 /* The corner cell's select-all mark, drawn with a border rather than a glyph. */
 .ws-corner {
@@ -2795,3 +2794,15 @@
 }
 
 .qrow__done { flex-shrink: 0; min-width: 128px; -unity-text-align: middle-center; font-size: 26px; color: rgb(150, 154, 162); }
+
+
+/* ---------------------------------------------------------------- icons */
+
+/* Material Symbols, drawn as text. One variable font covers four thousand icons, scales without a
+   second asset and takes its colour from `color` like any other label — so an icon that is white on
+   the app bar and grey in the tab strip is one glyph rather than two PNGs. */
+.icon {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/MaterialSymbolsOutlined%20SDF.asset");
+    -unity-text-align: middle-center;
+    font-size: 46px;
+}

@@ -37,7 +37,7 @@ namespace ExcelHeroes.UI
 
         public IEnumerable<RibbonItem> Ribbon()
         {
-            yield return new RibbonItem("✓", "일일 점검", () => _app.Rebuild(), "새로 고침");
+            yield return new RibbonItem(Icons.Check, "일일 점검", () => _app.Rebuild(), "새로 고침");
         }
 
         public VisualElement Build()

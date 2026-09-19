@@ -65,10 +65,10 @@ namespace ExcelHeroes.UI
         // 홈 리본: the two things a player reaches for mid-run, in Excel's words for them.
         public IEnumerable<RibbonItem> Ribbon()
         {
-            yield return new RibbonItem("▶", "선택 영역 재계산", Start, "다시 출근");
-            yield return new RibbonItem("Σ", "자동 합계", () => _app.Show(AppRoot.Sheet.Roster), "강화하러");
+            yield return new RibbonItem(Icons.Refresh, "선택 영역 재계산", Start, "다시 출근");
+            yield return new RibbonItem(Icons.Upgrade, "자동 합계", () => _app.Show(AppRoot.Sheet.Roster), "강화하러");
             yield return RibbonItem.Sep;
-            yield return new RibbonItem("▤", "선택 영역", () => _app.Show(AppRoot.Sheet.Roster), "편성");
+            yield return new RibbonItem(Icons.Roster, "선택 영역", () => _app.Show(AppRoot.Sheet.Roster), "편성");
         }
 
         public VisualElement Build()

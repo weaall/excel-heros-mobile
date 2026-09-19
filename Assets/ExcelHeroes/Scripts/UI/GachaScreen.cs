@@ -29,8 +29,8 @@ namespace ExcelHeroes.UI
 
         public IEnumerable<RibbonItem> Ribbon()
         {
-            yield return new RibbonItem("⇩", "1행 가져오기", () => Pull(1), $"◈{GachaService.CostFor(1)}");
-            yield return new RibbonItem("⇓", "10행 가져오기", () => Pull(10), $"◈{GachaService.CostFor(10)}");
+            yield return new RibbonItem(Icons.Gacha, "1행 가져오기", () => Pull(1), $"◈{GachaService.CostFor(1)}");
+            yield return new RibbonItem(Icons.Gacha, "10행 가져오기", () => Pull(10), $"◈{GachaService.CostFor(10)}");
         }
 
         /// <summary>

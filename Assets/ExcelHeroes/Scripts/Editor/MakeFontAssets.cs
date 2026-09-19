@@ -27,7 +27,7 @@ namespace ExcelHeroes.EditorTools
         [MenuItem("Excel Heroes/Rebuild font assets")]
         public static void Run()
         {
-            foreach (var face in new[] { "NotoSansKR-Medium", "NotoSansKR-Bold" })
+            foreach (var face in new[] { "NotoSansKR-Medium", "NotoSansKR-Bold", "MaterialSymbolsOutlined" })
             {
                 var ttf = $"{Dir}/{face}.ttf";
                 var outPath = $"{Dir}/{face} SDF.asset";
