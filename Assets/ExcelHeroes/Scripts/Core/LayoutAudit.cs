@@ -93,6 +93,17 @@ namespace ExcelHeroes.Core
         // content in it still needs a human to look at the capture once.
         static bool InsideAClip(VisualElement e)
         {
+            // The cropping box itself, not just what is inside it. A full-bleed stage is laid out
+            // to fill the frame exactly, and a flex-grown element measured against a 2400px design
+            // resolution on a 1080px screen lands a pixel or three either side of the edge through
+            // rounding alone. Reporting the crop container for that is noise; its CONTENTS are what
+            // the check is for, and they are exempt for a different reason — they are meant to run
+            // off the edge and be cut.
+            //
+            // The tolerance is deliberately not widened for everything instead: a real defect this
+            // session was a button cut by four pixels, and a four-pixel blanket would have hidden it.
+            if (e.ClassListContains("clips")) return true;
+
             for (var p = e.parent; p != null; p = p.parent)
                 if (p.ClassListContains("clips")) return true;
             return false;

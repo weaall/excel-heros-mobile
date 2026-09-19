@@ -287,6 +287,20 @@ namespace ExcelHeroes.Data
 
         /// <summary>주인공은 ★ 대신 직급으로 열린다 — the main hero's level ceiling, per job tier.</summary>
         public int[] mainLevelCapByTier;
+
+        // 각성. Cost is a per-grade table, flattened to parallel lists because JsonUtility cannot
+        // deserialise a dictionary — the same shape every other keyed record in this export takes.
+        public int awakenStar;
+        public float awakenAtk, awakenHp, awakenTrait, awakenSkill;
+        public int awakenLevelCap;
+        public string[] awakenCostGrades;
+        public int[] awakenCostValues;
+
+        // 스킬 레벨.
+        public int skillLevelMax;
+        public float skillPowerPerLevel, skillCooldownPerLevel;
+        public string[] skillCostGrades;
+        public int[] skillCostValues;
         public float enhancePerLevel;
         public float traitPerStar;
         public int monsterAtkRampFull, monsterAtkRampByStage;

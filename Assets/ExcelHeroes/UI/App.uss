@@ -1684,6 +1684,9 @@
     border-radius: var(--ex-rad-md);
 }
 
+/* Two buttons on one row need the first of them to stop claiming 200px. */
+.skin-row__btn--narrow { min-width: 90px; margin-right: var(--ex-space-1); }
+
 .skin-row__btn--buy {
     color: var(--ex-accent-ink);
     background-color: var(--ex-accent);

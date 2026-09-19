@@ -12,6 +12,13 @@ namespace ExcelHeroes.Core
     public static class Game
     {
         public static PlayerState Player { get; private set; }
+
+        /// <summary>
+        /// Replaces the live save IN MEMORY. Only the screenshot driver uses this, so a capture run
+        /// can build a known state instead of photographing whatever the last run left behind, and
+        /// it deliberately does not mark the save dirty — nothing here is ever written to disk.
+        /// </summary>
+        public static void UseStateForCapture(PlayerState state) => Player = state;
         public static event Action Changed;
 
         static float _saveDue;

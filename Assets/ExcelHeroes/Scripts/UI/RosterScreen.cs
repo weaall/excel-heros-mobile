@@ -223,41 +223,13 @@ namespace ExcelHeroes.UI
 
             if (owned != null && _tab == "power")
             {
-                // 강화 — the gold sink. ★ raises the ceiling, gold walks the hero up to it.
-                var levelPanel = UiKit.Div("panel", body);
-                UiKit.Text("강화", "section-title", levelPanel);
-                if (StatMath.AtLevelCap(owned))
-                {
-                    UiKit.Text($"★{owned.star} 레벨 상한 도달 — 승급하면 상한이 올라갑니다.", "muted", levelPanel);
-                }
-                else
-                {
-                    var cost = StatMath.LevelUpCost(owned);
-                    UiKit.Text($"다음 레벨 ₩{cost:N0} · 보유 ₩{Game.Player.gold:N0}", "muted", levelPanel);
+                // 강화 holds three things now — gold levels the hero, 강화 카드 buy the skill
+                // and buy 각성 — so all three are one row apiece. Two full-width buttons for the
+                // first of them used the whole sheet and pushed the other two off the bottom.
+                BuildLevelUp(body, owned, heroId, onClose);
 
-                    var one = UiKit.Btn($"레벨 +1 · ₩{cost:N0}", "btn", () =>
-                    {
-                        if (StatMath.TryLevelUp(Game.Player, owned))
-                        {
-                            QuestService.Note(Game.Player, "upgrades");
-                            QuestService.Note(Game.Player, "enhance");
-                            Game.Touch(); Reopen(heroId, onClose);
-                        }
-                    }, levelPanel);
-                    one.SetEnabled(Game.Player.gold >= cost);
-
-                    var max = UiKit.Btn("골드 소진까지 강화", "btn btn--primary", () =>
-                    {
-                        var levels = StatMath.LevelUpMax(Game.Player, owned);
-                        if (levels > 0)
-                        {
-                            QuestService.Note(Game.Player, "upgrades", levels);
-                            QuestService.Note(Game.Player, "enhance", levels);
-                            Game.Touch(); Reopen(heroId, onClose);
-                        }
-                    }, levelPanel);
-                    max.SetEnabled(Game.Player.gold >= cost);
-                }
+                BuildSkillLevel(body, owned, heroId, onClose);
+                BuildAwaken(body, owned, heroId, onClose);
             }
             if (owned == null)
                 UiKit.Text("아직 모집하지 않은 사원입니다.", "muted", body);
@@ -271,15 +243,17 @@ namespace ExcelHeroes.UI
 
             if (_tab == "power")
             {
-            var skillPanel = UiKit.Div("panel", body);
-            UiKit.Text($"스킬 · {def.skillName}", "section-title", skillPanel);
-            var skillText = UiKit.Text(GameData.SkillText(def), null, skillPanel);
-            skillText.style.whiteSpace = WhiteSpace.Normal;
-            if (owned != null && !StatMath.SkillUnlocked(owned))
-                UiKit.Text($"★{GameData.Balance.skillUnlockStar} 부터 사용할 수 있습니다.", "muted", skillPanel);
+            // An unowned card has no rows to spend on, so it gets the description instead.
+            if (owned == null)
+            {
+                var skillPanel = UiKit.Div("panel", body);
+                UiKit.Text($"스킬 · {def.skillName}", "section-title", skillPanel);
+                var skillText = UiKit.Text(GameData.SkillText(def), null, skillPanel);
+                skillText.style.whiteSpace = WhiteSpace.Normal;
+            }
 
             var trait = GameData.Trait(def.trait);
-            if (trait != null)
+            if (trait != null && owned == null)
             {
                 var traitPanel = UiKit.Div("panel", body);
                 UiKit.Text($"특성 · {trait.name}", "section-title", traitPanel);
@@ -556,6 +530,136 @@ namespace ExcelHeroes.UI
         /// <summary>Opens the sheet on a named tab. The screenshot driver uses it to reach the
         /// panes a default open never shows.</summary>
         public void ShowTab(string tab) => _tab = tab;
+
+        /// <summary>
+        /// 강화 — the gold sink. ★ raises the ceiling, gold walks the hero up to it.
+        /// </summary>
+        void BuildLevelUp(VisualElement body, OwnedHero owned, string heroId, System.Action onClose)
+        {
+            var p = Game.Player;
+            var cap = StatMath.LevelCap(owned);
+
+            if (StatMath.AtLevelCap(owned))
+            {
+                // At ★5 there is no promotion left to sell, and 각성 is what opens the ceiling
+                // instead. Saying "승급하면" there would be pointing at a door that is gone.
+                var maxStar = owned.star >= GameData.Balance.maxStar;
+                Row(body, $"레벨 {owned.level} / {cap}",
+                    maxStar && !owned.awakened
+                        ? $"상한 도달 — 각성하면 +{GameData.Balance.awakenLevelCap}"
+                        : maxStar ? "상한 도달"
+                        : "상한 도달 — 승급하면 올라갑니다");
+                return;
+            }
+
+            var cost = StatMath.LevelUpCost(owned);
+            var row = Row(body, $"레벨 {owned.level} / {cap}", $"다음 ₩{cost:N0} · 보유 ₩{p.gold:N0}");
+
+            var one = UiKit.Btn("+1", "skin-row__btn skin-row__btn--narrow", () =>
+            {
+                if (!StatMath.TryLevelUp(p, owned)) return;
+                QuestService.Note(p, "upgrades");
+                QuestService.Note(p, "enhance");
+                Game.Touch(); Reopen(heroId, onClose);
+            }, row);
+            one.SetEnabled(p.gold >= cost);
+
+            var max = UiKit.Btn("골드 소진", "skin-row__btn skin-row__btn--buy", () =>
+            {
+                var levels = StatMath.LevelUpMax(p, owned);
+                if (levels <= 0) return;
+                QuestService.Note(p, "upgrades", levels);
+                QuestService.Note(p, "enhance", levels);
+                Game.Touch(); Reopen(heroId, onClose);
+            }, row);
+            max.SetEnabled(p.gold >= cost);
+        }
+
+        /// <summary>
+        /// 스킬 레벨 — the 강화 카드 sink that scales with use rather than rarity: +10% power and
+        /// -3% charge time per level, five levels deep.
+        ///
+        /// It is shown even before ★2 unlocks the skill, saying so, because a card's skill is most
+        /// of the reason to take it to ★2 and a blank space says nothing about that.
+        /// </summary>
+        void BuildSkillLevel(VisualElement body, OwnedHero owned, string heroId, System.Action onClose)
+        {
+            var p = Game.Player;
+            var b = GameData.Balance;
+            var max = owned.skillLv >= b.skillLevelMax;
+            var locked = !StatMath.SkillUnlocked(owned);
+
+            var def = GameData.Hero(owned.id);
+            var row = Row(body, $"{def?.skillName} · Lv {owned.skillLv} / {b.skillLevelMax}",
+                locked ? $"★{b.skillUnlockStar}에서 열립니다 · {GameData.SkillText(def)}"
+                : max ? $"최대 레벨 · {GameData.SkillText(def)}"
+                : $"위력 +{owned.skillLv * b.skillPowerPerLevel:P0} · 충전 -{owned.skillLv * b.skillCooldownPerLevel:P0}");
+
+            // The trait rides under the skill: both are what the card does rather than what it is,
+            // and 강화 is the only tab either of them has ever been on.
+            var trait = GameData.Trait(def?.trait);
+            if (trait != null)
+                Row(body, $"특성 · {trait.name}", $"{trait.desc}");
+
+            if (locked || max) return;
+
+            var cost = StatMath.SkillUpCost(owned);
+            var up = UiKit.Btn($"카드 {cost:N0}", "skin-row__btn", () =>
+            {
+                if (!StatMath.UpgradeSkill(owned, p)) return;
+                AudioService.Play("bond");
+                Game.Touch();
+                Reopen(heroId, onClose);
+            }, row);
+            up.SetEnabled(StatMath.CanUpgradeSkill(owned, p));
+        }
+
+        /// <summary>
+        /// One line of "here is the thing, here is its state", with room for a button on the right.
+        /// The same shape 스킨 and 승진 use — three stacked panels ran 496px off the bottom of a
+        /// landscape sheet, and this tab now holds three things instead of one.
+        /// </summary>
+        VisualElement Row(VisualElement body, string name, string desc)
+        {
+            var row = UiKit.Div("skin-row", body);
+            var text = UiKit.Div("skin-row__text", row);
+            UiKit.Text(name, "skin-row__name", text);
+            UiKit.Text(desc, "skin-row__desc", text);
+            return row;
+        }
+
+        /// <summary>
+        /// 각성 — where a finished card goes when there is nothing left to buy for it. ★5 only,
+        /// costs 강화 카드 once, and cannot be undone: +25% ATK and HP, trait x1.5, skill x1.25,
+        /// and the level ceiling opens by another 50.
+        /// </summary>
+        void BuildAwaken(VisualElement body, OwnedHero owned, string heroId, System.Action onClose)
+        {
+            var p = Game.Player;
+            var b = GameData.Balance;
+            if (owned.star < b.awakenStar && !owned.awakened) return;   // nothing useful to say yet
+
+            if (owned.awakened)
+            {
+                Row(body, "각성 완료",
+                    $"공격·체력 +{b.awakenAtk:P0} · 특성 x{b.awakenTrait} · 스킬 x{b.awakenSkill}")
+                    .AddToClassList("skin-row--on");
+                return;
+            }
+
+            var cost = StatMath.AwakenCost(owned);
+            var row = Row(body, "각성",
+                $"+{b.awakenAtk:P0} · 특성 x{b.awakenTrait} · 상한 +{b.awakenLevelCap} · 되돌릴 수 없음");
+            var go = UiKit.Btn($"카드 {cost:N0}", "skin-row__btn skin-row__btn--buy", () =>
+            {
+                if (!StatMath.Awaken(owned, p)) return;
+                AudioService.Play("victory", 0.7f);
+                _app.SetStatus($"{GameData.Hero(heroId)?.name} 각성");
+                Game.Touch();
+                Reopen(heroId, onClose);
+            }, row);
+            go.SetEnabled(StatMath.CanAwaken(owned, p));
+        }
 
         /// <summary>
         /// 승진 — the main hero's career, and the one fork in this game that cannot be undone.

@@ -49,13 +49,76 @@ namespace ExcelHeroes.Core
         public static int LevelCap(OwnedHero o)
         {
             if (o == null) return 80;
-            if (o.id != GameData.MainId) return LevelCap(o.star);
+
+            // 각성 raises the ceiling on top of whatever set it — that is most of why it is worth
+            // 400 cards on an S.
+            var awaken = o.awakened ? GameData.Balance.awakenLevelCap : 0;
+
+            if (o.id != GameData.MainId) return LevelCap(o.star) + awaken;
 
             var t = GameData.Balance.mainLevelCapByTier;
             var tier = PromotionService.Job(Game.Player)?.tier ?? 0;
-            if (t == null || t.Length == 0) return LevelCap(o.star);
-            return t[Math.Clamp(tier, 0, t.Length - 1)];
+            if (t == null || t.Length == 0) return LevelCap(o.star) + awaken;
+            return t[Math.Clamp(tier, 0, t.Length - 1)] + awaken;
         }
+
+        /// <summary>
+        /// 각성 — a ★5 card spends 강화 카드 once and is permanently stronger: +25% ATK and HP,
+        /// trait x1.5, skill x1.25, and +50 levels of ceiling. It cannot be undone, which is the
+        /// point: it is where a finished card goes when there is nothing left to buy for it.
+        /// </summary>
+        public static int AwakenCost(OwnedHero o)
+        {
+            var b = GameData.Balance;
+            var grade = GameData.Hero(o?.id)?.grade;
+            var i = grade == null || b.awakenCostGrades == null
+                  ? -1 : Array.IndexOf(b.awakenCostGrades, grade);
+            if (i < 0 || b.awakenCostValues == null || i >= b.awakenCostValues.Length) return int.MaxValue;
+            return b.awakenCostValues[i];
+        }
+
+        public static bool CanAwaken(OwnedHero o, PlayerState p) =>
+            o != null && !o.awakened && o.star >= GameData.Balance.awakenStar && p.cards >= AwakenCost(o);
+
+        public static bool Awaken(OwnedHero o, PlayerState p)
+        {
+            if (!CanAwaken(o, p)) return false;
+            p.cards -= AwakenCost(o);
+            o.awakened = true;
+            return true;
+        }
+
+        /// <summary>
+        /// 스킬 레벨 — the other thing 강화 카드 buy, and the one that scales with use rather than
+        /// with rarity. Each level adds 10% power and takes 3% off the cooldown; the cost per level
+        /// rises with the level and with the grade.
+        /// </summary>
+        public static int SkillUpCost(OwnedHero o)
+        {
+            var b = GameData.Balance;
+            if (o == null || o.skillLv >= b.skillLevelMax) return int.MaxValue;
+            var grade = GameData.Hero(o.id)?.grade;
+            var i = grade == null || b.skillCostGrades == null
+                  ? -1 : Array.IndexOf(b.skillCostGrades, grade);
+            if (i < 0 || b.skillCostValues == null || i >= b.skillCostValues.Length) return int.MaxValue;
+            return b.skillCostValues[i] * (o.skillLv + 1);
+        }
+
+        public static bool CanUpgradeSkill(OwnedHero o, PlayerState p) =>
+            o != null && SkillUnlocked(o) && o.skillLv < GameData.Balance.skillLevelMax
+            && p.cards >= SkillUpCost(o);
+
+        public static bool UpgradeSkill(OwnedHero o, PlayerState p)
+        {
+            if (!CanUpgradeSkill(o, p)) return false;
+            p.cards -= SkillUpCost(o);
+            o.skillLv++;
+            return true;
+        }
+
+        /// <summary>How much less time the skill takes to charge, as a multiplier on its cooldown.</summary>
+        public static float SkillCooldownMult(OwnedHero o) =>
+            Math.Max(0.25f, 1f - (o?.skillLv ?? 0) * GameData.Balance.skillCooldownPerLevel);
 
         public static int Atk(OwnedHero o)
         {
@@ -67,6 +130,7 @@ namespace ExcelHeroes.Core
             var v = grade.baseAtk * role.atk
                     * MathF.Pow(b.heroAtkGrowth, Math.Max(1, o.level) - 1)
                     * StarMult(o.star)
+                    * (o.awakened ? 1f + GameData.Balance.awakenAtk : 1f)
                     * (1f + o.affection * GameData.Balance.affectionBonusPerLevel)
                     * (1f + EquipPct(o.id).Atk / 100f)
                     * (1f + PrestigeService.Bonus(Game.Player));
@@ -91,6 +155,7 @@ namespace ExcelHeroes.Core
             var v = grade.baseHp * role.hp
                     * MathF.Pow(b.heroHpGrowth, Math.Max(1, o.level) - 1)
                     * StarMult(o.star)
+                    * (o.awakened ? 1f + b.awakenHp : 1f)
                     * (1f + o.affection * GameData.Balance.affectionBonusPerLevel)
                     * (1f + EquipPct(o.id).Hp / 100f);
             return Math.Max(1, (int)MathF.Floor(v));
@@ -102,7 +167,8 @@ namespace ExcelHeroes.Core
             var def = GameData.Hero(o.id);
             var trait = GameData.Trait(def?.trait);
             if (trait == null) return 0f;
-            return trait.value * (1f + GameData.Balance.traitPerStar * (o.star - 1));
+            return trait.value * (1f + GameData.Balance.traitPerStar * (o.star - 1))
+                   * (o.awakened ? GameData.Balance.awakenTrait : 1f);
         }
 
         /// <summary>Skills unlock at ★2 and get a boost at ★4 — the reason duplicates matter.</summary>
@@ -112,8 +178,13 @@ namespace ExcelHeroes.Core
         {
             var def = GameData.Hero(o.id);
             if (def == null || !SkillUnlocked(o)) return 0f;
-            var boosted = o.star >= GameData.Balance.skillBoostStar;
-            return def.skillPower * (boosted ? 1.5f : 1f) * (1f + EquipPct(o.id).Skill / 100f);
+            var b = GameData.Balance;
+            var boosted = o.star >= b.skillBoostStar;
+            return def.skillPower
+                   * (boosted ? 1.5f : 1f)
+                   * (1f + o.skillLv * b.skillPowerPerLevel)
+                   * (o.awakened ? b.awakenSkill : 1f)
+                   * (1f + EquipPct(o.id).Skill / 100f);
         }
 
         /// <summary>Total power, the single number the roster sorts and the party header shows.</summary>

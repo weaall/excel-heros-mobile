@@ -50,17 +50,33 @@ namespace ExcelHeroes.Core
             /// </summary>
             static void SeedPartyForCapture()
             {
+                // A capture run builds its own state from nothing.
+                //
+                // This used to seed only when the roster was empty, which meant it seeded on the
+                // first run of a machine and never again: every later capture photographed whatever
+                // the previous run happened to leave in the save. Raising the seeded ★ did nothing,
+                // and a screen's contents depended on the order someone had run things in. A
+                // capture has to show the same thing every time or comparing two of them is
+                // meaningless.
+                //
+                // Nothing is written back — the driver quits without ever marking the save dirty.
+                Game.UseStateForCapture(PlayerState.New());
                 var p = Game.Player;
-                // Every save now starts with 김인턴 in it, so "has anyone" is no longer the same
-                // question as "has anyone been recruited". Seed when the roster is only him.
                 if (p == null) return;
-                if (p.owned.Any(o => o.id != Data.GameData.MainId)) return;
 
                 foreach (var grade in new[] { "S", "A", "B", "C", "D" })
                 {
                     var def = Data.GameData.Heroes.Find(h => h.grade == grade);
                     if (def == null) continue;
-                    p.owned.Add(new OwnedHero(def.id) { star = 2, level = 20 });
+                    // The S is taken to ★5 so the 각성 panel — which only exists at ★5 — is
+                    // actually drawn. A panel gated behind a rank no seeded hero holds is a panel
+                    // the driver silently never renders.
+                    p.owned.Add(new OwnedHero(def.id)
+                    {
+                        star = grade == "S" ? 5 : 2,
+                        level = 20,
+                        skillLv = grade == "S" ? 2 : 0,
+                    });
                     p.AddToParty(def.id);
                 }
             }
@@ -143,6 +159,15 @@ namespace ExcelHeroes.Core
                     yield return Shoot($"{n++:00}-Detail");
 
                     // 스킨 is a pane of its own and a default open never reaches it.
+                    // 강화 carries three separate panels — levelling, 스킬 레벨 and 각성 — and
+                    // none of them is on the tab a detail sheet opens on.
+                    // 강화 opens on the ★5 card on purpose: 각성 only exists at ★5, and `lead`
+                    // is 김인턴, who is never in the recruit pool and so can never be given the
+                    // duplicates a ★ costs.
+                    var five = Game.Player.owned.FirstOrDefault(o => o.star >= 5)?.id ?? lead;
+                    app.OpenDetail(five, "power");
+                    yield return Shoot($"{n++:00}-Enhance");
+
                     app.OpenDetail(lead, "skin");
                     yield return Shoot($"{n++:00}-Skins");
                     app.OpenDetail(lead, "info");

@@ -268,7 +268,10 @@ namespace ExcelHeroes.Core
 
                 var skill = GameData.Skill(def.skillType);
                 var hasSkill = StatMath.SkillUnlocked(owned) && skill != null;
-                var cooldown = hasSkill ? skill.cooldown * (1f - Perk("cooldown")) : 0f;
+                // 스킬 레벨 takes 3% off the charge time per level, on top of the tech perk.
+                var cooldown = hasSkill
+                    ? skill.cooldown * (1f - Perk("cooldown")) * StatMath.SkillCooldownMult(owned)
+                    : 0f;
                 var traitValue = StatMath.TraitValue(owned);   // already scaled by ★
 
                 var c = new Combatant

@@ -201,6 +201,20 @@ const files = {
     // 주인공은 ★ 대신 직급으로 열린다 — the main hero's level cap comes from job tier, not stars,
     // because he is never in the recruit pool and so can never be given a duplicate.
     mainLevelCapByTier: BALANCE.MAIN_LEVEL_CAP_BY_TIER,
+
+    // 각성 — a ★5 card spends 강화 카드 once and is permanently stronger.
+    awakenStar: BALANCE.AWAKEN.star, awakenAtk: BALANCE.AWAKEN.atk, awakenHp: BALANCE.AWAKEN.hp,
+    awakenTrait: BALANCE.AWAKEN.trait, awakenSkill: BALANCE.AWAKEN.skill,
+    awakenLevelCap: BALANCE.LEVEL_CAP_AWAKEN,
+    awakenCostGrades: Object.keys(BALANCE.AWAKEN.cards),
+    awakenCostValues: Object.values(BALANCE.AWAKEN.cards),
+
+    // 스킬 레벨 — the other thing 강화 카드 buy.
+    skillLevelMax: BALANCE.SKILL_LEVEL.max,
+    skillPowerPerLevel: BALANCE.SKILL_LEVEL.powerPerLevel,
+    skillCooldownPerLevel: BALANCE.SKILL_LEVEL.cooldownPerLevel,
+    skillCostGrades: Object.keys(BALANCE.SKILL_LEVEL.cardCost),
+    skillCostValues: Object.values(BALANCE.SKILL_LEVEL.cardCost),
     enhancePerLevel: BALANCE.ENHANCE_PER_LEVEL,
     traitPerStar: BALANCE.TRAIT_STAR?.perStar ?? 0.12,
     monsterAtkRampFull: BALANCE.MONSTER_ATK_RAMP?.full ?? 5,

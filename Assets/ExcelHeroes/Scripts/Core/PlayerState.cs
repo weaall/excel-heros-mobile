@@ -35,6 +35,12 @@ namespace ExcelHeroes.Core
         public string id;
         public int star = 1;
         public int level = 1;
+
+        /// <summary>각성 — spent once at ★5 and never undone. Raises the level ceiling too.</summary>
+        public bool awakened;
+
+        /// <summary>스킬 레벨 — bought with 강화 카드, 0 until the skill unlocks at ★2.</summary>
+        public int skillLv;
         public int copies;       // spare copies held towards the next promotion
         public int affection;    // 호감도 level, drives the small per-hero stat bonus
         public int affectionXp;  // progress towards the next level

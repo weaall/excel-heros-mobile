@@ -92,6 +92,28 @@ rather than rebuilt from the data:
 | 스킨 | `skinsOf` / `unlockSkin` / `equipSkin` + `src/data/skins.js` | two per hero; 퇴근 사복 is earned at 호감도 Lv 10 and cannot be bought, 회사 정장 costs gems and cannot be earned |
 
 | 승진 | `mainPromotionInfo` / `promoteMain` + `MAIN_JOBS` | 11 jobs, three tracks, the fork after 사원 is permanent |
+| 각성 | `awaken` + `BALANCE.AWAKEN` | ★5 only, costs 강화 카드 once, +25% ATK/HP, trait x1.5, skill x1.25, cap +50 |
+| 스킬 레벨 | `upgradeSkill` / `skillLevelInfo` | five levels, +10% power and -3% charge each |
+
+### The "everything is ported" claim was wrong
+
+An audit of the web's `GameManager` API against this build found **18 missing features**, not zero.
+The table above had been read as a complete list and it never was one. Still missing, in rough order
+of how much they matter:
+
+- **진행 축**: 조각 구매 (`scoutShard`/`scoutInfo`, the gold sink that buys ★), 조각 변환
+  (`convertShards`)
+- **편의**: 자동 편성 (`autoParty`), 비품 자동 장착 (`autoEquip`/`autoEquipParty`/`bestLoadout`),
+  즐겨찾기 (`toggleFavorite`)
+- **되돌리기**: 레벨·강화 환급 (`resetHeroLevel`, `downgradeHero`, `downgradeEnhance`,
+  `reclaimBenchLevels`)
+- **설정**: 자동 진행 (`setAutoAdvance`/`setSafeAdvance`), 자동 강화 (`setAutoUpgrade`)
+- **이동**: 세이브 내보내기/불러오기 (`exportSave`/`importSave`) — with cloud sync blocked this is
+  the only way a save moves between devices
+- **기타**: 괄호 수식 미니게임 (`submitBraceFormula`), 캐릭터 대사 (`sayLine`)
+
+Correctly absent: `toggleExcel` and `setGridlines` belong to the disguise; the 도전 mode is
+deliberately not ported for the reason recorded above.
 
 **Not yet.** Cloud sync — it needs a decision about mobile OAuth, and the client secret can never
 be used, so this is not a coding task until that decision is made.

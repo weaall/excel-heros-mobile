@@ -60,6 +60,43 @@
   260,
   320
  ],
+ "awakenStar": 5,
+ "awakenAtk": 0.25,
+ "awakenHp": 0.25,
+ "awakenTrait": 1.5,
+ "awakenSkill": 1.25,
+ "awakenLevelCap": 50,
+ "awakenCostGrades": [
+  "D",
+  "C",
+  "B",
+  "A",
+  "S"
+ ],
+ "awakenCostValues": [
+  60,
+  100,
+  160,
+  260,
+  400
+ ],
+ "skillLevelMax": 5,
+ "skillPowerPerLevel": 0.1,
+ "skillCooldownPerLevel": 0.03,
+ "skillCostGrades": [
+  "D",
+  "C",
+  "B",
+  "A",
+  "S"
+ ],
+ "skillCostValues": [
+  8,
+  12,
+  20,
+  32,
+  50
+ ],
  "enhancePerLevel": 0.04,
  "traitPerStar": 0.12,
  "monsterAtkRampFull": 5,
