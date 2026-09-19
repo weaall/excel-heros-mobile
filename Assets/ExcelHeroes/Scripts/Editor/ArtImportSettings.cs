@@ -22,7 +22,7 @@ namespace ExcelHeroes.EditorTools
         const string SpriteRoot = ArtRoot + "Sprites/";
         const string SheetRoot = ArtRoot + "Sheets/";
         const string MonsterRoot = ArtRoot + "Monsters/";
-        public const string Stamp = "excel-heroes-art-v5";
+        public const string Stamp = "excel-heroes-art-v6";
 
         /// <summary>
         /// Unity re-imports the assets a postprocessor handles only when this number changes.
@@ -37,7 +37,7 @@ namespace ExcelHeroes.EditorTools
         /// **Bump this AND `Stamp` together whenever the settings change.** The version makes Unity
         /// re-import; the stamp makes this code agree to touch the asset again.
         /// </summary>
-        public override uint GetVersion() => 5;
+        public override uint GetVersion() => 6;
 
         void OnPreprocessTexture()
         {
@@ -59,6 +59,7 @@ namespace ExcelHeroes.EditorTools
                 importer.isReadable = false;
                 importer.maxTextureSize = 2048;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
+                ClearPlatformOverrides(importer);
                 importer.userData = Stamp;
                 return;
             }
@@ -82,6 +83,22 @@ namespace ExcelHeroes.EditorTools
             // to 1024 instead lands on 765 wide and silently falls back to uncompressed RGBA32.
             Apply(importer, 2048, TextureImporterFormat.DXT1);
             importer.userData = Stamp;
+        }
+
+        /// <summary>
+        /// Hands a texture back to its default settings on every platform. Needed because an
+        /// override is sticky: it lives in the .meta and outranks whatever the default says, so a
+        /// texture that once went through Apply() keeps that format until the override is removed.
+        /// </summary>
+        static void ClearPlatformOverrides(TextureImporter importer)
+        {
+            foreach (var platform in new[] { "Standalone", "Android", "iPhone" })
+            {
+                var settings = importer.GetPlatformTextureSettings(platform);
+                if (!settings.overridden) continue;
+                settings.overridden = false;
+                importer.SetPlatformTextureSettings(settings);
+            }
         }
 
         /// <summary>

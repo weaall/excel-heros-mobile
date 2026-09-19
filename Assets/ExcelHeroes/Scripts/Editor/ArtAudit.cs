@@ -28,7 +28,12 @@ namespace ExcelHeroes.EditorTools
 
             long grandRuntime = 0, grandDisk = 0;
 
-            foreach (var folder in new[] { "Art/Cards", "Art/Sprites", "Art/UI" })
+            // Every folder under Art, not three of six. Monsters, Sheets and Story were missing,
+            // so the line this printed as TOTAL was not one — and Monsters is exactly where a
+            // compression mistake hides, because a block-compressed pixel strip still loads fine
+            // and just looks worse.
+            foreach (var folder in new[] { "Art/Cards", "Art/Sprites", "Art/Monsters",
+                                           "Art/Sheets", "Art/Story", "Art/Icons", "Art/UI" })
             {
                 var sprites = Resources.LoadAll<Sprite>(folder);
                 long runtime = 0, disk = 0;

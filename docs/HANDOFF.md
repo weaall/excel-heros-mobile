@@ -183,7 +183,29 @@ together — the version makes Unity re-import, the stamp makes the code agree t
 
 Found on the way: the monster strips were being block-compressed. The pixel-art branch tested
 `Sprites/` and `Sheets/` and not `Monsters/`, while its own comment warns that DXT smears the 1px
-outlines. They are uncompressed and point-filtered now.
+outlines.
+
+**And moving them into that branch was not enough.** Setting `textureCompression = Uncompressed`
+on the default settings does not undo a per-platform override that names a format outright, and the
+override wins. They had been through `Apply()`, so they carried a Standalone override pinned to
+DXT5 and stayed compressed while the code plainly said otherwise. `ClearPlatformOverrides` hands
+them back. **An override is sticky — clear it, don't just change the default.**
+
+That one was caught by `Excel Heroes/Audit Art Memory`, which prints the real format per folder and
+is the only thing here that reads what the importer actually did rather than what it was asked to
+do. It was scanning three of the seven folders and calling the result TOTAL; `Monsters`, `Sheets`,
+`Story` and `Icons` were missing, and `Monsters` is exactly where this class of mistake hides,
+because a block-compressed pixel strip loads perfectly well and merely looks worse. It scans all
+seven now.
+
+    Art/Cards      198   36.3 MB   DXT1x198     opaque, 4bpp
+    Art/Sprites    198    3.2 MB   RGBA32x198   pixel art
+    Art/Monsters    36    2.8 MB   RGBA32x36    was DXT5
+    Art/Sheets       2    1.2 MB   RGBA32x2
+    Art/Story        7    1.9 MB   DXT1x7
+    Art/Icons        8    0.0 MB   DXT1x8
+    Art/UI           8    3.1 MB   DXT1x8
+    TOTAL                48.5 MB
 
 Still worth doing: an Android build reports the real number, and ASTC 6x6 is a different format
 from DXT1. That needs the EULA accepted.
