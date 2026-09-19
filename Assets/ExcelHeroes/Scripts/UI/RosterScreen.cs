@@ -219,6 +219,8 @@ namespace ExcelHeroes.UI
                 UiKit.StatRow("레벨", $"{owned.level} / {StatMath.LevelCap(owned)}", body);
                 var need = GachaService.PromoteCost(owned);
                 UiKit.StatRow("승급", need > 0 ? $"중복 {owned.copies} / {need}장" : "최대 ★", body);
+                var infoTrait = GameData.Trait(GameData.Hero(heroId)?.trait);
+                if (infoTrait != null) UiKit.StatRow("특성", infoTrait.name, body);
             }
 
             if (owned != null && _tab == "power")
@@ -230,11 +232,20 @@ namespace ExcelHeroes.UI
 
                 BuildSkillLevel(body, owned, heroId, onClose);
                 BuildAwaken(body, owned, heroId, onClose);
+                BuildScout(body, owned, heroId, onClose);
             }
             if (owned == null)
                 UiKit.Text("아직 모집하지 않은 사원입니다.", "muted", body);
 
-            if (_tab == "info")
+            // 등급, 역할 and 부문 used to be three more rows here, on top of the six above them.
+            // Nine rows do not fit a landscape sheet, so 역할 and 부문 were being cut off inside the
+            // body — not off the screen, which is why the audit never said a word about it.
+            //
+            // They are dropped rather than paged, because all three are already on screen: the
+            // grade is the badge on the card and the colour of the name, the role is the other
+            // badge, and the 부문 is the line under the name in the header. An unowned card has no
+            // stats to show, so it keeps them — it has the room.
+            if (_tab == "info" && owned == null)
             {
                 UiKit.StatRow("등급", $"{def.grade} · {grade?.label}", body);
                 UiKit.StatRow("역할", UiKit.RoleName(def.role), body);
@@ -532,6 +543,55 @@ namespace ExcelHeroes.UI
         public void ShowTab(string tab) => _tab = tab;
 
         /// <summary>
+        /// 스카우트 and 조각 변환 — the two ends of the duplicate economy, on the page that already
+        /// shows the copy count, because both are answers to the number on that line.
+        ///
+        /// 스카우트 is the only thing in the game that turns gold into ★. Without it a player
+        /// sitting on millions with a card one copy short has nothing to spend them on.
+        /// </summary>
+        void BuildScout(VisualElement body, OwnedHero owned, string heroId, System.Action onClose)
+        {
+            var p = Game.Player;
+            if (owned.id == GameData.MainId) return;    // 주인공은 조각을 쓰지 않습니다
+
+            var spare = ScoutService.Spare(owned);
+            if (spare > 0)
+            {
+                var conv = Row(body, $"남는 중복 {spare}장",
+                    $"강화 카드 {spare * ScoutService.CardValue(owned):N0}장으로 바꿉니다");
+                UiKit.Btn("변환", "skin-row__btn", () =>
+                {
+                    var got = ScoutService.Convert(p, owned);
+                    if (got <= 0) return;
+                    AudioService.Play("bond");
+                    _app.SetStatus($"조각 변환 · 강화 카드 +{got:N0}");
+                    Game.Touch();
+                    Reopen(heroId, onClose);
+                }, conv);
+            }
+
+            if (owned.star >= GameData.Balance.maxStar) return;
+
+            var cost = ScoutService.Cost(p, owned);
+            var why = ScoutService.Blocked(p, owned);
+            var reachable = ScoutService.PriceIsReachable(owned);
+            var row = Row(body, $"스카우트 · 오늘 {ScoutService.Left(p)} / {GameData.Balance.scoutPerDay}회",
+                why.Length > 0 ? why : $"중복 1장 · ₩{cost:N0}");
+
+            // A clamped price is not a price. Showing ₩2,147,483,647 would read as a number the
+            // player could save towards, and it is not one.
+            var go = UiKit.Btn(reachable ? $"₩{cost:N0}" : "—", "skin-row__btn skin-row__btn--buy", () =>
+            {
+                if (!ScoutService.Scout(p, owned)) return;
+                AudioService.Play("bond");
+                _app.SetStatus($"스카우트 · {GameData.Hero(heroId)?.name} 중복 +1");
+                Game.Touch();
+                Reopen(heroId, onClose);
+            }, row);
+            go.SetEnabled(ScoutService.Can(p, owned));
+        }
+
+        /// <summary>
         /// 강화 — the gold sink. ★ raises the ceiling, gold walks the hero up to it.
         /// </summary>
         void BuildLevelUp(VisualElement body, OwnedHero owned, string heroId, System.Action onClose)
@@ -594,12 +654,6 @@ namespace ExcelHeroes.UI
                 locked ? $"★{b.skillUnlockStar}에서 열립니다 · {GameData.SkillText(def)}"
                 : max ? $"최대 레벨 · {GameData.SkillText(def)}"
                 : $"위력 +{owned.skillLv * b.skillPowerPerLevel:P0} · 충전 -{owned.skillLv * b.skillCooldownPerLevel:P0}");
-
-            // The trait rides under the skill: both are what the card does rather than what it is,
-            // and 강화 is the only tab either of them has ever been on.
-            var trait = GameData.Trait(def?.trait);
-            if (trait != null)
-                Row(body, $"특성 · {trait.name}", $"{trait.desc}");
 
             if (locked || max) return;
 

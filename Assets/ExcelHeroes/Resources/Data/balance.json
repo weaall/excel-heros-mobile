@@ -97,6 +97,23 @@
   32,
   50
  ],
+ "scoutPerDay": 3,
+ "scoutCostPct": 0.35,
+ "scoutMinCost": 50000,
+ "scoutGradeGrades": [
+  "D",
+  "C",
+  "B",
+  "A",
+  "S"
+ ],
+ "scoutGradeValues": [
+  0.5,
+  0.8,
+  1.2,
+  2,
+  3.5
+ ],
  "enhancePerLevel": 0.04,
  "traitPerStar": 0.12,
  "monsterAtkRampFull": 5,

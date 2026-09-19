@@ -94,6 +94,26 @@ rather than rebuilt from the data:
 | 승진 | `mainPromotionInfo` / `promoteMain` + `MAIN_JOBS` | 11 jobs, three tracks, the fork after 사원 is permanent |
 | 각성 | `awaken` + `BALANCE.AWAKEN` | ★5 only, costs 강화 카드 once, +25% ATK/HP, trait x1.5, skill x1.25, cap +50 |
 | 스킬 레벨 | `upgradeSkill` / `skillLevelInfo` | five levels, +10% power and -3% charge each |
+| 스카우트 · 조각 변환 | `scoutShard` / `scoutInfo` / `convertShards` | gold buys a duplicate 3x a day; spares become 강화 카드 |
+
+### Gold is an `int` here and a double in the web — decide what to do about it
+
+Found while porting 스카우트, which is the first screen where it shows. The price is a fraction of
+everything it costs to level that card to its ceiling, so it grows exponentially with ★:
+
+        ★1        ★2           ★3     ★4
+    D   50,000    17,750,259   OVER   OVER
+    A   177,541   71,001,037   OVER   OVER
+    S   310,697   124,251,814  OVER   OVER
+
+`OVER` means the honest price exceeds `int.MaxValue`, and `PlayerState.gold` is an `int`. The web
+keeps gold in a JS number and has no such ceiling, so these prices are payable there and are not
+payable here. From ★3 up the button can be looked at for the rest of a save and never afforded.
+
+The UI says so rather than showing the clamped ₩2,147,483,647, which would read as a number worth
+saving towards. **The fix is a balance decision and is deliberately not made here**: widen `gold`
+to `long`, re-curve the scout price for this build, or stop offering 스카우트 above ★2. The same
+ceiling applies to anything else late-game that the web prices off the levelling curve.
 
 ### The "everything is ported" claim was wrong
 
@@ -101,8 +121,6 @@ An audit of the web's `GameManager` API against this build found **18 missing fe
 The table above had been read as a complete list and it never was one. Still missing, in rough order
 of how much they matter:
 
-- **진행 축**: 조각 구매 (`scoutShard`/`scoutInfo`, the gold sink that buys ★), 조각 변환
-  (`convertShards`)
 - **편의**: 자동 편성 (`autoParty`), 비품 자동 장착 (`autoEquip`/`autoEquipParty`/`bestLoadout`),
   즐겨찾기 (`toggleFavorite`)
 - **되돌리기**: 레벨·강화 환급 (`resetHeroLevel`, `downgradeHero`, `downgradeEnhance`,

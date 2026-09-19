@@ -85,6 +85,9 @@ namespace ExcelHeroes.Core
         public string dailyDate = "";
         public List<QuestProgress> quests = new();
         public string checkInDate = "";
+
+        /// <summary>스카우트 used today. Cleared with the rest of the daily block.</summary>
+        public int scoutUsed;
         public int streak;
         public bool allClearClaimed;
 

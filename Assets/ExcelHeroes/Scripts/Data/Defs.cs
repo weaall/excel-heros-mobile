@@ -301,6 +301,14 @@ namespace ExcelHeroes.Data
         public float skillPowerPerLevel, skillCooldownPerLevel;
         public string[] skillCostGrades;
         public int[] skillCostValues;
+
+        // 스카우트 and 조각 변환.
+        public int scoutPerDay;
+        public float scoutCostPct;
+        public int scoutMinCost;
+        public string[] scoutGradeGrades;
+        public float[] scoutGradeValues;
+        // 조각 변환 uses shardCardGrades/shardCardValues, which 방출 already declares below.
         public float enhancePerLevel;
         public float traitPerStar;
         public int monsterAtkRampFull, monsterAtkRampByStage;

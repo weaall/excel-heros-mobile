@@ -76,6 +76,10 @@ namespace ExcelHeroes.Core
                         star = grade == "S" ? 5 : 2,
                         level = 20,
                         skillLv = grade == "S" ? 2 : 0,
+                        // Spare duplicates on the ★5, so 조각 변환 has something to offer; a ★5
+                        // with none shows neither 스카우트 (it is maxed) nor 변환 (nothing spare),
+                        // and the rows go unphotographed.
+                        copies = grade == "S" ? 3 : 0,
                     });
                     p.AddToParty(def.id);
                 }
@@ -152,7 +156,12 @@ namespace ExcelHeroes.Core
                 // an overlay over a screen, so it is captured in place.
                 app.Show(AppRoot.Sheet.Roster);
                 yield return null;
-                var lead = Game.Player.owned.Count > 0 ? Game.Player.owned[0].id : null;
+                // A RECRUITED hero, not owned[0] — which is 김인턴 now, and half of what 정보
+                // shows does not apply to him: he uses no 조각, so 스카우트 and 변환 both return
+                // without drawing. A capture that opens on him photographs their absence.
+                var lead = Game.Player.owned.FirstOrDefault(o => o.id != Data.GameData.MainId && o.star < 5)?.id
+                        ?? Game.Player.owned.FirstOrDefault(o => o.id != Data.GameData.MainId)?.id
+                        ?? (Game.Player.owned.Count > 0 ? Game.Player.owned[0].id : null);
                 if (lead != null)
                 {
                     app.OpenDetail(lead, "info");
@@ -167,6 +176,16 @@ namespace ExcelHeroes.Core
                     var five = Game.Player.owned.FirstOrDefault(o => o.star >= 5)?.id ?? lead;
                     app.OpenDetail(five, "power");
                     yield return Shoot($"{n++:00}-Enhance");
+
+                    // And again on a card below ★5, because 스카우트 only exists there while
+                    // 각성 only exists at ★5 — one hero can never show both.
+                    var low = Game.Player.owned.FirstOrDefault(
+                        o => o.id != Data.GameData.MainId && o.star < 5)?.id;
+                    if (low != null)
+                    {
+                        app.OpenDetail(low, "power");
+                        yield return Shoot($"{n++:00}-Scout");
+                    }
 
                     app.OpenDetail(lead, "skin");
                     yield return Shoot($"{n++:00}-Skins");

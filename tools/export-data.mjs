@@ -215,6 +215,14 @@ const files = {
     skillCooldownPerLevel: BALANCE.SKILL_LEVEL.cooldownPerLevel,
     skillCostGrades: Object.keys(BALANCE.SKILL_LEVEL.cardCost),
     skillCostValues: Object.values(BALANCE.SKILL_LEVEL.cardCost),
+
+    // 스카우트 — gold buys one duplicate, three times a day. The only gold-to-★ conversion there is.
+    scoutPerDay: BALANCE.SCOUT.perDay,
+    scoutCostPct: BALANCE.SCOUT.costPct,
+    scoutMinCost: BALANCE.SCOUT.minCost,
+    scoutGradeGrades: Object.keys(BALANCE.SCOUT.gradeMult),
+    scoutGradeValues: Object.values(BALANCE.SCOUT.gradeMult),
+
     enhancePerLevel: BALANCE.ENHANCE_PER_LEVEL,
     traitPerStar: BALANCE.TRAIT_STAR?.perStar ?? 0.12,
     monsterAtkRampFull: BALANCE.MONSTER_ATK_RAMP?.full ?? 5,

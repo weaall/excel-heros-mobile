@@ -59,6 +59,7 @@ namespace ExcelHeroes.Core
             p.adCounts.Clear();
             p.overtimeDone = false;
             p.overtimeExtra = 0;
+            p.scoutUsed = 0;
             p.quests.Clear();
             foreach (var id in TodayQuestIds(today)) p.quests.Add(new QuestProgress { id = id });
             p.allClearClaimed = false;
