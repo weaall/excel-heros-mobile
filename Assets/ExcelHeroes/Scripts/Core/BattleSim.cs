@@ -63,6 +63,21 @@ namespace ExcelHeroes.Core
         public float SkillCharge => skillCooldown <= 0f ? 0f : 1f - Math.Clamp(skillTimer / skillCooldown, 0f, 1f);
     }
 
+    /// <summary>
+    /// A blow in flight. In the web build nothing lands the instant its timer runs out: a ranged
+    /// hero throws something that hits on arrival, and even a melee swing is a short delay so the
+    /// number appears when the blade does rather than at the start of the wind-up. Damage is rolled
+    /// when it lands, not when it is fired, so a buff that goes up mid-flight counts.
+    /// </summary>
+    public class Shot
+    {
+        public Combatant From, To;
+        public float T, Duration;
+        public string Kind;             // shot · paper · bar · drop · slash · heal
+        public bool Hostile;
+        public float Progress => Duration <= 0f ? 1f : Math.Clamp(T / Duration, 0f, 1f);
+    }
+
     public enum EventKind { Damage, Heal, Death, Skill, WaveClear, Victory, Defeat, Spawn }
 
     public struct BattleEvent
@@ -149,6 +164,9 @@ namespace ExcelHeroes.Core
         /// </summary>
         public const float MaxCost = 10f;
         const float CostPerHeroPerSecond = 0.27f;
+
+        /// <summary>Everything currently in the air, for the battle screen to draw.</summary>
+        public readonly List<Shot> Shots = new();
 
         public float Cost { get; private set; }
         public float CostRate => LivingHeroes * CostPerHeroPerSecond;
@@ -368,6 +386,7 @@ namespace ExcelHeroes.Core
             }
 
             Cost = Math.Min(MaxCost, Cost + CostRate * dt);
+            StepShots(dt);
 
             foreach (var c in Heroes.Concat(Monsters)) TickStatus(c, dt);
 
@@ -485,6 +504,27 @@ namespace ExcelHeroes.Core
                 a.dashT = 0.45f;
             }
 
+            var ranged = a.side == Side.Hero && a.role is "ranged" or "healer";
+            Shots.Add(new Shot
+            {
+                From = a,
+                To = target,
+                Duration = a.side != Side.Hero ? 0.5f : ranged ? 0.28f : 0.16f,
+                Kind = ranged ? "shot" : a.side == Side.Hero ? "slash" : "drop",
+                Hostile = a.side != Side.Hero,
+            });
+
+            // A boss's script is counted in its own swings, so slowing it also delays its specials.
+            if (a.boss != null) BossTurn(a);
+        }
+
+        /// <summary>Lands one blow that was in flight. Nothing is rolled until this point.</summary>
+        void Land(Shot shot)
+        {
+            var a = shot.From;
+            var target = shot.To;
+            if (a == null || target == null || !a.Alive || !target.Alive) return;
+
             var dmg = a.atk;
             if (a.side == Side.Hero)
             {
@@ -498,21 +538,29 @@ namespace ExcelHeroes.Core
             }
 
             Damage(a, target, dmg);
-
             if (a.side != Side.Hero) return;
 
             // 전체 회신 — the basic attack splashes onto everything else in reach.
             if (a.traitId == "splash")
             {
-                foreach (var other in Monsters.Where(m => m.Alive && m != target && Math.Abs(m.x - target.x) <= 2f).ToList())
+                foreach (var other in Monsters.Where(m => m.Alive && m != target && Math.Abs(m.x - target.x) <= 2f * CellW).ToList())
                     Damage(a, other, (int)(dmg * a.traitValue), silent: true);
             }
 
             // 커피 수혈 — the attacker drinks back a slice of what it dealt.
             if (a.traitId == "lifesteal") Heal(a, (int)(dmg * a.traitValue));
+        }
 
-            // A boss's script is counted in its own swings, so slowing it also delays its specials.
-            if (a.boss != null) BossTurn(a);
+        void StepShots(float dt)
+        {
+            for (var i = Shots.Count - 1; i >= 0; i--)
+            {
+                var shot = Shots[i];
+                shot.T += dt;
+                if (shot.T < shot.Duration) continue;
+                Shots.RemoveAt(i);
+                Land(shot);
+            }
         }
 
         /// <summary>Runs whichever scripted moves are due on this boss's Nth attack.</summary>

@@ -241,11 +241,46 @@ namespace ExcelHeroes.UI
         Texture2D _backdrop;
         int _backdropStage = -1;
 
+        readonly System.Collections.Generic.Dictionary<Shot, VisualElement> _shotViews = new();
+
+        /// <summary>
+        /// Draws whatever is in the air. A ranged hero's attack is a thrown office supply and a
+        /// monster's is something dropped on the line; without them a fight between two archers is
+        /// two figures standing still while numbers appear.
+        /// </summary>
+        void LayoutShots(float width, float height)
+        {
+            foreach (var shot in _sim.Shots)
+            {
+                if (!_shotViews.TryGetValue(shot, out var el))
+                {
+                    el = UiKit.Div("shot shot--" + shot.Kind, _stage);
+                    _shotViews[shot] = el;
+                }
+
+                var k = shot.Progress;
+                var x = Mathf.Lerp(shot.From.x, shot.To.x, k);
+                el.style.left = Mathf.Clamp01(x / BattleSim.FieldW) * (width - FighterWidth) + FighterWidth * 0.5f;
+                // A thrown thing arcs; a slash does not travel at all.
+                var arc = shot.Kind == "slash" ? 0f : Mathf.Sin(k * Mathf.PI) * 30f;
+                el.style.top = height * GroundFraction - 46f - arc;
+            }
+
+            foreach (var pair in _shotViews.ToList())
+            {
+                if (_sim.Shots.Contains(pair.Key)) continue;
+                pair.Value.RemoveFromHierarchy();
+                _shotViews.Remove(pair.Key);
+            }
+        }
+
         void LayoutFighters()
         {
             var width = _stage.resolvedStyle.width;
             var height = _stage.resolvedStyle.height;
             if (width <= 0f || height <= 0f) return;
+
+            LayoutShots(width, height);
 
             foreach (var (c, el) in _views.ToList())
             {

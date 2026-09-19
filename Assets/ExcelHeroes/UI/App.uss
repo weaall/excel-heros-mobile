@@ -1764,3 +1764,19 @@
 .fighter__hpfill { border-radius: 0; }
 .fighter--hero .fighter__hpfill { background-color: rgb(74, 200, 108); }
 .fighter--monster .fighter__hpfill { background-color: rgb(214, 62, 52); }
+
+/* ---------------------------------------------------------------- shots */
+
+/* Office supplies in flight. Small and hard-edged so they belong to the pixel layer rather than
+   looking like UI drawn over it. */
+.shot {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-color: rgb(27, 29, 37);
+}
+
+.shot--drop { background-color: rgb(214, 62, 52); border-radius: 7px; }
+.shot--slash { width: 22px; height: 6px; background-color: rgb(255, 240, 200); }
