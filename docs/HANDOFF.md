@@ -23,6 +23,11 @@ grep "\[shots\]" <log>     # clipping: text wider than its box, elements off the
 `LayoutAudit` walks the tree after each capture and reports in words. It found forty problems on
 its first run across ten screens. Keep it at zero.
 
+The driver forces the prologue open and, on a save with nobody in it, seeds five heroes **in memory
+only**. Both exist because the screens that were never photographed were the ones that were wrong:
+the prologue only appears on a genuinely new save, and an empty save renders the battle and the card
+modal as empty states. The run that added them turned up ten real problems immediately.
+
 ```bash
 Unity.exe -batchmode -quit -nographics -projectPath . -executeMethod ExcelHeroes.EditorTools.SelfTest.Run
 Unity.exe -batchmode -quit -nographics -projectPath . -executeMethod ExcelHeroes.EditorTools.SelfTest.Bench
@@ -38,9 +43,9 @@ canvas shim (`tools/canvas-shim.mjs`) and writes the results into `Resources/Art
 
 | command | what |
 |---|---|
-| `cards` | 198 illustrations, 832x1216 → 512x748 (both /4, so DXT applies) |
+| `cards` | the web build's own illustrations, 832x1216 → 512x748 (both /4, so DXT applies) |
 | `sprites` | 55 nine-frame pixel strips, from `heroSkins.js` / `dollSprites.js` |
-| `monsters` | 19 strips cut by `packSprites.js`, already mirrored and scaled |
+| `monsters` | 36 strips: the tileset cuts where they exist, the web build's own renderer for the hand-pixelled office monsters, each in the palette of the phase it appears in |
 | `sheets` | the raw tilesets + their licences |
 | `story` | prologue backdrops (converted to PNG — Unity does not import .webp) |
 
@@ -56,9 +61,14 @@ hold a standoff; nothing lands until it arrives. The city backdrop from `cityBac
 disguise vocabulary from `stealthLabels.js`, with the boss key swapping the whole sheet for a
 worksheet of quarterly figures. The seven-page prologue.
 
-**Not yet.** Paper and ash particles on the battlefield. Equipment, dispatch, achievements,
-milestones, skin equipping, cloud sync — all of which exist in the web build and have tests there.
-The roster's filter bar (grade / role / division / owned / sort) and its table view.
+Since the first feedback pass: the office upgrades (`TeamUpgrades`, ported from the web build's
+`BALANCE.TEAM_UPGRADES`) as a strip under the battlefield, the battle running on every sheet rather
+than only on its own, the roster cut into grade sections with the card detail as a modal, the
+check-in stamp as a day card, and the summon screen rebuilt against a design reference in
+`docs/design/pickup.md`.
+
+**Not yet.** Equipment, dispatch, achievements, milestones, skin equipping, cloud sync — all of
+which exist in the web build and have tests there. The roster's table view.
 
 ## Blocked
 
@@ -67,10 +77,24 @@ The roster's filter bar (grade / role / division / owned / sort) and its table v
   Tools + OpenJDK. The same install is what an emulator needs.
 - **Safe area is untested.** `Screen.safeArea` returns the whole screen on desktop, so `SafeArea.cs`
   has never actually inset anything. It needs a device or an emulator with a cutout.
-- **Regenerating the art.** `tools/gen/gen-cards.mjs` is the web build's generator pointed at this
-  project. It works — one card was produced — but the anonymous ZeroGPU quota is spent and refills
-  about once a day. A token in `excel-heros/.hf_token` (gitignored, never printed) gives a real
-  pool.
+- Nothing on the art side. The HF route is no longer the only one: `tools/gen-art.mjs` runs the
+  whole cast through Gemini (`cards`, then `skins`, which reference the freshly generated bases),
+  and `tools/art-prompts.mjs` holds the direction. The key lives in `tools/.env.local`, gitignored.
+
+## Art direction
+
+The halo is **light, never hardware**. Built out of objects — steel, coin edges, orbiting clips —
+every card came back wearing a prop, which says the opposite of what it means. Colour comes from
+the division, strength from the grade, and at every grade it stays quieter than the face.
+
+Poses come from a **per-character bank**, not from the role. Keyed off the role alone, fifty-five
+people share four poses and a ten-pull is ten copies of one picture; the role now only chooses
+which half of the bank to draw from. Attitude is a second, independent roll. Both hash the hero id,
+so a card's pose never changes between runs.
+
+The crop is a **cowboy shot**, stated first in the prompt and again last. Said once in the middle
+it is ignored: the default for a character illustration is a full body, and a full body on a phone
+card is a small face.
 
 ## Decisions worth not relitigating
 

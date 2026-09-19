@@ -270,8 +270,9 @@
     height: 118px;
     flex-shrink: 0;
     white-space: nowrap;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: 34px;
+    padding-right: 34px;
+    padding-top: 12px;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     color: rgb(107, 107, 107);
@@ -286,16 +287,18 @@
     border-bottom-color: rgb(24, 92, 55);
 }
 
+/* Above the label rather than across it. With four short tab names the badge was landing squarely
+   on the second syllable of 업무, which is worse than not having a badge. */
 .sheet-tab__badge {
     position: absolute;
-    top: 4px;
-    right: -6px;
-    min-width: 44px;
-    height: 44px;
-    border-radius: 22px;
+    top: 10px;
+    right: 6px;
+    min-width: 38px;
+    height: 38px;
+    border-radius: 19px;
     background-color: rgb(196, 43, 28);
     color: rgb(255, 255, 255);
-    font-size: 26px;
+    font-size: 22px;
     -unity-text-align: middle-center;
 }
 
