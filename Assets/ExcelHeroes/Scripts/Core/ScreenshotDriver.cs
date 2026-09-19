@@ -95,6 +95,18 @@ namespace ExcelHeroes.Core
             IEnumerator Shoot(string name)
             {
                 yield return new WaitForEndOfFrame();
+
+                var doc = FindFirstObjectByType<UnityEngine.UIElements.UIDocument>();
+                if (doc != null)
+                {
+                    var problems = LayoutAudit.Run(doc.rootVisualElement);
+                    if (problems.Count > 0)
+                    {
+                        Debug.LogWarning($"[shots] {name}: {problems.Count} layout problem(s)");
+                        foreach (var p in problems) Debug.LogWarning($"[shots]   {p}");
+                    }
+                }
+
                 var path = Path.Combine(Directory, name + ".png");
                 var tex = ScreenCapture.CaptureScreenshotAsTexture();
                 File.WriteAllBytes(path, tex.EncodeToPNG());

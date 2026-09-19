@@ -22,7 +22,7 @@ const DATA = 'Assets/ExcelHeroes/Resources/Data';
 const mkdir = (d) => fs.mkdirSync(d, { recursive: true });
 const webPath = (...p) => path.join(WEB, ...p);
 
-install();
+install(WEB);
 
 // ---------------------------------------------------------------- sprites --
 async function bakeSprites() {
@@ -47,6 +47,51 @@ async function bakeSprites() {
     savePNG(path.join(out, `${def.id}.png`), strip);
   }
   console.log(`sprites: ${dolls} paper dolls + ${recoloured} recoloured bases${skipped ? `, ${skipped} unmapped` : ''} -> ${out}`);
+}
+
+// ---------------------------------------------------------------- monsters --
+/**
+ * Monster frames, cut by the web build's own packSprites.js.
+ *
+ * The 0x72 sheet stores each creature as a row with its idle frames across it, and the row
+ * coordinates are per-creature and easy to transcribe wrong — so the sheet is handed to their code
+ * rather than re-indexed here. Frames come out already mirrored to face the party and scaled 2x for
+ * wave enemies, 3x for the big ones.
+ */
+async function bakeMonsters() {
+  const pack = await import(`file://${webPath('src/data/packSprites.js')}`);
+  const { MONSTER_TYPES, BOSSES } = await import(`file://${webPath('src/data/monsters.js')}`);
+
+  if (!(await pack.loadPack())) throw new Error('tilesets failed to load');
+
+  const out = path.join(ART, 'Monsters');
+  fs.rmSync(out, { recursive: true, force: true });
+  mkdir(out);
+
+  const ids = new Set(Object.keys(pack.MONSTER_MAP));
+  let n = 0, missing = [];
+  for (const id of ids) {
+    const frames = [];
+    for (let f = 0; f < 4; f++) {
+      const c = pack.packMonsterFrame({ id }, f);
+      if (c) frames.push(c);
+    }
+    if (frames.length === 0) { missing.push(id); continue; }
+
+    // One strip per monster, same shape as the hero strips so the runtime slices them the same way.
+    const fw = frames[0].width, fh = frames[0].height;
+    const strip = { width: fw * frames.length, height: fh, data: new Uint8ClampedArray(fw * frames.length * fh * 4) };
+    frames.forEach((c, i) => {
+      for (let y = 0; y < fh; y++)
+        for (let x = 0; x < fw; x++) {
+          const s = (y * fw + x) * 4, d = (y * strip.width + i * fw + x) * 4;
+          for (let k = 0; k < 4; k++) strip.data[d + k] = c.data[s + k];
+        }
+    });
+    savePNG(path.join(out, `${id}.png`), strip);
+    n++;
+  }
+  console.log(`monsters: ${n} strips -> ${out}${missing.length ? ` (no art: ${missing.join(', ')})` : ''}`);
 }
 
 // ------------------------------------------------------------------ sheets --
@@ -111,6 +156,7 @@ function bakeStory() {
 
 const cmd = process.argv[2] ?? 'all';
 if (cmd === 'sprites' || cmd === 'all') await bakeSprites();
+if (cmd === 'monsters' || cmd === 'all') await bakeMonsters();
 if (cmd === 'sheets' || cmd === 'all') bakeSheets();
 if (cmd === 'cards' || cmd === 'all') bakeCards();
 if (cmd === 'story' || cmd === 'all') bakeStory();

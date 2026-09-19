@@ -97,6 +97,7 @@
 .ws-rows {
     width: 74px;
     flex-shrink: 0;
+    overflow: hidden;
     background-color: rgb(255, 255, 255);
     border-right-width: 1px;
     border-right-color: rgb(212, 212, 212);
@@ -298,7 +299,7 @@
 }
 
 .cmd-tab {
-    height: 96px;
+    height: 84px;
     min-width: 168px;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
@@ -367,7 +368,7 @@
     margin-bottom: 16px;
 }
 
-.muted { color: rgb(128, 128, 128); }
+.muted { color: rgb(128, 128, 128); white-space: normal; }
 .hidden { display: none; }
 
 .btn {
@@ -573,6 +574,7 @@
 
 .gacha__banner {
     align-items: center;
+    max-width: 100%;
     margin-top: 64px;
     margin-bottom: 32px;
 }
@@ -590,11 +592,14 @@
 }
 
 .gacha__pity {
+    flex-wrap: wrap;
+    max-width: 100%;
     flex-direction: row;
     margin-top: 26px;
 }
 
 .pity-chip {
+    height: 72px;
     flex-direction: row;
     align-items: center;
     margin-left: 13px;
@@ -1475,14 +1480,15 @@
 .xl-row--locked .xl-cell { color: rgb(170, 170, 170); }
 
 .xl-cell {
-    width: 320px;
+    flex-shrink: 1;
+    width: 230px;
     padding-left: 26px;
     font-size: 35px;
     border-right-width: 1px;
     border-right-color: rgb(226, 226, 226);
 }
 
-.xl-cell--wide { flex-grow: 1; }
+.xl-cell--wide { flex-grow: 1; flex-basis: 0; min-width: 0; }
 .xl-cell--num { -unity-text-align: middle-right; padding-right: 26px; }
 .xl-body { flex-grow: 1; }
 
@@ -1699,3 +1705,62 @@
 /* charged, but the budget is not there yet */
 .ex-button--poor { opacity: 0.55; }
 .ex-button--poor .ex-button__cost { background-color: rgb(150, 150, 150); }
+
+/* ---------------------------------------------------------------- icons */
+
+/* Drawn, not typed. Unity's default font has no glyph for a search loupe or a window, so those
+   characters rendered as missing-glyph boxes — the boss key looked like it was simply absent. */
+.icon { -unity-background-scale-mode: scale-to-fit; }
+.icon--back { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/back.png"); }
+.icon--search { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/search.png"); }
+.icon--undo { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/undo.png"); }
+.icon--bosskey { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/bosskey.png"); }
+.icon--bosskey-on { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/bosskey_on.png"); }
+.icon--overflow { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/overflow.png"); }
+.icon--sheets { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/sheets.png"); }
+.icon--add { background-image: url("project://database/Assets/ExcelHeroes/Resources/Art/Icons/add.png"); }
+
+/* The corner cell's select-all mark, drawn with a border rather than a glyph. */
+.ws-corner {
+    border-bottom-width: 14px;
+    border-bottom-color: rgb(170, 170, 170);
+    border-left-width: 14px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+
+/* ---------------------------------------------------------------- 위장 모드 시트 */
+
+.stealth-sheet { flex-grow: 1; }
+.xl-row--total { border-top-width: 2px; border-top-color: rgb(70, 70, 70); }
+.xl-row--total .xl-cell { -unity-font-style: bold; }
+.xl-cell--up { color: rgb(24, 92, 55); }
+.xl-cell--down { color: rgb(196, 43, 28); }
+
+/* The monster strips come out of the tileset already facing the party, so the blanket mirror that
+   the hero-facing sprites need would turn them back around.
+
+   They are also a different kind of frame: the web build composes each monster into a 64x64 box
+   with the creature already scaled and standing on the bottom edge, whereas the hero strips are the
+   raw 16x28 cells. Sizing both boxes the same made every monster look like a doll next to the
+   party. 64 canvas pixels is 84 at this field's scale. */
+.fighter--monster .fighter__body--creature {
+    scale: 1 1;
+    width: 84px;
+    height: 84px;
+}
+
+.fighter--boss .fighter__body--creature { width: 168px; height: 152px; }
+
+/* Pixel HP bars: hard edges, a one-pixel dark border and no rounding, so they sit on the same grid
+   as the sprites instead of looking like a web widget dropped onto a tileset. */
+.fighter__hpbar {
+    border-radius: 0;
+    border-width: 1px;
+    border-color: rgb(27, 29, 37);
+    background-color: rgb(58, 62, 74);
+    overflow: hidden;
+}
+
+.fighter__hpfill { border-radius: 0; }
+.fighter--hero .fighter__hpfill { background-color: rgb(74, 200, 108); }
+.fighter--monster .fighter__hpfill { background-color: rgb(214, 62, 52); }

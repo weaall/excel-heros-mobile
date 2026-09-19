@@ -31,6 +31,7 @@ namespace ExcelHeroes.Core
         public float traitValue;
         public float skillPower;        // ★-boosted, from StatMath.SkillPower
         public bool elite;              // crowned wave enemy: tougher, pays better
+        public string typeId;           // monster type, for its sprite; null on heroes
 
         // boss script state
         public BossDef boss;            // null for everything that is not a boss
@@ -277,10 +278,14 @@ namespace ExcelHeroes.Core
 
             // From stage 5 on, crowned variants start showing up: much tougher, worth much more.
             var elite = Stage >= EliteFromStage && Random.value < EliteChance;
-            var name = GameData.MonsterForStage(Stage, slot)?.name ?? "스프레드시트 오류";
+            var type = GameData.MonsterForStage(Stage, slot);
+            var name = type?.name ?? "스프레드시트 오류";
             var m = new Combatant
             {
                 side = Side.Monster,
+                // Carried so the battle can draw the right creature; without it every monster was
+                // an empty box, which is what "몬스터 디자인이 없다" was looking at.
+                typeId = type?.id,
                 name = elite ? $"★ {name}" : name,
                 role = "melee",
                 maxHp = elite ? (int)(hp * 2.5f) : hp,

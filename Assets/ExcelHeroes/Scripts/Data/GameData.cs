@@ -212,6 +212,31 @@ namespace ExcelHeroes.Data
         /// <summary>Frame 0 — the standing pose, for anywhere a small hero icon is wanted.</summary>
         public static Sprite BattleSprite(string heroId) => BattleFrames(heroId)?[0];
 
+        // Monster strips are four idle frames wide, already mirrored to face the party and scaled
+        // by the web build's own cutter — but each creature has its own frame size, so unlike the
+        // heroes the width is read off the texture rather than assumed.
+        const int MonsterFrameCount = 4;
+        static readonly Dictionary<string, Sprite[]> MonsterCache = new();
+
+        public static Sprite[] MonsterFrames(string typeId)
+        {
+            if (string.IsNullOrEmpty(typeId)) return null;
+            if (MonsterCache.TryGetValue(typeId, out var cached)) return cached;
+
+            var strip = Resources.Load<Sprite>($"Art/Monsters/{typeId}");
+            if (strip == null) { MonsterCache[typeId] = null; return null; }
+
+            var tex = strip.texture;
+            var w = tex.width / MonsterFrameCount;
+            var frames = new Sprite[MonsterFrameCount];
+            for (var i = 0; i < MonsterFrameCount; i++)
+                frames[i] = Sprite.Create(tex, new Rect(i * w, 0, w, tex.height), new Vector2(0.5f, 0f), tex.height);
+            MonsterCache[typeId] = frames;
+            return frames;
+        }
+
+        public static Sprite MonsterSprite(string typeId) => MonsterFrames(typeId)?[0];
+
         /// <summary>Fills {p} in a skill description with the hero's own power value.</summary>
         public static string SkillText(HeroDef h)
         {

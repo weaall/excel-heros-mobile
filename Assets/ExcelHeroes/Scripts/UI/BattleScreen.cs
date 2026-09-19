@@ -133,6 +133,17 @@ namespace ExcelHeroes.UI
                 }
                 else UiKit.SetArt(bodyEl, GameData.CardArt(c.heroId));
             }
+            else
+            {
+                // Monsters were never given any art at all — the element was an empty box. The
+                // strips come out of the tileset already facing left, so nothing is mirrored here.
+                var mon = GameData.MonsterSprite(c.boss != null ? "boss" : c.typeId);
+                if (mon != null)
+                {
+                    bodyEl.AddToClassList("fighter__body--creature");
+                    UiKit.SetArt(bodyEl, mon);
+                }
+            }
             var bar = UiKit.Div("fighter__hpbar", el);
             UiKit.Div("fighter__hpfill", bar);
             UiKit.Text(c.name, "fighter__name", el);

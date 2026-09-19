@@ -63,6 +63,7 @@ namespace ExcelHeroes.UI
         Sheet _sheet = Sheet.Home;
         IScreen _current;
         HeroDetail _detail;
+        StealthSheet _stealthSheet;
 
         void Awake()
         {
@@ -93,6 +94,7 @@ namespace ExcelHeroes.UI
             _screens[Sheet.Codex] = new CodexScreen(this);
             _screens[Sheet.Chart] = new ChartScreen(this);
             _detail = new HeroDetail(this);
+            _stealthSheet = new StealthSheet(this);
 
             Bind("tabHome", Sheet.Home);
             Bind("tabRoster", Sheet.Roster);
@@ -171,7 +173,7 @@ namespace ExcelHeroes.UI
         public void Show(Sheet sheet)
         {
             _sheet = sheet;
-            _current = _screens[sheet];
+            _current = Stealth ? (IScreen)_stealthSheet : _screens[sheet];
             _content.Clear();
             _content.Add(_current.Build());
             _nameBox.text = _current.Cell;
@@ -192,8 +194,29 @@ namespace ExcelHeroes.UI
         void BuildGutter()
         {
             if (_gutter == null) return;
+            var height = _gutter.resolvedStyle.height;
+            if (float.IsNaN(height) || height <= 1f)
+            {
+                // First build of the session: the gutter has no measured height yet, so wait for
+                // the layout pass and come back.
+                _gutter.RegisterCallback<GeometryChangedEvent>(OnGutterMeasured);
+                return;
+            }
+            FillGutter(height);
+        }
+
+        void OnGutterMeasured(GeometryChangedEvent e)
+        {
+            _gutter.UnregisterCallback<GeometryChangedEvent>(OnGutterMeasured);
+            FillGutter(e.newRect.height);
+        }
+
+        void FillGutter(float height)
+        {
+            const float rowHeight = 96f;
             _gutter.Clear();
-            for (var i = 1; i <= 20; i++) UiKit.Text(i.ToString(), "ws-row-num", _gutter);
+            var rows = Mathf.Max(1, Mathf.FloorToInt(height / rowHeight));
+            for (var i = 1; i <= rows; i++) UiKit.Text(i.ToString(), "ws-row-num", _gutter);
         }
 
         void ToggleRibbon()
@@ -271,7 +294,11 @@ namespace ExcelHeroes.UI
         {
             var on = Stealth;
             _doc.rootVisualElement.EnableInClassList("stealth", on);
-            if (_stealth != null) _stealth.text = on ? "▣" : "⛶";
+            if (_stealth != null)
+            {
+                _stealth.EnableInClassList("icon--bosskey", !on);
+                _stealth.EnableInClassList("icon--bosskey-on", on);
+            }
 
             foreach (var pair in _tabs)
                 pair.Value.text = on ? StealthLabels.Tab(pair.Key) : _tabNames[pair.Key];

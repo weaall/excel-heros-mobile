@@ -15,18 +15,18 @@
 
         <!-- Back, the file name centred, then the action icons — the order the phone app uses. -->
         <ui:VisualElement name="appbar" class="appbar">
-            <ui:Button name="backBtn" class="appbar__btn" text="←" />
+            <ui:Button name="backBtn" class="appbar__btn icon icon--back" />
             <ui:Label name="docTitle" text="통합 문서1" class="appbar__title" />
-            <ui:Button name="searchBtn" class="appbar__btn" text="⌕" />
-            <ui:Button name="undoBtn" class="appbar__btn" text="↶" />
+            <ui:Button name="searchBtn" class="appbar__btn icon icon--search" />
+            <ui:Button name="undoBtn" class="appbar__btn icon icon--undo" />
             <!-- The disguise has to be reachable without looking, so it is pinned, not in the overflow. -->
-            <ui:Button name="stealthToggle" class="appbar__btn" text="⛶" />
-            <ui:Button name="overflowBtn" class="appbar__btn" text="⋮" />
+            <ui:Button name="stealthToggle" class="appbar__btn icon icon--bosskey" />
+            <ui:Button name="overflowBtn" class="appbar__btn icon icon--overflow" />
         </ui:VisualElement>
 
         <!-- Column letters. With the ribbon gone this is what says "spreadsheet" at a glance. -->
         <ui:VisualElement name="colHeaders" class="ws-cols">
-            <ui:Label text="◤" class="ws-corner" />
+            <ui:Label text="" class="ws-corner" />
             <ui:Label text="A" class="ws-col" />
             <ui:Label text="B" class="ws-col" />
             <ui:Label text="C" class="ws-col" />
@@ -47,11 +47,11 @@
             <ui:Label text="fx" class="fx" />
             <ui:Label name="formula" text="=SUM(Hero_ATK)" class="formula" />
             <ui:Label name="nameBox" text="A1" class="name-box" />
-            <ui:Label text="⌃" class="formula-expand" />
+            <ui:Label text="^" class="formula-expand" />
         </ui:VisualElement>
 
         <ui:VisualElement name="sheetTabsRow" class="sheet-tabs-row">
-            <ui:Button name="sheetListBtn" class="sheet-list-btn" text="▤" />
+            <ui:Button name="sheetListBtn" class="sheet-list-btn icon icon--sheets" />
             <ui:ScrollView name="sheetTabsScroll" mode="Horizontal" class="sheet-tabs-scroll">
             <ui:VisualElement name="sheetTabs" class="sheet-tabs">
                 <ui:Button name="tabHome" text="메인_전투" class="sheet-tab sheet-tab--active" />
@@ -66,7 +66,7 @@
                 <ui:Button name="tabChart" text="통계_차트" class="sheet-tab" />
             </ui:VisualElement>
             </ui:ScrollView>
-            <ui:Button name="addSheetBtn" class="sheet-add-btn" text="＋" />
+            <ui:Button name="addSheetBtn" class="sheet-add-btn icon icon--add" />
         </ui:VisualElement>
 
         <ui:VisualElement name="commandbar" class="commandbar">
