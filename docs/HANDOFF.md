@@ -162,9 +162,31 @@ that function was touched. The web re-added `assets/cards` in its most recent co
 been showing an older set. Re-bake after any web art change; the bake is the only thing that
 notices.
 
-**Size.** `Resources/Art/Cards` is now 133 MB of source PNG across 198 files. Everything under
-`Resources/` ships. That is a mobile build-size problem waiting to be measured, and it has not
-been.
+### Build size, measured
+
+The Windows player's texture payload (`resources.assets.resS`) was **87.2 MB**, in a 195 MB build.
+It is **46.0 MB** in a 154 MB build now. Nothing was resized and nothing was cut.
+
+Getting there took three attempts, two of which did nothing at all, and the reason is worth keeping:
+
+1. Rewriting the opaque PNGs as RGB — **no effect**, byte for byte identical output. The importer
+   takes its format from the .meta, never from the file's channel count.
+2. Changing the pinned desktop format from DXT5 to DXT1 — **no effect**, byte for byte identical
+   again.
+3. Adding `GetVersion()` to `ArtImportSettings` — **halved it**.
+
+`AssetPostprocessor.GetVersion()` is what tells Unity to re-import the assets a postprocessor
+handles. Without it, editing the settings changes nothing: the .meta files keep whatever they were
+given the first time. **Every settings change in that file after the first had been silently
+inert**, including one that was sitting in the repo unmeasured. Bump `GetVersion()` AND `Stamp`
+together — the version makes Unity re-import, the stamp makes the code agree to touch the asset.
+
+Found on the way: the monster strips were being block-compressed. The pixel-art branch tested
+`Sprites/` and `Sheets/` and not `Monsters/`, while its own comment warns that DXT smears the 1px
+outlines. They are uncompressed and point-filtered now.
+
+Still worth doing: an Android build reports the real number, and ASTC 6x6 is a different format
+from DXT1. That needs the EULA accepted.
 
 **Deliberately not ported.** The 도전/파밍 toggle. Its meaning in the web depends on a boss
 appearing only on boss stages; here every stage is two waves and a boss, so a toggle with that name
