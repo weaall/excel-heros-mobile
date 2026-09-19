@@ -108,10 +108,25 @@ this sim.
 
 ## Blocked
 
-- **APK.** The Android module is installed without its SDK, NDK and JDK, so `BuildGame.Android`
-  fails with `Android SDK not found`. Unity Hub → 6000.0.82f1 → add modules → Android SDK & NDK
-  Tools + OpenJDK. The same install is what an emulator needs. **This is the top of the list**:
-  nothing about how the game feels in a hand has been checked even once.
+- **APK — and it needs *you*, not more work.** OpenJDK is present; the SDK and NDK are not, and
+  `BuildGame.Android` stops at `Invalid SDK directory path` / `Android SDK not found`.
+
+  The headless install does not get past it:
+
+  ```bash
+  "Unity Hub.exe" -- --headless install-modules --version 6000.0.82f1       --module android-sdk-ndk-tools --childModules
+  ```
+
+  It answers `already installed` for every child while `AndroidPlayer/SDK` does not exist on disk,
+  and `modules.json` has each of them at `selected: false`. The reason is in the module record:
+  `android-sdk-ndk-tools` carries a **EULA — Google's Android SDK and NDK licence terms** — and the
+  Hub will not fetch it until those are accepted. That acceptance belongs to whoever owns this
+  machine, so it is deliberately not automated here. Accept it once in Unity Hub → 6000.0.82f1 →
+  Add modules → Android SDK & NDK Tools, and the APK, the emulator and the safe-area check all
+  unblock together.
+
+  **This is the top of the list**: nothing about how the game feels in a hand has been checked even
+  once.
 - **Safe area is untested.** `Screen.safeArea` returns the whole screen on desktop, so `SafeArea.cs`
   has never actually inset anything. It needs a device or an emulator with a cutout.
 - Nothing on the art side. The HF route is no longer the only one: `tools/gen-art.mjs` runs the
