@@ -203,12 +203,34 @@ namespace ExcelHeroes.UI
             UiKit.SetArt(art, GameData.WornCardArt(heroId));
             ArtMotion.Breathe(art);
 
+            // The name plate sits ON the picture, bottom-left, the way the reference does it.
+            // It used to be a navy bar at the top of the RIGHT column, which spent a band of the
+            // information side on something the illustration had room for, and left the portrait
+            // captionless. Everything identifying the hero is here now: 부문, 등급, name, level,
+            // ★ and the bond — so the right column is nothing but what you came to read.
+            var plate = UiKit.Div("dplate", art);
+            var plateTop = UiKit.Div("dplate__top", plate);
+            UiKit.Text(def.dept ?? "", "dplate__dept", plateTop);
+            var gradeChip = UiKit.Text(grade?.label ?? def.grade, "dplate__grade", plateTop);
+            gradeChip.style.backgroundColor = grade?.Color ?? Color.gray;
+
+            var nameRow = UiKit.Div("dplate__namerow", plate);
+            UiKit.Text(def.name, "dplate__name", nameRow);
+            if (owned != null) UiKit.Text("♥", "dplate__heart", nameRow);
+
+            var metaRow = UiKit.Div("dplate__meta", plate);
+            if (owned != null)
+            {
+                UiKit.Text($"Lv.{owned.level}", "dplate__lv", metaRow);
+                var st = UiKit.Text(UiKit.Stars(owned.star), "dplate__stars", metaRow);
+                st.style.color = grade?.Color ?? Color.white;
+                var b0 = GameData.Balance;
+                UiKit.Text($"호감도 {owned.affection}/{b0.affectionMax}", "dplate__bond", metaRow);
+            }
+            else UiKit.Text("미보유", "dplate__lv", metaRow);
+
             // Everything except the picture lives in the right column.
             var right = UiKit.Div("detail__right", view);
-            var head = UiKit.Div("detail__head", right);
-            var name = UiKit.Text(def.name, "detail__name", head);
-            name.style.color = grade?.Color ?? Color.white;
-            UiKit.Text($"{def.nick} · {def.dept}", "detail__nick", head);
 
             // Pill tabs, as the reference puts them on its own card sheet. Everything this
             // modal knows about a hero — stats, levelling, the skill, the trait, the bond, the
@@ -225,18 +247,7 @@ namespace ExcelHeroes.UI
 
             var body = UiKit.Div("detail__body", right);
 
-            if (owned != null && _tab == "info")
-            {
-                UiKit.Text(UiKit.Stars(owned.star), "reveal__grade", body);
-                UiKit.StatRow("공격력", StatMath.Atk(owned).ToString("N0"), body);
-                UiKit.StatRow("체력", StatMath.Hp(owned).ToString("N0"), body);
-                UiKit.StatRow("전투력", StatMath.Power(owned).ToString("N0"), body);
-                UiKit.StatRow("레벨", $"{owned.level} / {StatMath.LevelCap(owned)}", body);
-                var need = GachaService.PromoteCost(owned);
-                UiKit.StatRow("승급", need > 0 ? $"중복 {owned.copies} / {need}장" : "최대 ★", body);
-                var infoTrait = GameData.Trait(GameData.Hero(heroId)?.trait);
-                if (infoTrait != null) UiKit.StatRow("특성", infoTrait.name, body);
-            }
+            if (owned != null && _tab == "info") BuildInfo(body, def, owned, heroId, grade, division);
 
             if (owned != null && _tab == "power")
             {
@@ -904,6 +915,81 @@ namespace ExcelHeroes.UI
                 }, row);
                 btn.SetEnabled(can);
             }
+        }
+
+        /// <summary>
+        /// 정보 — laid out the way the reference lays out a student's basic page, because a list
+        /// of label/value rows is not the same screen even when it carries the same numbers.
+        ///
+        /// The reference groups: a captioned block of core stats in TWO columns, a row of small
+        /// chips for the categorical facts, then the skill and the equipment as CARDS in a row
+        /// with their levels on them. That shape fits a landscape screen — four stats take two
+        /// lines instead of four, which is what buys the room for the skill and the kit to be on
+        /// the same page rather than behind another tab.
+        ///
+        /// It was eight stacked rows here, and three of them (등급 · 역할 · 부문) had already been
+        /// deleted for not fitting.
+        /// </summary>
+        void BuildInfo(VisualElement body, HeroDef def, OwnedHero owned, string heroId,
+                       GradeDef grade, DivisionDef division)
+        {
+            // ---- 기본 능력치, two columns ------------------------------------------------
+            var statsBlock = UiKit.Div("block", body);
+            UiKit.Text("기본 능력치", "block__title", statsBlock);
+            var statGrid = UiKit.Div("statgrid", statsBlock);
+            StatCell(statGrid, "공격력", StatMath.Atk(owned).ToString("N0"));
+            StatCell(statGrid, "체력", StatMath.Hp(owned).ToString("N0"));
+            StatCell(statGrid, "전투력", StatMath.Power(owned).ToString("N0"));
+            StatCell(statGrid, "레벨", $"{owned.level} / {StatMath.LevelCap(owned)}");
+
+            // ---- the categorical facts, as chips -----------------------------------------
+            // 등급, 역할 and 부문 are back. They were dropped when this was a list because nine
+            // rows did not fit; three chips on one line do.
+            var chips = UiKit.Div("chiprow", body);
+            var gc = UiKit.Text($"{def.grade} · {grade?.label}", "ichip ichip--grade", chips);
+            gc.style.backgroundColor = grade?.Color ?? Color.gray;
+            UiKit.Text(UiKit.RoleName(def.role), "ichip", chips);
+            UiKit.Text(division?.name ?? def.division, "ichip", chips);
+            var need = GachaService.PromoteCost(owned);
+            UiKit.Text(need > 0 ? $"승급 {owned.copies}/{need}" : "최대 ★", "ichip", chips);
+
+            // ---- 스킬 and 특성, as cards with their levels --------------------------------
+            var cards = UiKit.Div("minicards", body);
+
+            var skillCard = UiKit.Div("minicard", cards);
+            UiKit.Text("스킬", "minicard__kind", skillCard);
+            UiKit.Text(def.skillName ?? "—", "minicard__name", skillCard);
+            UiKit.Text(StatMath.SkillUnlocked(owned)
+                       ? $"Lv.{owned.skillLv + 1} / {GameData.Balance.skillLevelMax + 1}"
+                       : "미해금", "minicard__lv", skillCard);
+
+            var trait = GameData.Trait(def.trait);
+            var traitCard = UiKit.Div("minicard", cards);
+            UiKit.Text("특성", "minicard__kind", traitCard);
+            UiKit.Text(trait?.name ?? "—", "minicard__name", traitCard);
+            UiKit.Text(owned.star > 0 ? $"★{owned.star}" : "", "minicard__lv", traitCard);
+
+            // ---- 비품, the four slots as tiles -------------------------------------------
+            // The reference puts the equipment on the basic page too, not only on its own. Four
+            // empty sockets are the clearest possible statement of what this hero is missing.
+            var kit = UiKit.Div("block", body);
+            UiKit.Text("비품", "block__title", kit);
+            var strip = UiKit.Div("kitstrip", kit);
+            foreach (var slot in EquipService.Slots)
+            {
+                var worn = EquipService.Worn(Game.Player, heroId, slot.id);
+                var tile = UiKit.Div("kittile" + (worn == null ? " kittile--empty" : ""), strip);
+                UiKit.Text(slot.name, "kittile__slot", tile);
+                UiKit.Text(worn == null ? "비어 있음" : EquipService.Label(worn), "kittile__name", tile);
+                UiKit.Text(worn == null ? "" : $"+{EquipService.Pct(worn) * 100f:0}%", "kittile__val", tile);
+            }
+        }
+
+        static void StatCell(VisualElement parent, string key, string value)
+        {
+            var cell = UiKit.Div("statcell", parent);
+            UiKit.Text(key, "statcell__key", cell);
+            UiKit.Text(value, "statcell__val", cell);
         }
 
         void Tab(VisualElement parent, string id, string label, string heroId, System.Action onClose)

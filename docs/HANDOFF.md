@@ -425,6 +425,13 @@ measures 155 against an owned card's 231 now.
 
 ## What the audit still cannot see
 
+A third blind spot, found the same way as the first two — by eye, in a capture. **It cannot see
+occlusion.** When the card sheet's name bar moved onto the illustration, the tab strip rose into
+the space the floating close button occupies, and the 스킨 tab was drawn underneath it. Every
+element involved was inside its container and inside the screen, so the audit called it a clean
+run. Overlap is not an overflow; nothing in a box model notices one element covering another.
+
+
 `LayoutAudit` measures against all four screen edges and against each label's own text. It checked
 only the right and bottom until a right-aligned button row outgrew its column and spilled off the
 LEFT — content that grows down and right is the common case, not the only one. It does NOT see an

@@ -1010,11 +1010,14 @@
 
 /* flex-shrink is what makes this scroll. With only flex-grow the body kept its content height
    inside a modal capped at 88%, so anything past the fold simply could not be reached. */
+/* Declared twice, and the late one-liner silently won — the space-4 padding here had not
+   applied for as long as both existed. One rule now. */
 .detail__body {
     flex-grow: 1;
     flex-shrink: 1;
     min-height: 0;
-    padding: var(--ex-space-4);
+    overflow: hidden;
+    padding: var(--ex-space-2);
 }
 
 .stat-row {
@@ -3456,11 +3459,16 @@
    running them down one scroll. Everything this modal knows is four screens of reading, and held
    sideways there is no scroll to put it in. */
 
+/* The tab strip now starts at the very top of the right column, where the navy name bar used
+   to be — and that is exactly where the close button floats. 106px of right padding is the
+   button's 90px plus a gap, so the last tab ends before it rather than under it. LayoutAudit
+   never saw this: the tab was inside its container and inside the screen, it was simply
+   covered. Occlusion is a third thing the audit cannot measure. */
 .dtabs {
     flex-direction: row;
     flex-shrink: 0;
     padding-left: var(--ex-space-2);
-    padding-right: var(--ex-space-2);
+    padding-right: 106px;
     padding-top: var(--ex-space-1);
 }
 
@@ -3492,7 +3500,6 @@
 
 .dtab--on:hover { background-color: var(--ex-accent); }
 
-.detail__body { flex-grow: 1; min-height: 0; overflow: hidden; padding: var(--ex-space-2); }
 
 .detail__foot {
     flex-shrink: 0;
@@ -3801,3 +3808,175 @@
     border-radius: var(--ex-rad-sm);
     padding-left: var(--ex-space-2);
 }
+
+
+/* ============================================================== 카드 시트 · 참고 레이아웃
+   The reference's student page, copied in structure rather than only in colour: a name plate
+   ON the portrait, and a right column of grouped blocks — a captioned two-column stat grid, a
+   row of chips, skill cards, and the equipment as sockets. What was here was a vertical list of
+   label/value rows, which carries the same numbers and is not the same screen. */
+
+.dplate {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: var(--ex-space-2);
+    background-color: rgba(16, 26, 46, 0.86);
+    border-top-width: 3px;
+    border-top-color: rgba(255, 255, 255, 0.22);
+}
+
+.dplate__top { flex-direction: row; align-items: center; }
+
+.dplate__dept {
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.72);
+    margin-right: var(--ex-space-1);
+}
+
+.dplate__grade {
+    padding: 2px 14px;
+    border-radius: 12px;
+    font-size: 21px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+.dplate__namerow { flex-direction: row; align-items: center; margin-top: 2px; }
+
+.dplate__name {
+    font-size: var(--ex-text-lg);
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+.dplate__heart { font-size: 28px; color: rgb(244, 114, 150); margin-left: var(--ex-space-1); }
+
+.dplate__meta { flex-direction: row; align-items: center; margin-top: 4px; }
+
+.dplate__lv {
+    font-size: var(--ex-text-sm);
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-right: var(--ex-space-2);
+}
+
+.dplate__stars { font-size: var(--ex-text-sm); margin-right: var(--ex-space-2); }
+
+.dplate__bond { font-size: 22px; color: rgba(255, 255, 255, 0.72); }
+
+/* A captioned group. The caption is a filled bar, as it is in the reference, so the eye can
+   find the edges of a block without counting rows. */
+.block {
+    flex-shrink: 0;
+    margin-bottom: var(--ex-space-2);
+    background-color: var(--ex-surface);
+    border-width: 2px;
+    border-color: var(--ex-btn-line);
+    border-radius: var(--ex-rad-sm);
+    overflow: hidden;
+}
+
+.block__title {
+    font-size: 24px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: var(--ex-accent-ink);
+    background-color: var(--ex-navy);
+    padding: 4px 0;
+}
+
+/* Two columns, so four stats are two lines. That is what buys the room for the skill cards and
+   the equipment sockets to be on the same page rather than behind another tab. */
+.statgrid { flex-direction: row; flex-wrap: wrap; padding: var(--ex-space-1); }
+
+.statcell {
+    width: 50%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px var(--ex-space-1);
+}
+
+.statcell__key { font-size: 23px; color: var(--ex-ink-muted); }
+
+.statcell__val { font-size: var(--ex-text-sm); -unity-font-style: bold; color: var(--ex-ink); }
+
+/* 등급 · 역할 · 부문 · 승급. These had been DELETED from this screen for not fitting as rows;
+   as chips they are one line. */
+.chiprow { flex-direction: row; flex-wrap: wrap; margin-bottom: var(--ex-space-2); }
+
+.ichip {
+    padding: 3px 14px;
+    margin-right: var(--ex-space-1);
+    border-radius: 14px;
+    font-size: 22px;
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    background-color: var(--ex-btn);
+    border-width: 2px;
+    border-color: var(--ex-btn-line);
+}
+
+.ichip--grade { color: rgb(255, 255, 255); border-color: rgba(0, 0, 0, 0.15); }
+
+.minicards { flex-direction: row; margin-bottom: var(--ex-space-2); }
+
+.minicard {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: var(--ex-space-1);
+    padding: var(--ex-space-1);
+    background-color: var(--ex-surface-raised);
+    border-width: 2px;
+    border-bottom-width: 4px;
+    border-color: var(--ex-btn-line);
+    border-bottom-color: var(--ex-btn-edge);
+    border-radius: var(--ex-rad-sm);
+}
+
+.minicard__kind { font-size: 20px; color: var(--ex-ink-muted); }
+
+.minicard__name {
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.minicard__lv { font-size: 21px; -unity-font-style: bold; color: var(--ex-accent-deep); }
+
+/* Four sockets in a row. An empty one is drawn as an empty one — the reference shows locked
+   equipment slots rather than hiding them, because the gap is the information. */
+.kitstrip { flex-direction: row; padding: var(--ex-space-1); }
+
+.kittile {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: 6px;
+    padding: 4px 8px;
+    background-color: var(--ex-surface-raised);
+    border-width: 2px;
+    border-color: var(--ex-btn-line);
+    border-radius: var(--ex-rad-sm);
+}
+
+.kittile--empty { background-color: var(--ex-btn-off); border-color: var(--ex-btn-off-line); }
+
+.kittile__slot { font-size: 19px; color: var(--ex-ink-muted); }
+
+.kittile__name {
+    font-size: 21px;
+    -unity-font-style: bold;
+    color: var(--ex-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kittile--empty .kittile__name { color: var(--ex-btn-off-ink); }
+
+.kittile__val { font-size: 20px; -unity-font-style: bold; color: var(--ex-accent-deep); }
