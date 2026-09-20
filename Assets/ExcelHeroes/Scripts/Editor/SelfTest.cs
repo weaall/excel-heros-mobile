@@ -115,10 +115,46 @@ namespace ExcelHeroes.EditorTools
             CheckRefund();
             CheckAutoPlay();
             CheckCurves();
+            CheckBanter();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
             if (_failures == 0) Debug.Log(Log.ToString());
             else Debug.LogError(Log.ToString());
+        }
+
+        /// <summary>
+        /// 캐릭터 대사 — that everyone HAS one.
+        ///
+        /// The bubble picks a random living party member and shows their line. A hero with an
+        /// empty line says nothing, and because the speaker is random that failure appears once
+        /// every few clears and never for the same card twice running — which is the shape of
+        /// bug that gets seen, not believed, and never reproduced.
+        ///
+        /// What this cannot check is the bubble itself. It only fires when a Phase falls, and a
+        /// capture run never gets that far, so the drawing is unverified; this checks the data it
+        /// would draw.
+        /// </summary>
+        static void CheckBanter()
+        {
+            Line("\n-- 대사 --");
+
+            var missing = GameData.Heroes.Where(h => string.IsNullOrEmpty(h.line)).ToList();
+            Check(missing.Count == 0,
+                  $"every hero has a line ({GameData.Heroes.Count - missing.Count}/{GameData.Heroes.Count})");
+            foreach (var h in missing.Take(5)) Line($"    no line: {h.id} · {h.name}");
+
+            // The 호감도 line is what that currency buys, so a hero whose unlock text is empty
+            // has a reward that pays nothing.
+            var p = PlayerState.New();
+            var withUnlock = 0;
+            foreach (var h in GameData.Heroes.Take(12))
+            {
+                if (!p.Owns(h.id)) p.owned.Add(new OwnedHero(h.id));
+                var o = p.Find(h.id);
+                o.affection = GameData.Balance.affectionMax;
+                if (!string.IsNullOrEmpty(AffectionService.Greeting(o))) withUnlock++;
+            }
+            Check(withUnlock == 12, $"and something to say once you know them ({withUnlock}/12)");
         }
 
         /// <summary>

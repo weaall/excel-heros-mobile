@@ -141,6 +141,7 @@ namespace ExcelHeroes.UI
 
             _views.Clear();
             _floaters.Clear();
+            _bubbles.Clear();
             _shotViews.Clear();
             _motes.Clear();
             _stage.Clear();
@@ -457,6 +458,7 @@ namespace ExcelHeroes.UI
             UpdateCombo();
             UpdateSkillGauges();
             UpdateFloaters(dt);
+            UpdateBubbles(dt);
             UpdateUpgrades();
 
             _waveLabel.text = _sim.Finished
@@ -946,6 +948,68 @@ namespace ExcelHeroes.UI
             _floaters.Add((el, 0.9f, top));
         }
 
+        /// <summary>
+        /// 캐릭터 대사 — one party member says something when a Phase falls, ported from the web
+        /// build's `sayLine`.
+        ///
+        /// It is the only place the cast speaks during a fight. Every one of them has a line
+        /// written for them in PROFILES, and this build was already exporting it and showing it
+        /// in two places nobody looks at often — the 호감도 panel and the EX cut-in. The web
+        /// says it where it lands: over the hero's head, the moment the boss goes down.
+        ///
+        /// A speaker who is dead says nothing, which is why the living are filtered first rather
+        /// than picked from and checked.
+        /// </summary>
+        void SayLine()
+        {
+            if (_sim == null) return;
+
+            var alive = _sim.Heroes.Where(h => h.hp > 0 && _views.ContainsKey(h)).ToList();
+            if (alive.Count == 0) return;
+
+            var speaker = alive[Random.Range(0, alive.Count)];
+            var owned = Game.Player.Find(speaker.heroId);
+            if (owned == null) return;
+
+            // The 호감도 line replaces the stock one about a third of the time once it is
+            // unlocked — always, and it stops being a reward for knowing them; never, and the
+            // thing 호감도 buys is a panel nobody opens.
+            var text = AffectionService.LineUnlocked(owned) && Random.value < 0.3f
+                     ? AffectionService.Greeting(owned)
+                     : GameData.Hero(speaker.heroId)?.line;
+            if (string.IsNullOrEmpty(text)) return;
+
+            Bubble(speaker, text);
+        }
+
+        readonly List<(VisualElement el, float life)> _bubbles = new();
+
+        void Bubble(Combatant at, string text)
+        {
+            if (at == null || !_views.TryGetValue(at, out var anchor)) return;
+
+            var el = UiKit.Text(text, "saybubble", _stage);
+            var top = anchor.resolvedStyle.top;
+            if (float.IsNaN(top) || top <= 0f) top = _groundY - 90f;
+            el.style.left = anchor.style.left;
+            el.style.top = top - 96f;
+            _bubbles.Add((el, 3.2f));
+        }
+
+        void UpdateBubbles(float dt)
+        {
+            for (var i = _bubbles.Count - 1; i >= 0; i--)
+            {
+                var (el, life) = _bubbles[i];
+                life -= dt;
+                if (life <= 0f) { el.RemoveFromHierarchy(); _bubbles.RemoveAt(i); continue; }
+                // Held at full opacity and faded only at the end: a line that starts dissolving
+                // immediately is one nobody finishes reading.
+                el.style.opacity = Mathf.Clamp01(life / 0.6f);
+                _bubbles[i] = (el, life);
+            }
+        }
+
         void UpdateFloaters(float dt)
         {
             for (var i = _floaters.Count - 1; i >= 0; i--)
@@ -1012,6 +1076,10 @@ namespace ExcelHeroes.UI
                 }
                 if (held.Length == 0) _lastHeld = null;
                 AffectionService.AwardBattle(Game.Player, _sim.Kills, clearedBoss: true);
+
+                // The cast speaks when a Phase falls — the web's `if (boss || first) sayLine()`.
+                // Every fight here ends on a boss, so this fires on every clear.
+                if (_root != null && _root.panel != null) SayLine();
                 QuestService.Note(Game.Player, "clears");
                 QuestService.Note(Game.Player, "boss");
             }

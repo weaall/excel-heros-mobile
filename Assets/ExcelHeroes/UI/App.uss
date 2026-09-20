@@ -4126,3 +4126,22 @@
 .kittile--empty .kittile__name { color: var(--ex-btn-off-ink); }
 
 .kittile__val { font-size: 20px; -unity-font-style: bold; color: var(--ex-accent-deep); }
+
+
+/* 캐릭터 대사 — the speech bubble over a hero's head when a Phase falls. White plate, navy text,
+   a cyan rim: the reference's own bubble, and deliberately not the disguise's grey. It is
+   absolutely positioned over the field, so it needs its own width rather than the field's. */
+.saybubble {
+    position: absolute;
+    max-width: 520px;
+    padding: 8px 18px;
+    background-color: rgb(255, 255, 255);
+    border-width: 3px;
+    border-color: var(--ex-accent);
+    border-radius: var(--ex-rad-md);
+    color: var(--ex-navy);
+    font-size: 26px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}

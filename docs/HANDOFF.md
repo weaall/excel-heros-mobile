@@ -100,6 +100,7 @@ rather than rebuilt from the data:
 | 비품 자동 장착 | `bestLoadout` / `autoEquip` / `autoEquipParty` | best-per-slot vs a full same-grade set, higher total wins |
 | 레벨 회수 | `levelGold` / `LEVEL_REFUND` | full refund, bench only — skips 김인턴, the party, 출장, and 즐겨찾기, which the grid shows as a 보존 badge |
 | 자동 진행 · 안전 진행 · 자동 강화 | `setAutoAdvance` / `setSafeAdvance` / `upgradeCheapestLoop` | three pills on the main sheet. Before this the Phase advanced on every win, unconditionally — 파밍 was not expressible |
+| 캐릭터 대사 | `sayLine` | a bubble over a hero when a Phase falls. The `line`/`ult` data was already exported and shown only in two panels nobody opens |
 
 ### Gold is an `int` here and a double in the web — decide what to do about it
 
