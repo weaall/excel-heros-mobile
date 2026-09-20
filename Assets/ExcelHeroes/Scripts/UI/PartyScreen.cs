@@ -59,11 +59,12 @@ namespace ExcelHeroes.UI
                 slots.Add(BuildSlot(def, owned, id));
             }
 
-            // The action rail, on the far right, stacked — which is where the reference keeps
-            // 편성 · 대표 · 지원. They used to sit in a row UNDER the line-up, where four of them
-            // did not fit on one line and wrapped, so the last one hung below the others with
-            // nothing beside it. A rail has no line to run out of.
-            var actions = UiKit.Div("party-rail", cols);
+            // The actions live at the FOOT OF THE RIGHT COLUMN, under 부문 시너지 and 편성 구성,
+            // which is where the layout spec puts them. They were briefly a third column of their
+            // own; two columns and a rail is 2500px of content in a 2280px working width, and the
+            // spec's split — 1500 for the line-up, 700 for everything it adds up to — leaves no
+            // room for a third. Stacked, so no line can run out the way the original row did.
+            var actions = UiKit.Div("party-rail", right);
 
             // 자동 편성 goes first because it is the one most players will press. Choosing by hand
             // means opening 55 cards, and the best party is not the five biggest numbers — 부문
@@ -120,16 +121,40 @@ namespace ExcelHeroes.UI
             else
             {
                 foreach (var line in syn.lines) UiKit.Text(line, "synergy-line", panel);
-                UiKit.Text($"합계 · 공격 +{syn.atkBonus:P0} 체력 +{syn.hpBonus:P0}", "section-title", panel);
+                // A FOOTER, not a second header. This was a `section-title`, which is now a 66px
+                // navy bar — so this panel carried two of them, one at the top and one in the
+                // middle, and the 66px it spent on the second was exactly what pushed the synergy
+                // lines under the panel's own clip. Two headers in one panel was wrong before it
+                // was expensive.
+                UiKit.Text($"합계 · 공격 +{syn.atkBonus:P0} 체력 +{syn.hpBonus:P0}", "synergy-total", panel);
             }
 
+            // Two columns, not four rows.
+            //
+            // The right column has 788px and wants about 920: the readout, both panels and the
+            // buttons do not all fit. Making the panels shrink kept the buttons on screen, which
+            // was the right call, but it meant 힐러 vanished off the bottom of this panel and half
+            // of a synergy line went with it — and clipping INSIDE an overflow:hidden container is
+            // the one thing LayoutAudit provably cannot see. Trading a failure the audit catches
+            // for one it cannot is a bad trade.
+            //
+            // So the content gets smaller instead of being hidden: four roles in two lines saves
+            // 120px and the column fits honestly.
             var composition = UiKit.Div("panel", right);
             UiKit.Text("편성 구성", "section-title", composition);
+            var compGrid = UiKit.Div("statgrid", composition);
             foreach (var role in GameData.Roles)
             {
                 var n = p.PartyMembers().Count(o => GameData.Hero(o.id)?.role == role.id);
-                UiKit.StatRow(role.name, n > 0 ? $"{n}명" : "없음", composition);
+                UiKit.StatCell(role.name, n > 0 ? $"{n}명" : "없음", compGrid);
             }
+
+            // The buttons were built first because they need `p`, and they belong last because
+            // the spec reads 시너지 → 구성 → 액션 from the top. Moved rather than reordered in
+            // code: UI Toolkit lays out and DRAWS in child order, so where an element sits in the
+            // tree is the only thing that decides both.
+            actions.RemoveFromHierarchy();
+            right.Add(actions);
         }
 
         /// <summary>

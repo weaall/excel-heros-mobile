@@ -944,10 +944,10 @@ namespace ExcelHeroes.UI
             var statsBlock = UiKit.Div("block", body);
             UiKit.Text("기본 능력치", "block__title", statsBlock);
             var statGrid = UiKit.Div("statgrid", statsBlock);
-            StatCell(statGrid, "공격력", StatMath.Atk(owned).ToString("N0"));
-            StatCell(statGrid, "체력", StatMath.Hp(owned).ToString("N0"));
-            StatCell(statGrid, "전투력", StatMath.Power(owned).ToString("N0"));
-            StatCell(statGrid, "레벨", $"{owned.level} / {StatMath.LevelCap(owned)}");
+            UiKit.StatCell("공격력", StatMath.Atk(owned).ToString("N0"), statGrid);
+            UiKit.StatCell("체력", StatMath.Hp(owned).ToString("N0"), statGrid);
+            UiKit.StatCell("전투력", StatMath.Power(owned).ToString("N0"), statGrid);
+            UiKit.StatCell("레벨", $"{owned.level} / {StatMath.LevelCap(owned)}", statGrid);
 
             // ---- the categorical facts, as chips -----------------------------------------
             // 등급, 역할 and 부문 are back. They were dropped when this was a list because nine
@@ -990,13 +990,6 @@ namespace ExcelHeroes.UI
                 UiKit.Text(worn == null ? "비어 있음" : EquipService.Label(worn), "kittile__name", tile);
                 UiKit.Text(worn == null ? "" : $"+{EquipService.Pct(worn) * 100f:0}%", "kittile__val", tile);
             }
-        }
-
-        static void StatCell(VisualElement parent, string key, string value)
-        {
-            var cell = UiKit.Div("statcell", parent);
-            UiKit.Text(key, "statcell__key", cell);
-            UiKit.Text(value, "statcell__val", cell);
         }
 
         void Tab(VisualElement parent, string id, string label, string heroId, System.Action onClose)

@@ -503,6 +503,26 @@ further down the file rather than more recently edited.** Adding a rule near whe
 reading, above the one that already exists, is the natural mistake and it fails silently. Prefer
 editing the existing rule.
 
+### What gives way when a column is short
+
+편성's right column has 788px and wanted about 920. Fixing that took four passes, and each fix
+moved the pressure somewhere else rather than removing it:
+
+1. Four buttons stacked ran **233px below the screen**. The audit caught it.
+2. Making the panels `flex-shrink: 1` kept the buttons on screen — and 힐러 vanished off the
+   bottom of 편성 구성 with half a synergy line. **The audit cannot see that**, because clipping
+   inside `overflow: hidden` is its one provable blind spot. That is a worse failure than the one
+   it replaced: it looks finished.
+3. 편성 구성 became a two-column grid, four facts in two lines rather than four. That is 120px
+   bought by making the content smaller instead of hiding it.
+4. 부문 시너지 still clipped, because the panel had **two navy header bars** — `합계 · …` was a
+   `section-title`, which is a 66px bar now. It is a footer with a rule above it instead. Two
+   headers in one panel was wrong before it was expensive.
+
+The rule that came out of it, and the one worth keeping: **decide what gives way first.**
+`flex-shrink: 0` on the actions and `1` on the panels says a clipped panel beats an unreachable
+button. It is still the last line of defence, but nothing should reach it now.
+
 ## What the audit still cannot see
 
 A third blind spot, found the same way as the first two — by eye, in a capture. **It cannot see

@@ -150,6 +150,18 @@ namespace ExcelHeroes.UI
             return card;
         }
 
+        /// <summary>
+        /// A stat as a half-width cell, for a two-column grid. Four facts in two lines rather than
+        /// four is the difference between a panel that fits its column and one that clips.
+        /// </summary>
+        public static VisualElement StatCell(string key, string value, VisualElement parent = null)
+        {
+            var cell = Div("statcell", parent);
+            Text(key, "statcell__key", cell);
+            Text(value, "statcell__val", cell);
+            return cell;
+        }
+
         public static VisualElement StatRow(string key, string value, VisualElement parent = null)
         {
             var row = Div("stat-row", parent);

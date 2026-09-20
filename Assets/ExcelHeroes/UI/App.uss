@@ -1104,6 +1104,7 @@
 
 .party-slots {
     flex-direction: row;
+    justify-content: center;
     flex-grow: 1;
     min-height: 0;
     align-items: stretch;
@@ -3612,16 +3613,26 @@
    The line-up on the left at a size where a face reads, what it adds up to on the right — the
    arrangement the reference's own 부대 편성 uses. */
 
-.party-cols { flex-direction: row; flex-grow: 1; min-height: 0; padding: var(--ex-space-2); }
-
-.party-cols__left {
+.party-cols {
+    flex-direction: row;
+    justify-content: center;
     flex-grow: 1;
-    flex-shrink: 1;
-    min-width: 0;
-    margin-right: var(--ex-space-2);
+    min-height: 0;
+    padding-left: 60px;
+    padding-right: 60px;
+    padding-top: var(--ex-space-2);
+    padding-bottom: var(--ex-space-2);
 }
 
-.party-cols__right { width: 28%; flex-shrink: 0; }
+/* The layout spec's split: 1500 for the line-up, 700 for everything it adds up to. Together
+   with the 60px gutters that is 2320 of the 2400, leaving 80 for the gap between them. */
+.party-cols__left {
+    width: 1500px;
+    flex-shrink: 0;
+    margin-right: var(--ex-space-5);
+}
+
+.party-cols__right { width: 700px; flex-shrink: 0; }
 
 /* Four buttons no longer fit on one line, and a right-aligned row that does not wrap spills off
    the LEFT of the screen — which is how 자동 편성 ended up cut in half. Wrapping drops the overflow
@@ -3631,31 +3642,46 @@
    These were a ROW under the line-up, and four of them did not fit on one line: the row wrapped
    and the last button hung below the others with nothing beside it. A column has no line to run
    out of, and the widest label stops being a layout problem. */
+/* The actions, at the foot of the right column. They were a third column briefly, which does
+   not fit: 1500 + 700 + 300 is 2500 in a 2280 working width.
+
+   TWO BY TWO, not a stack. Four buttons at 104px each is 416 of a 788px column that also has to
+   hold the power readout and two panels, and the audit measured the last one 233px below the
+   screen. Two rows of two is 184.
+
+   flex-shrink: 0 here and 1 on the panels above is the important half: whatever is short, the
+   panels give it up and the buttons stay on screen. A panel that loses its last row is a panel
+   you scroll — a button that leaves the screen is a feature you cannot reach. */
 .party-rail {
-    width: 300px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
     flex-shrink: 0;
-    margin-left: var(--ex-space-2);
+    margin-top: var(--ex-space-1);
 }
 
 /* nowrap, not normal. The plate is a parallelogram: a second line has nowhere to go but out
    through the slant at both ends, which is what a wrapped "대기 인원에서 채우기" did. The labels
    are short enough to fit on one line now, and the sentence they lost moved to the status bar. */
 .party-rail .btn {
-    height: 104px;
+    width: 48%;
+    height: 88px;
     margin-bottom: var(--ex-space-1);
-    padding-left: var(--ex-space-3);
-    padding-right: var(--ex-space-3);
-    font-size: var(--ex-text-sm);
+    padding-left: var(--ex-space-2);
+    padding-right: var(--ex-space-2);
+    font-size: var(--ex-text-xs);
     white-space: nowrap;
 }
 
 /* A line-up slot: the portrait, then a plate UNDER it rather than over it. UiKit.Card's plate is
    an overlay, which is right for a grid of fourteen and wrong for five figures at full size —
    the reference captions each one and leaves the picture uncovered. */
+/* 280 wide, as the spec asks: five of them plus gaps inside the 1500px column. */
 .pslot {
-    flex-grow: 1;
-    flex-basis: 0;
-    margin: 6px;
+    width: 280px;
+    flex-shrink: 0;
+    margin-left: 10px;
+    margin-right: 10px;
     background-color: var(--ex-surface-raised);
     border-width: 3px;
     border-radius: var(--ex-rad-md);
@@ -3736,9 +3762,19 @@
 
 /* Inside the 편성 column everything steps down a size, so the composition's last row is on the
    screen rather than a pixel past the bottom of it. */
-.party-cols__right .panel { padding: var(--ex-space-2); margin-bottom: var(--ex-space-2); }
+/* flex-shrink stays, as the last line of defence — if a synergy list ever grows past what the
+   column holds, a clipped panel is still better than a button off the screen. It should not be
+   reached now that 편성 구성 is two lines instead of four. */
+.party-cols__right .panel {
+    flex-shrink: 1;
+    overflow: hidden;
+    padding: var(--ex-space-2);
+    margin-bottom: var(--ex-space-2);
+}
 .party-cols__right .section-title { font-size: var(--ex-text-sm); margin-bottom: var(--ex-space-1); }
-.party-cols__right .stat-row { height: 68px; }
+/* 60, not 56. At 56 the row's content box is 41px and Korean at this size measures 43 — the
+   audit named all eight labels. Two pixels, and every one of them was clipping its own glyphs. */
+.party-cols__right .stat-row { height: 60px; flex-shrink: 0; }
 .party-cols__right .synergy-line { font-size: var(--ex-text-xs); }
 
 /* The text column has to be allowed to be narrow, or a long quest name pushes the 수령 button
@@ -4163,3 +4199,23 @@
 .brace__submit { height: 76px; padding-left: 34px; padding-right: 34px; font-size: 26px; }
 
 .brace__clock { font-size: 22px; color: rgba(255, 255, 255, 0.7); margin-top: 6px; }
+
+
+/* The composition grid sits in a narrower column than the card sheet's, so its cells carry a
+   little less padding. */
+.party-cols__right .statgrid { padding: 0; }
+
+.party-cols__right .statcell { padding: 6px var(--ex-space-1); }
+
+
+/* The synergy panel's bottom line: what the whole list adds up to. Bold and accent-coloured so
+   it reads as the conclusion, without spending a second header bar on it. */
+.synergy-total {
+    margin-top: var(--ex-space-1);
+    padding-top: 6px;
+    border-top-width: 2px;
+    border-top-color: var(--ex-btn-line);
+    font-size: var(--ex-text-sm);
+    -unity-font-style: bold;
+    color: var(--ex-accent-deep);
+}
