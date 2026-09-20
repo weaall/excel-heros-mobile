@@ -38,11 +38,16 @@ namespace ExcelHeroes.UI
             _root.Clear();
             var p = Game.Player;
 
+            // One bar, not a bar and a line under it.
+            //
+            // `section-title` is a 66px navy bar now, and the muted line under it was another 40.
+            // The band does not have 106px to spend on a caption: 820 less the pager leaves 750,
+            // and two rows of the spec's 340 cards come to 712 before the caption is counted.
+            // The count reads perfectly well inside the bar.
             var head = UiKit.Div("ep-head", _root);
-            UiKit.Text("에피소드", "section-title", head);
             var read = GameData.Episodes.Count(e => p.readEpisodes.Contains(e.id));
-            UiKit.Text($"{read} / {GameData.Episodes.Count} 읽음 · 처음 읽으면 보석 {GameData.Balance.storyGems}",
-                "muted", head);
+            UiKit.Text($"에피소드 · {read} / {GameData.Episodes.Count} 읽음 · 처음 읽으면 보석 {GameData.Balance.storyGems}",
+                "section-title", head);
 
             var pages = new Pages<EpisodeDef>(_root, "ep-grid", 6);
             pages.Fill(GameData.Episodes.OrderBy(e => e.phase).ToList(), (ep, list) =>
