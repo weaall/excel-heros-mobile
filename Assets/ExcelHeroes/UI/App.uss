@@ -166,8 +166,6 @@
 }
 
 .spacer { flex-grow: 1; }
-.hidden { display: none; }
-
 /* ---------------------------------------------------------------- app bar */
 
 /* Material Symbols, drawn as text. One variable font covers four thousand icons, scales without a
@@ -242,11 +240,14 @@
 
 /* The top bar: what you have, and nothing else. It used to be an Excel app bar with a file name
    and a row of document actions, none of which did anything. */
+/* The frame is 120 / 820 / 140 and it adds to 1080 exactly. Every screen's content lives in
+   the middle band with a 60px gutter, which is the width the card grids below are measured
+   against: 2400 - 120 = 2280 of working room. */
 .topbar {
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-    height: 116px;
+    height: 120px;
     padding-left: var(--ex-space-2);
     padding-right: var(--ex-space-2);
     background-color: var(--ex-navy);
@@ -276,22 +277,25 @@
 
 .topbar__btn:hover { background-color: var(--ex-accent-wash); }
 
-/* The currency chips sit on a navy bar now, so they are white plates rather than sunken
-   wells, and they may not push the title out of the row. */
-.chip { flex-shrink: 0; background-color: rgb(255, 255, 255); border-color: rgb(186, 214, 240); }
-
 .topbar .spacer { flex-grow: 1; flex-shrink: 1; min-width: 0; }
 
 /* A currency reads as a coin and a number, not as a spreadsheet cell called 합계. */
+/* The currency chips sit on a NAVY bar, so they are white plates rather than sunken wells, and
+   flex-shrink: 0 stops them squeezing the screen title out of the row.
+
+   This was written as a second `.chip { ... }` rule five lines ABOVE this one, which lost to
+   this one on every repaint — a duplicate selector does not merge, the later copy wins per
+   property, and "later" is measured in the file rather than in the order someone edited them. */
 .chip {
     flex-direction: row;
     align-items: center;
+    flex-shrink: 0;
     height: 74px;
     margin-left: var(--ex-space-2);
     padding-left: var(--ex-space-1);
-    background-color: var(--ex-surface-sunken);
+    background-color: rgb(255, 255, 255);
     border-width: 3px;
-    border-color: var(--ex-line);
+    border-color: rgb(186, 214, 240);
     border-radius: 37px;
 }
 
@@ -330,7 +334,7 @@
     flex-direction: row;
     align-items: center;
     flex-shrink: 0;
-    height: 158px;
+    height: 140px;
     padding-left: var(--ex-space-2);
     padding-right: var(--ex-space-2);
     background-color: var(--ex-surface-raised);
@@ -863,19 +867,32 @@
 
 /* ---------------------------------------------------------------- roster */
 
+/* The 60px gutter from the layout spec, which is what makes the working width 2280. */
 .roster-grid {
     flex-grow: 1;
     flex-direction: row;
     flex-wrap: wrap;
     align-content: flex-start;
-    padding-left: 10px;
-    padding-right: 10px;
+    justify-content: center;
+    padding-left: 60px;
+    padding-right: 60px;
 }
 
+/* 390 x 290, five across and two down inside the 2280px working width: 1950 of card and 330
+   of gap. Fixed pixels rather than percentages because PanelSettings maps this panel to a
+   2400x1080 reference, so a pixel here IS a design pixel — and because a percentage margin
+   resolves against the parent's WIDTH even when it is applied vertically, which is what pushed
+   the second row into the pager the last time this grid was measured in percent. */
+/* 390 x 280 with a 10px margin, five across and two down.
+   The height is 280 and not the spec's 290 because of what the band actually leaves. Content is
+   820: two filter rows take 120 and the pager is pinned at 70, so the grid gets 612 — and two
+   rows of 290 plus their margins come to 620. Eight pixels of the bottom row were drawn OVER the
+   pager, which LayoutAudit called a clean run because overlap is not overflow: both elements
+   were inside their containers and inside the screen, one was simply on top of the other. */
 .card {
-    width: 13.4%;
-    height: 48%;
-    margin: 0.5%;
+    width: 390px;
+    height: 280px;
+    margin: 10px;
     background-color: rgb(255, 255, 255);
     border-width: 2px;
     border-radius: var(--ex-rad-md);
@@ -1195,8 +1212,6 @@
 .fighter--boss .fighter__hpbar { width: 150px; height: 12px; border-radius: 6px; }
 .fighter--elite .fighter__body { width: 124px; height: 220px; }
 
-.fighter--dead { opacity: 0.25; }
-
 .fighter__hpbar {
     width: 64px;
     height: 8px;
@@ -1210,8 +1225,6 @@
     height: 100%;
     background-color: rgb(33, 115, 70);
 }
-
-.fighter--monster .fighter__hpfill { background-color: rgb(196, 43, 28); }
 
 .fighter__name { display: none; }
 
@@ -1650,14 +1663,6 @@
 
 /* Every sheet opens with a summary strip, the way a real one opens with a header row. */
 
-
-.xl-row {
-    flex-direction: row;
-    align-items: center;
-    min-height: 96px;
-    border-bottom-width: 1px;
-    border-bottom-color: rgb(226, 226, 226);
-}
 
 .xl-row--head {
     background-color: rgb(243, 243, 243);
@@ -2328,30 +2333,8 @@
 
 .filter-bar__label { font-size: 24px; color: rgb(107, 107, 107); margin-bottom: 6px; }
 
-.filter-row { flex-direction: row; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
-.filter-row__label { width: 76px; font-size: 24px; color: rgb(107, 107, 107); }
 
 /* Chips, not dropdowns: a select on a phone is two taps and a modal, and these lists are short. */
-.filter-chip {
-    height: 56px;
-    margin-right: 8px;
-    padding-left: 18px;
-    padding-right: 18px;
-    font-size: var(--ex-text-xs);
-    color: var(--ex-ink-muted);
-    background-color: var(--ex-surface-raised);
-    border-width: 3px;
-    border-color: var(--ex-line);
-    border-radius: 28px;
-}
-
-.filter-chip--on {
-    background-color: var(--ex-accent);
-    border-color: var(--ex-accent-deep);
-    color: rgb(255, 255, 255);
-    -unity-font-style: bold;
-}
-
 .filter-empty { padding: 60px; -unity-text-align: middle-center; font-size: 28px; }
 
 /* Ash, and the odd sheet of office paper. Two pixels each — they are weather, not decoration. */
@@ -3229,7 +3212,6 @@
 
 .qrow--done { opacity: 0.55; }
 
-.qrow__text { flex-grow: 1; flex-shrink: 1; }
 .qrow__name { font-size: 26px; -unity-font-style: bold; color: rgb(40, 42, 48); }
 .qrow__desc { font-size: 21px; color: rgb(140, 145, 155); }
 
@@ -3300,10 +3282,13 @@
     padding-right: var(--ex-space-2);
 }
 
+/* 60px, not 72. There are TWO of these rows (등급 and 역할) where the spec budgets 90 for one,
+   and the arithmetic of the content band is unforgiving: 60x2 + (290+20)x2 + 70 = 810 of the
+   820 available. At 72 the second row of cards lands 22px inside the pager. */
 .filter-row {
     flex-direction: row;
     align-items: center;
-    height: 72px;
+    height: 60px;
 }
 
 .filter-row__label {
@@ -3347,7 +3332,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    height: 96px;
+    height: 70px;
 }
 
 /* The pager carried the same fault as .btn: a white fill behind a pale hairline, on a white
@@ -3488,7 +3473,6 @@
 
 .fighter--monster .fighter__shadow { top: 174px; }
 .fighter--elite .fighter__shadow { left: 56px; right: 56px; top: 206px; height: 16px; border-radius: 8px; }
-.fighter--boss .fighter__shadow { left: 172px; right: 172px; top: 258px; height: 20px; border-radius: 10px; }
 .fighter--elite .fighter__shadow { left: 38px; right: 38px; top: 206px; }
 
 .fighter--boss .fighter__shadow {

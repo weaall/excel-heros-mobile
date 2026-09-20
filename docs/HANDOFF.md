@@ -474,6 +474,35 @@ whatever UI Toolkit does there is not the lerp it looks like. A `card__scrim` el
 theory about compositing: it is a dark rectangle on top of the picture, and it darkens. Locked art
 measures 155 against an owned card's 231 now.
 
+## The layout spec, and the stylesheet's duplicate-selector problem
+
+The frame is **120 / 820 / 140** and it adds to 1080 exactly, with a 60px gutter — so the working
+width is 2280. 인사 is a 2x5 grid of 390x280 cards with a `n / 6` pager.
+
+The design spec asked for 290-tall cards. They do not fit: two filter rows take 120 and the pager
+is pinned at 70, so the grid gets 612 and two rows of 290 plus margins come to 620. Eight pixels
+of the bottom row were drawn OVER the pager, and `LayoutAudit` called it a clean run — correctly,
+because **overlap is not overflow**. Both elements were inside their containers and inside the
+screen; one was simply on top of the other. That is the third blind spot, and it has now been hit
+twice in one day (the close button over the 스킨 tab was the first).
+
+### Duplicate selectors, and one that had been silently winning
+
+A sweep of App.uss found **16 duplicated selectors across 624 rules**. Most are harmless — a
+later rule adding properties an earlier one does not set — but they are not all harmless:
+
+- **`.chip` was the expensive one.** The rule making the currency chips white on the navy app bar
+  sat FIVE LINES ABOVE the original, so the original won every repaint and that change had never
+  once applied. It looked plausible because `--ex-surface-sunken` is a pale blue.
+- Six more earlier copies had every property redefined later and were pure dead weight:
+  `.hidden`, `.xl-row`, `.qrow__text`, `.fighter--dead`, `.fighter--monster .fighter__hpfill`,
+  `.fighter--boss .fighter__shadow`.
+
+**USS does not merge duplicate selectors; the later copy wins per property, and "later" means
+further down the file rather than more recently edited.** Adding a rule near where you are
+reading, above the one that already exists, is the natural mistake and it fails silently. Prefer
+editing the existing rule.
+
 ## What the audit still cannot see
 
 A third blind spot, found the same way as the first two — by eye, in a capture. **It cannot see

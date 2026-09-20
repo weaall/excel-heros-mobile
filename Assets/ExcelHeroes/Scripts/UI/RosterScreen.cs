@@ -77,8 +77,15 @@ namespace ExcelHeroes.UI
             return _root;
         }
 
-        /// <summary>Seven across, two down: what fits at a size a thumb can hit without a scroll.</summary>
-        const int PageSize = 14;
+        /// <summary>
+        /// Five across, two down. It was seven across at 13.4% each, which fit more faces on a
+        /// page at a size where the name under them had to be abbreviated. Ten larger cards is
+        /// the design spec's call and it is the right one for Korean job titles — "VLOOKUP
+        /// 분석가" needs room that a seventh column takes away.
+        ///
+        /// 55 heroes over 10 a page is six pages, where it used to be four.
+        /// </summary>
+        const int PageSize = 10;
 
         string _grade = "", _role = "", _owned = "";
         int _page;
