@@ -39,9 +39,19 @@ namespace ExcelHeroes.UI
         {
             var b = new Button(() => { AudioService.Play("tap", 0.5f); onClick?.Invoke(); }) { text = text };
             AddClasses(b, classes);
+            // The plate is drawn, not styled: the reference's buttons are parallelograms and USS
+            // has no skew. See SkewPlate for why this is a mesh rather than a 9-sliced picture.
+            var kind = SkewPlate.KindFor(classes);
+            if (kind.HasValue) SkewPlate.Apply(b, kind.Value);
             parent?.Add(b);
             return b;
         }
+
+        /// <summary>
+        /// Changes a button's label. A plated button keeps its text in a child, so `b.text = x`
+        /// sets a string nothing draws — this is the one way that works for both kinds.
+        /// </summary>
+        public static void SetBtnText(Button b, string text) => SkewPlate.SetText(b, text);
 
         public static ScrollView Scroll(string classes = null, VisualElement parent = null)
         {

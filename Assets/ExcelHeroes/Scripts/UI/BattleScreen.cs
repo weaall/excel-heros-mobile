@@ -234,7 +234,7 @@ namespace ExcelHeroes.UI
             if (_overtimeButton == null) return;
             var can = OvertimeService.CanStart(Game.Player);
             var blocked = OvertimeService.Blocked(Game.Player);
-            _overtimeButton.text = can ? "야근" : blocked;
+            UiKit.SetBtnText(_overtimeButton, can ? "야근" : blocked);
             _overtimeButton.SetEnabled(can);
             _overtimeButton.EnableInClassList("auto-toggle--on", OvertimeService.Active != null);
         }

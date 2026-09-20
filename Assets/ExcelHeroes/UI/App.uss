@@ -25,15 +25,15 @@
     flex-grow: 1;
     background-color: var(--ex-surface);
 
-    --ex-surface: rgb(238, 244, 250);
+    --ex-surface: rgb(199, 228, 247);
     --ex-surface-raised: rgb(255, 255, 255);
-    --ex-surface-sunken: rgb(224, 234, 244);
+    --ex-surface-sunken: rgb(178, 212, 238);
 
-    --ex-ink: rgb(34, 44, 62);
-    --ex-ink-muted: rgb(126, 140, 162);
+    --ex-ink: rgb(26, 46, 78);
+    --ex-ink-muted: rgb(110, 132, 162);
 
-    --ex-line: rgb(208, 220, 234);
-    --ex-line-strong: rgb(176, 192, 212);
+    --ex-line: rgb(168, 202, 230);
+    --ex-line-strong: rgb(130, 172, 208);
 
     --ex-navy: rgb(30, 46, 74);
     --ex-navy-deep: rgb(20, 32, 54);
@@ -187,9 +187,10 @@
 .navback__btn {
     width: 84px;
     height: 84px;
-    background-color: var(--ex-navy);
+    flex-shrink: 0;
+    background-color: var(--ex-accent);
     border-width: 3px;
-    border-color: var(--ex-navy-line);
+    border-color: rgb(146, 208, 248);
     border-radius: 42px;
     color: rgb(255, 255, 255);
     font-size: 42px;
@@ -197,10 +198,14 @@
 
 .navback__btn:hover { background-color: var(--ex-navy-line); }
 
+/* flex-shrink: 0, because the title is the one thing on this bar that must not be squeezed.
+   The audit caught "사내 메신저" given 80px of the 216 it needs — the currency chips grew and
+   the only flexible thing in the row gave way. */
 .navback__title {
+    flex-shrink: 0;
     font-size: var(--ex-text-base);
     -unity-font-style: bold;
-    color: var(--ex-ink);
+    color: rgb(255, 255, 255);
     margin-left: var(--ex-space-2);
 }
 
@@ -244,9 +249,9 @@
     height: 116px;
     padding-left: var(--ex-space-2);
     padding-right: var(--ex-space-2);
-    background-color: var(--ex-surface-raised);
-    border-bottom-width: 3px;
-    border-bottom-color: var(--ex-line);
+    background-color: var(--ex-navy);
+    border-bottom-width: 4px;
+    border-bottom-color: var(--ex-accent);
 }
 
 .topbar__title {
@@ -255,19 +260,27 @@
     color: rgba(255, 255, 255, 0.72);
 }
 
+/* The sheet's small buttons are white discs with a navy glyph, on the bar rather than in it. */
 .topbar__btn {
     width: 82px;
     height: 82px;
+    flex-shrink: 0;
     margin-left: var(--ex-space-1);
-    background-color: var(--ex-surface-sunken);
+    background-color: rgb(255, 255, 255);
     border-width: 3px;
-    border-color: var(--ex-line);
-    border-radius: var(--ex-rad-sm);
+    border-color: rgb(186, 214, 240);
+    border-radius: 41px;
     color: var(--ex-navy);
     font-size: 38px;
 }
 
 .topbar__btn:hover { background-color: var(--ex-accent-wash); }
+
+/* The currency chips sit on a navy bar now, so they are white plates rather than sunken
+   wells, and they may not push the title out of the row. */
+.chip { flex-shrink: 0; background-color: rgb(255, 255, 255); border-color: rgb(186, 214, 240); }
+
+.topbar .spacer { flex-grow: 1; flex-shrink: 1; min-width: 0; }
 
 /* A currency reads as a coin and a number, not as a spreadsheet cell called 합계. */
 .chip {
@@ -377,17 +390,12 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_gold.png");
-    -unity-slice-left: 88;
-    -unity-slice-right: 88;
-    -unity-slice-top: 0;
-    -unity-slice-bottom: 0;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     border-radius: 0;
 }
 
-.navcta:hover { -unity-background-image-tint-color: rgb(255, 246, 216); }
+/* The gold plate is painted by SkewPlate, like every other button. */
 
 .navcta__icon { font-size: 52px; height: 74px; flex-shrink: 0; color: rgb(72, 44, 0); margin-right: var(--ex-space-1); }
 
@@ -460,23 +468,55 @@
 
 /* The panel is the card. Same borders, same radius, same padding as .ex-card and .qs-block —
    before this there were four different panel treatments depending on which screen you were on. */
+/* A panel is a WHITE card on the blue page, which is how every panel in the sheet reads. It
+   was --ex-surface — the page colour — behind a hairline, so a panel and its background were the
+   same thing with a line drawn between them. */
 .panel {
     flex-shrink: 0;
-    background-color: var(--ex-surface);
-    border-width: 2px;
-    border-bottom-width: 6px;
-    border-color: var(--ex-line);
-    border-bottom-color: var(--ex-line-strong);
+    background-color: var(--ex-surface-raised);
+    border-width: 3px;
+    border-color: rgb(186, 214, 240);
     border-radius: var(--ex-rad-md);
     padding: var(--ex-space-4);
     margin-bottom: var(--ex-space-3);
+    overflow: hidden;
 }
 
+/* A block's caption is a BAR, as it is in the asset sheet: navy, a gold stripe down the left,
+   and the right end cut at an angle. It was 38px of grey text with nothing around it, which is
+   a heading in a document rather than the header of a panel — the sheet's captions are what let
+   the eye find where one block ends and the next begins.
+
+   Left-aligned, because the caption starts where the content starts. The padding clears the gold
+   stripe on one side and the slant on the other. */
 .section-title {
-    font-size: 38px;
+    height: 66px;
+    font-size: 34px;
     -unity-font-style: bold;
-    color: rgb(107, 107, 107);
-    margin-bottom: 16px;
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-left;
+    padding-left: 28px;
+    padding-right: 48px;
+    margin-bottom: var(--ex-space-2);
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/panel_head.png");
+    -unity-slice-left: 30;
+    -unity-slice-right: 38;
+    -unity-slice-top: 0;
+    -unity-slice-bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* Inside a panel the bar spans the full width, so it is pulled out through the panel's padding.
+   A caption inset from three edges reads as a label sitting on the panel rather than as its
+   header. */
+/* -32px written out, not calc(var(--ex-space-4) * -1). UI Toolkit's parser accepted that form
+   and produced a property with NO values, and the style updater then threw
+   ArgumentOutOfRangeException while walking the tree — which killed the whole screen, not the
+   rule. A blank sheet with the previous screen's title still in the app bar was the symptom. */
+.panel > .section-title {
+    margin-left: -32px;
+    margin-right: -32px;
+    margin-top: -32px;
 }
 
 .muted { color: rgb(128, 128, 128); white-space: normal; }
@@ -488,74 +528,56 @@
 /* The bevel is 5px, not 9px. A thick lip reads as a toy; the reference's buttons are nearly
    flat, with just enough of a darker bottom edge to sit above the panel. The radius drops from
    24px to 16px for the same reason - those are rounded rectangles, not pills. */
-/* ===== Buttons, from the reference asset sheet ==============================================
-   These are PICTURES, not borders. The sheet's buttons are parallelograms with a white rim, a
-   gold notch in one corner and a diagonal highlight, and USS has no skew — `transform` offers
-   translate, rotate and scale and nothing else — so the shape cannot be a property.
+/* ===== Buttons =============================================================================
+   The plate — the slanted parallelogram with its rim, gold notch and highlight — is PAINTED, by
+   SkewPlate, from the element's own size. USS supplies only what text needs.
 
-   tools/gen-ui-skin.py draws them, and they are sliced horizontally: an 88px cap at each end
-   holding the slant and every decoration, and a middle that stretches. Anything drawn outside a
-   cap stretches with the middle, which is how the first cut came out with a gold bar running the
-   whole top edge of every wide button.
+   It was a set of 9-sliced PNGs first. Two faults, both structural: everything decorative has to
+   fit inside the fixed end caps or it stretches with the middle (a gold bar down the whole top
+   edge, the first time), and a 9-slice stretches vertically too, so the same plate drawn at 98px
+   and at 136px has two different slant angles. A mesh computes the slant from the height it is
+   actually given.
 
-   The colour vocabulary is the sheet's: cyan is the primary action, navy is the strong
-   secondary, white is everything else, grey is off, gold is the one call to action standing
-   outside the blue set.
-
-   Padding is 44px rather than 32: the slant eats 26px of each end, so a label needs more room
-   there than it would in a rectangle. */
+   Padding is 44px rather than 32: the slant eats about a fifth of the height off each end, and a
+   label needs to clear it. */
 .btn {
     height: var(--ex-tap);
     padding-left: 44px;
     padding-right: 44px;
-    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_light.png");
-    -unity-slice-left: 88;
-    -unity-slice-right: 88;
-    -unity-slice-top: 0;
-    -unity-slice-bottom: 0;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     color: var(--ex-ink);
     font-size: var(--ex-text-base);
     -unity-font-style: bold;
     -unity-text-align: middle-center;
-    transition-duration: 0.2s;
+    align-items: center;
+    justify-content: center;
 }
 
-.btn:hover { -unity-background-image-tint-color: rgb(226, 240, 252); }
-
-/* Off, not absent. A disabled button in the sheet keeps its shape and its rim — it is a thing you
-   cannot press yet, not a hole in the layout. It loses the gold and the highlight, nothing else. */
-.btn:disabled {
-    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_off.png");
-    color: var(--ex-btn-off-ink);
+/* The label of a plated button. It is a child, not the button's own text, because the plate is
+   painted after the element's content and would otherwise cover it. Everything it needs —
+   size, colour, weight, alignment, white-space — is inherited. */
+.plate__label {
+    flex-shrink: 1;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(14, 24, 42, 0.55);
 }
 
-.btn--primary {
-    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_primary.png");
-    color: rgb(12, 48, 78);
-}
+/* Only the text colour varies here — which plate is painted comes from the same class name, read
+   by SkewPlate.KindFor. Two places reading one class is the price of a painted background; the
+   alternative is five custom USS properties resolved per element per repaint. */
+.btn:disabled { color: var(--ex-btn-off-ink); }
 
-.btn--primary:hover { -unity-background-image-tint-color: rgb(228, 246, 255); }
+.btn--primary { color: rgb(12, 48, 78); }
 
-.btn--primary:disabled {
-    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_off.png");
-    color: var(--ex-btn-off-ink);
-}
+.btn--primary:disabled { color: var(--ex-btn-off-ink); }
 
-/* The sheet's CANCEL: navy, white text. For 닫기 · 해제 · 대표 사원 — deliberate, but not the
-   main action on the panel. */
-.btn--ghost {
-    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_navy.png");
-    color: rgb(255, 255, 255);
-}
+.btn--ghost { color: rgb(255, 255, 255); }
 
-.btn--ghost:hover { -unity-background-image-tint-color: rgb(208, 222, 242); }
-
-.btn--ghost:disabled {
-    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_off.png");
-    color: var(--ex-btn-off-ink);
-}
+.btn--ghost:disabled { color: var(--ex-btn-off-ink); }
 
 /* ---------------------------------------------------------------- home */
 
@@ -3423,7 +3445,17 @@
 /* Inside an episode card the type steps down a size: the card is a third of the frame wide. */
 .ep .section-title { font-size: 30px; margin-bottom: 2px; }
 .ep .muted { font-size: 24px; }
-.ep .btn { flex-shrink: 0; height: 74px; margin-top: 4px; }
+/* 74px of button with 44px of vertical padding left 36px for a label that needs 51. The
+   padding on .btn is there to clear the SLANT, which is horizontal — vertically it buys
+   nothing, so it is dropped here rather than growing a card that already fits its row. */
+.ep .btn {
+    flex-shrink: 0;
+    height: 74px;
+    margin-top: 4px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: var(--ex-text-xs);
+}
 
 /* The screen's own heading is a line, not a panel taking a fifth of the frame. */
 .ep-head {
@@ -3986,12 +4018,19 @@
 }
 
 .block__title {
-    font-size: 24px;
+    height: 48px;
+    font-size: 25px;
     -unity-font-style: bold;
-    -unity-text-align: middle-center;
-    color: var(--ex-accent-ink);
-    background-color: var(--ex-navy);
-    padding: 4px 0;
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+    padding-left: 24px;
+    padding-right: 40px;
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/panel_head.png");
+    -unity-slice-left: 30;
+    -unity-slice-right: 38;
+    -unity-slice-top: 0;
+    -unity-slice-bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
 }
 
 /* Two columns, so four stats are two lines. That is what buys the room for the skill cards and

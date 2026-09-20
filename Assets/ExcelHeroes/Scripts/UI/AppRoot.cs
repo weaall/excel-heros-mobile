@@ -123,6 +123,11 @@ namespace ExcelHeroes.UI
 
             // Back and home both mean 메인: the main screen is the one every other screen is
             // entered from, the way the reference's lobby is.
+            // 모집 is the one button in the shell built by UXML rather than UiKit.Btn, so its
+            // plate has to be asked for here.
+            var cta = root.Q<Button>("tabGacha");
+            if (cta != null) SkewPlate.Apply(cta, SkewPlate.Kind.Gold);
+
             var settings = root.Q<Button>("overflowBtn");
             if (settings != null) settings.clicked += OpenAdMenu;
 

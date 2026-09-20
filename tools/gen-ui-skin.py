@@ -24,6 +24,11 @@ it, so the diagonals live only in the caps.
     python tools/gen-ui-skin.py
 
 Output: Assets/ExcelHeroes/Art/UI/*.png, and the slice widths printed for App.uss.
+
+NOTE: the BUTTON plates used to be baked here too and are not any more — SkewPlate paints them
+from a mesh, which has no cap budget and keeps one slant angle at every size. What is left is the
+panel caption bar, whose slant is at one end only and whose height never varies, so a 9-slice is
+the simpler answer for it.
 """
 import os
 from PIL import Image, ImageDraw, ImageFilter
@@ -124,24 +129,50 @@ def button(name, top, bottom, rim=(255, 255, 255, 255), gold_corner='tl', sheen=
     return path
 
 
+def panel_head(name, top, bottom, accent=GOLD, slant=20, h=56, cap_l=30):
+    """
+    The sheet's panel caption: a navy bar whose RIGHT end is cut at an angle, with a bright stripe
+    down the left. Left-aligned, unlike the plain centred band this replaces — the sheet's captions
+    start where the content starts, so the eye finds the top-left corner of a block instead of its
+    middle.
+
+    Sliced with different caps at each end: the left holds the stripe, the right holds the slant.
+    """
+    cap_r = slant + 18
+    w = cap_l + cap_r + 2
+    big = (w * SS, h * SS)
+    img = Image.new('RGBA', big, (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+
+    shape = [(0, 0), (w, 0), (w - slant, h), (0, h)]
+    d.polygon([(x * SS, y * SS) for x, y in shape], fill=(255, 255, 255, 255))
+
+    fill = vertical_gradient(big, top, bottom)
+    mask = Image.new('L', big, 0)
+    ImageDraw.Draw(mask).polygon(
+        [(x * SS, y * SS) for x, y in [(2, 2), (w - 2, 2), (w - slant - 2, h - 2), (2, h - 2)]], 255)
+    img.paste(fill, (0, 0), mask)
+
+    # The stripe, entirely inside the left cap so it cannot stretch.
+    if accent:
+        assert 12 <= cap_l - 4, 'accent would cross the slice boundary'
+        ImageDraw.Draw(img).rectangle([2 * SS, 2 * SS, 12 * SS, (h - 2) * SS], fill=accent)
+
+    img = img.resize((w, h), Image.LANCZOS)
+    path = os.path.join(OUT, name + '.png')
+    img.save(path)
+    print('   slice-left %d  slice-right %d   (%s, %dx%d)' % (cap_l, cap_r, name, w, h))
+    return path
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
 
     made = [
-        # primary — the sheet's OK: bright cyan, gold notch top-left
-        button('btn_primary', (126, 224, 250, 255), (58, 176, 232, 255), gold_corner='tl'),
-        # secondary — the sheet's CANCEL: deep navy, gold notch top-left
-        button('btn_navy', (52, 80, 128, 255), (28, 46, 82, 255), gold_corner='tl'),
-        # tertiary — the sheet's REWARD INFO: white with a cool tint, gold notch bottom-right
-        button('btn_light', (255, 255, 255, 255), (222, 235, 248, 255),
-               rim=(150, 180, 214, 255), gold_corner='br', sheen=0.18),
-        # disabled — no gold, no sheen: off rather than absent
-        button('btn_off', (222, 227, 234, 255), (198, 206, 218, 255),
-               rim=(176, 186, 200, 255), gold_corner=None, sheen=0.0),
-        # gold — the 모집 call to action, which is the one button that is not part of the blue set
-        button('btn_gold', (255, 214, 96, 255), (240, 170, 24, 255),
-               rim=(255, 246, 214, 255), gold_corner=None, sheen=0.34),
+
+        panel_head('panel_head', (46, 72, 116, 255), (26, 42, 74, 255)),
     ]
+
     for p in made:
         print('  ', os.path.relpath(p, os.path.join(OUT, '..', '..', '..', '..')))
     print()
