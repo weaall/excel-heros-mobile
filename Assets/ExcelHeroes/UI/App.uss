@@ -377,15 +377,17 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    background-color: var(--ex-gold);
-    border-width: 3px;
-    border-color: rgb(250, 200, 92);
-    border-bottom-width: 5px;
-    border-bottom-color: rgb(196, 136, 18);
-    border-radius: var(--ex-rad-md);
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_gold.png");
+    -unity-slice-left: 88;
+    -unity-slice-right: 88;
+    -unity-slice-top: 0;
+    -unity-slice-bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-radius: 0;
 }
 
-.navcta:hover { background-color: rgb(255, 199, 74); }
+.navcta:hover { -unity-background-image-tint-color: rgb(255, 246, 216); }
 
 .navcta__icon { font-size: 52px; height: 74px; flex-shrink: 0; color: rgb(72, 44, 0); margin-right: var(--ex-space-1); }
 
@@ -486,16 +488,33 @@
 /* The bevel is 5px, not 9px. A thick lip reads as a toy; the reference's buttons are nearly
    flat, with just enough of a darker bottom edge to sit above the panel. The radius drops from
    24px to 16px for the same reason - those are rounded rectangles, not pills. */
+/* ===== Buttons, from the reference asset sheet ==============================================
+   These are PICTURES, not borders. The sheet's buttons are parallelograms with a white rim, a
+   gold notch in one corner and a diagonal highlight, and USS has no skew — `transform` offers
+   translate, rotate and scale and nothing else — so the shape cannot be a property.
+
+   tools/gen-ui-skin.py draws them, and they are sliced horizontally: an 88px cap at each end
+   holding the slant and every decoration, and a middle that stretches. Anything drawn outside a
+   cap stretches with the middle, which is how the first cut came out with a gold bar running the
+   whole top edge of every wide button.
+
+   The colour vocabulary is the sheet's: cyan is the primary action, navy is the strong
+   secondary, white is everything else, grey is off, gold is the one call to action standing
+   outside the blue set.
+
+   Padding is 44px rather than 32: the slant eats 26px of each end, so a label needs more room
+   there than it would in a rectangle. */
 .btn {
     height: var(--ex-tap);
-    padding-left: var(--ex-space-4);
-    padding-right: var(--ex-space-4);
-    background-color: var(--ex-btn);
-    border-radius: var(--ex-rad-md);
-    border-width: 3px;
-    border-bottom-width: 5px;
-    border-color: var(--ex-btn-line);
-    border-bottom-color: var(--ex-btn-edge);
+    padding-left: 44px;
+    padding-right: 44px;
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_light.png");
+    -unity-slice-left: 88;
+    -unity-slice-right: 88;
+    -unity-slice-top: 0;
+    -unity-slice-bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
     color: var(--ex-ink);
     font-size: var(--ex-text-base);
     -unity-font-style: bold;
@@ -503,45 +522,40 @@
     transition-duration: 0.2s;
 }
 
-.btn:hover { background-color: var(--ex-btn-down); }
+.btn:hover { -unity-background-image-tint-color: rgb(226, 240, 252); }
 
-/* Off, not absent. A disabled button in the reference keeps its outline and its shape - it is a
-   thing you cannot press yet, not a hole in the layout. */
+/* Off, not absent. A disabled button in the sheet keeps its shape and its rim — it is a thing you
+   cannot press yet, not a hole in the layout. It loses the gold and the highlight, nothing else. */
 .btn:disabled {
-    background-color: var(--ex-btn-off);
-    border-color: var(--ex-btn-off-line);
-    border-bottom-color: var(--ex-btn-off-line);
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_off.png");
     color: var(--ex-btn-off-ink);
 }
 
-/* Primary is the Excel green, not the old mustard. The disguise is the premise, so the thing the
-   player is meant to press and the chrome it hides behind are deliberately the same colour. */
 .btn--primary {
-    background-color: var(--ex-accent);
-    border-color: rgb(126, 190, 240);
-    border-bottom-color: var(--ex-accent-deep);
-    color: var(--ex-accent-ink);
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_primary.png");
+    color: rgb(12, 48, 78);
 }
 
-.btn--primary:hover { background-color: var(--ex-accent-deep); }
+.btn--primary:hover { -unity-background-image-tint-color: rgb(228, 246, 255); }
 
 .btn--primary:disabled {
-    background-color: var(--ex-btn-off);
-    border-color: var(--ex-btn-off-line);
-    border-bottom-color: var(--ex-btn-off-line);
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_off.png");
     color: var(--ex-btn-off-ink);
 }
 
-/* The quiet one - 닫기, 해제, 대표 사원. White fill, but the SAME strong outline as every other
-   button, so "quiet" means lower contrast rather than "barely there". */
+/* The sheet's CANCEL: navy, white text. For 닫기 · 해제 · 대표 사원 — deliberate, but not the
+   main action on the panel. */
 .btn--ghost {
-    background-color: var(--ex-surface-raised);
-    border-color: var(--ex-btn-line);
-    border-bottom-color: var(--ex-btn-edge);
-    color: var(--ex-ink);
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_navy.png");
+    color: rgb(255, 255, 255);
 }
 
-.btn--ghost:hover { background-color: var(--ex-btn); }
+.btn--ghost:hover { -unity-background-image-tint-color: rgb(208, 222, 242); }
+
+.btn--ghost:disabled {
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/btn_off.png");
+    color: var(--ex-btn-off-ink);
+}
 
 /* ---------------------------------------------------------------- home */
 
@@ -3591,21 +3605,114 @@
     margin-right: var(--ex-space-2);
 }
 
-.party-cols__right { width: 34%; flex-shrink: 0; }
+.party-cols__right { width: 28%; flex-shrink: 0; }
 
 /* Four buttons no longer fit on one line, and a right-aligned row that does not wrap spills off
    the LEFT of the screen — which is how 자동 편성 ended up cut in half. Wrapping drops the overflow
    onto a second line instead. Labels are not shortened to force one line: 골드 소진까지 일괄 강화
    spends every coin the player has and the label is the only warning it gets. */
-.party-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+/* The action rail, on the far right and stacked, where the reference keeps 편성 · 대표 · 지원.
+   These were a ROW under the line-up, and four of them did not fit on one line: the row wrapped
+   and the last button hung below the others with nothing beside it. A column has no line to run
+   out of, and the widest label stops being a layout problem. */
+.party-rail {
+    width: 300px;
     flex-shrink: 0;
-    margin-top: var(--ex-space-1);
+    margin-left: var(--ex-space-2);
 }
 
-.party-actions .btn { margin-left: var(--ex-space-2); margin-top: 6px; }
+/* nowrap, not normal. The plate is a parallelogram: a second line has nowhere to go but out
+   through the slant at both ends, which is what a wrapped "대기 인원에서 채우기" did. The labels
+   are short enough to fit on one line now, and the sentence they lost moved to the status bar. */
+.party-rail .btn {
+    height: 104px;
+    margin-bottom: var(--ex-space-1);
+    padding-left: var(--ex-space-3);
+    padding-right: var(--ex-space-3);
+    font-size: var(--ex-text-sm);
+    white-space: nowrap;
+}
+
+/* A line-up slot: the portrait, then a plate UNDER it rather than over it. UiKit.Card's plate is
+   an overlay, which is right for a grid of fourteen and wrong for five figures at full size —
+   the reference captions each one and leaves the picture uncovered. */
+.pslot {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin: 6px;
+    background-color: var(--ex-surface-raised);
+    border-width: 3px;
+    border-radius: var(--ex-rad-md);
+    overflow: hidden;
+}
+
+.pslot__art {
+    flex-grow: 1;
+    min-height: 0;
+    background-color: rgb(238, 238, 238);
+    -unity-background-scale-mode: scale-and-crop;
+    background-position-y: top 8%;
+}
+
+.pslot__grade {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    font-size: 24px;
+    -unity-text-align: middle-center;
+}
+
+.pslot__plate {
+    flex-shrink: 0;
+    padding: 6px var(--ex-space-1) var(--ex-space-1) var(--ex-space-1);
+    background-color: var(--ex-navy);
+}
+
+.pslot__tags { flex-direction: row; align-items: center; }
+
+.pslot__role {
+    padding: 1px 12px;
+    margin-right: 6px;
+    border-radius: 10px;
+    font-size: 19px;
+    -unity-font-style: bold;
+    color: var(--ex-navy-deep);
+    background-color: rgb(196, 214, 236);
+}
+
+.pslot__dept {
+    font-size: 19px;
+    color: rgba(255, 255, 255, 0.66);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pslot__line { flex-direction: row; align-items: center; margin-top: 3px; }
+
+.pslot__lv {
+    font-size: 21px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-right: var(--ex-space-1);
+}
+
+.pslot__name {
+    font-size: var(--ex-text-xs);
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pslot__stars { font-size: 20px; }
 
 .slot__hint { font-size: var(--ex-text-xs); color: var(--ex-ink-muted); margin-top: 6px; }
 

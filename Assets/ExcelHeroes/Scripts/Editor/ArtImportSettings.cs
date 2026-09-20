@@ -22,7 +22,18 @@ namespace ExcelHeroes.EditorTools
         const string SpriteRoot = ArtRoot + "Sprites/";
         const string SheetRoot = ArtRoot + "Sheets/";
         const string MonsterRoot = ArtRoot + "Monsters/";
-        public const string Stamp = "excel-heroes-art-v6";
+
+        /// <summary>
+        /// The UI skin from tools/gen-ui-skin.py. It lives OUTSIDE Resources/Art because nothing
+        /// loads it by name at runtime — App.uss references it by path — and it needs the opposite
+        /// of what the illustrations need: an alpha channel (the slanted shape is transparent at
+        /// the corners), bilinear filtering, and no compression, because DXT on a 178x120 sprite
+        /// saves nothing and puts blocking artefacts along a diagonal edge, which is the one place
+        /// they are impossible not to see.
+        /// </summary>
+        const string UiRoot = "Assets/ExcelHeroes/Art/UI/";
+
+        public const string Stamp = "excel-heroes-art-v7";
 
         /// <summary>
         /// Unity re-imports the assets a postprocessor handles only when this number changes.
@@ -37,13 +48,32 @@ namespace ExcelHeroes.EditorTools
         /// **Bump this AND `Stamp` together whenever the settings change.** The version makes Unity
         /// re-import; the stamp makes this code agree to touch the asset again.
         /// </summary>
-        public override uint GetVersion() => 6;
+        public override uint GetVersion() => 7;
 
         void OnPreprocessTexture()
         {
-            if (!assetPath.StartsWith(ArtRoot)) return;
+            if (!assetPath.StartsWith(ArtRoot) && !assetPath.StartsWith(UiRoot)) return;
             var importer = (TextureImporter)assetImporter;
             if (importer.userData == Stamp) return;
+
+            if (assetPath.StartsWith(UiRoot))
+            {
+                // Texture2D rather than Sprite: App.uss slices these with -unity-slice-left/right,
+                // and a Sprite would carry its own border settings as a second, silently
+                // disagreeing source of truth for the same numbers.
+                importer.textureType = TextureImporterType.Default;
+                importer.filterMode = FilterMode.Bilinear;
+                importer.mipmapEnabled = false;
+                importer.wrapMode = TextureWrapMode.Clamp;
+                importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                importer.alphaIsTransparency = true;
+                importer.isReadable = false;
+                importer.maxTextureSize = 256;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                ClearPlatformOverrides(importer);
+                importer.userData = Stamp;
+                return;
+            }
 
             // Pixel art has to be left alone: point filtering, no compression, no mip chain. A
             // 144x28 strip costs 16 KB uncompressed, so there is nothing to save by block-compressing

@@ -56,13 +56,14 @@ namespace ExcelHeroes.UI
                 var def = GameData.Hero(id);
                 var owned = p.Find(id);
                 if (def == null || owned == null) continue;
-                var card = UiKit.Card(def, owned, () => _app.OpenDetail(id));
-                card.AddToClassList("slot");
-                slots.Add(card);
+                slots.Add(BuildSlot(def, owned, id));
             }
 
-            // One button under the line-up, which is where the reference puts 자동 and 확인.
-            var actions = UiKit.Div("party-actions", left);
+            // The action rail, on the far right, stacked — which is where the reference keeps
+            // 편성 · 대표 · 지원. They used to sit in a row UNDER the line-up, where four of them
+            // did not fit on one line and wrapped, so the last one hung below the others with
+            // nothing beside it. A rail has no line to run out of.
+            var actions = UiKit.Div("party-rail", cols);
 
             // 자동 편성 goes first because it is the one most players will press. Choosing by hand
             // means opening 55 cards, and the best party is not the five biggest numbers — 부문
@@ -79,7 +80,7 @@ namespace ExcelHeroes.UI
 
             // 비품 자동 장착 sits next to it: both answer "just put the good stuff on", and
             // four slots across five heroes is the other thing nobody compares by hand.
-            var gear = UiKit.Btn("비품 자동 장착", "btn", () =>
+            var gear = UiKit.Btn("비품 장착", "btn", () =>
             {
                 var (heroes, slotsChanged) = AutoEquipService.EquipParty(Game.Player);
                 AudioService.Play("upgrade", 0.6f);
@@ -90,12 +91,16 @@ namespace ExcelHeroes.UI
             }, actions);
             gear.SetEnabled(Game.Player.items.Count > 0 && p.PartyCount() > 0);
 
-            UiKit.Btn("대기 인원에서 채우기", "btn", OpenPicker, actions);
-            var bulk = UiKit.Btn("골드 소진까지 일괄 강화", "btn btn--primary", () =>
+            UiKit.Btn("빈 칸 채우기", "btn", OpenPicker, actions);
+            var bulk = UiKit.Btn("일괄 강화", "btn btn--primary", () =>
             {
+                var before = Game.Player.gold;
                 foreach (var member in Game.Player.PartyMembers())
                     StatMath.LevelUpMax(Game.Player, member, 999);
                 AudioService.Play("upgrade", 0.6f);
+                // The label had to shrink to fit the shape, so the sentence moves here — the
+                // status line is where this build already explains what a button just did.
+                _app.SetStatus($"편성 전원 일괄 강화 · 골드 -{before - Game.Player.gold:N0}");
                 Game.Touch();
             }, actions);
             bulk.SetEnabled(p.PartyCount() > 0);
@@ -131,6 +136,47 @@ namespace ExcelHeroes.UI
         /// 대기 인원, as a panel rather than as a second grid under the line-up. Nothing scrolls
         /// held sideways, and a bench of fifty is a page of its own however it is arranged.
         /// </summary>
+        /// <summary>
+        /// One line-up slot, in the reference's shape: the portrait, and a plate UNDER it rather
+        /// than over it — a tag row (역할 · 부문) above a line carrying the level and the name.
+        ///
+        /// UiKit.Card is not reused here on purpose. Its plate is an overlay across the bottom of
+        /// the art, which is right for a grid of 14 where space is the constraint and wrong for
+        /// five figures at full size, where the reference gives each one a caption of its own and
+        /// the picture stays uncovered.
+        /// </summary>
+        VisualElement BuildSlot(HeroDef def, OwnedHero owned, string id)
+        {
+            var grade = GameData.Grade(def.grade);
+            var slot = UiKit.Div("pslot");
+            slot.style.borderTopColor = slot.style.borderBottomColor =
+                slot.style.borderLeftColor = slot.style.borderRightColor = grade?.Color ?? Color.gray;
+
+            var art = UiKit.Div("pslot__art", slot);
+            UiKit.SetArt(art, GameData.WornCardArt(id));
+            var gradeBadge = UiKit.Text(def.grade, "pslot__grade", art);
+            gradeBadge.style.backgroundColor = grade?.Color ?? Color.gray;
+
+            var plate = UiKit.Div("pslot__plate", slot);
+            var tags = UiKit.Div("pslot__tags", plate);
+            UiKit.Text(UiKit.RoleName(def.role), "pslot__role", tags);
+            UiKit.Text(GameData.Division(def.division)?.name ?? def.division ?? "", "pslot__dept", tags);
+
+            // The name gets its own line, which the reference does not need and this build does:
+            // its names are 츠바키 and 시로코, three characters, while these are job titles —
+            // "VLOOKUP 분석가" wanted 229px of a 158px label and the audit said so. Lv and ★ share
+            // the line underneath instead.
+            UiKit.Text(def.name, "pslot__name", plate);
+
+            var line = UiKit.Div("pslot__line", plate);
+            UiKit.Text($"Lv.{owned.level}", "pslot__lv", line);
+            var stars = UiKit.Text(UiKit.Stars(owned.star), "pslot__stars", line);
+            stars.style.color = grade?.Color ?? Color.white;
+
+            slot.RegisterCallback<ClickEvent>(_ => _app.OpenDetail(id));
+            return slot;
+        }
+
         void OpenPicker()
         {
             var p = Game.Player;

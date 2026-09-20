@@ -384,6 +384,39 @@ than trusting that a port of it works.
 - **Ten labels were squeezing their own line height by 2–9px.** Nothing looked wrong in a capture;
   the audit measured `MeasureTextSize` against `contentRect` and named all ten.
 
+## The UI skin, and why it is drawn rather than styled
+
+The reference asset sheet settled the vocabulary: buttons are **parallelograms** — both vertical
+edges slant — with a white rim, a gold notch biting one corner and a crisp diagonal highlight,
+in a fixed palette (cyan = the action, navy = the strong second, white = everything else, grey =
+off, gold = the one call to action outside the blue set).
+
+**USS cannot express a slant.** `transform` offers translate, rotate and scale; there is no skew.
+So the shape has to arrive as a picture, and `tools/gen-ui-skin.py` draws it: polygons, gradients
+and one blur, from numbers in that file. It is geometry, not generated art — the "do not generate
+any art" rule is about the character illustrations, and this is a deterministic script whose
+output regenerates byte for byte.
+
+Each plate is one PNG, sliced horizontally: an **88px cap at each end** holding the slant and
+every decoration, and a middle that stretches. The first cut used a 52px cap, and both the gold
+notch and the highlight crossed it — so a wide button came out with a gold bar running its whole
+top edge and a smear where the streak should have been. **Anything drawn outside a cap is
+stretched with the middle.** The generator now asserts the highlight stays inside.
+
+Two knock-on facts:
+
+- **`Art/UI/` needs the opposite import settings to the illustrations** — alpha kept (the corners
+  of a slanted shape are transparent), bilinear, uncompressed. DXT on a 178×120 plate saves
+  nothing and puts blocking along a diagonal edge, which is the one place it cannot be missed.
+  `ArtImportSettings` has its own branch for it; `GetVersion()` and `Stamp` went to 7 together.
+- **The shape is for a word or two, not a sentence.** "대기 인원에서 채우기" wrapped onto two
+  lines and the second line left the plate through the slant at both ends. The rail's labels are
+  short now (비품 장착 · 빈 칸 채우기 · 일괄 강화) and `white-space` is `nowrap`; what the labels
+  lost moved to the status line.
+
+Still to draw from the sheet: the panel header bar with its skewed end, the top currency bar, the
+modal frame, and the round small buttons.
+
 ## The button pass, and what a hairline is worth
 
 Feedback after the landscape build: "버튼디자인이라던가 버튼뒤에 스리슬쩍 배경이나 이런게 보인다던가
