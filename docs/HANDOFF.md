@@ -101,6 +101,7 @@ rather than rebuilt from the data:
 | 레벨 회수 | `levelGold` / `LEVEL_REFUND` | full refund, bench only — skips 김인턴, the party, 출장, and 즐겨찾기, which the grid shows as a 보존 badge |
 | 자동 진행 · 안전 진행 · 자동 강화 | `setAutoAdvance` / `setSafeAdvance` / `upgradeCheapestLoop` | three pills on the main sheet. Before this the Phase advanced on every win, unconditionally — 파밍 was not expressible |
 | 캐릭터 대사 | `sayLine` | a bubble over a hero when a Phase falls. The `line`/`ult` data was already exported and shown only in two panels nobody opens |
+| 괄호 수식 | `openBraceFormula` / `submitBraceFormula` | needed a boss TELEGRAPH first — this port had none, so specials landed with no warning and the minigame had nothing to hang on |
 
 ### Gold is an `int` here and a double in the web — decide what to do about it
 
@@ -283,6 +284,22 @@ This build's fight is a different shape, so the same ratio means something else 
 was always the part carrying information — the odds read 유리 97% of the time, while the time per
 stage grows continuously and that growth is the wall. Calibrating a label honestly means benching
 this sim.
+
+## The brace minigame needs a decision about phones
+
+괄호 수식 is ported with the web's balance untouched: two two-digit numbers, **4.0 seconds**,
+60% off the next boss special. On a desktop with a keyboard under your hands that is a fair
+window.
+
+On a phone it may not be. The answer goes into a TextField, so the four seconds have to cover
+the on-screen keyboard appearing, two or three digits, and a submit. Nothing here has been tried
+on a device — see the APK entry below — so this is a suspicion, not a measurement.
+
+Three ways out if it turns out to be too tight, none of them taken here because all three are
+balance calls: raise `braceLimit`; replace the field with three buttons (the answer and two
+near-misses), which keeps "read and add" and drops "type fast"; or drop the minigame on mobile.
+The first is a number, the second is a design change, the third is a deletion — and which one is
+right depends on how it feels in a hand.
 
 ## Blocked
 

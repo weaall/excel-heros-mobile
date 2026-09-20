@@ -116,10 +116,56 @@ namespace ExcelHeroes.EditorTools
             CheckAutoPlay();
             CheckCurves();
             CheckBanter();
+            CheckBrace();
 
             Line(_failures == 0 ? "ALL CHECKS PASSED" : $"{_failures} CHECK(S) FAILED");
             if (_failures == 0) Debug.Log(Log.ToString());
             else Debug.LogError(Log.ToString());
+        }
+
+        /// <summary>
+        /// 괄호 수식 — the arithmetic, and the rule that stops it being farmed.
+        ///
+        /// The interesting property is NOT that 34 + 51 is 85. It is that a question cannot be
+        /// asked while the charge is already held: the boss telegraphs before every special, so
+        /// without that guard a player could answer once, hold the charge through a cheap move,
+        /// and be asked again — banking two reductions off one fight.
+        /// </summary>
+        static void CheckBrace()
+        {
+            Line("\n-- 괄호 수식 --");
+
+            var b = new BraceService();
+            b.Open_("전체 감사", alreadyBraced: false);
+            Check(b.Open, $"a question opens ({b.A} + {b.B})");
+            Check(b.A >= 10 && b.B >= 10, "both terms are two digits");
+            Check(b.A <= GameData.Balance.braceMax && b.B <= GameData.Balance.braceMax,
+                  $"and neither passes braceMax ({GameData.Balance.braceMax})");
+
+            var want = b.Answer;
+            Check(b.Submit((want + 1).ToString()) == false, "a wrong answer is refused");
+            Check(!b.Open, "and closes the question either way");
+
+            b = new BraceService();
+            b.Open_("전체 감사", alreadyBraced: false);
+            Check(b.Submit(b.Answer.ToString()), "the right answer is accepted");
+
+            // Garbage in a numeric field is a miss, not a crash.
+            b = new BraceService();
+            b.Open_("전체 감사", alreadyBraced: false);
+            Check(b.Submit("  ") == false, "blank is a miss");
+
+            // The guard.
+            b = new BraceService();
+            b.Open_("전체 감사", alreadyBraced: true);
+            Check(!b.Open, "no question while the charge is already held");
+
+            // And the clock actually runs out.
+            b = new BraceService();
+            b.Open_("전체 감사", alreadyBraced: false);
+            var expired = b.Tick(GameData.Balance.braceLimit + 0.1f);
+            Check(expired && !b.Open, $"it expires after {GameData.Balance.braceLimit:0.#}s");
+            Check(!b.Submit(b.Answer.ToString()), "and a late answer does not count");
         }
 
         /// <summary>

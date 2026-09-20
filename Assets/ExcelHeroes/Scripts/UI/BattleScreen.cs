@@ -142,6 +142,7 @@ namespace ExcelHeroes.UI
             _views.Clear();
             _floaters.Clear();
             _bubbles.Clear();
+            CloseBrace();
             _shotViews.Clear();
             _motes.Clear();
             _stage.Clear();
@@ -459,6 +460,7 @@ namespace ExcelHeroes.UI
             UpdateSkillGauges();
             UpdateFloaters(dt);
             UpdateBubbles(dt);
+            UpdateBrace(dt);
             UpdateUpgrades();
 
             _waveLabel.text = _sim.Finished
@@ -529,6 +531,16 @@ namespace ExcelHeroes.UI
                         AudioService.Play("skill", 0.55f);
                         // A boss shouting its move gets the floater; a hero firing EX gets the screen.
                         if (e.actor != null && e.actor.side == Side.Hero) PlayCutIn(e.actor, e.text);
+                        break;
+                    case EventKind.Warn:
+                        // The boss has announced its next move, which is the moment the web opens
+                        // the formula. It is the only window the player has.
+                        Float(e.actor, $"⚠ {e.text}", "floater floater--skill");
+                        OpenBrace(e.text);
+                        break;
+                    case EventKind.Braced:
+                        Float(e.actor, "검산 완료", "floater floater--heal");
+                        AudioService.Play("block", 0.6f);
                         break;
                     case EventKind.Death:
                         // A kill is the beat worth stopping for; a monster popping mid-stride is
@@ -1008,6 +1020,77 @@ namespace ExcelHeroes.UI
                 el.style.opacity = Mathf.Clamp01(life / 0.6f);
                 _bubbles[i] = (el, life);
             }
+        }
+
+        // ---------------------------------------------------------------- 괄호 수식
+
+        readonly BraceService _brace = new();
+        VisualElement _bracePane;
+        TextField _braceField;
+        Label _braceClock;
+
+        /// <summary>
+        /// Poses the sum, over the field, for as long as the balance allows.
+        ///
+        /// Nothing opens while the player is on another sheet: the fight runs off-screen and a
+        /// question nobody can see is one they are guaranteed to fail, which would turn a bonus
+        /// into a penalty for leaving the battle screen.
+        /// </summary>
+        void OpenBrace(string move)
+        {
+            if (_root == null || _root.panel == null) return;
+            if (_sim == null || _sim.Braced) return;
+
+            _brace.Open_(move, _sim.Braced);
+            if (!_brace.Open) return;
+
+            CloseBrace();
+            _bracePane = UiKit.Div("brace", _stage);
+            UiKit.Text($"검산 · {move}", "brace__title", _bracePane);
+
+            var row = UiKit.Div("brace__row", _bracePane);
+            UiKit.Text($"= {_brace.A} + {_brace.B}", "brace__sum", row);
+
+            _braceField = new TextField { maxLength = 4 };
+            _braceField.AddToClassList("brace__field");
+            _braceField.RegisterCallback<KeyDownEvent>(e =>
+            {
+                if (e.keyCode is KeyCode.Return or KeyCode.KeypadEnter) SubmitBrace();
+            });
+            row.Add(_braceField);
+            UiKit.Btn("제출", "btn btn--primary brace__submit", SubmitBrace, row);
+
+            _braceClock = UiKit.Text("", "brace__clock", _bracePane);
+            _braceField.Focus();
+        }
+
+        void SubmitBrace()
+        {
+            if (!_brace.Open) { CloseBrace(); return; }
+            var ok = _brace.Submit(_braceField?.value);
+            if (ok)
+            {
+                _sim?.MarkBraced();
+                AudioService.Play("upgrade", 0.6f);
+                Log($"검산 완료 — 다음 특수 공격 피해 {Mathf.RoundToInt(GameData.Balance.braceReduce * 100)}% 감소");
+            }
+            else AudioService.Play("tap", 0.4f);
+            CloseBrace();
+        }
+
+        void CloseBrace()
+        {
+            _bracePane?.RemoveFromHierarchy();
+            _bracePane = null;
+            _braceField = null;
+            _braceClock = null;
+        }
+
+        void UpdateBrace(float dt)
+        {
+            if (!_brace.Open) { if (_bracePane != null) CloseBrace(); return; }
+            if (_brace.Tick(dt)) { CloseBrace(); return; }
+            if (_braceClock != null) _braceClock.text = $"{_brace.Left:0.0}초";
         }
 
         void UpdateFloaters(float dt)

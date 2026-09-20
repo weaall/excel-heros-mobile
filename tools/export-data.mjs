@@ -281,6 +281,10 @@ const files = {
     forecastEtaBoss: BALANCE.FORECAST?.etaBoss ?? 0.81,
     safeAdvanceMin: BALANCE.SAFE_ADVANCE?.min ?? 0.35,
     autoUpgradeInterval: BALANCE.AUTO_UPGRADE_INTERVAL ?? 1,
+    // 괄호 수식 — the boss telegraphs, you add two numbers, the next special lands soft.
+    braceLimit: BALANCE.BRACE?.limit ?? 4,
+    braceReduce: BALANCE.BRACE?.reduce ?? 0.6,
+    braceMax: BALANCE.BRACE?.max ?? 89,
     // 안전 진행's gate, and the one number on this list the web does not have.
     //
     // The web gates on 승산 >= SAFE_ADVANCE.min (0.35). This port's ForecastService deliberately

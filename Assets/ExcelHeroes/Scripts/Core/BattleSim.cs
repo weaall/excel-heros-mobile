@@ -81,7 +81,7 @@ namespace ExcelHeroes.Core
         public float Progress => Duration <= 0f ? 1f : Math.Clamp(T / Duration, 0f, 1f);
     }
 
-    public enum EventKind { Damage, Heal, Death, Skill, WaveClear, Victory, Defeat, Spawn, Fx }
+    public enum EventKind { Damage, Heal, Death, Skill, WaveClear, Victory, Defeat, Spawn, Fx, Warn, Braced }
 
     /// <summary>
     /// The effect vocabulary, straight from the web build's Renderer#drawEffects. The simulation
@@ -720,7 +720,26 @@ namespace ExcelHeroes.Core
             }
         }
 
-        /// <summary>Runs whichever scripted moves are due on this boss's Nth attack.</summary>
+        /// <summary>
+        /// 검산 — the player has answered the formula, so the NEXT boss special lands soft.
+        ///
+        /// It is a single charge and it is spent by the next special whether or not that special
+        /// is the one that was announced: holding it over would let a player bank one during a
+        /// slow move and cash it against the heavy one.
+        /// </summary>
+        public bool Braced { get; private set; }
+
+        public void MarkBraced() => Braced = true;
+
+        /// <summary>
+        /// Runs whichever scripted moves are due on this boss's Nth attack, and ANNOUNCES the
+        /// ones due on the next.
+        ///
+        /// The telegraph is new here and it is what 괄호 수식 hangs on: the web opens the formula
+        /// the moment a warning appears, and this port had no warning at all — every special
+        /// simply landed on the beat it was due. A move you cannot see coming is one no reaction
+        /// can answer, so the minigame had nothing to attach to.
+        /// </summary>
         void BossTurn(Combatant b)
         {
             b.attackCount++;
@@ -730,12 +749,38 @@ namespace ExcelHeroes.Core
                 Events.Enqueue(new BattleEvent { kind = EventKind.Skill, actor = b, text = s.name });
                 FireBossMove(b, s.kind);
             }
+
+            // Look one swing ahead. When two specials coincide the rarer one is announced, which
+            // is the same tie-break the web uses for which one fires.
+            BossSpecialDef next = null;
+            foreach (var s in b.boss.specials)
+            {
+                if (s.every <= 0 || (b.attackCount + 1) % s.every != 0) continue;
+                if (next == null || s.every > next.every) next = s;
+            }
+            if (next != null)
+                Events.Enqueue(new BattleEvent { kind = EventKind.Warn, actor = b, text = next.name });
         }
 
         void FireBossMove(Combatant b, string kind)
         {
             var alive = Heroes.Where(h => h.Alive).ToList();
             if (alive.Count == 0) return;
+
+            // 검산: a correct answer takes BALANCE.BRACE.reduce off this one move. It is applied
+            // by scaling the boss's attack for the duration of the move and putting it back
+            // afterwards, so every branch below is reduced without any of them knowing about it —
+            // the alternative is eight multiplications that have to stay in step.
+            var braced = Braced;
+            var atkWas = b.atk;
+            if (braced)
+            {
+                Braced = false;
+                b.atk = Math.Max(1, (int)(b.atk * (1f - GameData.Balance.braceReduce)));
+                Events.Enqueue(new BattleEvent { kind = EventKind.Braced, actor = b });
+            }
+            try
+            {
 
             switch (kind)
             {
@@ -769,6 +814,8 @@ namespace ExcelHeroes.Core
                     for (var i = 0; i < 2; i++) Spawn(NewMinion(i), Math.Min(FieldW + 60f, b.x + 64f + i * 58f));
                     break;
             }
+            }
+            finally { if (braced) b.atk = atkWas; }
         }
 
         Combatant FrontHero() => Heroes.Where(h => h.Alive).OrderByDescending(h => h.tauntLeft).ThenByDescending(h => h.x).FirstOrDefault();

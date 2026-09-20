@@ -4145,3 +4145,37 @@
     -unity-text-align: middle-center;
     white-space: normal;
 }
+
+
+/* 괄호 수식 — the one thing in this game a player does with their hands. Over the field, near
+   the top so it does not sit on the line-up, and wide enough that the sum and the answer box are
+   on one row: four seconds is not long enough to hunt for the field. */
+.brace {
+    position: absolute;
+    left: 28%;
+    right: 28%;
+    top: 128px;
+    padding: var(--ex-space-2);
+    background-color: rgba(12, 20, 36, 0.92);
+    border-width: 3px;
+    border-color: var(--ex-accent);
+    border-radius: var(--ex-rad-md);
+    align-items: center;
+}
+
+.brace__title { font-size: 24px; -unity-font-style: bold; color: var(--ex-accent); }
+
+.brace__row { flex-direction: row; align-items: center; margin-top: 8px; }
+
+.brace__sum {
+    font-size: 44px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-right: var(--ex-space-2);
+}
+
+.brace__field { width: 190px; height: 76px; font-size: 38px; }
+
+.brace__submit { height: 76px; padding-left: 34px; padding-right: 34px; font-size: 26px; }
+
+.brace__clock { font-size: 22px; color: rgba(255, 255, 255, 0.7); margin-top: 6px; }

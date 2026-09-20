@@ -331,6 +331,8 @@ namespace ExcelHeroes.Data
         public int adPerDay;
         public float forecastBossLo, forecastBossHi, forecastEtaBoss, safeAdvanceMin;
         public float autoUpgradeInterval, safeAdvanceEtaMax;
+        public float braceLimit, braceReduce;
+        public int braceMax;
         public List<string> shardCardGrades = new();
         public List<int> shardCardValues = new();
         public int dismissCardBonus;
