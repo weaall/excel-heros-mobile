@@ -121,6 +121,40 @@ namespace ExcelHeroes.UI
             if (sprite != null) e.style.backgroundImage = new StyleBackground(sprite);
         }
 
+        public enum Crop { Face, Bust, Cut }
+
+        static (float zoom, float focus) CropOf(Crop c) => c switch
+        {
+            Crop.Face => (2.9f, 0.145f),
+            Crop.Bust => (1.75f, 0.2f),
+            _ => (1.35f, 0.26f),
+        };
+
+        /// <summary>
+        /// The portrait of a hero, cut from the transparent standing art (the new, uniform
+        /// illustrations) and painted over `backdrop`. Falls back to the card illustration when
+        /// there is no standing art, or when the hero is wearing a skin (skins exist as cards only).
+        /// </summary>
+        public static void SetPortrait(VisualElement e, string heroId, Crop crop, bool worn = true, Color? backdrop = null, bool round = false)
+        {
+            var skin = worn ? Core.SkinService.Active(Core.Game.Player, heroId) : null;
+            var standing = string.IsNullOrEmpty(skin) ? GameData.StandingArt(heroId) : null;
+            if (standing == null)
+            {
+                SetArt(e, worn ? GameData.WornCardArt(heroId) : GameData.CardArt(heroId));
+                return;
+            }
+            e.AddToClassList("portrait");
+            var (zoom, focus) = CropOf(crop);
+            var bg = backdrop ?? UiPaint.C(222, 234, 248);
+            ModalFrame.Painted(e, (ctx, r) =>
+            {
+                var poly = round ? UiPaint.Ellipse(r.center, r.width * 0.5f, r.height * 0.5f) : UiPaint.RoundRect(r, 0f, 1);
+                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.WithAlpha(Color.Lerp(bg, Color.white, 0.55f), bg.a), bg, r.yMin, r.yMax));
+                UiPaint.ImageFocus(ctx, poly, standing, r, zoom, focus);
+            });
+        }
+
         public static string Stars(int star) => new string('★', Math.Clamp(star, 0, 5)).PadRight(5, '☆');
 
         public static string RoleName(string roleId) => GameData.Role(roleId)?.name ?? roleId;
@@ -152,7 +186,7 @@ namespace ExcelHeroes.UI
             var art = Div("card__art", card);
             // An owned hero wears what they have equipped; a locked one has nothing equipped
             // and falls straight through to the base art.
-            SetArt(art, owned == null ? GameData.CardArt(def.id) : GameData.WornCardArt(def.id));
+            SetPortrait(art, def.id, Crop.Bust, owned != null, Color.Lerp(gradeColor, Color.white, 0.72f));
 
             // A card you do not own is DARKENED by a scrim over the art. Opacity composites
             // against the white card behind and bleaches towards white instead.

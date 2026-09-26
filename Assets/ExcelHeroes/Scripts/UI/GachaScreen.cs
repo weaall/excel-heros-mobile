@@ -106,7 +106,7 @@ namespace ExcelHeroes.UI
                              UiPaint.C(255, 206, 60));
             });
             var thumb = UiKit.Div("gtab__thumb", tab);
-            if (featured != null) UiKit.SetArt(thumb, GameData.CardArt(featured.id));
+            if (featured != null) UiKit.SetPortrait(thumb, featured.id, UiKit.Crop.Bust, false);
             UiKit.Text("픽업 모집", "gtab__label", tab);
 
             // bottom left: 확률 정보 and 모집 포인트
@@ -187,7 +187,7 @@ namespace ExcelHeroes.UI
                 var card = UiKit.Div("pcard", row);
                 card.style.borderBottomColor = colour;
                 var art = UiKit.Div("pcard__art", card);
-                UiKit.SetArt(art, GameData.CardArt(hero.id));
+                UiKit.SetPortrait(art, hero.id, UiKit.Crop.Bust, false);
                 var badge = UiKit.Text(grade, "pcard__grade", art);
                 badge.style.backgroundColor = colour;
 
@@ -437,7 +437,8 @@ namespace ExcelHeroes.UI
                 // The reference's ten-pull card: a parallelogram, the portrait cut to the slant, a
                 // grey band of stars across the foot, and the rarity as a coloured glow round the
                 // whole card — pink for the top grade, gold for the next, none below.
-                var sprite = GameData.CardArt(r.hero.id);
+                var sprite = GameData.StandingArt(r.hero.id);
+                var card = sprite == null ? GameData.CardArt(r.hero.id) : null;
                 var glow = r.grade == "S" ? UiPaint.C(255, 120, 220, 0.6f)
                          : r.grade == "A" ? UiPaint.C(255, 206, 60, 0.6f) : (Color?)null;
                 var starCount = System.Math.Clamp(r.starAfter, 1, 5);
@@ -455,7 +456,13 @@ namespace ExcelHeroes.UI
                         new Vector2(rect.xMin - 50f, rect.yMin - 50f), new Vector2(rect.xMax + 50f, rect.yMin - 50f),
                         new Vector2(rect.xMax + 50f, bandTop), new Vector2(rect.xMin - 50f, bandTop),
                     });
-                    UiPaint.Image(ctx, artPoly, sprite, Rect.MinMaxRect(rect.xMin, rect.yMin, rect.xMax, bandTop), 0.1f);
+                    var dest = Rect.MinMaxRect(rect.xMin, rect.yMin, rect.xMax, bandTop);
+                    if (sprite != null)
+                    {
+                        UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(UiPaint.C(236, 244, 252), UiPaint.C(200, 220, 242), dest.yMin, dest.yMax));
+                        UiPaint.ImageFocus(ctx, artPoly, sprite, dest, 1.7f, 0.21f);
+                    }
+                    else UiPaint.Image(ctx, artPoly, card, dest, 0.1f);
                     var band = UiPaint.Clip(inner, new List<Vector2>
                     {
                         new Vector2(rect.xMin - 50f, bandTop), new Vector2(rect.xMax + 50f, bandTop),

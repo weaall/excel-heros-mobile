@@ -84,7 +84,7 @@ namespace ExcelHeroes.UI
 
                 var face = UiKit.Div("mt-room__face", row);
                 var who = ep.lines.Select(l => l.who).FirstOrDefault(w => w != GameData.MainId && GameData.Hero(w) != null);
-                if (unlocked && who != null) UiKit.SetArt(face, GameData.CardArt(who));
+                if (unlocked && who != null) UiKit.SetPortrait(face, who, UiKit.Crop.Face, round: true);
 
                 var text = UiKit.Div("mt-room__text", row);
                 UiKit.Text(ep.title, "mt-room__title", text);
@@ -155,7 +155,7 @@ namespace ExcelHeroes.UI
                 if (!isMine)
                 {
                     var avatar = UiKit.Div("mt-avatar", row);
-                    if (!repeat && speaker != null) UiKit.SetArt(avatar, GameData.CardArt(line.who));
+                    if (!repeat && speaker != null) UiKit.SetPortrait(avatar, line.who, UiKit.Crop.Face, round: true);
                     else avatar.AddToClassList("mt-avatar--blank");
                 }
                 var column = UiKit.Div("mt-column", row);

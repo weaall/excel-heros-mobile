@@ -1159,7 +1159,7 @@ namespace ExcelHeroes.UI
 
             var sweep = UiKit.Div("cutin__sweep", view);
             var art = UiKit.Div("cutin__art", view);
-            UiKit.SetArt(art, GameData.CardArt(def.id));
+            UiKit.SetPortrait(art, def.id, UiKit.Crop.Cut, false, new Color(0f, 0f, 0f, 0f));
 
             var plate = UiKit.Div("cutin__plate", view);
             UiKit.Text(skillName ?? def.skillName, "cutin__skill", plate);
@@ -1438,7 +1438,7 @@ namespace ExcelHeroes.UI
                 _exBar.Add(btn);
 
                 var art = UiKit.Div("ex-button__art", btn);
-                UiKit.SetArt(art, GameData.WornCardArt(combatant.heroId));
+                UiKit.SetPortrait(art, combatant.heroId, UiKit.Crop.Face);
 
                 var charge = UiKit.Div("ex-button__charge", btn);
                 var cost = BattleSim.CostOf(combatant);
@@ -1591,14 +1591,20 @@ namespace ExcelHeroes.UI
                 var def = GameData.Hero(id);
                 if (def == null) continue;
                 var mini = UiKit.Div("bresult__mini", strip);
-                var sprite = GameData.WornCardArt(id);
+                var standing = GameData.StandingArt(id);
+                var sprite = standing ?? GameData.WornCardArt(id);
                 var gradeColor = GameData.Grade(def.grade)?.Color ?? Color.gray;
                 ModalFrame.Painted(mini, (ctx, r) =>
                 {
                     var poly = UiPaint.RoundRect(r, 8f, 4);
                     UiPaint.Shadow(ctx, poly, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.3f), 6f);
                     UiPaint.Fill(ctx, poly, Color.white);
-                    UiPaint.Image(ctx, UiPaint.Offset(poly, -3f), sprite, r, 0.08f);
+                    if (standing != null)
+                    {
+                        UiPaint.Fill(ctx, UiPaint.Offset(poly, -3f), UiPaint.C(226, 238, 250));
+                        UiPaint.ImageFocus(ctx, UiPaint.Offset(poly, -3f), standing, r, 2.4f, 0.16f);
+                    }
+                    else UiPaint.Image(ctx, UiPaint.Offset(poly, -3f), sprite, r, 0.08f);
                     UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 3f, r.yMax - 8f, r.xMax - 3f, r.yMax - 3f), 0f), gradeColor, 0f);
                 });
             }

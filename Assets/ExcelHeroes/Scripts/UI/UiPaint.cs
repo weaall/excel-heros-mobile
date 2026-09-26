@@ -276,6 +276,43 @@ namespace ExcelHeroes.UI
         /// rectangle or a rounded one; the reference's ten-pull cards are parallelograms with the
         /// portrait cut to the slant, and this is how that is drawn.
         /// </summary>
+        /// <summary>
+        /// Like Image, but zoomed onto one point of the picture: the image is `zoom` times the
+        /// width of dest, and the point `focusY` of the way down it sits at dest's centre. This is
+        /// how a full-body cut-out becomes a face (zoom ~2.8) or a bust (~1.75) without a crop file.
+        /// </summary>
+        public static void ImageFocus(MeshGenerationContext ctx, IList<Vector2> poly, Sprite sprite, Rect dest, float zoom, float focusY, Color? tint = null)
+        {
+            if (sprite == null || poly.Count < 3) return;
+            var tex = sprite.texture;
+            // rect, not textureRect: a tight sprite's textureRect is trimmed to its opaque pixels,
+            // and the crop is defined on the whole normalised canvas (feet at the same line for all).
+            var tr = sprite.rect;
+            var uvMin = new Vector2(tr.xMin / tex.width, tr.yMin / tex.height);
+            var uvSize = new Vector2(tr.width / tex.width, tr.height / tex.height);
+            var aspect = tr.width / tr.height;
+            var w = dest.width * zoom;
+            var h = w / aspect;
+            if (h < dest.height) { h = dest.height; w = h * aspect; }
+            var y = dest.center.y - focusY * h;
+            y = Mathf.Min(y, dest.yMin);                 // never leave empty space above the picture
+            var img = new Rect(dest.center.x - w * 0.5f, y, w, h);
+            var c = tint ?? Color.white;
+            var n = poly.Count;
+            var mesh = ctx.Allocate(n + 1, n * 3, tex);
+            var centre = Vector2.zero;
+            foreach (var p in poly) centre += p;
+            centre /= n;
+            mesh.SetNextVertex(TexV(centre, img, uvMin, uvSize, c));
+            foreach (var p in poly) mesh.SetNextVertex(TexV(p, img, uvMin, uvSize, c));
+            for (var i = 0; i < n; i++)
+            {
+                mesh.SetNextIndex(0);
+                mesh.SetNextIndex((ushort)(1 + i));
+                mesh.SetNextIndex((ushort)(1 + (i + 1) % n));
+            }
+        }
+
         public static void Image(MeshGenerationContext ctx, IList<Vector2> poly, Sprite sprite, Rect dest, float anchorY = 0f, Color? tint = null)
         {
             if (sprite == null || poly.Count < 3) return;
