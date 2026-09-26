@@ -5476,3 +5476,10 @@
 .guide__rule { background-color: rgba(255, 255, 255, 0.6); width: 60%; }
 .guide__skip { position: absolute; right: 50px; top: 130px; }
 .overlay--clear { background-color: rgba(0, 0, 0, 0); }
+
+
+/* BA pager arrows: round, painted (Pages.Round) */
+.pager__btn, .pager__btn:hover, .pager__btn:disabled { width: 84px; height: 84px; border-width: 0; background-color: rgba(0, 0, 0, 0); }
+.qrow__claim { font-size: 22px; }
+.qrow__claim.plate--primary { color: rgb(30, 46, 76); }
+.qrow__fill { background-color: rgb(78, 196, 247); }

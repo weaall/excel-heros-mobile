@@ -185,6 +185,7 @@ namespace ExcelHeroes.UI
                         Game.Touch();
                     }, row);
                     claim.SetEnabled(QuestService.CanClaim(p, q.id));
+                    SkewPlate.Apply(claim, SkewPlate.Kind.Primary);
                 }
             }
         }

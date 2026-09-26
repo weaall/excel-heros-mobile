@@ -38,9 +38,40 @@ namespace ExcelHeroes.UI
             _body = UiKit.Div(bodyClasses, parent);
 
             var pager = UiKit.Div("pager", parent);
-            _prev = UiKit.Btn("◀", "pager__btn", () => Turn(-1), pager);
+            _prev = UiKit.Btn("", "pager__btn", () => Turn(-1), pager);
             _label = UiKit.Text("", "pager__label", pager);
-            _next = UiKit.Btn("▶", "pager__btn", () => Turn(1), pager);
+            _next = UiKit.Btn("", "pager__btn", () => Turn(1), pager);
+            Round(_prev, -1);
+            Round(_next, 1);
+        }
+
+        /// <summary>
+        /// The reference's page arrows: a round white button with a soft shadow and a navy
+        /// chevron, faded when there is nowhere to go.
+        /// </summary>
+        static void Round(Button b, int dir)
+        {
+            ModalFrame.Painted(b, (ctx, r) =>
+            {
+                var on = b.enabledInHierarchy;
+                var d = Mathf.Min(r.width, r.height);
+                var c = r.center;
+                var disc = UiPaint.Ellipse(c, d * 0.5f, d * 0.5f);
+                UiPaint.Shadow(ctx, disc, new Vector2(0f, 3f), UiPaint.C(20, 40, 80, on ? 0.2f : 0.08f), 6f);
+                UiPaint.Fill(ctx, disc, UiPaint.Vertical(UiPaint.C(255, 255, 255, on ? 1f : 0.6f), UiPaint.C(234, 242, 249, on ? 1f : 0.6f), r.yMin, r.yMax));
+                UiPaint.Stroke(ctx, disc, UiPaint.C(176, 200, 226, on ? 1f : 0.5f), 1.5f);
+                var s = d * 0.16f;
+                var ink = on ? UiPaint.C(36, 52, 84) : UiPaint.C(150, 162, 180);
+                var chevron = new List<Vector2>
+                {
+                    c + new Vector2(-dir * s * 0.6f, -s), c + new Vector2(-dir * s * 0.6f + dir * s * 0.45f, -s),
+                    c + new Vector2(dir * s * 0.75f, 0f),
+                    c + new Vector2(-dir * s * 0.6f + dir * s * 0.45f, s), c + new Vector2(-dir * s * 0.6f, s),
+                    c + new Vector2(dir * s * 0.3f, 0f),
+                };
+                UiPaint.Fill(ctx, chevron, ink);
+            });
+            Juice.Press(b);
         }
 
         /// <summary>What the pager says when the list is empty — the page count has nothing to say.</summary>
