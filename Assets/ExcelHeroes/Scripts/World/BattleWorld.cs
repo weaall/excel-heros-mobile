@@ -699,9 +699,9 @@ namespace ExcelHeroes.World
                     var bob = Mathf.Sin(time * 1.7f + Z) * 0.02f;
                     var spot = ChibiBuilder.SpriteSheetSpot(Rig, Rig.SheetSide);
                     Rig.Sheet.localPosition = spot + new Vector3(dx * 0.5f, y + bob + (Attack > 0f ? 0.04f : 0f), 0f);
-                    Rig.Sheet.localRotation = Quaternion.Euler(0f, 0f, 10f + lean * 0.3f);
+                    Rig.Sheet.localRotation = Quaternion.Euler(0f, 0f, 18f + lean * 0.3f);
                     var flare = Mathf.Max(Attack > 0f ? 0.4f : 0f, Skill > 0f ? 1f : 0f);
-                    Rig.Sheet.localScale = Vector3.one * 1.5f * (1f + flare * 0.15f);
+                    Rig.Sheet.localScale = Vector3.one * 1.15f * (1f + flare * 0.15f);
                     if (Rig.SheetRenderer != null)
                     {
                         Rig.SheetRenderer.GetPropertyBlock(mpb);

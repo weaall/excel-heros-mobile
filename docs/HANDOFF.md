@@ -743,3 +743,19 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - **입사 안내**(`Onboarding`): 엑셀 대화상자 → BA 튜토리얼. 인사팀 정대리가 왼쪽에 크게 서서 대사창으로 설명(등 뒤 시트, 칸이 차는 성장), 마지막 단계는 화면을 어둡게 하고 **모집 버튼만 밝게 + 튕기는 노란 화살표**, 그 버튼을 눌러야 진행. 오버레이 자체 스크림은 `overlay--clear`로 끔.
 - **버튼**(`SkewPlate.DrawPlate`): 생성된 에셋 시트(모서리 삼각 · 광택 줄 · 글로우) 대신 BA 실제 버튼(확인·모집) — 무광 세로 그라데이션, 큰 옅은 삼각 패싯 2~3개, 윗변 하이라이트 한 줄, 얇은 테두리, 부드러운 그림자, 기울기 12°. 라벨은 **똑바른 굵은 글씨**(이탤릭 제거), 잉크 #1e2e4c.
 - **말풍선**: 로비 — 작은 흰 둥근 말풍선, 옅은 청회색 테두리, 머리 쪽 꼬리, 이름·호감도 바 없음, 새 대사마다 살짝 떠오르며 나타남. 전투 대사도 같은 스타일 + CSS 회전 사각형 꼬리.
+
+## SD = HF 치비 스프라이트, 몬스터 = 제미나이 마스코트, 배경 = 제미나이 전투 맵
+- 사용자 지적: 코드로 조립한 3D SD는 서 있는 모습·공격 모션·비율이 BA SD와 거리가 멂. 참고로 받은 BA SD 모델(팬 배포 추출본, Downloads)은 **참고만** — 저작권 때문에 프로젝트에 넣지 않음.
+- **영웅 SD**: 웹 `SD=1 bash tools/art_pipeline.sh` → `assets/sd_cutout/alpha/*.png`(768×960, 발끝 944, 약 2.1~3.4등신) → `Resources/Art/SD/<id>.png`. `World/SdSprite`가 카메라를 향한 쿼드로 세움(발 피벗), `GameData.SdArt`.
+- **모션**(`BattleWorld.Actor.UpdateSprite`): 숨쉬기(스쿼시), 걷기 = 통통 뛰기 + 착지 찌그러짐, 공격 = 움츠림(예비동작) → 앞으로 늘어나며 찌르기 → 복귀, 피격 = 뒤로 젖힘 + 떨림 + 흰 번쩍임(_Glow), 스킬 = 점프 + 한 바퀴(좌우 뒤집기) + 커짐, 사망 = 뒤로 쓰러지며 페이드, 승리 = 연속 점프. 몬스터는 방향만 반대.
+- **몬스터 SD**: `tools/gen_monsters_gemini.py`(4×4 시트 → 슬라이스, `tools/out/monsters/`) → 웹 `MONSTER=1 python tools/cutout_ai.py … --out Resources/Art/SDMonsters` (768 정사각, 발끝 752). `GameData.MonsterSd(typeId|bossId)`. 없으면 절차적 3D 몬스터.
+- **배경**: `tools/gen_bg_gemini.py` → `Resources/Art/Battle/office_{day,evening,night}.png`, 카메라에 붙은 40m 쿼드(가로에 맞추고 위쪽 기준으로 잘라 앞쪽 가구가 발밑에 끼지 않게). 없으면 `OfficeStage`.
+- **스킬 이펙트**: 바닥 링 + 선 링 + 흰 섬광 + 시트 셀 14조각이 캐릭터 색으로 튀어 나감 + 화면 흔들림. **EX 컷인**: 캐릭터 색 → 남색 사선 띠 + 스피드 라인 + 큰 초상 + 남색 기울기판 "EX 스킬명" + 흰 플래시.
+- **등 뒤 시트**: 가로 한 줄 4칸(`BackSheet`, `SheetTexture`) — ★·레벨로 1~4칸, 캐릭터 색 + 캐릭터별 단색 무늬 6종, 테두리 등급색. 스프라이트에선 등 뒤 어깨 위(`ChibiBuilder.SpriteSheetSpot`).
+- **썸네일**: `tools/face_boxes.py`가 Standing 일러의 머리 상자를 `Resources/Data/faces.json`으로 → `UiKit.SetPortrait/PaintPortrait`가 머리 기준으로 자름(왕관·긴 머리 안 잘림).
+- COST 원판 92px(글자가 원 밖으로 삐져나오던 것), 말풍선 최소 폭(한 글자씩 세로로 쌓이던 것).
+- HF ZeroGPU 쿼터: 풀 7개가 다 비면 "Try again in H:MM:SS"만큼 대기(수 시간). 몬스터를 제미나이로 돌린 이유 중 하나.
+- 설치 현황: 영웅 SD 47/56(`Resources/Art/SD`), 몬스터 43/43(`Resources/Art/SDMonsters`, 제미나이 → 흰 배경 플러드 컷아웃 `MONSTER=1`). 보스 시트는 11~12마리라 4×3으로 옴 → 슬라이스가 행 수를 개수로 계산, 부분 재생성은 `_sheet_<첫id>.png`로 따로 저장.
+- 남은 영웅 SD 9명(guard, pivot, audit_han, reception_go, trainer_seok, translator_ji, ir_lead, bd_lead, pm_lead)은 비율 탈락 → HF 쿼터가 차면 `SD=1 FORCE=1 SEED_BASE=31 bash tools/art_pipeline.sh <ids>`. vlookup(흰 천을 끄는 그림)도 재생성 후보. 없는 동안은 절차적 3D 모델로 대체.
+- 컷아웃 `LENIENT=0.9`: HF Space가 응답 없을 때 두 모델 IoU ≥ 0.9면 isnet 마스크 채택.
+- 빌드 크기가 245 → 544MB로 늘었음(resources.assets.resS). 스탬프 v10 재적용 영향으로 보임 — 모바일 전에 텍스처 크기/포맷 점검 필요.

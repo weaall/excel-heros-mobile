@@ -5493,3 +5493,21 @@
 .battle--3d .ex-bar { bottom: 140px; }
 /* the bubble is an absolute Label: without a floor on its width it shrank to one glyph per line */
 .saybubble { min-width: 300px; max-width: 560px; }
+
+/* EX cut-in (reference: EX 스킬): a slanted band in the character's colour, a big portrait, the
+   skill name on a navy slanted plate, a white flash on the way in. */
+.cutin__sweep { background-color: rgba(0, 0, 0, 0); top: 8%; bottom: 8%; }
+.cutin__art { height: 100%; width: 30%; bottom: 0; top: 0; }
+.cutin__flash {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.85);
+    transition-property: opacity; transition-duration: 0.3s;
+}
+.cutin__flash--out { opacity: 0; }
+.cutin__plate { left: 34%; }
+.cutin__nameplate { flex-direction: row; align-items: center; padding: 14px 60px 14px 40px; }
+.cutin__ex {
+    font-size: 40px; -unity-font-style: bold-and-italic; color: rgb(255, 214, 60); margin-right: 22px;
+}
+.cutin__skill { font-size: 72px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); }
+.cutin__line { margin-top: 12px; margin-left: 30px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 0, 0, 0.5); }

@@ -244,7 +244,7 @@ namespace ExcelHeroes.World
             var pivot = new GameObject("sheet") { layer = layer }.transform;
             pivot.SetParent(rig.Root, false);
             pivot.localPosition = rig.Sprite ? SpriteSheetSpot(rig, side) : new Vector3(-0.17f, 0.66f, side * 0.13f);
-            if (rig.Sprite) pivot.localScale = Vector3.one * 1.5f;
+            if (rig.Sprite) pivot.localScale = Vector3.one * 1.15f;
             rig.Sheet = pivot;
             if (_sheetQuad == null)
             {
@@ -260,7 +260,7 @@ namespace ExcelHeroes.World
 
         /// <summary>On a sprite: just behind the upper back, above the shoulder on the back side.</summary>
         public static Vector3 SpriteSheetSpot(ChibiRig rig, int side) =>
-            new(-0.3f, rig.Height * (side > 0 ? 0.92f : 0.8f), 0.04f);
+            new(-0.2f, rig.Height * (side > 0 ? 0.6f : 0.52f), 0.06f);
 
         static Transform Leg(string name, Transform parent, Vector3 pivot, Color col, bool bare, Material mat, int layer)
         {

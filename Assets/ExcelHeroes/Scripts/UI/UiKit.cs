@@ -160,7 +160,7 @@ namespace ExcelHeroes.UI
                     {
                         Crop.Face => (0.74f, 0.52f),
                         Crop.Bust => (0.4f, 0.3f),
-                        _ => (0.34f, 0.3f),
+                        _ => (0.5f, 0.42f),
                     };
                     var imgH = r.height * share / Mathf.Max(0.02f, hb.height);
                     UiPaint.ImageAt(ctx, poly, standing, imgH, hb.center, new Vector2(r.center.x, r.yMin + r.height * y));
@@ -194,7 +194,7 @@ namespace ExcelHeroes.UI
             var head = FaceBox(heroId);
             var (zoom, focus) = CropOf(crop);
             if (!head.HasValue) { UiPaint.ImageFocus(ctx, poly, standing, r, zoom, focus); return; }
-            var (share, y) = crop switch { Crop.Face => (0.74f, 0.52f), Crop.Bust => (0.4f, 0.3f), _ => (0.34f, 0.3f) };
+            var (share, y) = crop switch { Crop.Face => (0.74f, 0.52f), Crop.Bust => (0.4f, 0.3f), _ => (0.5f, 0.42f) };
             var hb = head.Value;
             UiPaint.ImageAt(ctx, poly, standing, r.height * share / Mathf.Max(0.02f, hb.height), hb.center, new Vector2(r.center.x, r.yMin + r.height * y));
         }

@@ -74,7 +74,19 @@ namespace ExcelHeroes.UI
         // thing that had been hit, which is most of why the hits did not read.
         readonly List<(VisualElement el, float life, float y)> _floaters = new();
 
-        public BattleScreen(AppRoot app) { _app = app; }
+        public BattleScreen(AppRoot app) { _app = app; Current = this; }
+
+        /// <summary>For the screenshot driver.</summary>
+        public static BattleScreen Current { get; private set; }
+
+        /// <summary>For the screenshot driver: an EX cut-in for the strongest hero on the field, guards off.</summary>
+        public void DebugCutIn()
+        {
+            var h = _sim?.Heroes.OrderByDescending(x => GameData.GradeRank(GameData.Hero(x.heroId)?.grade)).FirstOrDefault();
+            if (h == null) return;
+            _cutInAt = -999f;
+            PlayCutIn(h, null);
+        }
 
         // 홈 리본: the two things a player reaches for mid-run, in Excel's words for them.
         public IEnumerable<RibbonItem> Ribbon()
@@ -1157,12 +1169,44 @@ namespace ExcelHeroes.UI
             var view = UiKit.Div("cutin clips", _stage ?? _root);
             _cutIn = view;
 
+            // The band: a slant across the field in the character's own colour, fading to navy,
+            // with speed lines running along it — the reference's EX band, not a grey strip.
+            var accent = BackSheet.For(def, Game.Player?.Find(hero.heroId)).Accent;
             var sweep = UiKit.Div("cutin__sweep", view);
+            ModalFrame.Painted(sweep, (ctx, r) =>
+            {
+                var slant = r.height * 0.35f;
+                var band = new System.Collections.Generic.List<Vector2>
+                    { new(r.xMin + slant, r.yMin), new(r.xMax, r.yMin), new(r.xMax - slant, r.yMax), new(r.xMin, r.yMax) };
+                UiPaint.Fill(ctx, band, UiPaint.Horizontal(UiPaint.WithAlpha(Color.Lerp(accent, Color.white, 0.15f), 0.95f),
+                                                          UiPaint.C(20, 32, 64, 0.92f), r.xMin, r.xMax), 1f);
+                for (var i = 0; i < 14; i++)
+                {
+                    var y = r.yMin + r.height * ((i * 37) % 100) / 100f;
+                    var x = r.xMin + r.width * ((i * 53) % 100) / 100f;
+                    var len = r.width * (0.12f + (i % 4) * 0.05f);
+                    var line = new System.Collections.Generic.List<Vector2>
+                        { new(x, y), new(x + len, y), new(x + len - 6f, y + 3f), new(x - 6f, y + 3f) };
+                    UiPaint.Fill(ctx, UiPaint.Clip(line, band), UiPaint.C(255, 255, 255, 0.35f), 0f);
+                }
+                // thin white edges top and bottom
+                UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2>
+                    { new(r.xMin, r.yMin), new(r.xMax, r.yMin), new(r.xMax, r.yMin + 5f), new(r.xMin, r.yMin + 5f) }, band), UiPaint.C(255, 255, 255, 0.9f), 0f);
+                UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2>
+                    { new(r.xMin, r.yMax - 5f), new(r.xMax, r.yMax - 5f), new(r.xMax, r.yMax), new(r.xMin, r.yMax) }, band), UiPaint.C(255, 255, 255, 0.9f), 0f);
+            });
             var art = UiKit.Div("cutin__art", view);
             UiKit.SetPortrait(art, def.id, UiKit.Crop.Cut, false, new Color(0f, 0f, 0f, 0f));
+            var flash = UiKit.Div("cutin__flash", view);
+            flash.pickingMode = PickingMode.Ignore;
+            view.schedule.Execute(() => flash.AddToClassList("cutin__flash--out")).ExecuteLater(40);
 
             var plate = UiKit.Div("cutin__plate", view);
-            UiKit.Text(skillName ?? def.skillName, "cutin__skill", plate);
+            var namePlate = UiKit.Div("cutin__nameplate", plate);
+            ModalFrame.Painted(namePlate, (ctx, r) =>
+                UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height), 6f), UiPaint.C(20, 32, 64, 0.95f)));
+            UiKit.Text("EX", "cutin__ex", namePlate);
+            UiKit.Text(skillName ?? def.skillName, "cutin__skill", namePlate);
             if (!string.IsNullOrEmpty(def.ult)) UiKit.Text($"“{def.ult}”", "cutin__line", plate);
 
             view.schedule.Execute(() =>

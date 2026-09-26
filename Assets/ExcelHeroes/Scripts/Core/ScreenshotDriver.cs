@@ -173,6 +173,9 @@ namespace ExcelHeroes.Core
                                 .ForEach(e => e.RemoveFromHierarchy());
                         yield return new WaitForSeconds(0.3f);
                         yield return Shoot($"{n:00}-BattleHud");
+                        BattleScreen.Current?.DebugCutIn();
+                        yield return new WaitForSeconds(0.35f);
+                        yield return Shoot($"{n:00}-CutIn");
 
                         // The fight itself: the next run starts on its own after the result, so
                         // wait it out and take a burst from the party's entrance onwards.
