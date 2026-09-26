@@ -25,7 +25,7 @@
             <!-- 메인 only: who is playing and how far they have got. -->
             <ui:VisualElement name="playerPlate" class="plate">
                 <ui:VisualElement class="plate__rank">
-                    <ui:Label text="Ph" class="plate__rank-word" />
+                    <ui:Label text="Lv" class="plate__rank-word" />
                     <ui:Label name="stageValue" text="1" class="plate__rank-num" />
                 </ui:VisualElement>
                 <ui:VisualElement class="plate__body">
@@ -64,11 +64,11 @@
         <ui:VisualElement name="navbar" class="navbar">
             <ui:Button name="tabHome" class="navtab navtab--active">
                 <ui:Label name="tabHomeIcon" text="" class="navtab__icon icon" />
-                <ui:Label text="메인" class="navtab__label" />
+                <ui:Label text="로비" class="navtab__label" />
             </ui:Button>
             <ui:Button name="tabRoster" class="navtab">
                 <ui:Label name="tabRosterIcon" text="" class="navtab__icon icon" />
-                <ui:Label text="인사" class="navtab__label" />
+                <ui:Label text="사원" class="navtab__label" />
             </ui:Button>
             <ui:Button name="tabParty" class="navtab">
                 <ui:Label name="tabPartyIcon" text="" class="navtab__icon icon" />

@@ -122,6 +122,8 @@ namespace ExcelHeroes.UI
         public VisualElement Build()
         {
             _root = UiKit.Div("gacha");
+            var bg = GameData.UiArt("gacha_bg");
+            if (bg != null) _root.style.backgroundImage = new StyleBackground(bg);
 
             // Two columns, because the banner is a tall picture and everything else is a stack
             // of short rows. Stacked, as they were in portrait, the rates and the pity bars sat

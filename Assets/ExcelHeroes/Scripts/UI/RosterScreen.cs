@@ -201,6 +201,7 @@ namespace ExcelHeroes.UI
             var division = GameData.Division(def.division);
 
             var view = UiKit.Div("detail");
+            ModalFrame.Frame(view);
 
             // The whole illustration, not a crop of it. The card is the thing the player pulled;
             // showing them the middle third of it in a box of a fixed height is the one place in
@@ -252,7 +253,7 @@ namespace ExcelHeroes.UI
             Tab(tabs, "skin", "스킨", heroId, onClose);
             if (heroId == GameData.MainId) Tab(tabs, "promo", "승진", heroId, onClose);
 
-            var body = UiKit.Div("detail__body", right);
+            var body = UiKit.Scroll("detail__body", right);
 
             if (owned != null && _tab == "info") BuildInfo(body, def, owned, heroId, grade, division);
 
@@ -996,6 +997,9 @@ namespace ExcelHeroes.UI
         {
             var b = UiKit.Btn(label, "dtab", () => { _tab = id; Reopen(heroId, onClose); }, parent);
             b.EnableInClassList("dtab--on", _tab == id);
+            // The reference's tabs are the same slanted plates as its buttons: cyan for the open
+            // one, white glass for the rest.
+            SkewPlate.Apply(b, _tab == id ? SkewPlate.Kind.Primary : SkewPlate.Kind.Light);
         }
 
         /// <summary>Rebuilds the sheet in place so levelling shows the new numbers immediately.</summary>

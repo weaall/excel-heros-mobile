@@ -541,3 +541,53 @@ public), so there is nothing to read. Containers that crop on purpose carry the 
 their contents are exempt from the edge checks; everything else that holds content in a fixed-size
 box still needs a human to look at the capture once.
 
+
+## The reference-sheet pass: buttons, modal, cards
+
+The user's verdict on the previous skin was that the buttons, the modals and the character tiles
+were "a different dimension" from the Gemini sheet in `temp_images/`. Measured side by side, the
+causes were concrete, and every one of them is fixed at the painter rather than per screen:
+
+| | before | the sheet |
+|---|---|---|
+| lean | 12°, `\ \` | **16°, `/ /`** — the single biggest tell |
+| corners | sharp | rounded, h × 0.12 |
+| edge | one white stroke | glow → dark edge → light rim → gradient body |
+| accents | one gold bar, one corner | a triangle in the top-left **and** bottom-right |
+| type | bold | **bold italic**, navy on light plates, white on navy |
+
+**`UiPaint`** is the new drawing layer: anti-aliased convex shapes as raw meshes. Every fill gets a
+one-pixel alpha fringe, which is what anti-aliasing is; widen the fringe and it is a glow, shift the
+shape and it is a soft shadow; Sutherland–Hodgman clipping keeps corner triangles and sheens inside
+rounded plates. Painter2D is no longer needed — it anti-aliased but could only fill flat.
+
+**`SkewPlate`** now has seven kinds: Primary (OK), Navy (CANCEL), Glow (START, with the cyan
+core), Light (REWARD INFO), Glass (the arrow row), Gold (recruit), Off. Applying clears the
+element's own background and border inline — whatever a stylesheet paints under a plate shows
+through outside the slant, which was the "background sneaking out behind the button".
+
+**`ModalFrame` + `UiKit.Modal`** is the one modal: glow, white frame, frosted body, cyan L-brackets
+outside the corners; a head band with a yellow foot line, navy/yellow slashes and a navy ✕; a navy
+`Ribbon`, an `Inset` well and `RewardTile`s. The battle result uses it; the hero detail wears the
+frame. Four hand-built white boxes were replaced by one object.
+
+**Cards** (`UiKit.Card`, the party slot): white frame with a grade-colour hairline painted OVER the
+art, a slanted grade plate top-left, a round blue role badge top-right, yellow filled stars, a navy
+foot band with the name and an italic level. `GradeBadge`, `RoleBadge` and `CardFrame` are shared,
+so the roster tile and the line-up slot are the same object.
+
+Three traps met on the way, all general:
+
+- **A painted `Label` covers its own text.** A TextElement paints its text before
+  `generateVisualContent`. Anything painted that carries words is a Div with a Label child.
+- **An element's own mesh is clipped by its own `overflow: hidden`.** The detail modal lost its
+  glow and brackets until the frame stopped clipping and the art rounded itself instead.
+- **A shrunk row with an `overflow: hidden` label is an empty row.** The card name vanished when
+  the band was shorter than its two lines; the level beside it, with no overflow set, kept drawing.
+
+`UiGallery` lays every plate and the modal out like the sheet; the screenshot driver captures it as
+`NN-Kit.png` so the two can be compared side by side.
+
+Not yet done: the page background (the sheet is pale sky blue with light streaks), the top resource
+bar (the sheet's is one long slanted glass plate), HP/EXP bars, round icon buttons, and the gacha
+screen's two recruit buttons, which are not `btn` plates at all.

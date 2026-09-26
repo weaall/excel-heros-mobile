@@ -41,7 +41,7 @@ namespace ExcelHeroes.UI
 
             var cols = UiKit.Div("prog-cols", _root);
             var left = UiKit.Div("prog-cols__left", cols);
-            var right = UiKit.Div("prog-cols__right", cols);
+            var right = UiKit.Scroll("prog-cols__right", cols);
 
             BuildAchievements(left, p);
             BuildPrestige(right, p);

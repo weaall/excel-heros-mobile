@@ -49,7 +49,7 @@ namespace ExcelHeroes.UI
     [RequireComponent(typeof(UIDocument))]
     public class AppRoot : MonoBehaviour
     {
-        public enum Sheet { Home, Roster, Party, Gacha, Quests, Progress, Story, Album, Codex, Chart }
+        public enum Sheet { Home, Battle, Roster, Party, Gacha, Quests, Progress, Story, Album, Codex, Chart }
 
         public VisualElement Overlay { get; private set; }
 
@@ -88,7 +88,8 @@ namespace ExcelHeroes.UI
             _navBack = root.Q<VisualElement>("navBack");
             _screenTitle = root.Q<Label>("screenTitle");
 
-            _screens[Sheet.Home] = new BattleScreen(this);
+            _screens[Sheet.Home] = new HomeScreen(this);
+            _screens[Sheet.Battle] = new BattleScreen(this);
             _screens[Sheet.Roster] = new RosterScreen(this);
             _screens[Sheet.Party] = new PartyScreen(this);
             _screens[Sheet.Gacha] = new GachaScreen(this);
@@ -114,6 +115,7 @@ namespace ExcelHeroes.UI
             Bind("tabCodex", Sheet.Codex);
             Bind("tabChart", Sheet.Chart);
             Bind("tabGacha", Sheet.Gacha);
+            _tabNames[Sheet.Battle] = "출근";
 
             // Glyphs come from the Material Symbols font rather than from PNGs, so an icon that
             // has to be white here and grey there is one character rather than two images.
@@ -232,7 +234,7 @@ namespace ExcelHeroes.UI
             // 메인 전투는 자동전투라 항상 돌아간다. Ticking only the sheet on screen meant the run
             // froze the moment you opened the roster to spend the gold it was earning, which is
             // backwards for an idle game — the reason to browse is that the fight keeps going.
-            if (_screens.TryGetValue(Sheet.Home, out var home) && home is BattleScreen battle)
+            if (_screens.TryGetValue(Sheet.Battle, out var bScreen) && bScreen is BattleScreen battle)
                 battle.Tick(Time.deltaTime);
         }
 
@@ -291,7 +293,9 @@ namespace ExcelHeroes.UI
 
         static string TitleOf(Sheet sheet) => sheet switch
         {
-            Sheet.Roster => "인사 명단",
+            Sheet.Home => "로비",
+            Sheet.Battle => "출근",
+            Sheet.Roster => "사원",
             Sheet.Party => "편성",
             Sheet.Gacha => "모집",
             Sheet.Quests => "일일 업무",
@@ -300,7 +304,7 @@ namespace ExcelHeroes.UI
             Sheet.Album => "사원 앨범",
             Sheet.Codex => "오류 도감",
             Sheet.Chart => "통계",
-            _ => "메인 전투",
+            _ => "로비",
         };
 
         /// <summary>Locked while a reveal is playing so a sheet change cannot strand the overlay.</summary>

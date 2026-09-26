@@ -205,13 +205,10 @@ namespace ExcelHeroes.Core
         }
 
         /// <summary>
-        /// Kept so nothing has to be rewritten to ask it, but there is no budget any more: a skill
-        /// costs nothing and fires the moment its own gauge is full. The shared pool was a Blue
-        /// Archive idea layered on top of the web build's per-hero cooldown, and with the EX cards
-        /// gone it had nowhere to show itself — a charged skill that silently would not fire reads
-        /// as a bug, not as a resource.
+        /// Shared cost pool check. In manual or auto-mode, the skill can only be cast if the
+        /// current Cost is greater than or equal to the cost of the hero's skill.
         /// </summary>
-        public bool CanAfford(Combatant h) => true;
+        public bool CanAfford(Combatant h) => Cost >= CostOf(h);
         public bool Finished { get; private set; }
         public bool Won { get; private set; }
         public int GoldEarned { get; private set; }
@@ -297,6 +294,7 @@ namespace ExcelHeroes.Core
             _perWave = monstersPerWave;
             _player = player;
             _synergy = StatMath.Synergy(player);
+            Cost = 4f;
 
             var slot = 0;
             foreach (var owned in player.PartyMembers())
@@ -499,6 +497,7 @@ namespace ExcelHeroes.Core
                 return;
             }
 
+            Cost = Math.Min(MaxCost, Cost + CostRate * dt);
 
             // Same decay rates as the web build: the shake dies in a third of a second, the combo
             // holds for a few seconds of not landing anything.
@@ -516,7 +515,7 @@ namespace ExcelHeroes.Core
             foreach (var h in Heroes.Where(h => h.Alive))
             {
                 if (h.skillCooldown > 0f && h.skillTimer > 0f) h.skillTimer -= dt;
-                if (AutoSkill && h.SkillReady && WorthFiring(h)) FireSkill(h);
+                if (AutoSkill && h.SkillReady && CanAfford(h) && WorthFiring(h)) FireSkill(h);
                 StepHero(h, dt);
                 StepAttack(h, dt, Monsters);
             }
@@ -982,11 +981,12 @@ namespace ExcelHeroes.Core
         /// <summary>Player-facing: fire a charged EX skill. Safe to call when not ready — it no-ops.</summary>
         public bool FireSkill(Combatant h)
         {
-            if (!h.SkillReady) return false;
+            if (!h.SkillReady || !CanAfford(h)) return false;
             var def = GameData.Hero(h.heroId);
             var skill = GameData.Skill(def?.skillType);
             if (def == null || skill == null) return false;
 
+            Cost -= CostOf(h);
             h.skillTimer = h.skillCooldown;
             // h.skillPower is the ★-boosted value; the 임원 perk adds on top of it.
             var power = h.skillPower * (1f + Perk("skill"));

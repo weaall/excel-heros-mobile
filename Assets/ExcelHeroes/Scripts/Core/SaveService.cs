@@ -37,6 +37,7 @@ namespace ExcelHeroes.Core
                     var slot = state.party.IndexOf("");
                     if (slot >= 0) state.party[slot] = Data.GameData.MainId;
                 }
+                
                 if (string.IsNullOrEmpty(state.mainJob)) state.mainJob = "intern";
 
                 return state;

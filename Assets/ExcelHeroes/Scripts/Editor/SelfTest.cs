@@ -885,6 +885,13 @@ namespace ExcelHeroes.EditorTools
             var sim = new BattleSim(p, stage: 1) { AutoSkill = true };
             Check(sim.Heroes.Count == 5, $"party fielded ({sim.Heroes.Count})");
             Check(sim.Monsters.Count > 0, "first wave spawned");
+            Check(sim.Cost == 4f, $"initial shared Cost is 4.0f ({sim.Cost})");
+
+            var testSim = new BattleSim(p, stage: 1) { AutoSkill = false };
+            Check(testSim.Cost == 4f, "initial Cost is 4f");
+            testSim.Tick(1f); // tick 1 second
+            Check(testSim.Cost > 4f, $"Cost increases on Tick ({testSim.Cost})");
+            Check(testSim.Cost <= BattleSim.MaxCost, $"Cost is capped at MaxCost ({testSim.Cost})");
 
             var steps = 0;
             while (!sim.Finished && steps < 60 * 300)   // 300 simulated seconds at 60Hz

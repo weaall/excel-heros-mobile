@@ -44,3 +44,6 @@ Build/Verify/
 # Unity Performance Testing writes these into Assets/Resources on every headless run.
 Assets/Resources/PerformanceTestRun*.json
 Assets/Resources/PerformanceTestRun*.json.meta
+
+# Reference screenshots for design passes — third-party art, never committed.
+temp_images/

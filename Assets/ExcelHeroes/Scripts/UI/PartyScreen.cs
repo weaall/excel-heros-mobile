@@ -173,30 +173,26 @@ namespace ExcelHeroes.UI
         VisualElement BuildSlot(HeroDef def, OwnedHero owned, string id)
         {
             var grade = GameData.Grade(def.grade);
+            var gradeColor = grade?.Color ?? Color.gray;
             var slot = UiKit.Div("pslot");
-            slot.style.borderTopColor = slot.style.borderBottomColor =
-                slot.style.borderLeftColor = slot.style.borderRightColor = grade?.Color ?? Color.gray;
 
             var art = UiKit.Div("pslot__art", slot);
             UiKit.SetArt(art, GameData.WornCardArt(id));
-            var gradeBadge = UiKit.Text(def.grade, "pslot__grade", art);
-            gradeBadge.style.backgroundColor = grade?.Color ?? Color.gray;
+            UiKit.GradeBadge(def.grade, gradeColor, "card__grade", slot);
+            UiKit.RoleBadge(def.role, "card__role", slot);
+            if (owned.star > 0)
+                UiKit.Text(new string('★', System.Math.Clamp(owned.star, 0, 5)), "card__stars pslot__stars", slot);
 
+            // The navy band under the portrait, as on the reference's line-up: the department
+            // above, then the name and the level. The name gets a line of its own — these are
+            // job titles, and "VLOOKUP 분석가" does not fit beside anything.
             var plate = UiKit.Div("pslot__plate", slot);
-            var tags = UiKit.Div("pslot__tags", plate);
-            UiKit.Text(UiKit.RoleName(def.role), "pslot__role", tags);
-            UiKit.Text(GameData.Division(def.division)?.name ?? def.division ?? "", "pslot__dept", tags);
+            UiKit.Text(GameData.Division(def.division)?.name ?? def.division ?? "", "pslot__dept", plate);
+            var line = UiKit.Div("card__line", plate);
+            UiKit.Text(def.name, "card__name pslot__name", line);
+            UiKit.Text($"Lv.{owned.level}", "card__level", line);
 
-            // The name gets its own line, which the reference does not need and this build does:
-            // its names are 츠바키 and 시로코, three characters, while these are job titles —
-            // "VLOOKUP 분석가" wanted 229px of a 158px label and the audit said so. Lv and ★ share
-            // the line underneath instead.
-            UiKit.Text(def.name, "pslot__name", plate);
-
-            var line = UiKit.Div("pslot__line", plate);
-            UiKit.Text($"Lv.{owned.level}", "pslot__lv", line);
-            var stars = UiKit.Text(UiKit.Stars(owned.star), "pslot__stars", line);
-            stars.style.color = grade?.Color ?? Color.white;
+            UiKit.CardFrame(gradeColor, slot);
 
             slot.RegisterCallback<ClickEvent>(_ => _app.OpenDetail(id));
             return slot;

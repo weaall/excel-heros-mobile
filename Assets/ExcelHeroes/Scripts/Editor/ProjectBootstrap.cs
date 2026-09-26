@@ -102,7 +102,12 @@ namespace ExcelHeroes.EditorTools
         static PanelSettings EnsurePanelSettings()
         {
             var existing = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelPath);
-            if (existing != null) return existing;
+            if (existing != null)
+            {
+                existing.referenceResolution = new Vector2Int(2400, 1080);
+                EditorUtility.SetDirty(existing);
+                return existing;
+            }
 
             var theme = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(ThemePath);
             if (theme == null)
@@ -115,9 +120,9 @@ namespace ExcelHeroes.EditorTools
             var panel = ScriptableObject.CreateInstance<PanelSettings>();
             panel.themeStyleSheet = theme;
             panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-            panel.referenceResolution = new Vector2Int(1080, 1920);
+            panel.referenceResolution = new Vector2Int(2400, 1080);
             panel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
-            panel.match = 0.5f;          // portrait phones vary in aspect; split the difference
+            panel.match = 0.5f;          // landscape phones vary in aspect; split the difference
 
             Directory.CreateDirectory(Path.GetDirectoryName(PanelPath)!);
             AssetDatabase.CreateAsset(panel, PanelPath);
@@ -173,11 +178,11 @@ namespace ExcelHeroes.EditorTools
         {
             PlayerSettings.companyName = "qugo";
             PlayerSettings.productName = "Excel Heroes";
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
-            PlayerSettings.allowedAutorotateToPortrait = true;
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
+            PlayerSettings.allowedAutorotateToPortrait = false;
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
-            PlayerSettings.allowedAutorotateToLandscapeLeft = false;
-            PlayerSettings.allowedAutorotateToLandscapeRight = false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
         }
     }
 }

@@ -63,7 +63,7 @@ namespace ExcelHeroes.UI
             // — what is ready to collect — was the part below the fold.
             var cols = UiKit.Div("qs-cols", _root);
             var left = UiKit.Div("qs-col", cols);
-            var right = UiKit.Div("qs-col qs-col--wide", cols);
+            var right = UiKit.Scroll("qs-col qs-col--wide", cols);
 
             BuildStamp(left, p, file);
             BuildAllClear(left, p, file);

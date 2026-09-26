@@ -203,6 +203,11 @@ namespace ExcelHeroes.Data
             return s;
         }
 
+        public static Sprite UiArt(string name)
+        {
+            return Resources.Load<Sprite>($"Art/UI/{name}");
+        }
+
         public static readonly string[] Skins = { "", "casual", "formal" };
 
         /// <summary>

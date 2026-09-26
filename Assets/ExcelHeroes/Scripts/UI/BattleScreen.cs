@@ -23,12 +23,17 @@ namespace ExcelHeroes.UI
 
         readonly AppRoot _app;
         VisualElement _root, _stage, _resultView, _upgradeBar, _backdropView;
+        VisualElement _exBar, _costBar, _costFill;
+        Label _costLabel;
+        readonly Dictionary<Combatant, (Button Button, VisualElement Charge, Label CostLabel)> _exButtons = new();
         Button _overtimeButton;
         Label _forecastLabel;
         BattleFx _fx;
         Label _comboLabel;
         Label _waveLabel;
         Button _autoButton;
+        Button _speedButton;
+        int _speedMultiplier = 1;
 
         // How long the result card stays up before the next run starts on its own. The fight is
         // an idle loop; stopping it on a modal until someone taps 다시 is what made it a menu.
@@ -107,6 +112,7 @@ namespace ExcelHeroes.UI
             // going while you are on another sheet, so the reason to fast-forward was gone.
             _forecastLabel = UiKit.Text("", "forecast", hud);
             _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
+            _speedButton = UiKit.Btn("×1", "auto-toggle", ToggleSpeed, hud);
 
             // 진행 — whether a win moves the party on, and whether 승산 gets a say. Pills rather
             // than a settings screen: the thing they change is happening on this screen, and a
@@ -118,6 +124,12 @@ namespace ExcelHeroes.UI
             // 야근 — the one fight in this game a player chooses to start. Everything else runs
             // whether or not anyone is watching, which is what makes this worth a button.
             _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn", StartOvertime, hud);
+
+            _costBar = UiKit.Div("ex-cost-bar", _root);
+            _costFill = UiKit.Div("ex-cost-fill", _costBar);
+            _costLabel = UiKit.Text("COST: 0.0 / 10", "ex-cost-text", _costBar);
+
+            _exBar = UiKit.Div("ex-bar", _root);
 
             _upgradeBar = UiKit.Div("upgrades", _root);
 
@@ -167,6 +179,8 @@ namespace ExcelHeroes.UI
 
             foreach (var h in _sim.Heroes) AddFighterView(h);
             foreach (var m in _sim.Monsters) AddFighterView(m);
+
+            BuildExBar();
         }
 
         /// <summary>
@@ -249,6 +263,19 @@ namespace ExcelHeroes.UI
             SyncAutoButton();
         }
 
+        void ToggleSpeed()
+        {
+            _speedMultiplier = _speedMultiplier switch
+            {
+                1 => 2,
+                2 => 3,
+                _ => 1,
+            };
+            if (_speedButton != null) _speedButton.text = $"×{_speedMultiplier}";
+            _speedButton?.EnableInClassList("auto-toggle--on", _speedMultiplier > 1);
+            AudioService.Play("tap", 0.5f);
+        }
+
         Button _advanceButton, _safeButton, _upgradeButton;
 
         /// <summary>The last 자동 진행 reason logged, so 파밍 does not repeat itself every clear.</summary>
@@ -295,6 +322,12 @@ namespace ExcelHeroes.UI
             _autoButton?.EnableInClassList("auto-toggle--on", p.autoSkill);
             _advanceButton?.EnableInClassList("auto-toggle--on", p.autoAdvance);
             _upgradeButton?.EnableInClassList("auto-toggle--on", p.autoUpgrade);
+
+            if (_speedButton != null)
+            {
+                _speedButton.text = $"×{_speedMultiplier}";
+                _speedButton.EnableInClassList("auto-toggle--on", _speedMultiplier > 1);
+            }
 
             if (_safeButton == null) return;
             _safeButton.EnableInClassList("auto-toggle--on", p.safeAdvance);
@@ -431,7 +464,7 @@ namespace ExcelHeroes.UI
             }
 
             if (_hitStop > 0f) _hitStop -= dt;
-            else if (!_sim.Finished) _sim.Tick(dt);
+            else if (!_sim.Finished) _sim.Tick(dt * _speedMultiplier);
 
             // 자동 강화 runs off the screen's tick, not the sim's, so gold keeps being spent while
             // the player is on another sheet — which is the whole point of a setting that spends
@@ -458,6 +491,7 @@ namespace ExcelHeroes.UI
             ApplyShake();
             UpdateCombo();
             UpdateSkillGauges();
+            UpdateExBar();
             UpdateFloaters(dt);
             UpdateBubbles(dt);
             UpdateBrace(dt);
@@ -1177,6 +1211,76 @@ namespace ExcelHeroes.UI
         ///
         /// It closes itself when the next run starts, so nothing has to be tapped.
         /// </summary>
+        void BuildExBar()
+        {
+            if (_exBar == null) return;
+            _exBar.Clear();
+            _exButtons.Clear();
+
+            if (_sim == null) return;
+
+            foreach (var h in _sim.Heroes)
+            {
+                var combatant = h; // capture for closure
+                var btn = new Button(() =>
+                {
+                    if (_sim != null && _sim.FireSkill(combatant))
+                    {
+                        Game.Touch();
+                    }
+                });
+                UiKit.AddClasses(btn, "ex-button");
+                _exBar.Add(btn);
+
+                var art = UiKit.Div("ex-button__art", btn);
+                UiKit.SetArt(art, GameData.WornCardArt(combatant.heroId));
+
+                var charge = UiKit.Div("ex-button__charge", btn);
+                var cost = BattleSim.CostOf(combatant);
+                var label = UiKit.Text($"{cost} COST", "ex-button__label", btn);
+
+                _exButtons[combatant] = (btn, charge, label);
+            }
+        }
+
+        void UpdateExBar()
+        {
+            if (_sim == null) return;
+
+            // Update Cost Bar
+            if (_costFill != null)
+            {
+                var costPercent = (Mathf.Clamp(_sim.Cost, 0f, BattleSim.MaxCost) / BattleSim.MaxCost) * 100f;
+                _costFill.style.width = Length.Percent(costPercent);
+            }
+            if (_costLabel != null)
+            {
+                _costLabel.text = $"COST: {_sim.Cost:F1} / 10";
+            }
+
+            // Update EX Buttons
+            foreach (var pair in _exButtons)
+            {
+                var h = pair.Key;
+                var (btn, charge, label) = pair.Value;
+
+                if (h == null || btn == null) continue;
+
+                // 1. Skill cooldown/charge vertical fill
+                if (charge != null)
+                {
+                    var chargePercent = h.SkillReady ? 0f : (1f - h.SkillCharge) * 100f;
+                    charge.style.height = Length.Percent(chargePercent);
+                }
+
+                // 2. Can afford and is ready?
+                var readyAndAffordable = h.SkillReady && _sim.CanAfford(h);
+                btn.EnableInClassList("ex-button--ready", readyAndAffordable);
+                btn.EnableInClassList("ex-button--spent", !readyAndAffordable);
+                btn.SetEnabled(h.Alive); // cannot cast if dead
+            }
+        }
+
         /// <summary>
         /// The run is over. There is nothing to report and nobody to report it to: this is an auto
         /// battle that restarts itself, so a dialog is a thing to dismiss between two fights the
@@ -1192,6 +1296,42 @@ namespace ExcelHeroes.UI
             Log(_sim.Won
                 ? $"전 구간 처리 완료 — 골드 +{_sim.GoldEarned:N0} · 보석 +{gems}"
                 : $"처리 실패 — 골드 +{_sim.GoldEarned:N0} · 보석 +{gems}");
+
+            // The reference sheet's result window (panel 5): a head with the title, a lead line,
+            // the rewards in tiles under a navy ribbon, and two plates — go on, or run it again.
+            // It sits on its own dim layer inside the battle screen rather than on the app
+            // overlay, so the battle keeps drawing behind the glass as it does on the sheet.
+            var popup = UiKit.Div("battle-result", _root);
+            void Close()
+            {
+                popup.RemoveFromHierarchy();
+                _restartIn = 0f;
+                NewRun();
+            }
+
+            var body = UiKit.Modal(_sim.Won ? "업무 처리 완료!" : "업무 처리 실패", Close, out var panel);
+            popup.Add(panel);
+            UiKit.Text(_sim.Won ? "수고하셨습니다!" : "다시 한번 가 봅시다", "modal__lead", body);
+            UiKit.Text(_sim.Won ? "이번 Phase의 성과가 정산되었습니다." : "벌어 둔 만큼은 그대로 정산됩니다.", "modal__sub", body);
+
+            var inset = UiKit.Div("modal__inset", body);
+            ModalFrame.Inset(inset);
+            UiKit.RewardTile(Icons.Gold, $"+{_sim.GoldEarned:N0}", "icon rtile__glyph--gold", inset);
+            UiKit.RewardTile(Icons.Gem, $"x{gems:N0}", "icon", inset, gems > 0 ? UiPaint.C(190, 120, 255, 0.45f) : (Color?)null);
+            UiKit.Ribbon("획득 보상", inset);
+
+            var acts = UiKit.Div("modal__acts", body);
+            var confirmBtn = UiKit.Btn(_sim.Won ? "다음 Phase" : "다시 도전", "btn btn--primary", Close, acts);
+            UiKit.Btn("확인", "btn", Close, acts);
+
+            // If auto-advance is ON, we automatically auto-confirm after 3.2 seconds so it doesn't block idle loop
+            if (Game.Player.autoAdvance)
+            {
+                confirmBtn.schedule.Execute(() =>
+                {
+                    if (popup.parent != null) Close();
+                }).ExecuteLater(3200);
+            }
         }
 
         static void Row(VisualElement sheet, int n, string label, string value, bool accent = false)
