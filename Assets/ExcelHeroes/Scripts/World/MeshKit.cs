@@ -191,7 +191,12 @@ namespace ExcelHeroes.World
                 if (_v.Count > 65000) m.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
                 m.SetVertices(_v);
                 m.SetNormals(_n);
-                m.SetColors(_c);
+                // Colours are written as sRGB hex; the project renders in linear space, so they are
+                // converted here — without it every paint job comes out washed pale.
+                var lin = new List<Color>(_c.Count);
+                var linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
+                foreach (var c in _c) lin.Add(linear ? new Color(c.linear.r, c.linear.g, c.linear.b, c.a) : c);
+                m.SetColors(lin);
                 m.SetUVs(0, _uv);
                 m.SetTriangles(_t, 0);
                 m.RecalculateBounds();
@@ -227,7 +232,7 @@ namespace ExcelHeroes.World
         {
             var m = new Material(GlassShader) { name = "EhGlass" };
             if (tex != null) m.SetTexture("_MainTex", tex);
-            m.SetColor("_Color", tint ?? Color.white);
+            m.SetColor("_Color", Lin(tint ?? Color.white));
             return m;
         }
 
@@ -249,6 +254,10 @@ namespace ExcelHeroes.World
             if (!hex.StartsWith("#")) hex = "#" + hex;
             return ColorUtility.TryParseHtmlString(hex, out var c) ? c : fallback;
         }
+
+        /// <summary>An sRGB colour as the shader wants it (see Bake).</summary>
+        public static Color Lin(Color c) => QualitySettings.activeColorSpace == ColorSpace.Linear
+            ? new Color(c.linear.r, c.linear.g, c.linear.b, c.a) : c;
 
         public static Color Shade(Color c, float k) => new(c.r * k, c.g * k, c.b * k, c.a);
 

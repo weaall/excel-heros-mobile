@@ -710,3 +710,9 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 무대: `OfficeStage` — 스프레드시트 바닥(셀 격자), 파티 줄의 초록 선택 테두리, 창문 벽, 책상·모니터·의자·화분, 앞쪽 캐비닛. Phase 20부터 저녁, 40부터 야근 밤.
 - 셰이더: `Resources/Shaders/Toon.shader`(2톤 셀 + 림 + 역헐 외곽선 #1b1d25, 피격 _Flash), `Glass.shader`(반투명). **프로젝트 URP는 2D Renderer** → 본체 패스를 `Universal2D`와 `UniversalForward` 둘 다로 태그, 유리는 LightMode 없음.
 - 캐릭터 템플릿은 id별로 한 번 만들고 Instantiate(피격 번쩍임은 MaterialPropertyBlock). 레이어 30, 월드 루트 y=-300.
+
+## 전투 HUD · 승리 연출 · 편성 3D
+- HUD(BA 전투 기준): 오른쪽 위 짙은 알약(P·웨이브 / 남은 적 / 남은 시간) + 네모 버튼(▶▶ 배속, AUTO(켜면 노랑), ≡ 메뉴). 진행·안전·자동 강화·야근과 사무실 개선은 **≡ 메뉴 패널**(`bmenu`)로. 3D 모드에선 전투 로그 숨김(`battle--3d`).
+- 승리: `BattleWorld.Celebrate` — 카메라가 파티 앞으로 내려오고(거리 7.7→4.6, 피치 25→12) 캐릭터가 카메라를 보며 환호.
+- 편성: `World/Lineup3D` — 같은 SD 모델을 직교 카메라로 투명 RT에 그려 `party-slots` 배경으로. 슬롯 위치를 GeometryChanged에서 재서 각 이름판 위에 세움. 화면을 떠나면 카메라 정지.
+- **색공간 주의**: 프로젝트는 Linear. 정점 색·틴트는 `MeshKit.Lin`/Bake에서 linear 변환, RT는 `RenderTextureReadWrite.sRGB`. 빠뜨리면 전부 바래 보임.

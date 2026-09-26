@@ -75,11 +75,20 @@ namespace ExcelHeroes.World
             _mpb = new MaterialPropertyBlock();
         }
 
+        // 0 = the fight's wide shot, 1 = the victory close-up on the party (the reference's
+        // "Battle Complete": the camera comes down in front of the squad as they cheer).
+        float _closeUp, _closeUpTarget;
+        Vector3 _partyCentre;
+
+        /// <summary>Victory: bring the camera down onto the party, who turn to it and cheer.</summary>
+        public void Celebrate(bool on) => _closeUpTarget = on ? 1f : 0f;
+
         void PlaceCamera(float shake)
         {
-            var target = new Vector3(0.1f, 0.55f, 0.35f);
-            var pitch = 25f * Mathf.Deg2Rad;
-            const float dist = 7.7f;
+            var k = Mathf.SmoothStep(0f, 1f, _closeUp);
+            var target = Vector3.Lerp(new Vector3(0.1f, 0.55f, 0.35f), _partyCentre + new Vector3(0.9f, 0.5f, 0f), k);
+            var pitch = Mathf.Lerp(25f, 12f, k) * Mathf.Deg2Rad;
+            var dist = Mathf.Lerp(7.7f, 4.6f, k);
             var pos = target + new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
@@ -92,6 +101,7 @@ namespace ExcelHeroes.World
         public void Begin(BattleSim sim)
         {
             _sim = sim;
+            _closeUp = _closeUpTarget = 0f;
             foreach (var a in _actors.Values) Object.Destroy(a.Rig.Root.gameObject);
             _actors.Clear();
             foreach (var s in _shots.Values) Object.Destroy(s.gameObject);
@@ -118,7 +128,7 @@ namespace ExcelHeroes.World
             h = Mathf.Clamp(h, 64, 4096);
             if (_rt != null && _rt.width == w && _rt.height == h) return;
             if (_rt != null) { _cam.targetTexture = null; _rt.Release(); Object.Destroy(_rt); }
-            _rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32) { name = "BattleRT", antiAliasing = 1, filterMode = FilterMode.Bilinear };
+            _rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { name = "BattleRT", antiAliasing = 1, filterMode = FilterMode.Bilinear };
             _rt.Create();
             _cam.targetTexture = _rt;
             _cam.aspect = w / (float)h;
@@ -264,7 +274,11 @@ namespace ExcelHeroes.World
         {
             if (_sim == null) return;
             _time += dt;
-            PlaceCamera(shake);
+            _closeUp = Mathf.MoveTowards(_closeUp, _closeUpTarget, dt * 1.4f);
+            var living = _actors.Values.Where(a => a.C.side == Side.Hero && a.C.Alive).ToList();
+            if (living.Count > 0 && _closeUpTarget <= 0f)
+                _partyCentre = new Vector3(living.Average(a => a.X), 0f, living.Average(a => a.Z));
+            PlaceCamera(shake * (1f - _closeUp));
 
             foreach (var c in _sim.Heroes) Ensure(c);
             foreach (var c in _sim.Monsters) Ensure(c);
@@ -278,7 +292,7 @@ namespace ExcelHeroes.World
                     _actors.Remove(c);
                     continue;
                 }
-                a.Update(dt, _time, WX(drawX(c)), _cam.transform, _mpb);
+                a.Update(dt, _time, WX(drawX(c)), _cam.transform, _mpb, _closeUp);
             }
 
             SyncShots();
@@ -381,7 +395,7 @@ namespace ExcelHeroes.World
                 var cell = MeshKit.Part("cell", root, Cell, MeshKit.Toon, Layer);
                 var mr = cell.GetComponent<MeshRenderer>();
                 var mpb = new MaterialPropertyBlock();
-                mpb.SetColor("_Color", shot.Kind == "bar" ? new Color(0.3f, 0.85f, 0.45f) : accent);
+                mpb.SetColor("_Color", MeshKit.Lin(shot.Kind == "bar" ? new Color(0.3f, 0.85f, 0.45f) : accent));
                 mr.SetPropertyBlock(mpb);
                 if (shot.Kind == "bar") cell.transform.localScale = new Vector3(0.6f, 2.4f, 1f);
             }
@@ -432,7 +446,7 @@ namespace ExcelHeroes.World
             public float Attack, Hit, Skill, Dying, Cheer, Knock;
             float _walk, _lastX;
 
-            public void Update(float dt, float time, float targetX, Transform cam, MaterialPropertyBlock mpb)
+            public void Update(float dt, float time, float targetX, Transform cam, MaterialPropertyBlock mpb, float closeUp)
             {
                 var hero = C.side == Side.Hero;
                 var moved = Mathf.Abs(targetX - _lastX);
@@ -450,7 +464,8 @@ namespace ExcelHeroes.World
                 Cheer = Mathf.Max(0f, Cheer - dt);
 
                 // Facing: the party looks right, the errors left, both turned a little to camera.
-                var yaw = hero ? 48f : 132f;
+                var yaw = hero ? Mathf.Lerp(48f, 82f, closeUp) : 132f;
+                if (hero && closeUp > 0.5f && C.Alive && Cheer <= 0f) Cheer = 1.4f;
                 var root = Rig.Root;
                 var y = 0f;
                 if (Skill > 0f) y += Mathf.Sin((1f - Skill / 0.75f) * Mathf.PI) * 0.35f;

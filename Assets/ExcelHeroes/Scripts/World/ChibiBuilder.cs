@@ -399,7 +399,7 @@ namespace ExcelHeroes.World
                 default: // short
                     Cap(b, c, 0.95f, male ? 1.55f : 1.65f, male ? 1.85f : 1.95f);
                     Bangs(b, c, male ? 4 : 5, male ? 0.012f : 0f);
-                    SideLocks(b, c, male ? -0.08f : 0f);
+                    if (!male) SideLocks(b, c, 0f);
                     break;
             }
         }

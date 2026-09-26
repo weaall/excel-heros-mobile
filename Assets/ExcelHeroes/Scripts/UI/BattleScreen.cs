@@ -113,32 +113,53 @@ namespace ExcelHeroes.UI
             // because it is meant to be spent from without leaving the fight that earns it.
             // Added after the field so they draw over it: UI Toolkit has no z-index, and the
             // order things are built in is the only thing that decides what is on top.
-            var hud = UiKit.Div("battle__hud", _root);
-            // Its own glass strip: Chrome.DrawPill draws only a divider slash inside screens.
-            ModalFrame.Painted(hud, (ctx, r) =>
+            // The reference's battle HUD, top right: a dark translucent pill with what is left of
+            // the fight (enemies, time), then square glass buttons — speed, AUTO, menu. The run's
+            // standing settings (진행 · 안전 · 자동 강화 · 야근) and the office upgrades moved off
+            // the field into the menu, which is where the reference keeps everything that is not
+            // about the next three seconds.
+            var hud = UiKit.Div("battle__hud bhud", _root);
+            var pill = UiKit.Div("bhud__pill", hud);
+            ModalFrame.Painted(pill, (ctx, r) =>
             {
-                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 10f);
-                UiPaint.Shadow(ctx, poly, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.3f), 8f);
-                UiPaint.Fill(ctx, poly, UiPaint.C(255, 255, 255, 0.86f));
+                var poly = UiPaint.RoundRect(r, r.height * 0.5f, 8);
+                UiPaint.Fill(ctx, poly, UiPaint.C(18, 28, 50, 0.66f));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.22f), 2f);
             });
-            _waveLabel = UiKit.Text("", "battle__wave", hud);
-            // One toggle, called what it is. The ×1–3 speed control went with it: the run now keeps
-            // going while you are on another sheet, so the reason to fast-forward was gone.
-            _forecastLabel = UiKit.Text("", "forecast", hud);
-            _autoButton = UiKit.Btn("AUTO", "auto-toggle", ToggleAuto, hud);
-            _speedButton = UiKit.Btn("×1", "auto-toggle", ToggleSpeed, hud);
+            _waveLabel = UiKit.Text("", "battle__wave bhud__wave", pill);
+            ModalFrame.Painted(UiKit.Div("bhud__icon", pill), DrawEnemyIcon);
+            _enemyLabel = UiKit.Text("", "bhud__num", pill);
+            ModalFrame.Painted(UiKit.Div("bhud__icon", pill), DrawClockIcon);
+            _timeLabel = UiKit.Text("", "bhud__num bhud__time", pill);
 
-            // 진행 — whether a win moves the party on, and whether 승산 gets a say. Pills rather
-            // than a settings screen: the thing they change is happening on this screen, and a
-            // toggle two taps away from what it affects is one nobody finds.
-            _advanceButton = UiKit.Btn("진행", "auto-toggle", ToggleAdvance, hud);
-            _safeButton = UiKit.Btn("안전", "auto-toggle", ToggleSafe, hud);
-            _upgradeButton = UiKit.Btn("자동 강화", "auto-toggle", ToggleAutoUpgrade, hud);
+            _speedButton = Square(hud, DrawSpeedIcon, ToggleSpeed, out _speedLabel);
+            _autoButton = Square(hud, null, ToggleAuto, out var autoLabel);
+            autoLabel.text = "AUTO";
+            _autoButton.AddToClassList("bhud__auto");
+            Square(hud, DrawMenuIcon, ToggleMenu, out _);
 
-            // 야근 — the one fight in this game a player chooses to start. Everything else runs
-            // whether or not anyone is watching, which is what makes this worth a button.
-            _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn", StartOvertime, hud);
-            foreach (var t in hud.Query<Button>(className: "auto-toggle").ToList()) SkewPlate.Apply(t, SkewPlate.Kind.Glass);
+            _menu = UiKit.Div("bmenu hidden", _root);
+            ModalFrame.Painted(_menu, (ctx, r) =>
+            {
+                var poly = UiPaint.RoundRect(r, 16f, 6);
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 6f), UiPaint.C(0, 0, 0, 0.3f), 14f);
+                UiPaint.Fill(ctx, poly, UiPaint.C(255, 255, 255, 0.96f));
+                var head = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + 64f), 16f, 6);
+                UiPaint.Fill(ctx, head, UiPaint.Vertical(UiPaint.C(40, 62, 108), UiPaint.C(26, 42, 78), r.yMin, r.yMin + 64f));
+            });
+            UiKit.Text("업무 설정", "bmenu__title", _menu);
+            _forecastLabel = UiKit.Text("", "forecast bmenu__forecast", _menu);
+            var toggles = UiKit.Div("bmenu__row", _menu);
+
+            // 진행 — whether a win moves the party on, and whether 승산 gets a say.
+            _advanceButton = UiKit.Btn("자동 진행", "auto-toggle", ToggleAdvance, toggles);
+            _safeButton = UiKit.Btn("안전 진행", "auto-toggle", ToggleSafe, toggles);
+            _upgradeButton = UiKit.Btn("자동 강화", "auto-toggle", ToggleAutoUpgrade, toggles);
+            // 야근 — the one fight in this game a player chooses to start.
+            _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn", StartOvertime, toggles);
+            foreach (var t in toggles.Query<Button>(className: "auto-toggle").ToList()) SkewPlate.Apply(t, SkewPlate.Kind.Light);
+            UiKit.Text("사무실 개선", "bmenu__sub", _menu);
+            _upgradeBar = UiKit.Div("upgrades bmenu__upgrades", _menu);
 
             _costBar = UiKit.Div("ex-cost-bar", _root);
             ModalFrame.Painted(_costBar, DrawCost);
@@ -150,7 +171,6 @@ namespace ExcelHeroes.UI
 
             _exBar = UiKit.Div("ex-bar", _root);
 
-            _upgradeBar = UiKit.Div("upgrades", _root);
 
             _log = UiKit.Scroll("battle-log", _root);
 
@@ -203,6 +223,7 @@ namespace ExcelHeroes.UI
             _world.Begin(_sim);
             _worldTex = null;
             _stage.AddToClassList("battle__stage--3d");
+            _root?.AddToClassList("battle--3d");
 
             BuildExBar();
         }
@@ -295,12 +316,91 @@ namespace ExcelHeroes.UI
                 2 => 3,
                 _ => 1,
             };
-            if (_speedButton != null) _speedButton.text = $"×{_speedMultiplier}";
-            _speedButton?.EnableInClassList("auto-toggle--on", _speedMultiplier > 1);
+            if (_speedLabel != null) _speedLabel.text = $"×{_speedMultiplier}";
+            SetOn(_speedButton, _speedMultiplier > 1);
             AudioService.Play("tap", 0.5f);
         }
 
         Button _advanceButton, _safeButton, _upgradeButton;
+        Label _speedLabel, _enemyLabel, _timeLabel;
+        VisualElement _menu;
+
+        void ToggleMenu()
+        {
+            if (_menu == null) return;
+            var open = _menu.ClassListContains("hidden");
+            _menu.EnableInClassList("hidden", !open);
+            AudioService.Play(open ? "tap" : "back", 0.5f);
+            if (open) { SyncAutoButton(); SyncOvertimeButton(); UpdateUpgrades(); }
+        }
+
+        /// <summary>A square glass button, the reference's battle HUD shape: painted body, icon, label.</summary>
+        static Button Square(VisualElement parent, System.Action<MeshGenerationContext, Rect> icon, System.Action click, out Label label)
+        {
+            var b = UiKit.Btn("", "bhud__sq", click, parent);
+            var bg = UiKit.Div("bhud__sq-bg", b);
+            bg.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(bg, (ctx, r) =>
+            {
+                var on = b.ClassListContains("bhud__sq--on");
+                var poly = UiPaint.RoundRect(r, 12f, 5);
+                UiPaint.Fill(ctx, poly, on ? UiPaint.Vertical(UiPaint.C(255, 222, 90), UiPaint.C(255, 190, 40), r.yMin, r.yMax)
+                                            : UiPaint.Flat(UiPaint.C(18, 28, 50, 0.66f)));
+                UiPaint.Stroke(ctx, poly, on ? UiPaint.C(255, 250, 220, 0.9f) : UiPaint.C(255, 255, 255, 0.25f), 2f);
+            });
+            if (icon != null)
+            {
+                var ic = UiKit.Div("bhud__sq-icon", b);
+                ic.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(ic, icon);
+            }
+            label = UiKit.Text("", "bhud__sq-label", b);
+            label.pickingMode = PickingMode.Ignore;
+            return b;
+        }
+
+        static void SetOn(Button b, bool on)
+        {
+            if (b == null) return;
+            b.EnableInClassList("bhud__sq--on", on);
+            b.Q(className: "bhud__sq-bg")?.MarkDirtyRepaint();
+        }
+
+        static void DrawSpeedIcon(MeshGenerationContext ctx, Rect r)
+        {
+            var c = UiPaint.C(255, 255, 255);
+            var h = r.height * 0.5f; var y = r.center.y; var x = r.center.x - h * 0.55f;
+            for (var i = 0; i < 2; i++)
+            {
+                var x0 = x + i * h * 0.55f;
+                UiPaint.Fill(ctx, new List<Vector2> { new(x0, y - h * 0.5f), new(x0 + h * 0.55f, y), new(x0, y + h * 0.5f) }, c);
+            }
+        }
+
+        static void DrawMenuIcon(MeshGenerationContext ctx, Rect r)
+        {
+            var c = UiPaint.C(255, 255, 255);
+            var w = r.width * 0.46f; var x0 = r.center.x - w * 0.5f;
+            for (var i = -1; i <= 1; i++)
+                UiPaint.Fill(ctx, UiPaint.RoundRect(new Rect(x0, r.center.y + i * r.height * 0.18f - 2.5f, w, 5f), 2.5f), c);
+        }
+
+        static void DrawEnemyIcon(MeshGenerationContext ctx, Rect r)
+        {
+            var c = r.center; var rad = r.height * 0.42f;
+            UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad * 0.92f), UiPaint.C(240, 90, 90));
+            UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(-rad * 0.35f, -rad * 0.1f), rad * 0.22f, rad * 0.26f), UiPaint.C(255, 255, 255));
+            UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(rad * 0.35f, -rad * 0.1f), rad * 0.22f, rad * 0.26f), UiPaint.C(255, 255, 255));
+        }
+
+        static void DrawClockIcon(MeshGenerationContext ctx, Rect r)
+        {
+            var c = r.center; var rad = r.height * 0.42f;
+            UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad), UiPaint.C(90, 200, 255));
+            UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad * 0.72f, rad * 0.72f), UiPaint.C(18, 28, 50));
+            UiPaint.Fill(ctx, UiPaint.RoundRect(new Rect(c.x - 1.5f, c.y - rad * 0.55f, 3f, rad * 0.58f), 1.5f), UiPaint.C(255, 255, 255));
+            UiPaint.Fill(ctx, UiPaint.RoundRect(new Rect(c.x - 1.5f, c.y - 1.5f, rad * 0.45f, 3f), 1.5f), UiPaint.C(255, 255, 255));
+        }
 
         /// <summary>The last 자동 진행 reason logged, so 파밍 does not repeat itself every clear.</summary>
         string _lastHeld;
@@ -343,15 +443,12 @@ namespace ExcelHeroes.UI
         {
             var p = Game.Player;
             if (p == null) return;
-            _autoButton?.EnableInClassList("auto-toggle--on", p.autoSkill);
+            SetOn(_autoButton, p.autoSkill);
             _advanceButton?.EnableInClassList("auto-toggle--on", p.autoAdvance);
             _upgradeButton?.EnableInClassList("auto-toggle--on", p.autoUpgrade);
 
-            if (_speedButton != null)
-            {
-                _speedButton.text = $"×{_speedMultiplier}";
-                _speedButton.EnableInClassList("auto-toggle--on", _speedMultiplier > 1);
-            }
+            if (_speedLabel != null) _speedLabel.text = $"×{_speedMultiplier}";
+            SetOn(_speedButton, _speedMultiplier > 1);
 
             if (_safeButton == null) return;
             _safeButton.EnableInClassList("auto-toggle--on", p.safeAdvance);
@@ -526,8 +623,14 @@ namespace ExcelHeroes.UI
             _waveLabel.text = _sim.Finished
                 ? (_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패")
                 : _sim.Enraged
-                    ? $"Phase {_sim.Stage} · 웨이브 {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
-                    : $"Phase {_sim.Stage} · 웨이브 {_sim.Wave}/{_sim.WaveCount}";
+                    ? $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
+                    : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}";
+            if (_enemyLabel != null) _enemyLabel.text = _sim.Monsters.Count(m => m.Alive).ToString();
+            if (_timeLabel != null)
+            {
+                var left = Mathf.Max(0f, BattleSim.TimeLimit - _sim.Elapsed);
+                _timeLabel.text = $"{(int)left / 60:00}:{(int)left % 60:00}";
+            }
             if (OvertimeService.Active != null) { UpdateOvertimeLabel(); return; }
             _waveLabel.EnableInClassList("battle__wave--enraged", !_sim.Finished && _sim.Enraged);
 
@@ -1440,6 +1543,7 @@ namespace ExcelHeroes.UI
         /// </summary>
         void ShowResult()
         {
+            if (_sim != null && _sim.Won) _world?.Celebrate(true);
             AudioService.Play(_sim.Won ? "victory" : "defeat");
             _resultView = _root;   // marks the result as reported for this run
 

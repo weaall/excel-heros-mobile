@@ -5158,3 +5158,96 @@
 
 .fighter--3d.fighter--boss .fighter__hpbar { width: 180px; height: 16px; }
 .fighter--3d.fighter--dead { opacity: 0; }
+
+
+/* ================================================================ battle HUD (reference: 전투)
+   Top right: a dark pill (phase · enemies · time) and square glass buttons (speed, AUTO, menu).
+   Everything else about the run lives in the menu panel under it. */
+.bhud {
+    top: 24px;
+    right: 40px;
+    height: 84px;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    align-items: center;
+}
+
+.bhud__pill {
+    flex-direction: row;
+    align-items: center;
+    height: 64px;
+    padding: 0 28px 0 28px;
+    margin-right: 12px;
+}
+
+.bhud__wave { color: rgb(255, 255, 255); font-size: 26px; margin-right: 22px; }
+.bhud .battle__wave--enraged { color: rgb(255, 140, 120); }
+.bhud__icon { width: 34px; height: 34px; margin-right: 8px; }
+.bhud__num { color: rgb(255, 255, 255); font-size: 30px; -unity-font-style: bold; margin-right: 22px; }
+.bhud__time { margin-right: 0; min-width: 84px; }
+
+.bhud__sq {
+    width: 84px;
+    height: 84px;
+    margin: 0 0 0 10px;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.bhud__sq-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.bhud__sq-icon { position: absolute; left: 14px; right: 14px; top: 10px; bottom: 26px; }
+.bhud__sq-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 6px;
+    font-size: 19px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: rgb(255, 255, 255);
+}
+
+.bhud__auto .bhud__sq-label { bottom: auto; top: 0; height: 84px; font-size: 22px; -unity-font-style: bold-and-italic; }
+.bhud__sq--on .bhud__sq-label { color: rgb(60, 40, 0); }
+
+.bmenu {
+    position: absolute;
+    top: 120px;
+    right: 40px;
+    width: 880px;
+    padding: 0 28px 24px 28px;
+}
+
+.bmenu__title {
+    height: 64px;
+    -unity-text-align: middle-left;
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-bottom: 14px;
+}
+
+.bmenu__forecast { position: absolute; right: 28px; top: 16px; color: rgb(200, 220, 245); font-size: 24px; }
+.bmenu__row { flex-direction: row; flex-wrap: wrap; }
+.bmenu__row .auto-toggle { width: 196px; height: 76px; margin: 0 8px 10px 0; font-size: 24px; color: rgb(22, 38, 63); }
+.bmenu__row .auto-toggle--on { color: rgb(0, 120, 200); }
+.bmenu__sub { font-size: 24px; -unity-font-style: bold; color: rgb(22, 38, 63); margin: 10px 0 10px 0; }
+
+.bmenu__upgrades {
+    position: relative;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 130px;
+}
+
+.battle--3d .battle-log { display: none; }
+
+
+/* 편성: the SD row (World/Lineup3D) is this box's background; empty slots match the others. */
+.party-slots--sd { -unity-background-scale-mode: stretch-to-fill; }
+.party-slots--sd .slot { flex-grow: 0; width: 280px; margin: 0 10px 0 10px; }

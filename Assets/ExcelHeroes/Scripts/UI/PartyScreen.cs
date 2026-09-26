@@ -40,7 +40,10 @@ namespace ExcelHeroes.UI
             var left = UiKit.Div("party-cols__left", cols);
             var right = UiKit.Div("party-cols__right", cols);
 
-            var slots = UiKit.Div("party-slots", left);
+            var slots = UiKit.Div("party-slots party-slots--sd", left);
+            // The row of SD figures: measured once the slots are laid out, so every figure stands
+            // exactly over its own plate.
+            slots.RegisterCallback<GeometryChangedEvent>(_ => ShowLineup(slots));
             for (var i = 0; i < p.party.Count; i++)
             {
                 var id = p.party[i];
@@ -178,21 +181,13 @@ namespace ExcelHeroes.UI
             // The reference's 부대 편성 has no cards: the members STAND on the floor, feet on one
             // line, a soft shadow under each, and a white plate under that. The cut-out standing
             // art makes that possible; a member without one keeps the card look.
-            var standing = GameData.StandingArt(id);
-            slot.EnableInClassList("pslot--stand", standing != null);
+            // The figure itself is the 3D SD model (World/Lineup3D), drawn behind the whole row;
+            // the slot keeps only the space it stands in and the plates under it.
+            const bool standing = true;
+            slot.AddToClassList("pslot--stand");
 
             var art = UiKit.Div("pslot__art", slot);
-            if (standing != null)
-            {
-                ModalFrame.Painted(art, (ctx, r) =>
-                {
-                    var c = new Vector2(r.center.x, r.yMax - 14f);
-                    UiPaint.Fill(ctx, UiPaint.Ellipse(c, r.width * 0.36f, 16f), UiPaint.C(20, 40, 80, 0.22f), 10f);
-                });
-                var fig = UiKit.Div("pslot__figure", art);
-                UiKit.SetArt(fig, standing);
-                fig.pickingMode = PickingMode.Ignore;
-            }
+            if (standing) { }
             else
             {
                 UiKit.SetArt(art, GameData.WornCardArt(id));
@@ -261,6 +256,34 @@ namespace ExcelHeroes.UI
 
             slot.RegisterCallback<ClickEvent>(_ => _app.OpenDetail(id));
             return slot;
+        }
+
+        void ShowLineup(VisualElement slots)
+        {
+            var box = slots.worldBound;
+            if (box.width < 10f || box.height < 10f || slots.panel == null) return;
+            var panelW = slots.panel.visualTree.worldBound.width;
+            var px = panelW > 1f ? Screen.width / panelW : 1f;
+            var ids = new System.Collections.Generic.List<string>();
+            var centres = new System.Collections.Generic.List<float>();
+            var floor = 0.78f;
+            var slotW = 0.2f;
+            var p = Game.Player;
+            var i = 0;
+            foreach (var child in slots.Children())
+            {
+                var id = i < p.party.Count ? p.party[i] : null;
+                i++;
+                var b = child.worldBound;
+                centres.Add((b.center.x - box.xMin) / box.width);
+                slotW = b.width / box.width;
+                ids.Add(child.ClassListContains("pslot") ? id : null);
+                var tag = child.Q(className: "pslot__tag");
+                if (tag != null) floor = (tag.worldBound.yMin - box.yMin) / box.height;
+            }
+            var rt = World.Lineup3D.Instance.Show(slots, ids, centres, slotW,
+                                                 Mathf.RoundToInt(box.width * px), Mathf.RoundToInt(box.height * px), floor);
+            slots.style.backgroundImage = Background.FromRenderTexture(rt);
         }
 
         void OpenPicker()
