@@ -1,0 +1,28 @@
+# Line endings are LF in the repository AND in the working tree, on every OS.
+#
+# With the global core.autocrlf=true, every `git add` printed "LF will be replaced by CRLF" once
+# per file — hundreds of lines for a commit that touched the art metadata — and the files were
+# LF on disk anyway, so the warning was about a conversion nothing wanted. eol=lf ends both.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.psd binary
+*.wav binary
+*.ogg binary
+*.mp3 binary
+*.ttf binary
+*.otf binary
+*.dll binary
+*.exe binary
+*.so binary
+*.a binary
+*.zip binary
+*.asset text eol=lf
+*.meta text eol=lf
+*.unity text eol=lf
+*.prefab text eol=lf
+*.mat text eol=lf
