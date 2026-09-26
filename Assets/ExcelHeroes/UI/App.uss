@@ -4610,3 +4610,91 @@
 }
 
 .kit__modal { width: 100%; }
+
+
+/* ================================================================ touch answers (Juice.cs)
+   Sink to 0.94 on press, overshoot to 1.04 on release, settle. BA_REFERENCE.md §5. */
+.juice { transition-property: scale; transition-duration: 0.09s; transition-timing-function: ease-out; }
+.juice--down { scale: 0.94 0.94; transition-duration: 0.05s; }
+.juice--up { scale: 1.04 1.04; transition-duration: 0.09s; }
+
+.touch-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.touch-fx {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    scale: 0.35 0.35;
+    opacity: 1;
+    transition-property: scale, opacity;
+    transition-duration: 0.36s;
+    transition-timing-function: ease-out;
+}
+
+.touch-fx--go { scale: 1.25 1.25; opacity: 0; }
+
+/* A new screen slides a short way in from the right while it fades up. */
+.screen-enter { translate: 60px 0; opacity: 0; }
+.screen-enter--go {
+    translate: 0 0;
+    opacity: 1;
+    transition-property: translate, opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+}
+
+/* ================================================================ illustrated icons */
+.art-icon {
+    -unity-background-scale-mode: scale-to-fit;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* The bottom bar: big drawn icons that rise above the strip, labels in dark ink with a white
+   edge (BA_REFERENCE.md §3). */
+.navtab__icon.art-icon {
+    width: 96px;
+    height: 96px;
+    margin-top: -34px;
+}
+
+.navtab__label {
+    -unity-font-style: bold;
+    color: rgb(30, 44, 70);
+    -unity-text-outline-width: 1.5px;
+    -unity-text-outline-color: rgb(255, 255, 255);
+}
+
+.navtab--active { background-color: rgba(0, 0, 0, 0); }
+.navtab--active .navtab__label { color: rgb(20, 150, 215); }
+
+.navcta__icon.art-icon { width: 76px; height: 76px; margin-right: 10px; }
+
+.chip__icon.art-icon { width: 52px; height: 52px; margin-right: 10px; }
+
+.home__art-icon {
+    width: 116px;
+    height: 116px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+/* ================================================================ top edge, inside a screen
+   Numbers straight on the band, no pills; the disc hangs below the band. */
+.topbar { align-items: flex-start; padding-top: 0; }
+.topbar .chip { height: 66px; margin-left: 6px; padding-left: 24px; }
+.shell--lobby .topbar { align-items: center; padding-top: 8px; }
+.shell--lobby .topbar .chip { height: 56px; margin-left: 18px; }
+.topbar__btn { height: 66px; }
+.shell--lobby .topbar__btn { height: 82px; }
+.navback { align-items: flex-start; margin-top: 8px; }
+.navback__btn { width: 96px; height: 96px; border-radius: 48px; font-size: 48px; }
+.navback__title { margin-top: 10px; font-size: 40px; }
+.chip__value { font-size: 36px; }
+
+/* The drawn icons rise above the bottom strip; nothing on the way may clip them. */
+.navbar, .navtab, .navcta { overflow: visible; }

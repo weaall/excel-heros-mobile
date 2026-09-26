@@ -632,3 +632,26 @@ Still to do from the reference screenshots: 부대 편성's left squad tabs and 
 the battle result's large yellow "Battle Complete" over the field with the squad strip, and the
 student screen as a full page (portrait left, name band bottom-left, white panel with slanted tabs)
 rather than a modal.
+
+## Measured against the reference: top edge, icons, touch, sound
+
+`docs/design/BA_REFERENCE.md` holds the numbers, measured off `temp_images/` as fractions of the
+screen height. What changed because of them:
+
+- **Top edge, two modes** (`Chrome.Lobby`). Inside a screen the band is 66px, pale, and the
+  currencies sit straight on it divided by faint slashes — no pills. The back disc is 96px and
+  hangs below the band. On the lobby there is no band and each currency is its own slanted pill.
+- **Illustrated icons.** `tools/gen_icons_gemini.py` asks Gemini's image model for all sixteen in
+  one 4x4 sheet (one hand, one outline weight), flood-cuts the white from each cell and saves
+  256px PNGs to `Resources/Art/Icons/`. `ArtImportSettings` has an `Icons/` branch that keeps the
+  alpha — the default branch drops it for the opaque card art, which would have put every icon on
+  a black square (stamp v8). The key is read by name from the env file and sent in a header only.
+- **Touch.** `Juice`: press sinks to 0.94 and springs to 1.04 on release; every touch spawns a
+  cyan ring and shards; a new screen slides 60px in and fades up over 0.2s. SkewPlate's own inline
+  scale was removed — an inline scale outranks the stylesheet and froze the spring.
+- **Sound.** `tap` is one pitch-dropping pop (the reference's click); `nav`, `back` and `confirm`
+  are two or three of the same pop rising or falling. The three-note tap played a tune when five
+  buttons were pressed in a row.
+
+The screenshot driver now waits 0.4s after each screen change: a shot inside the slide-in
+photographs an empty sheet, and did.

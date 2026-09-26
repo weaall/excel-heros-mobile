@@ -27,6 +27,22 @@ namespace ExcelHeroes.UI
     {
         static Color C(int r, int g, int b, float a = 1f) => UiPaint.C(r, g, b, a);
 
+        /// <summary>
+        /// True on the lobby. The reference dresses its top edge two ways: on the lobby each
+        /// currency is its own slanted pill floating over the scene; inside every other screen
+        /// there are no pills at all — the numbers sit straight on a thin pale band, divided by
+        /// faint slashes. One flag, read by the painters, rather than two sets of elements.
+        /// </summary>
+        public static bool Lobby { get; private set; } = true;
+
+        public static void SetLobby(VisualElement root, bool lobby)
+        {
+            Lobby = lobby;
+            root?.Q<VisualElement>("root")?.EnableInClassList("shell--lobby", lobby);
+            root?.Q<VisualElement>("topbar")?.MarkDirtyRepaint();
+            root?.Query<VisualElement>(className: "chip").ForEach(c => c.MarkDirtyRepaint());
+        }
+
         public static void Dress(VisualElement root)
         {
             if (root == null) return;
@@ -84,17 +100,41 @@ namespace ExcelHeroes.UI
                 }
         }
 
-        /// <summary>A pale translucent strip along the top edge, fading out at its foot.</summary>
+        /// <summary>
+        /// Inside a screen: a pale band 66px deep (6.1% of the height, measured), whiter at the
+        /// top, with a faint darker foot. The container is taller than the band because the
+        /// back disc hangs below it, as on the reference. On the lobby: nothing — the pills
+        /// float over the scene.
+        /// </summary>
+        public const float BandHeight = 66f;
+
         public static void DrawTopStrip(MeshGenerationContext ctx, Rect r)
         {
-            var band = UiPaint.RoundRect(r, 0f);
-            UiPaint.Fill(ctx, band, UiPaint.Vertical(C(255, 255, 255, 0.70f), C(255, 255, 255, 0.38f), r.yMin, r.yMax), 0f);
-            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMax - 2f, r.xMax, r.yMax), 0f), C(255, 255, 255, 0.9f), 1f);
+            if (Lobby) return;
+            var br = Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + BandHeight);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(br, 0f), UiPaint.Vertical(C(255, 255, 255, 0.94f), C(246, 250, 253, 0.86f), br.yMin, br.yMax), 0f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, br.yMax - 2f, r.xMax, br.yMax), 0f), C(170, 190, 212, 0.55f), 1f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, br.yMax, r.xMax, br.yMax + 8f), 0f),
+                         UiPaint.Vertical(C(20, 40, 80, 0.12f), C(20, 40, 80, 0f), br.yMax, br.yMax + 8f), 0f);
         }
 
         /// <summary>A currency pill: slanted, translucent white, a thin blue-grey edge.</summary>
         public static void DrawPill(MeshGenerationContext ctx, Rect r)
         {
+            if (!Lobby)
+            {
+                // No pill inside a screen: a faint slash on the left divides this number from the
+                // one before it.
+                var h = r.height * 0.5f;
+                var y0 = r.center.y - h * 0.5f;
+                var slash = new List<Vector2>
+                {
+                    new Vector2(r.xMin + 8f, y0), new Vector2(r.xMin + 11f, y0),
+                    new Vector2(r.xMin + 5f, y0 + h), new Vector2(r.xMin + 2f, y0 + h),
+                };
+                UiPaint.Fill(ctx, slash, C(160, 176, 196, 0.8f));
+                return;
+            }
             var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 6f);
             UiPaint.Shadow(ctx, poly, new Vector2(0f, 2f), C(30, 60, 100, 0.16f), 6f);
             UiPaint.Fill(ctx, poly, C(186, 208, 228, 0.9f));

@@ -61,10 +61,19 @@ namespace ExcelHeroes.Core
             // 또로롱 — three quick rising pings rather than the two-note 또롱 this had. A UI
             // click wants to be a flick, so the decay is more than twice as fast as a note in a
             // reveal chord: each ping is gone before the next one lands.
-            "tap"      => Notes(0.26f, 11f, (G5, 0f, 0.34f), (C6, 0.035f, 0.32f), (E6, 0.07f, 0.28f)),
+            // 퐁 — one short rounded pop whose pitch drops as it sounds, the reference game's
+            // button click. The three-note 또로롱 this replaced was pretty and too long: pressing
+            // five buttons in a row played a tune.
+            "tap"      => Pop(0.075f, 1480f, 980f, 0.55f),
             // The same figure a fourth lower and a touch longer, so moving between sheets reads as
             // a bigger gesture than pressing a button without sounding like a different instrument.
-            "nav"      => Notes(0.34f, 8.5f, (D5, 0f, 0.32f), (G5, 0.04f, 0.32f), (C6, 0.08f, 0.3f)),
+            // Moving between screens: the same pop a step lower with a second one above it — a
+            // bigger gesture in the same voice.
+            "nav"      => Pops((0f, 1180f, 820f, 0.5f), (0.055f, 1580f, 1150f, 0.42f)),
+            // Back and close: the pair falling instead of rising.
+            "back"     => Pops((0f, 1500f, 1100f, 0.45f), (0.05f, 1050f, 720f, 0.45f)),
+            // Confirm and collect: three pops climbing.
+            "confirm"  => Pops((0f, 1100f, 900f, 0.45f), (0.05f, 1400f, 1150f, 0.45f), (0.1f, 1800f, 1500f, 0.42f)),
             "pull"     => Sweep(0.45f, 180f, 900f, 0.4f),          // the summon winding up
             "reveal_D" => Notes(0.30f, (C5, 0f, 0.5f)),
             "reveal_C" => Notes(0.40f, (C5, 0f, 0.45f), (E5, 0.08f, 0.45f)),
@@ -126,6 +135,38 @@ namespace ExcelHeroes.Core
             }
 
             return Finish($"n{seconds}{decay}{notes.Length}{notes[0].freq}", data);
+        }
+
+        /// <summary>
+        /// A pop: a sine whose pitch glides down fast from `from` to `to`, with a 2ms attack and a
+        /// quick exponential tail. The glide is what makes it read as a soft plastic "pon" rather
+        /// than a beep — a fixed pitch at this length is a beep.
+        /// </summary>
+        static AudioClip Pop(float seconds, float from, float to, float gain)
+            => Pops((0f, from, to, gain));
+
+        static AudioClip Pops(params (float at, float from, float to, float gain)[] pops)
+        {
+            const float each = 0.08f;
+            var total = 0f;
+            foreach (var p in pops) total = Mathf.Max(total, p.at + each);
+            var n = Mathf.CeilToInt(SampleRate * total);
+            var data = new float[n];
+            foreach (var (at, from, to, gain) in pops)
+            {
+                var start = Mathf.Clamp(Mathf.RoundToInt(at * SampleRate), 0, n - 1);
+                var len = Mathf.Min(n - start, Mathf.CeilToInt(SampleRate * each));
+                var phase = 0f;
+                for (var i = 0; i < len; i++)
+                {
+                    var t = i / (float)SampleRate;
+                    var freq = to + (from - to) * Mathf.Exp(-t * 60f);
+                    phase += 2f * Mathf.PI * freq / SampleRate;
+                    var env = Mathf.Min(1f, t / 0.002f) * Mathf.Exp(-t * 55f);
+                    data[start + i] += (Mathf.Sin(phase) + 0.18f * Mathf.Sin(phase * 2f)) * env * gain;
+                }
+            }
+            return Finish($"p{pops.Length}{pops[0].from}{pops[0].to}{total}", data);
         }
 
         /// <summary>A pitch sweep — the sound of something charging or being released.</summary>

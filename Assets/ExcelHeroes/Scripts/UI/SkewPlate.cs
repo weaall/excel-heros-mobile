@@ -144,11 +144,9 @@ namespace ExcelHeroes.UI
             el.RegisterCallback<AttachToPanelEvent>(_ => el.MarkDirtyRepaint());
             el.RegisterCallback<GeometryChangedEvent>(_ => el.MarkDirtyRepaint());
 
-            // Press feedback. A plate that does not move under a finger reads as a picture of a
-            // button. PointerLeave has to release it too, or dragging off leaves it stuck small.
-            el.RegisterCallback<PointerDownEvent>(_ => el.style.scale = new Scale(new Vector2(0.96f, 0.96f)), TrickleDown.TrickleDown);
-            el.RegisterCallback<PointerUpEvent>(_ => el.style.scale = new Scale(Vector2.one));
-            el.RegisterCallback<PointerLeaveEvent>(_ => el.style.scale = new Scale(Vector2.one));
+            // Press feedback lives in Juice (sink, then spring back past 1). An inline scale here
+            // would outrank the stylesheet's and freeze the spring.
+            Juice.Press(el);
         }
 
         sealed class PlateState { public Kind Kind; public Kind Disabled; }

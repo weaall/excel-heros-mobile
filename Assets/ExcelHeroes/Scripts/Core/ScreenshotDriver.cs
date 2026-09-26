@@ -140,6 +140,9 @@ namespace ExcelHeroes.Core
                     // frames in catches five sprites stacked on one another and says nothing about
                     // the layout. Everything else is static and needs no settling time.
                     if (sheet == AppRoot.Sheet.Home) yield return new WaitForSeconds(2.5f);
+                    // A new screen slides and fades in over 0.2s (Juice.Enter); a shot inside that
+                    // window photographs an empty sheet.
+                    else yield return new WaitForSeconds(0.4f);
                     yield return Shoot($"{n:00}-{sheet}");
                     n++;
 

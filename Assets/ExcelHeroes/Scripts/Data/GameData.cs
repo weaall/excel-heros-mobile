@@ -208,6 +208,9 @@ namespace ExcelHeroes.Data
             return Resources.Load<Sprite>($"Art/UI/{name}");
         }
 
+        /// <summary>An illustrated UI icon (Resources/Art/Icons), or null if it has not been generated.</summary>
+        public static Sprite Icon(string name) => Resources.Load<Sprite>($"Art/Icons/{name}");
+
         public static readonly string[] Skins = { "", "casual", "formal" };
 
         /// <summary>

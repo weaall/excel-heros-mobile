@@ -24,6 +24,13 @@ namespace ExcelHeroes.EditorTools
         const string MonsterRoot = ArtRoot + "Monsters/";
 
         /// <summary>
+        /// The illustrated UI icons from tools/gen_icons_gemini.py. Cut out, so the alpha is the
+        /// whole point — the default branch below drops alpha for the opaque card art, and an icon
+        /// imported that way comes out on a black square.
+        /// </summary>
+        const string IconRoot = ArtRoot + "Icons/";
+
+        /// <summary>
         /// The UI skin from tools/gen-ui-skin.py. It lives OUTSIDE Resources/Art because nothing
         /// loads it by name at runtime — App.uss references it by path — and it needs the opposite
         /// of what the illustrations need: an alpha channel (the slanted shape is transparent at
@@ -33,7 +40,7 @@ namespace ExcelHeroes.EditorTools
         /// </summary>
         const string UiRoot = "Assets/ExcelHeroes/Art/UI/";
 
-        public const string Stamp = "excel-heroes-art-v7";
+        public const string Stamp = "excel-heroes-art-v8";
 
         /// <summary>
         /// Unity re-imports the assets a postprocessor handles only when this number changes.
@@ -48,7 +55,7 @@ namespace ExcelHeroes.EditorTools
         /// **Bump this AND `Stamp` together whenever the settings change.** The version makes Unity
         /// re-import; the stamp makes this code agree to touch the asset again.
         /// </summary>
-        public override uint GetVersion() => 7;
+        public override uint GetVersion() => 8;
 
         void OnPreprocessTexture()
         {
@@ -65,6 +72,22 @@ namespace ExcelHeroes.EditorTools
                 importer.filterMode = FilterMode.Bilinear;
                 importer.mipmapEnabled = false;
                 importer.wrapMode = TextureWrapMode.Clamp;
+                importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                importer.alphaIsTransparency = true;
+                importer.isReadable = false;
+                importer.maxTextureSize = 256;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                ClearPlatformOverrides(importer);
+                importer.userData = Stamp;
+                return;
+            }
+
+            if (assetPath.StartsWith(IconRoot))
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.filterMode = FilterMode.Bilinear;
+                importer.mipmapEnabled = false;
                 importer.alphaSource = TextureImporterAlphaSource.FromInput;
                 importer.alphaIsTransparency = true;
                 importer.isReadable = false;

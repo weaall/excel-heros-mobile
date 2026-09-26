@@ -134,25 +134,33 @@ namespace ExcelHeroes.UI
             if (settings != null) settings.clicked += OpenAdMenu;
 
             var back = root.Q<Button>("backBtn");
-            if (back != null) back.clicked += () => { AudioService.Play("nav", 0.5f); Show(Sheet.Home); };
+            if (back != null) back.clicked += () => { AudioService.Play("back", 0.55f); Show(Sheet.Home); };
             var home = root.Q<Button>("homeBtn");
             if (home != null) home.clicked += () => { AudioService.Play("nav", 0.5f); Show(Sheet.Home); };
-            Glyph("goldIcon", Icons.Gold);
-            Glyph("gemIcon", Icons.Gem);
-            Glyph("tabHomeIcon", Icons.Battle);
-            Glyph("tabRosterIcon", Icons.Roster);
-            Glyph("tabPartyIcon", Icons.Shield);
-            Glyph("tabQuestsIcon", Icons.Tasks);
-            Glyph("tabProgressIcon", Icons.Star);
-            Glyph("tabStoryIcon", Icons.Story);
-            Glyph("tabAlbumIcon", Icons.Album);
-            Glyph("tabCodexIcon", Icons.Codex);
-            Glyph("tabChartIcon", Icons.Chart);
-            Glyph("tabGachaIcon", Icons.Gacha);
+            // Illustrated icons (Resources/Art/Icons, tools/gen_icons_gemini.py). The reference's
+            // icons are small drawings, and the line glyphs these replace were the furthest thing
+            // from them. The glyph stays as the fallback for an icon that has not been generated.
+            Art("goldIcon", "gold", Icons.Gold);
+            Art("gemIcon", "gem", Icons.Gem);
+            Art("tabHomeIcon", "lobby", Icons.Battle);
+            Art("tabRosterIcon", "roster", Icons.Roster);
+            Art("tabPartyIcon", "party", Icons.Shield);
+            Art("tabQuestsIcon", "tasks", Icons.Tasks);
+            Art("tabProgressIcon", "review", Icons.Star);
+            Art("tabStoryIcon", "messenger", Icons.Story);
+            Art("tabAlbumIcon", "album", Icons.Album);
+            Art("tabCodexIcon", "codex", Icons.Codex);
+            Art("tabChartIcon", "chart", Icons.Chart);
+            Art("tabGachaIcon", "recruit", Icons.Gacha);
 
             // The shell's own look — backdrop, top strip, pills, player plate, bottom strip —
             // painted to the reference screenshots. See Chrome.
             Chrome.Dress(root.Q<VisualElement>("root") ?? root);
+
+            // Touch answers: the press-and-spring on every shell button, a cyan burst wherever
+            // the screen is touched. See Juice.
+            Juice.PressAll(root);
+            Juice.Touches(root.Q<VisualElement>("root") ?? root);
 
             // Keeps the chrome clear of the notch and the gesture bar.
             (gameObject.GetComponent<SafeArea>() ?? gameObject.AddComponent<SafeArea>()).Bind(root);
@@ -165,6 +173,18 @@ namespace ExcelHeroes.UI
             if (PrologueScreen.Needed(Game.Player))
                 new PrologueScreen(this, ShowOnboardingIfNeeded).Show();
             else ShowOnboardingIfNeeded();
+
+            void Art(string name, string icon, string glyph)
+            {
+                var e = root.Q<VisualElement>(name);
+                if (e == null) return;
+                var sprite = GameData.Icon(icon);
+                if (sprite == null) { Glyph(name, glyph); return; }
+                if (e is TextElement t) t.text = "";
+                e.RemoveFromClassList("icon");
+                e.AddToClassList("art-icon");
+                e.style.backgroundImage = new StyleBackground(sprite);
+            }
 
             void Glyph(string name, string ch)
             {
@@ -280,7 +300,10 @@ namespace ExcelHeroes.UI
             _sheet = sheet;
             _current = _screens[sheet];
             _content.Clear();
-            _content.Add(_current.Build());
+            var built = _current.Build();
+            _content.Add(built);
+            Juice.Enter(built);
+            Juice.PressAll(built);
             UpdateStatus();
 
             foreach (var pair in _tabs)
@@ -292,6 +315,7 @@ namespace ExcelHeroes.UI
             var home = sheet == Sheet.Home;
             _plate?.EnableInClassList("hidden", !home);
             _navBack?.EnableInClassList("hidden", home);
+            Chrome.SetLobby(_doc.rootVisualElement, home);
             if (_screenTitle != null) _screenTitle.text = TitleOf(sheet);
         }
 
@@ -468,6 +492,7 @@ namespace ExcelHeroes.UI
             Overlay.Clear();
             Overlay.RemoveFromClassList("hidden");
             Overlay.Add(_detail.Build(heroId, CloseOverlay));
+            Juice.PressAll(Overlay);
         }
 
         /// <summary>Puts one panel on the dimmed overlay.</summary>
@@ -476,6 +501,7 @@ namespace ExcelHeroes.UI
             Overlay.Clear();
             Overlay.RemoveFromClassList("hidden");
             Overlay.Add(panel);
+            Juice.PressAll(Overlay);
         }
 
         public void CloseOverlay()

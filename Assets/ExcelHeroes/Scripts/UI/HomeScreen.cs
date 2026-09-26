@@ -59,10 +59,10 @@ namespace ExcelHeroes.UI
             // round white buttons this had read as a toolbar; the reference's read as things
             // lying on the desk.
             var icons = UiKit.Div("home__icons", _root);
-            LobbyIcon(icons, Icons.Story, "모모톡", "home__glyph--pink", AppRoot.Sheet.Story);
-            LobbyIcon(icons, Icons.Tasks, "업무 목록", "home__glyph--blue", AppRoot.Sheet.Quests);
-            LobbyIcon(icons, Icons.Gacha, "모집", "home__glyph--cyan", AppRoot.Sheet.Gacha);
-            LobbyIcon(icons, Icons.Codex, "도감", "home__glyph--navy", AppRoot.Sheet.Codex);
+            LobbyIcon(icons, "notice", Icons.Chart, "공지", "home__glyph--blue", AppRoot.Sheet.Chart);
+            LobbyIcon(icons, "messenger", Icons.Story, "메신저", "home__glyph--pink", AppRoot.Sheet.Story);
+            LobbyIcon(icons, "tasks", Icons.Tasks, "업무", "home__glyph--blue", AppRoot.Sheet.Quests);
+            LobbyIcon(icons, "shop", Icons.Gacha, "상점", "home__glyph--cyan", AppRoot.Sheet.Gacha);
 
             // ---- Right-Floating Speech Bubble ---------------------------------------------
             _bubble = UiKit.Div("home__bubble", _root);
@@ -105,6 +105,7 @@ namespace ExcelHeroes.UI
                 UiPaint.Fill(ctx, UiPaint.Offset(poly, -2f), UiPaint.Vertical(UiPaint.C(255, 92, 150), UiPaint.C(232, 40, 110), r.yMin, r.yMax));
             });
             UiKit.Text("캠페인 진행중", "home__campaign-tag-text", tag).pickingMode = PickingMode.Ignore;
+            Juice.Press(campaign);
             campaign.RegisterCallback<ClickEvent>(_ =>
             {
                 AudioService.Play("nav", 0.5f);
@@ -135,10 +136,13 @@ namespace ExcelHeroes.UI
             ShowNextDialogue(playTap: false);
         }
 
-        void LobbyIcon(VisualElement parent, string glyph, string label, string tint, AppRoot.Sheet target)
+        void LobbyIcon(VisualElement parent, string art, string glyph, string label, string tint, AppRoot.Sheet target)
         {
             var btn = UiKit.Div("home__icon", parent);
-            UiKit.Text(glyph, "icon home__glyph " + tint, btn);
+            var sprite = GameData.Icon(art);
+            if (sprite != null) UiKit.SetArt(UiKit.Div("home__art-icon", btn), sprite);
+            else UiKit.Text(glyph, "icon home__glyph " + tint, btn);
+            Juice.Press(btn);
             UiKit.Text(label, "home__icon-label", btn);
             btn.RegisterCallback<ClickEvent>(_ =>
             {
