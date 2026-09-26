@@ -1,92 +1,147 @@
+using System.Collections.Generic;
 using ExcelHeroes.Core;
 using ExcelHeroes.Data;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace ExcelHeroes.UI
 {
     /// <summary>
-    /// First run. The player arrives with 1,000 gems and no cards, and every screen is about cards
-    /// they do not have yet — so the app opens on an empty home and reads as broken.
+    /// 입사 안내 — the first-run tutorial, the way the reference runs its own: a guide stands
+    /// large at the left, speaks in the story box along the bottom, and at the end the screen dims
+    /// except for the one button to press, with a bouncing pointer on it.
     ///
-    /// This is not a tutorial that explains systems. It gives the premise in three lines, then puts
-    /// them one tap from the only thing worth doing first: a ten-pull. The systems explain
-    /// themselves once there are faces to hang them on.
-    ///
-    /// It is drawn as an Excel dialog rather than as a game popup, because that is the joke and
-    /// because the shape is already familiar: a grey caption bar, a message with an icon beside it,
-    /// the content laid out in worksheet rows, and the buttons bottom-right where every dialog in
-    /// Office puts them. The previous version was a plain dark card with three centred lines, which
-    /// belonged to neither the game nor the disguise.
+    /// The guide is HR (인사팀 정대리): it is her job to meet the new intern. What she explains is
+    /// the premise as it now stands — the translucent sheet on the back, not a halo — and she
+    /// ends on the first thing to do: 모집, paid for by the welcome grant.
     /// </summary>
     public class Onboarding
     {
+        const string GuideId = "hr_jung";
         readonly AppRoot _app;
+        VisualElement _root, _spot;
+        Label _body;
+        int _step;
+        List<string> _lines;
+        Rect _hole;
+        bool _pointing;
 
         public Onboarding(AppRoot app) { _app = app; }
 
-        /// <summary>True until the player owns anyone — the honest test for "has this game started".</summary>
         public static bool Needed(PlayerState p) => p.owned.Count == 0;
 
-        public void Show()
+        public void Show() => Show(0);
+
+        /// <summary>`step` lets the screenshot driver open straight onto the pointer.</summary>
+        public void Show(int step)
         {
-            var dialog = UiKit.Div("xl-dialog");
-
-            // Caption bar. Named like a real one, because a dialog titled "환영합니다!" is the one
-            // thing on screen that would give the game away over a shoulder.
-            var caption = UiKit.Div("xl-dialog__caption", dialog);
-            UiKit.Text("신규 통합 문서 설정", "xl-dialog__caption-title", caption);
-            UiKit.Div("spacer", caption);
-            UiKit.Btn(Icons.Close, "xl-dialog__close icon", Close, caption);
-
-            var body = UiKit.Div("xl-dialog__body", dialog);
-
-            var head = UiKit.Div("xl-dialog__head", body);
-            UiKit.Text("i", "xl-dialog__icon", head);
-            var headText = UiKit.Div("xl-dialog__head-text", head);
-            UiKit.Text("입사를 환영합니다", "xl-dialog__title", headText);
-            UiKit.Text("아래 내용을 확인한 뒤 계속하세요.", "xl-dialog__subtitle", headText);
-
-            // The premise, in worksheet rows. Row numbers down the side are doing the same work
-            // here as they do on the sheets behind this dialog.
-            var sheet = UiKit.Div("xl-dialog__sheet", body);
-            var lines = new[]
+            var guide = GameData.Hero(GuideId);
+            var gems = Game.Player.gems;
+            _lines = new List<string>
             {
-                "스프레드시트 괴물이 서울을 덮쳤습니다.",
-                "당신은 오늘 입사한 신입 김인턴입니다.",
-                "정규직 전환까지, 동료를 모으고 오류를 처리하세요.",
+                "입사를 환영해요, 김인턴 씨! 저는 인사팀 정대리예요. 오늘부터 잘 부탁해요.",
+                "요즘 서울엔 스프레드시트 오류들이 쏟아지고 있어요. 맞설 수 있는 건 등 뒤에 시트가 떠오른 사람뿐이에요.",
+                "시트의 칸은 일할수록 차요. 레벨을 올리고, 승급하고, 특성을 익히면 — 찬 칸만큼 강해지죠.",
+                $"혼자선 무리예요. 입사 지원금으로 보석 {gems:N0}개를 드렸으니, 먼저 함께 일할 동료를 모집해 봐요!",
             };
-            for (var i = 0; i < lines.Length; i++)
-            {
-                var row = UiKit.Div("xl-row", sheet);
-                UiKit.Text((i + 1).ToString(), "xl-row__n", row);
-                var cell = UiKit.Text(lines[i], "xl-row__cell", row);
-                cell.style.whiteSpace = WhiteSpace.Normal;
-            }
 
-            // The one row that is a number, formatted as a number — right-aligned, accented.
-            var grant = UiKit.Div("xl-row xl-row--grant", sheet);
-            UiKit.Text("4", "xl-row__n", grant);
-            UiKit.Text("입사 지원금", "xl-row__cell", grant);
-            UiKit.Text($"{Game.Player.gems:N0}", "xl-row__value", grant);
+            _root = UiKit.Div("guide");
+            _root.RegisterCallback<ClickEvent>(OnClick);
 
-            UiKit.Text($"10회 모집에 {GameData.Balance.gachaTenCost}개가 듭니다. 먼저 동료부터 뽑으세요.",
-                "xl-dialog__note", body);
+            // the dim with a hole (only in the last step)
+            _spot = UiKit.Div("guide__dim", _root);
+            _spot.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(_spot, DrawSpot);
 
-            var foot = UiKit.Div("xl-dialog__foot", dialog);
-            UiKit.Btn("둘러보기", "xl-btn", Close, foot);
-            UiKit.Btn("모집하러 가기", "xl-btn xl-btn--default", () =>
+            var fig = UiKit.Div("guide__figure", _root);
+            fig.pickingMode = PickingMode.Ignore;
+            UiKit.SetArt(fig, GameData.StandingArt(GuideId) ?? GameData.CardArt(GuideId));
+
+            var box = UiKit.Div("pbox guide__box", _root);
+            box.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(box, (ctx, r) =>
+                UiPaint.Fill(ctx, UiPaint.RoundRect(r, 0f, 1),
+                             UiPaint.Vertical(UiPaint.C(8, 14, 30, 0f), UiPaint.C(8, 14, 30, 0.86f), r.yMin, r.yMin + r.height * 0.45f)));
+            var nameRow = UiKit.Div("pbox__name", box);
+            UiKit.Text(guide?.name ?? "인사팀 정대리", "pbox__title", nameRow);
+            UiKit.Text("인사팀", "pbox__sub", nameRow);
+            UiKit.Div("pbox__rule guide__rule", box);
+            _body = UiKit.Text("", "pbox__text", box);
+
+            var skip = UiKit.Btn("", "prologue__pill guide__skip", Close, _root);
+            skip.RegisterCallback<ClickEvent>(e => e.StopPropagation());
+            ModalFrame.Painted(skip, (ctx, r) =>
+                UiPaint.Fill(ctx, UiPaint.RoundRect(r, r.height * 0.5f, 6), UiPaint.C(255, 255, 255, 0.88f)));
+            UiKit.Text("건너뛰기", "prologue__pill-text", skip).pickingMode = PickingMode.Ignore;
+
+            _app.OpenOverlay(_root);
+            // the overlay's own scrim would cover the hole; this screen paints its own dim
+            _app.Overlay.AddToClassList("overlay--clear");
+            _root.schedule.Execute(() => _spot.MarkDirtyRepaint()).Every(33);
+            Step(step);
+        }
+
+        void Step(int i)
+        {
+            _step = Mathf.Clamp(i, 0, _lines.Count - 1);
+            _body.text = _lines[_step];
+            _pointing = _step == _lines.Count - 1;
+            AudioService.Play("tap", 0.35f);
+        }
+
+        /// <summary>Where the lobby's 모집 button is, in the overlay's own space.</summary>
+        Rect Target()
+        {
+            var cta = _root.panel?.visualTree.Q<Button>("tabGacha");
+            if (cta == null) return default;
+            var wb = cta.worldBound;
+            var tl = _root.WorldToLocal(wb.position);
+            return new Rect(tl, wb.size);
+        }
+
+        void OnClick(ClickEvent e)
+        {
+            if (!_pointing) { Step(_step + 1); return; }
+            // last step: only the lit button does anything
+            var local = _root.WorldToLocal(e.position);
+            if (_hole.width > 0f && _hole.Contains(local))
             {
                 Close();
                 _app.Show(AppRoot.Sheet.Gacha);
-            }, foot);
+            }
+        }
 
-            _app.OpenOverlay(dialog);
+        void DrawSpot(MeshGenerationContext ctx, Rect r)
+        {
+            var dim = UiPaint.C(6, 12, 28, 0.55f);
+            var t = _pointing ? Target() : default;
+            if (t.width <= 0f)
+            {
+                UiPaint.Fill(ctx, UiPaint.RoundRect(r, 0f, 1), UiPaint.C(6, 12, 28, 0.35f), 0f);
+                return;
+            }
+            _hole = new Rect(t.xMin - 14f, t.yMin - 14f, t.width + 28f, t.height + 28f);
+            // four rects around the hole
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, _hole.yMin), 0f, 1), dim, 0f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, _hole.yMax, r.xMax, r.yMax), 0f, 1), dim, 0f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, _hole.yMin, _hole.xMin, _hole.yMax), 0f, 1), dim, 0f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(_hole.xMax, _hole.yMin, r.xMax, _hole.yMax), 0f, 1), dim, 0f);
+            // a pulsing cyan frame round the button, and a bouncing pointer above it
+            var pulse = 0.5f + 0.5f * Mathf.Sin(Time.realtimeSinceStartup * 5f);
+            var frame = UiPaint.RoundRect(_hole, 18f, 6);
+            UiPaint.Ring(ctx, frame, UiPaint.C(90, 220, 255, 0.35f + 0.35f * pulse), UiPaint.C(90, 220, 255, 0f), 16f);
+            UiPaint.Stroke(ctx, frame, UiPaint.C(120, 230, 255), 4f);
+            var bob = Mathf.Abs(Mathf.Sin(Time.realtimeSinceStartup * 4f)) * 16f;
+            var tip = new Vector2(_hole.center.x, _hole.yMin - 12f - bob);
+            var arrow = new List<Vector2> { tip + new Vector2(-26f, -40f), tip + new Vector2(26f, -40f), tip };
+            UiPaint.Fill(ctx, arrow, UiPaint.C(255, 214, 60));
+            UiPaint.Stroke(ctx, arrow, UiPaint.C(160, 110, 0), 2f);
         }
 
         void Close()
         {
-            _app.Overlay.Clear();
-            _app.Overlay.AddToClassList("hidden");
+            _app.Overlay.RemoveFromClassList("overlay--clear");
+            _app.CloseOverlay();
         }
     }
 }

@@ -41,6 +41,10 @@ namespace ExcelHeroes.UI
         public static Shade Vertical(Color top, Color bottom, float y0, float y1)
             => p => Color.Lerp(top, bottom, Mathf.InverseLerp(y0, y1, p.y));
 
+        /// <summary>A horizontal gradient between two colours across [x0, x1].</summary>
+        public static Shade Horizontal(Color left, Color right, float x0, float x1)
+            => p => Color.Lerp(left, right, Mathf.InverseLerp(x0, x1, p.x));
+
         public static Shade Flat(Color c) => _ => c;
 
         // ---------------------------------------------------------------- shapes

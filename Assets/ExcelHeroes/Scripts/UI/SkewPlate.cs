@@ -38,7 +38,7 @@ namespace ExcelHeroes.UI
         /// leaning the other way (`\ \`), which is the single biggest reason the buttons looked
         /// like a different game — the reference leans every plate `/ /`.
         /// </summary>
-        const float SlantDegrees = 16f;
+        const float SlantDegrees = 12f;
 
         public static float SlantFor(float height) => Mathf.Tan(SlantDegrees * Mathf.Deg2Rad) * height;
 
@@ -68,23 +68,26 @@ namespace ExcelHeroes.UI
         static readonly Color Yellow = C(255, 214, 58);
         static readonly Color Cyan = C(72, 222, 255);
 
-        /// <summary>Sampled from the reference sheet, one row per plate.</summary>
+        /// <summary>
+        /// Sampled from the reference's own screenshots (확인, 모집, the student page), not from the
+        /// generated asset sheet: the real plates are matte — a soft top-to-bottom gradient, a thin
+        /// border, a couple of large faint triangles in the fill — with no glow, gloss streak or
+        /// corner flags. Accent carries the pattern tint; Sheen its strength.
+        /// </summary>
         static Look LookFor(Kind kind) => kind switch
         {
-            Kind.Primary => new Look(C(96, 230, 255), C(22, 190, 242), C(18, 128, 186), C(255, 255, 255, 0.85f), 2.5f,
-                                     Color.white, C(70, 215, 255, 0.55f), 9f, 0.22f),
-            Kind.Navy    => new Look(C(40, 60, 104), C(24, 38, 72), C(10, 18, 38), C(70, 102, 156), 2f,
-                                     Yellow, C(20, 40, 80, 0.18f), 4f, 0.08f),
-            Kind.Glow    => new Look(C(34, 58, 110), C(20, 44, 92), C(10, 18, 38), C(62, 120, 190), 2f,
-                                     Cyan, C(70, 215, 255, 0.6f), 11f, 0.06f, core: true),
-            Kind.Gold    => new Look(C(255, 222, 92), C(255, 170, 30), C(190, 110, 0), C(255, 248, 220, 0.9f), 2.5f,
-                                     Color.white, C(255, 200, 80, 0.35f), 7f, 0.22f),
-            Kind.Glass   => new Look(C(236, 248, 253, 0.62f), C(214, 238, 250, 0.55f), C(120, 200, 232), C(255, 255, 255, 0.8f), 2f,
-                                     Cyan, C(70, 215, 255, 0.5f), 9f, 0.16f),
-            Kind.Off     => new Look(C(226, 231, 238), C(206, 213, 224), C(168, 178, 194), C(244, 247, 250), 2f,
-                                     C(190, 198, 210), C(0, 0, 0, 0f), 0f, 0f),
-            _            => new Look(C(252, 254, 255), C(226, 241, 250), C(150, 190, 216), C(255, 255, 255), 2.5f,
-                                     Yellow, C(70, 215, 255, 0.45f), 8f, 0.14f),
+            Kind.Primary => new Look(C(122, 223, 255), C(80, 196, 247), C(56, 156, 212, 0.55f), C(255, 255, 255, 0.55f), 1.5f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0.2f),
+            Kind.Navy or Kind.Glow => new Look(C(54, 74, 118), C(34, 50, 88), C(16, 26, 54, 0.7f), C(120, 150, 200, 0.45f), 1.5f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0.07f),
+            Kind.Gold    => new Look(C(255, 236, 112), C(255, 204, 48), C(214, 150, 16, 0.6f), C(255, 252, 230, 0.7f), 1.5f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0.22f),
+            Kind.Glass   => new Look(C(255, 255, 255, 0.74f), C(238, 246, 252, 0.62f), C(255, 255, 255, 0.85f), C(255, 255, 255, 0.6f), 1.5f,
+                                     C(150, 210, 240), C(0, 0, 0, 0f), 0f, 0.18f),
+            Kind.Off     => new Look(C(222, 227, 234), C(206, 213, 223), C(178, 188, 202, 0.7f), C(255, 255, 255, 0.4f), 1.5f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0.1f),
+            _            => new Look(C(255, 255, 255), C(233, 241, 248), C(168, 190, 214, 0.85f), C(255, 255, 255, 0.9f), 1.5f,
+                                     C(150, 205, 238), C(0, 0, 0, 0f), 0f, 0.2f),
         };
 
         /// <summary>
@@ -167,74 +170,37 @@ namespace ExcelHeroes.UI
         {
             var look = LookFor(kind);
             var h = r.height;
-            var slant = Mathf.Min(SlantFor(h), r.width * 0.25f);
-            var radius = Mathf.Clamp(h * 0.12f, 3f, 10f);
-
+            var w = r.width;
+            var slant = Mathf.Min(Mathf.Tan(12f * Mathf.Deg2Rad) * h, w * 0.2f);
+            var radius = Mathf.Clamp(h * 0.1f, 3f, 8f);
             var outer = UiPaint.SkewRect(r, slant, radius);
 
-            // 1. glow and shadow, outside the plate
-            if (look.HaloWidth > 0f)
-                UiPaint.Ring(ctx, outer, look.Halo, UiPaint.WithAlpha(look.Halo, 0f), look.HaloWidth);
-            UiPaint.Shadow(ctx, outer, new Vector2(0f, 3f), C(20, 40, 80, kind == Kind.Off ? 0.08f : 0.22f), 6f);
+            // a soft shadow under the plate — the only depth the reference gives a button
+            UiPaint.Shadow(ctx, outer, new Vector2(0f, Mathf.Clamp(h * 0.05f, 2f, 5f)),
+                           C(20, 40, 80, kind == Kind.Off ? 0.08f : 0.2f), Mathf.Clamp(h * 0.08f, 4f, 8f));
+            UiPaint.Fill(ctx, outer, UiPaint.Vertical(look.Top, look.Bottom, r.yMin, r.yMax));
 
-            // 2. the dark edge is the outer shape itself; 3. the rim; 4. the body inside both
-            UiPaint.Fill(ctx, outer, look.Edge);
-            var rim = UiPaint.Offset(outer, -1.5f);
-            UiPaint.Fill(ctx, rim, look.Rim);
-            var body = UiPaint.Offset(rim, -look.RimWidth);
-            UiPaint.Fill(ctx, body, UiPaint.Vertical(look.Top, look.Bottom, r.yMin, r.yMax));
-
-            // START's cyan core: an ellipse low in the middle, fading out, inside the body.
-            if (look.Core)
-            {
-                var core = UiPaint.Ellipse(new Vector2(r.center.x, r.yMin + h * 0.72f), r.width * 0.34f, h * 0.36f);
-                var clipped = UiPaint.Clip(core, body);
-                UiPaint.Fill(ctx, clipped, p =>
-                {
-                    var d = new Vector2((p.x - r.center.x) / (r.width * 0.34f), (p.y - (r.yMin + h * 0.72f)) / (h * 0.36f)).magnitude;
-                    return C(60, 200, 255, Mathf.Clamp01(0.55f * (1f - d)));
-                }, 0f);
-                UiPaint.Fill(ctx, UiPaint.Clip(UiPaint.Ellipse(new Vector2(r.center.x, r.yMin + h * 0.72f), r.width * 0.2f, h * 0.2f), body),
-                             C(110, 225, 255, 0.28f), 6f);
-            }
-
-            // Sheen: the top half a touch lighter, and one diagonal streak parallel to the slant.
+            // the reference's faint triangle mosaic: two large facets on the right, one on the left
             if (look.Sheen > 0f)
             {
-                var top = new List<Vector2>
-                {
-                    new Vector2(r.xMin - 4f, r.yMin - 4f), new Vector2(r.xMax + 4f, r.yMin - 4f),
-                    new Vector2(r.xMax + 4f, r.yMin + h * 0.46f), new Vector2(r.xMin - 4f, r.yMin + h * 0.46f),
-                };
-                UiPaint.Fill(ctx, UiPaint.Clip(top, body), UiPaint.Vertical(
-                    new Color(1f, 1f, 1f, look.Sheen), new Color(1f, 1f, 1f, 0f), r.yMin, r.yMin + h * 0.46f), 0f);
-
-                var x0 = r.xMin + slant + h * 0.55f;
-                var streak = new List<Vector2>
-                {
-                    new Vector2(x0, r.yMin), new Vector2(x0 + h * 0.16f, r.yMin),
-                    new Vector2(x0 + h * 0.16f - slant, r.yMax), new Vector2(x0 - slant, r.yMax),
-                };
-                UiPaint.Fill(ctx, UiPaint.Clip(streak, body), new Color(1f, 1f, 1f, look.Sheen * 0.45f), 1f);
+                var tint = UiPaint.WithAlpha(look.Accent, look.Sheen);
+                var tintSoft = UiPaint.WithAlpha(look.Accent, look.Sheen * 0.55f);
+                var f1 = new List<Vector2> { new(r.xMin + w * 0.52f, r.yMax), new(r.xMax, r.yMin + h * 0.15f), new(r.xMax, r.yMax) };
+                var f2 = new List<Vector2> { new(r.xMin + w * 0.7f, r.yMin), new(r.xMax, r.yMin), new(r.xMax - w * 0.06f, r.yMin + h * 0.58f) };
+                var f3 = new List<Vector2> { new(r.xMin, r.yMax), new(r.xMin + w * 0.2f, r.yMax), new(r.xMin + w * 0.08f, r.yMin + h * 0.42f) };
+                UiPaint.Fill(ctx, UiPaint.Clip(f1, outer), tint, 0.8f);
+                UiPaint.Fill(ctx, UiPaint.Clip(f2, outer), tintSoft, 0.8f);
+                UiPaint.Fill(ctx, UiPaint.Clip(f3, outer), tintSoft, 0.8f);
             }
 
-            // Corner accents: right triangles in the top-left and bottom-right, clipped to the
-            // body so the point follows the rounded corner instead of poking through it.
-            if (accents)
+            // a hairline of light along the top edge, and the thin border
+            var topBand = new List<Vector2>
             {
-                // Measured: the OK plate's white corner is 0.36h along the top and 0.26h down the
-                // slanted side. The corner vertex sits on the plate's own corner (outside the
-                // rounded body) and the clip trims it to the curve.
-                var ax = Mathf.Clamp(h * 0.40f, 10f, 34f);
-                var ay = Mathf.Clamp(h * 0.30f, 7f, 24f);
-                var tl = new Vector2(r.xMin + slant, r.yMin);
-                var br = new Vector2(r.xMax - slant, r.yMax);
-                var down = new Vector2(-slant, h) / h;          // one pixel of height down the left edge
-                var t1 = new List<Vector2> { tl, tl + new Vector2(ax, 0f), tl + down * ay };
-                var t2 = new List<Vector2> { br, br - down * ay, br - new Vector2(ax, 0f) };
-                UiPaint.Fill(ctx, UiPaint.Clip(t1, body), look.Accent);
-                UiPaint.Fill(ctx, UiPaint.Clip(t2, body), look.Accent);
-            }
+                new(r.xMin - 4f, r.yMin - 4f), new(r.xMax + 4f, r.yMin - 4f),
+                new(r.xMax + 4f, r.yMin + 2.5f), new(r.xMin - 4f, r.yMin + 2.5f),
+            };
+            UiPaint.Fill(ctx, UiPaint.Clip(topBand, UiPaint.Offset(outer, -1f)), look.Rim, 0.6f);
+            UiPaint.Stroke(ctx, outer, look.Edge, look.RimWidth);
         }
 
         /// <summary>

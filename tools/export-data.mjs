@@ -27,6 +27,7 @@ const equipment = await load('src/data/equipment.js').catch(() => ({}));
 const codesMod  = await load('src/data/codes.js').catch(() => ({}));
 const skinsMod  = await load('src/data/skins.js').catch(() => ({}));
 const dollsMod  = await load('src/data/dollSprites.js');
+const prologueMod = await load('src/data/prologue.js');
 const designMod = await load('src/data/design.js');
 
 const { GRADES, ROLES, SKILLS, TRAITS, HEROES, MAIN_JOBS, MAIN_ID } = heroes;
@@ -90,6 +91,8 @@ if (internDoll) dollRows.push({ ...internDoll, id: MAIN_ID, hairColor: '#151515'
 
 const files = {
   'dolls.json':     wrap(dollRows),
+  // 오프닝: 장면 = 일러(Resources/Art/Story/<id>) + 내레이션 몇 줄. 원본은 웹 src/data/prologue.js.
+  'prologue.json':  wrap(prologueMod.PROLOGUE.map((p) => ({ id: p.id, title: p.title, lines: [...p.lines] }))),
   'grades.json':    wrap(rows(GRADES).map((g) => ({ ...g, baseAtk: g.base.atk, baseHp: g.base.hp, base: undefined }))),
   'roles.json':     wrap(rows(ROLES).map((r) => ({ ...r, slot: undefined }))),
   'skills.json':    wrap(rows(SKILLS)),

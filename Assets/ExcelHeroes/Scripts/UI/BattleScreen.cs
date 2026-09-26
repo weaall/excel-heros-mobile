@@ -1240,6 +1240,8 @@ namespace ExcelHeroes.UI
             if (at == null || !_views.TryGetValue(at, out var anchor)) return;
 
             var el = UiKit.Text(text, "saybubble", _stage);
+            // the tail: a small rotated square under the bubble, pointing at the head
+            UiKit.Div("saybubble__tail", el).pickingMode = PickingMode.Ignore;
             var top = anchor.resolvedStyle.top;
             if (float.IsNaN(top) || top <= 0f) top = _groundY - 90f;
             el.style.left = anchor.style.left;

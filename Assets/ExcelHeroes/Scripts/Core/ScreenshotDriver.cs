@@ -121,9 +121,26 @@ namespace ExcelHeroes.Core
                 // machine that has run the game once it can never be checked by accident — which
                 // is how it went unnoticed that the art was being cropped to a third of itself.
                 // CloseOverlay rather than the screen's own Finish, so the save is not marked read.
-                new PrologueScreen(app).Show();
-                yield return null;
+                var prologue = new PrologueScreen(app);
+                prologue.Show();
+                yield return new WaitForSeconds(1.2f);
                 yield return Shoot($"{n++:00}-Prologue");
+                // the scene where the sheet appears, its last line typed and the sheet filled in
+                prologue.Jump(4, 3);
+                yield return new WaitForSeconds(1.2f);
+                yield return Shoot($"{n++:00}-PrologueSheet");
+                app.CloseOverlay();
+                yield return null;
+
+                // 입사 안내: the guide's first line, then the last step with the pointer on 모집.
+                new Onboarding(app).Show(0);
+                yield return new WaitForSeconds(0.5f);
+                yield return Shoot($"{n++:00}-Guide");
+                app.CloseOverlay();
+                yield return null;
+                new Onboarding(app).Show(3);
+                yield return new WaitForSeconds(0.6f);
+                yield return Shoot($"{n++:00}-GuidePoint");
                 app.CloseOverlay();
                 yield return null;
 

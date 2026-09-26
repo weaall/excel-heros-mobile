@@ -512,6 +512,7 @@ namespace ExcelHeroes.UI
         public void OpenOverlay(VisualElement panel)
         {
             Overlay.RemoveFromClassList("overlay--page");
+            Overlay.RemoveFromClassList("overlay--clear");
             Overlay.Clear();
             Overlay.RemoveFromClassList("hidden");
             Overlay.Add(panel);
@@ -521,6 +522,7 @@ namespace ExcelHeroes.UI
         public void CloseOverlay()
         {
             Overlay.RemoveFromClassList("overlay--page");
+            Overlay.RemoveFromClassList("overlay--clear");
             Overlay.Clear();
             Overlay.AddToClassList("hidden");
             _current?.Refresh();

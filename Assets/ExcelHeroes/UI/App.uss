@@ -562,15 +562,15 @@
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* The reference sets every plate label in a heavy italic. Bold-and-italic is synthesised from
-       the bold face — there is no italic file — and at these sizes it reads the same. */
-    -unity-font-style: bold-and-italic;
+    /* Upright bold, as the reference's own buttons are (확인, 모집, 레벨 업). The italic came from
+       the generated asset sheet, which is not the game. */
+    -unity-font-style: bold;
     -unity-text-outline-width: 0;
 }
 
 /* Ink per plate. Dark navy on the light plates (cyan, white, glass, gold), white on the navy
    ones — measured off the sheet, where OK and REWARD INFO are both #16263f. */
-.plate--primary, .plate--light, .plate--glass, .plate--gold { color: rgb(22, 38, 63); }
+.plate--primary, .plate--light, .plate--glass, .plate--gold { color: rgb(30, 46, 76); }
 .plate--navy, .plate--glow { color: rgb(255, 255, 255); }
 .plate--navy .plate__label, .plate--glow .plate__label {
     -unity-text-outline-width: 1px;
@@ -5383,3 +5383,96 @@
 /* the part of the card still charging: a navy shutter, not a beige wash */
 .battle--3d .ex-button__charge { background-color: rgba(16, 24, 44, 0.55); }
 .battle--3d .ex-button--ready { border-color: rgb(255, 214, 70); scale: 1.08 1.08; translate: 0 -8px; }
+
+
+/* ================================================================ 프롤로그 (reference: 스토리 화면)
+   Full-bleed scene, narration box along the bottom, AUTO / 건너뛰기 pills top right. */
+.prologue--ba { padding: 0; justify-content: flex-start; align-items: stretch; overflow: hidden; background-color: rgb(6, 8, 14); }
+.prologue--ba .prologue__art {
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.45s;
+}
+.prologue--ba .prologue__art--in { opacity: 1; }
+.prologue__sheet { position: absolute; }
+
+.pbox { position: absolute; left: 0; right: 0; bottom: 0; height: 36%; padding: 110px 260px 40px 200px; }
+.pbox__name { flex-direction: row; align-items: flex-end; }
+.pbox__title { font-size: 44px; -unity-font-style: bold; color: rgb(255, 255, 255); margin-right: 22px; }
+.pbox__sub { font-size: 28px; -unity-font-style: bold; color: rgb(120, 214, 255); margin-bottom: 4px; }
+.pbox__rule { height: 2px; margin: 14px 0 20px 0; width: 70%; }
+.pbox__text { font-size: 38px; color: rgb(255, 255, 255); white-space: normal; -unity-text-outline-width: 0; }
+.pbox__more { position: absolute; right: 220px; bottom: 56px; width: 26px; height: 18px; }
+
+.prologue__chapter {
+    position: absolute; left: 60px; top: 40px;
+    font-size: 26px; -unity-font-style: bold-and-italic; color: rgba(255, 255, 255, 0.85);
+    -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 0, 0, 0.5);
+}
+.prologue__pills { position: absolute; right: 50px; top: 30px; flex-direction: row; }
+.prologue__pill {
+    height: 64px; min-width: 150px; margin-left: 16px; padding: 0 26px;
+    background-color: rgba(0, 0, 0, 0); border-width: 0; justify-content: center; align-items: center;
+}
+.prologue__pill-text { font-size: 26px; -unity-font-style: bold; color: rgb(30, 46, 76); }
+
+
+/* ================================================================ speech bubbles (reference: 로비)
+   Small, white, rounded, hairline border, a short tail at the speaker. No name, no gauge. */
+.home__bubble {
+    left: 47%;
+    top: 13%;
+    right: auto;
+    bottom: auto;
+    height: auto;
+    min-height: 0;
+    width: auto;
+    max-width: 30%;
+    padding: 22px 34px 24px 34px;
+    opacity: 0;
+    translate: 0 14px;
+    transition-property: opacity, translate;
+    transition-duration: 0.28s, 0.28s;
+}
+.home__bubble--in { opacity: 1; translate: 0 0; }
+.home__who, .home__bond { display: none; }
+.home__speech { font-size: 32px; color: rgb(36, 50, 78); margin-top: 0; -unity-font-style: bold; }
+
+.saybubble {
+    padding: 12px 22px;
+    background-color: rgb(255, 255, 255);
+    border-width: 2px;
+    border-color: rgb(176, 200, 226);
+    border-radius: 18px;
+    color: rgb(36, 50, 78);
+    font-size: 24px;
+    -unity-font-style: bold;
+    overflow: visible;
+}
+.saybubble__tail {
+    position: absolute;
+    left: 34px;
+    bottom: -10px;
+    width: 18px;
+    height: 18px;
+    background-color: rgb(255, 255, 255);
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-color: rgb(176, 200, 226);
+    rotate: 45deg;
+}
+
+/* ================================================================ 입사 안내 (reference: 튜토리얼)
+   The guide stands large at the left, speaks in the story box; the last step dims all but 모집. */
+.guide { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.guide__dim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.guide__figure {
+    position: absolute; left: 2%; width: 34%; top: 6%; bottom: -80%;
+    -unity-background-scale-mode: scale-to-fit; background-position-y: top;
+}
+.guide__box { padding-left: 38%; padding-right: 400px; }
+.guide__rule { background-color: rgba(255, 255, 255, 0.6); width: 60%; }
+.guide__skip { position: absolute; right: 50px; top: 130px; }
+.overlay--clear { background-color: rgba(0, 0, 0, 0); }

@@ -7,30 +7,29 @@ using UnityEngine.UIElements;
 namespace ExcelHeroes.UI
 {
     /// <summary>
-    /// 프롤로그 — the seven-page opening the web build shows once on a new save.
+    /// 프롤로그 — the opening, told the way the reference tells its story: the scene fills the
+    /// screen and drifts in slowly, the narration types out in a dark box along the bottom (a
+    /// title where the speaker's name goes, "프롤로그" where their school would), one line at a
+    /// time, and a tap finishes the line or moves on. AUTO and 건너뛰기 sit top right as white pills.
     ///
-    /// It is the only place the premise is actually told: a meteor, data breaking, errors crawling
-    /// out of it, and a halo that appears over anyone who has ever stayed late fixing someone
-    /// else's spreadsheet. Without it a new player lands on a gacha banner and a battle and has to
-    /// infer all of that, which is what this build was doing.
-    ///
-    /// The art is letterboxed, not cropped. These backdrops are 912x624 landscape and the phone is
-    /// portrait, so filling the band meant cropping about a third of the width away — which is the
-    /// third the composition is in. It now sits at its own aspect ratio across the full width, with
-    /// black above and below, the way a widescreen shot sits inside a phone.
+    /// The premise is the sheet on the back, not a halo: from the scene where it appears, the game
+    /// draws a translucent spreadsheet floating behind the character's shoulder (the illustration
+    /// only carries its cyan light), and its cells fill in as the lines go by.
     /// </summary>
     public class PrologueScreen
     {
         readonly AppRoot _app;
         readonly Action _onDone;
-        VisualElement _root, _stage, _art, _dots;
-        Label _title, _body, _counter;
-        Button _prev, _next;
-        int _page;
+        VisualElement _root, _art, _sheet, _box, _more;
+        Label _title, _sub, _body, _chapter, _autoLabel;
+        Button _auto;
+        int _page, _line;
+        string _full = "";
+        float _typed, _idle, _zoom, _sheetFill, _sheetAlpha;
+        bool _autoOn;
 
-        // 912x624 — every story backdrop is baked at the same size, and the measured sprite
-        // overrides this anyway. It only decides the band's height for the first frame.
-        float _aspect = 912f / 624f;
+        const float CharsPerSecond = 38f;
+        const float AutoDelay = 1.6f;
 
         public PrologueScreen(AppRoot app, Action onDone = null)
         {
@@ -40,87 +39,176 @@ namespace ExcelHeroes.UI
 
         public static bool Needed(PlayerState p) => p != null && !p.prologueSeen && GameData.Prologue.Count > 0;
 
+        /// <summary>Where the game draws the back sheet on each scene (fractions of the screen), or null.</summary>
+        static Rect? SheetSpot(string id) => id switch
+        {
+            // beside the head, over the shoulder — never across the face
+            "sheet" => new Rect(0.67f, 0.12f, 0.22f, 0.29f),
+            "awaken" => new Rect(0.66f, 0.1f, 0.2f, 0.27f),
+            "roster" => new Rect(0.5f, 0.12f, 0.18f, 0.24f),
+            _ => null,
+        };
+
         public void Show()
         {
-            _root = UiKit.Div("prologue");
+            _root = UiKit.Div("prologue prologue--ba");
+            _root.RegisterCallback<ClickEvent>(_ => Advance());
 
-            // The band and the picture are separate elements: the band is the letterbox, sized from
-            // the picture's aspect ratio once the panel knows how wide it is.
-            _stage = UiKit.Div("prologue__stage", _root);
-            _art = UiKit.Div("prologue__art", _stage);
-            _stage.RegisterCallback<GeometryChangedEvent>(OnStageMeasured);
+            _art = UiKit.Div("prologue__art", _root);
+            _art.pickingMode = PickingMode.Ignore;
 
-            var head = UiKit.Div("prologue__head", _root);
-            _counter = UiKit.Text("", "prologue__counter", head);
-            _title = UiKit.Text("", "prologue__title", head);
+            // the sheet, drawn by the game over the scene
+            _sheet = UiKit.Div("prologue__sheet", _root);
+            _sheet.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(_sheet, (ctx, r) =>
+            {
+                if (_sheetAlpha <= 0.01f) return;
+                var cols = 5;
+                var spec = new BackSheet.Spec(cols, 3, Mathf.RoundToInt(_sheetFill * cols * 3), false, "B", null,
+                                              UiPaint.C(90, 210, 255), true, 0);
+                BackSheet.Draw(ctx, r, spec);
+            });
 
-            _body = UiKit.Text("", "prologue__body", _root);
+            // the text box
+            _box = UiKit.Div("pbox", _root);
+            _box.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(_box, (ctx, r) =>
+            {
+                var band = UiPaint.RoundRect(r, 0f, 1);
+                UiPaint.Fill(ctx, band, UiPaint.Vertical(UiPaint.C(8, 14, 30, 0f), UiPaint.C(8, 14, 30, 0.86f), r.yMin, r.yMin + r.height * 0.45f));
+            });
+            var nameRow = UiKit.Div("pbox__name", _box);
+            _title = UiKit.Text("", "pbox__title", nameRow);
+            _sub = UiKit.Text("프롤로그", "pbox__sub", nameRow);
+            var rule = UiKit.Div("pbox__rule", _box);
+            ModalFrame.Painted(rule, (ctx, r) =>
+                UiPaint.Fill(ctx, UiPaint.RoundRect(r, 0f, 1), UiPaint.Horizontal(UiPaint.C(255, 255, 255, 0.7f), UiPaint.C(255, 255, 255, 0f), r.xMin, r.xMax)));
+            _body = UiKit.Text("", "pbox__text", _box);
+            _more = UiKit.Div("pbox__more", _box);
+            ModalFrame.Painted(_more, (ctx, r) =>
+                UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2>
+                    { new(r.xMin, r.yMin), new(r.xMax, r.yMin), new(r.center.x, r.yMax) }, UiPaint.C(255, 255, 255)));
 
-            var foot = UiKit.Div("prologue__foot", _root);
-            UiKit.Btn("건너뛰기", "prologue__skip", Finish, foot);
-            _dots = UiKit.Div("prologue__dots", foot);
-            for (var i = 0; i < GameData.Prologue.Count; i++) UiKit.Div("prologue__dot", _dots);
-            _prev = UiKit.Btn("이전", "prologue__nav", () => Go(_page - 1), foot);
-            _next = UiKit.Btn("다음", "prologue__nav prologue__nav--primary", () => Go(_page + 1), foot);
+            // top: chapter caption on the left, AUTO / 건너뛰기 on the right
+            _chapter = UiKit.Text("", "prologue__chapter", _root);
+            var pills = UiKit.Div("prologue__pills", _root);
+            _auto = Pill(pills, "AUTO", ToggleAuto, out _autoLabel);
+            Pill(pills, "건너뛰기", Finish, out _);
 
-            Go(0);
             _app.OpenOverlay(_root);
+            _root.schedule.Execute(Tick).Every(16);
+            Scene(0);
         }
 
-        /// <summary>
-        /// The band is as large as the picture can be without being cut or distorted.
-        ///
-        /// Height used to follow width alone, which is right on a phone held upright and wrong held
-        /// sideways: a 912x624 backdrop across a 2400-wide screen wants to be 1640 tall, and there
-        /// are only 1080. So it takes whichever axis runs out first — the frame letterboxes top and
-        /// bottom in portrait and left and right in landscape, and the picture is never cropped.
-        /// </summary>
-        void Fit()
+        Button Pill(VisualElement parent, string text, Action click, out Label label)
         {
-            if (_root == null || _stage == null) return;
-
-            var width = _stage.resolvedStyle.width;
-            if (float.IsNaN(width) || width <= 1f) return;
-
-            var room = _root.resolvedStyle.height * ArtShare;
-            if (float.IsNaN(room) || room <= 1f) { _stage.style.height = width / _aspect; return; }
-
-            var byWidth = width / _aspect;
-            if (byWidth <= room) { _stage.style.height = byWidth; _stage.style.width = Length.Percent(100); }
-            else { _stage.style.height = room; _stage.style.width = room * _aspect; }
+            var b = UiKit.Btn("", "prologue__pill", click, parent);
+            b.RegisterCallback<ClickEvent>(e => e.StopPropagation());
+            var on = false;
+            ModalFrame.Painted(b, (ctx, r) =>
+            {
+                on = b.ClassListContains("prologue__pill--on");
+                var poly = UiPaint.RoundRect(r, r.height * 0.5f, 6);
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.25f), 6f);
+                UiPaint.Fill(ctx, poly, on ? UiPaint.C(110, 219, 255, 0.95f) : UiPaint.C(255, 255, 255, 0.88f));
+            });
+            label = UiKit.Text(text, "prologue__pill-text", b);
+            label.pickingMode = PickingMode.Ignore;
+            return b;
         }
 
-        /// <summary>How much of the screen the picture may take before the words need the rest.</summary>
-        const float ArtShare = 0.56f;
+        void ToggleAuto()
+        {
+            _autoOn = !_autoOn;
+            _auto.EnableInClassList("prologue__pill--on", _autoOn);
+            _auto.MarkDirtyRepaint();
+            AudioService.Play("tap", 0.4f);
+        }
 
-        void OnStageMeasured(GeometryChangedEvent e) => Fit();
-
-        void Go(int page)
+        void Scene(int page)
         {
             if (page >= GameData.Prologue.Count) { Finish(); return; }
-            _page = Mathf.Clamp(page, 0, GameData.Prologue.Count - 1);
-
+            _page = page;
             var scene = GameData.Prologue[_page];
-            var sprite = Resources.Load<Sprite>($"Art/Story/{scene.id}");
-            UiKit.SetArt(_art, sprite);
-            if (sprite != null && sprite.rect.height > 0f)
+            UiKit.SetArt(_art, Resources.Load<Sprite>($"Art/Story/{scene.id}"));
+            _art.RemoveFromClassList("prologue__art--in");
+            _art.schedule.Execute(() => _art.AddToClassList("prologue__art--in")).StartingIn(30);
+            _zoom = 0f;
+
+            var spot = SheetSpot(scene.id);
+            if (spot.HasValue)
             {
-                _aspect = sprite.rect.width / sprite.rect.height;
-                Fit();
+                var s = spot.Value;
+                _sheet.style.left = Length.Percent(s.x * 100f);
+                _sheet.style.top = Length.Percent(s.y * 100f);
+                _sheet.style.width = Length.Percent(s.width * 100f);
+                _sheet.style.height = Length.Percent(s.height * 100f);
             }
+            if (scene.id == "sheet") _sheetFill = 0f;
+            else if (spot.HasValue) _sheetFill = Mathf.Max(_sheetFill, 0.6f);
 
             _title.text = scene.title;
-            _counter.text = (_page + 1).ToString();
-            // One line per line, as written — the narration is paced by its line breaks.
-            _body.text = string.Join("\n", scene.lines);
-
-            _prev.SetEnabled(_page > 0);
-            _next.text = _page == GameData.Prologue.Count - 1 ? "시작하기" : "다음";
-
-            for (var i = 0; i < _dots.childCount; i++)
-                _dots[i].EnableInClassList("prologue__dot--on", i <= _page);
-
+            _chapter.text = $"PROLOGUE  {_page + 1} / {GameData.Prologue.Count}";
             AudioService.Play("nav", 0.4f);
+            Line(0);
+        }
+
+        void Line(int line)
+        {
+            var scene = GameData.Prologue[_page];
+            if (line >= scene.lines.Count) { Scene(_page + 1); return; }
+            _line = line;
+            _full = scene.lines[line];
+            _typed = 0f;
+            _idle = 0f;
+            _body.text = "";
+            _more.style.visibility = Visibility.Hidden;
+            if (scene.id == "sheet") _sheetFill = (line + 1f) / scene.lines.Count;
+        }
+
+        void Advance()
+        {
+            if (_typed < _full.Length) { _typed = _full.Length; _body.text = _full; return; }
+            AudioService.Play("tap", 0.3f);
+            Line(_line + 1);
+        }
+
+        void Tick()
+        {
+            if (_root?.panel == null) return;
+            const float dt = 0.016f;
+
+            // slow push-in on the scene
+            _zoom = Mathf.Min(1f, _zoom + dt / 9f);
+            var s = 1.02f + _zoom * 0.06f;
+            _art.style.scale = new Scale(new Vector3(s, s, 1f));
+
+            // the sheet fades in where the scene has one, and bobs
+            var scene = GameData.Prologue[_page];
+            var want = SheetSpot(scene.id).HasValue ? 1f : 0f;
+            _sheetAlpha = Mathf.MoveTowards(_sheetAlpha, want, dt * 1.5f);
+            _sheet.style.opacity = _sheetAlpha;
+            _sheet.style.translate = new Translate(0, Mathf.Sin(Time.realtimeSinceStartup * 1.6f) * 8f);
+            _sheet.MarkDirtyRepaint();
+
+            if (_typed < _full.Length)
+            {
+                _typed = Mathf.Min(_full.Length, _typed + dt * CharsPerSecond);
+                _body.text = _full.Substring(0, Mathf.FloorToInt(_typed));
+                return;
+            }
+            _more.style.visibility = Visibility.Visible;
+            _more.style.translate = new Translate(0, Mathf.Abs(Mathf.Sin(Time.realtimeSinceStartup * 4f)) * 6f);
+            if (_autoOn && (_idle += dt) > AutoDelay) Line(_line + 1);
+        }
+
+        /// <summary>For the screenshot driver: jump to a scene with its line fully typed.</summary>
+        public void Jump(int page, int line)
+        {
+            Scene(Mathf.Clamp(page, 0, GameData.Prologue.Count - 1));
+            Line(Mathf.Clamp(line, 0, GameData.Prologue[_page].lines.Count - 1));
+            _typed = _full.Length;
+            _body.text = _full;
         }
 
         void Finish()

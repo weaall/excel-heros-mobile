@@ -162,20 +162,24 @@ namespace ExcelHeroes.UI
             });
         }
 
-        /// <summary>A white rounded bubble with a tail pointing down-left, at the speaker.</summary>
+        /// <summary>
+        /// The reference's lobby bubble: small, white, rounded, a hairline blue-grey border and a
+        /// short tail pointing left at the speaker's head. No name plate, no gauge — just the line.
+        /// </summary>
         static void DrawBubble(MeshGenerationContext ctx, Rect r)
         {
-            var body = UiPaint.RoundRect(r, 30f, 6);
-            UiPaint.Shadow(ctx, body, new Vector2(0f, 6f), UiPaint.C(20, 40, 80, 0.22f), 16f);
+            var body = UiPaint.RoundRect(r, Mathf.Min(26f, r.height * 0.4f), 6);
+            UiPaint.Shadow(ctx, body, new Vector2(0f, 4f), UiPaint.C(20, 40, 80, 0.16f), 10f);
+            var cy = r.yMin + Mathf.Min(r.height * 0.5f, 52f);
             var tail = new List<Vector2>
             {
-                new Vector2(r.xMin + 40f, r.yMax - 30f), new Vector2(r.xMin + 120f, r.yMax - 4f),
-                new Vector2(r.xMin - 26f, r.yMax + 40f),
+                new Vector2(r.xMin + 2f, cy - 16f), new Vector2(r.xMin - 26f, cy + 10f), new Vector2(r.xMin + 2f, cy + 12f),
             };
-            UiPaint.Fill(ctx, UiPaint.Offset(body, 2f), UiPaint.C(190, 208, 226));
-            UiPaint.Fill(ctx, tail, UiPaint.C(190, 208, 226));
-            UiPaint.Fill(ctx, body, UiPaint.C(255, 255, 255, 0.97f));
-            UiPaint.Fill(ctx, UiPaint.Offset(tail, -2f), UiPaint.C(255, 255, 255, 0.97f));
+            var edge = UiPaint.C(176, 200, 226);
+            UiPaint.Fill(ctx, UiPaint.Offset(body, 2f), edge);
+            UiPaint.Fill(ctx, UiPaint.Offset(tail, 2f), edge);
+            UiPaint.Fill(ctx, body, UiPaint.C(255, 255, 255, 0.98f));
+            UiPaint.Fill(ctx, tail, UiPaint.C(255, 255, 255, 0.98f));
         }
 
         /// <summary>The reference's campaign folder: a cyan folder with a tab, lit from above.</summary>
@@ -265,6 +269,12 @@ namespace ExcelHeroes.UI
             if (_speechLabel != null)
             {
                 _speechLabel.text = _dialogues[_dialogueIndex];
+                // pop in: a new line appears the way the reference's does — fade and rise
+                if (_bubble != null)
+                {
+                    _bubble.RemoveFromClassList("home__bubble--in");
+                    _bubble.schedule.Execute(() => _bubble.AddToClassList("home__bubble--in")).StartingIn(20);
+                }
             }
 
             if (playTap)
