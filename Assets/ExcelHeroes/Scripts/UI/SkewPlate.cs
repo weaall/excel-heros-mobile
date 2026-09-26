@@ -99,8 +99,23 @@ namespace ExcelHeroes.UI
         /// </summary>
         public static void Apply(VisualElement el, Kind kind, Kind disabledKind = Kind.Off)
         {
-            if (el == null || el.ClassListContains("plate")) return;
-            el.AddToClassList("plate");
+            if (el == null) return;
+
+            // Applying again CHANGES the kind rather than painting a second plate on top: a
+            // screen that builds a `btn` (Light) and then asks for Primary means Primary. A
+            // second delegate would draw two glows and the first kind underneath.
+            if (el.userData is PlateState existing)
+            {
+                el.RemoveFromClassList(KindClass(existing.Kind));
+                existing.Kind = kind;
+                existing.Disabled = disabledKind;
+                el.AddToClassList(KindClass(kind));
+                el.MarkDirtyRepaint();
+                return;
+            }
+            var state = new PlateState { Kind = kind, Disabled = disabledKind };
+            el.userData = state;
+            el.AddToClassList("skewplate");
             el.AddToClassList(KindClass(kind));
 
             // The plate IS the background. Anything a stylesheet paints under it shows through
@@ -124,7 +139,7 @@ namespace ExcelHeroes.UI
                 el.Add(label);
             }
 
-            el.generateVisualContent += ctx => Paint(el, el.enabledInHierarchy ? kind : disabledKind, ctx);
+            el.generateVisualContent += ctx => Paint(el, el.enabledInHierarchy ? state.Kind : state.Disabled, ctx);
 
             el.RegisterCallback<AttachToPanelEvent>(_ => el.MarkDirtyRepaint());
             el.RegisterCallback<GeometryChangedEvent>(_ => el.MarkDirtyRepaint());
@@ -135,6 +150,8 @@ namespace ExcelHeroes.UI
             el.RegisterCallback<PointerUpEvent>(_ => el.style.scale = new Scale(Vector2.one));
             el.RegisterCallback<PointerLeaveEvent>(_ => el.style.scale = new Scale(Vector2.one));
         }
+
+        sealed class PlateState { public Kind Kind; public Kind Disabled; }
 
         /// <summary>USS hook for the ink colour, which must match the plate underneath.</summary>
         static string KindClass(Kind k) => "plate--" + k.ToString().ToLowerInvariant();

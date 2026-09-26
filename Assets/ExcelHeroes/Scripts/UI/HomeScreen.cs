@@ -32,9 +32,9 @@ namespace ExcelHeroes.UI
         {
             _root = UiKit.Div("home");
 
-            // Set beautiful generated home background
-            var bg = GameData.UiArt("home_bg");
-            if (bg != null) _root.style.backgroundImage = new StyleBackground(bg);
+            // No picture behind the lobby yet: home_bg was an orange sunset, and every reference
+            // lobby is a bright office in daylight. The shell's painted sky shows through until
+            // the generated backgrounds land (docs/HANDOFF.md, "backgrounds").
 
             _heroId = GetLeadHeroId();
             var def = GameData.Hero(_heroId);
@@ -54,42 +54,19 @@ namespace ExcelHeroes.UI
             // Click character to trigger dialogue change
             _charContainer.RegisterCallback<ClickEvent>(evt => OnCharacterClicked());
 
-            // ---- Left-Floating Circular Buttons (Blue Archive Lobby Icons) ----------------
-            // 1. MomoTalk Circular Button (MESSENGER)
-            var momo = UiKit.Div("home__circle-btn", _root);
-            momo.style.top = 200;
-            var momoIcon = UiKit.Text(Icons.Story, "home__circle-icon icon", momo);
-            UiKit.Text("모모톡", "home__circle-label", momo);
-            momo.RegisterCallback<ClickEvent>(evt =>
-            {
-                AudioService.Play("nav", 0.5f);
-                _app.Show(AppRoot.Sheet.Story);
-            });
-
-            // 2. Shop/Gacha Circular Button (RECRUITMENT)
-            var shop = UiKit.Div("home__circle-btn", _root);
-            shop.style.top = 330;
-            var shopIcon = UiKit.Text(Icons.Gacha, "home__circle-icon icon", shop);
-            UiKit.Text("상점", "home__circle-label", shop);
-            shop.RegisterCallback<ClickEvent>(evt =>
-            {
-                AudioService.Play("nav", 0.5f);
-                _app.Show(AppRoot.Sheet.Gacha);
-            });
-
-            // 3. Codex Circular Button (CODEX)
-            var codex = UiKit.Div("home__circle-btn", _root);
-            codex.style.top = 460;
-            var codexIcon = UiKit.Text(Icons.Codex, "home__circle-icon icon", codex);
-            UiKit.Text("도감", "home__circle-label", codex);
-            codex.RegisterCallback<ClickEvent>(evt =>
-            {
-                AudioService.Play("nav", 0.5f);
-                _app.Show(AppRoot.Sheet.Codex);
-            });
+            // ---- Top-left icon grid, as the reference's lobby: 공지 / 모모톡 / 미션 / 구매 ---
+            // Coloured glyphs with a label under them, two across, on nothing — no discs. The
+            // round white buttons this had read as a toolbar; the reference's read as things
+            // lying on the desk.
+            var icons = UiKit.Div("home__icons", _root);
+            LobbyIcon(icons, Icons.Story, "모모톡", "home__glyph--pink", AppRoot.Sheet.Story);
+            LobbyIcon(icons, Icons.Tasks, "업무 목록", "home__glyph--blue", AppRoot.Sheet.Quests);
+            LobbyIcon(icons, Icons.Gacha, "모집", "home__glyph--cyan", AppRoot.Sheet.Gacha);
+            LobbyIcon(icons, Icons.Codex, "도감", "home__glyph--navy", AppRoot.Sheet.Codex);
 
             // ---- Right-Floating Speech Bubble ---------------------------------------------
             _bubble = UiKit.Div("home__bubble", _root);
+            ModalFrame.Painted(_bubble, DrawBubble);
             _whoLabel = UiKit.Text(def?.nick ?? "김인턴", "home__who", _bubble);
             _speechLabel = UiKit.Text("", "home__speech", _bubble);
 
@@ -108,22 +85,31 @@ namespace ExcelHeroes.UI
             BuildDialogues(def, owned);
             ShowNextDialogue(playTap: false);
 
-            // ---- Bottom-Right: Massive "업무" (Campaign/Battle) Button ---------------------
-            var campaignContainer = UiKit.Div("home__campaign-container", _root);
-            
-            // Pink event banner above the button
-            var campaignBadge = UiKit.Div("home__campaign-badge", campaignContainer);
-            UiKit.Text("캠페인 진행중", "home__campaign-badge-text", campaignBadge);
-
-            // Plated Button
-            var campaignBtn = UiKit.Btn("업무", "btn home__campaign-btn", () =>
+            // ---- Bottom-right: the 업무 folder -------------------------------------------
+            // The reference's lobby enters the game through a cyan folder with a white plate
+            // under it and a pink "in progress" tag — not a button. It is the one object on the
+            // screen that is obviously the way in.
+            var campaign = UiKit.Div("home__campaign", _root);
+            var folder = UiKit.Div("home__folder", campaign);
+            ModalFrame.Painted(folder, DrawFolder);
+            UiKit.Text(Icons.Battle, "icon home__folder-glyph", folder).pickingMode = PickingMode.Ignore;
+            var plate = UiKit.Div("home__campaign-plate", campaign);
+            ModalFrame.Painted(plate, (ctx, r) => SkewPlate.DrawPlate(ctx, r, SkewPlate.Kind.Light, accents: false));
+            UiKit.Text("업무", "home__campaign-label", plate).pickingMode = PickingMode.Ignore;
+            var tag = UiKit.Div("home__campaign-tag", campaign);
+            ModalFrame.Painted(tag, (ctx, r) =>
+            {
+                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height), 4f);
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 2f), UiPaint.C(80, 10, 40, 0.3f), 4f);
+                UiPaint.Fill(ctx, poly, Color.white);
+                UiPaint.Fill(ctx, UiPaint.Offset(poly, -2f), UiPaint.Vertical(UiPaint.C(255, 92, 150), UiPaint.C(232, 40, 110), r.yMin, r.yMax));
+            });
+            UiKit.Text("캠페인 진행중", "home__campaign-tag-text", tag).pickingMode = PickingMode.Ignore;
+            campaign.RegisterCallback<ClickEvent>(_ =>
             {
                 AudioService.Play("nav", 0.5f);
                 _app.Show(AppRoot.Sheet.Battle);
-            }, campaignContainer);
-
-            // Apply blue primary skew plate
-            SkewPlate.Apply(campaignBtn, SkewPlate.Kind.Primary);
+            });
 
             return _root;
         }
@@ -147,6 +133,53 @@ namespace ExcelHeroes.UI
 
             BuildDialogues(def, owned);
             ShowNextDialogue(playTap: false);
+        }
+
+        void LobbyIcon(VisualElement parent, string glyph, string label, string tint, AppRoot.Sheet target)
+        {
+            var btn = UiKit.Div("home__icon", parent);
+            UiKit.Text(glyph, "icon home__glyph " + tint, btn);
+            UiKit.Text(label, "home__icon-label", btn);
+            btn.RegisterCallback<ClickEvent>(_ =>
+            {
+                AudioService.Play("nav", 0.5f);
+                _app.Show(target);
+            });
+        }
+
+        /// <summary>A white rounded bubble with a tail pointing down-left, at the speaker.</summary>
+        static void DrawBubble(MeshGenerationContext ctx, Rect r)
+        {
+            var body = UiPaint.RoundRect(r, 30f, 6);
+            UiPaint.Shadow(ctx, body, new Vector2(0f, 6f), UiPaint.C(20, 40, 80, 0.22f), 16f);
+            var tail = new List<Vector2>
+            {
+                new Vector2(r.xMin + 40f, r.yMax - 30f), new Vector2(r.xMin + 120f, r.yMax - 4f),
+                new Vector2(r.xMin - 26f, r.yMax + 40f),
+            };
+            UiPaint.Fill(ctx, UiPaint.Offset(body, 2f), UiPaint.C(190, 208, 226));
+            UiPaint.Fill(ctx, tail, UiPaint.C(190, 208, 226));
+            UiPaint.Fill(ctx, body, UiPaint.C(255, 255, 255, 0.97f));
+            UiPaint.Fill(ctx, UiPaint.Offset(tail, -2f), UiPaint.C(255, 255, 255, 0.97f));
+        }
+
+        /// <summary>The reference's campaign folder: a cyan folder with a tab, lit from above.</summary>
+        static void DrawFolder(MeshGenerationContext ctx, Rect r)
+        {
+            var tab = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 10f, r.yMin, r.xMin + r.width * 0.42f, r.yMin + 40f), 10f, 4);
+            var body = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin + 24f, r.xMax, r.yMax), 16f, 6);
+            UiPaint.Ring(ctx, body, UiPaint.C(90, 225, 255, 0.45f), UiPaint.C(90, 225, 255, 0f), 14f);
+            UiPaint.Shadow(ctx, body, new Vector2(0f, 6f), UiPaint.C(10, 60, 120, 0.3f), 12f);
+            UiPaint.Fill(ctx, tab, UiPaint.C(40, 160, 220));
+            UiPaint.Fill(ctx, body, Color.white);
+            UiPaint.Fill(ctx, UiPaint.Offset(body, -3f), UiPaint.Vertical(UiPaint.C(110, 226, 255), UiPaint.C(28, 170, 236), r.yMin, r.yMax));
+            // Sheen across the top third.
+            var sheen = UiPaint.Clip(new List<Vector2>
+            {
+                new Vector2(r.xMin, r.yMin), new Vector2(r.xMax, r.yMin),
+                new Vector2(r.xMax, r.yMin + r.height * 0.42f), new Vector2(r.xMin, r.yMin + r.height * 0.42f),
+            }, UiPaint.Offset(body, -3f));
+            UiPaint.Fill(ctx, sheen, UiPaint.C(255, 255, 255, 0.22f), 0f);
         }
 
         string GetLeadHeroId()

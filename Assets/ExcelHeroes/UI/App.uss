@@ -186,9 +186,9 @@
     width: 84px;
     height: 84px;
     flex-shrink: 0;
-    background-color: var(--ex-accent);
-    border-width: 3px;
-    border-color: rgb(146, 208, 248);
+    background-color: rgb(40, 62, 108);
+    border-width: 4px;
+    border-color: rgb(255, 255, 255);
     border-radius: 42px;
     color: rgb(255, 255, 255);
     font-size: 42px;
@@ -199,12 +199,16 @@
 /* flex-shrink: 0, because the title is the one thing on this bar that must not be squeezed.
    The audit caught "사내 메신저" given 80px of the 216 it needs — the currency chips grew and
    the only flexible thing in the row gave way. */
+/* Dark ink with a yellow underline, as on 부대 편성 and 현상수배. */
 .navback__title {
     flex-shrink: 0;
-    font-size: var(--ex-text-base);
+    font-size: 44px;
     -unity-font-style: bold;
-    color: rgb(255, 255, 255);
+    color: rgb(22, 38, 63);
     margin-left: var(--ex-space-2);
+    padding-bottom: 2px;
+    border-bottom-width: 5px;
+    border-bottom-color: rgb(255, 214, 58);
 }
 
 /* The player plate: a dark badge with the phase on a coloured tab, top left, where the reference
@@ -213,26 +217,20 @@
 .plate {
     flex-direction: row;
     align-items: center;
-    height: 80px;
-    padding-right: var(--ex-space-3);
-    background-color: var(--ex-navy-deep);
-    border-width: 3px;
-    border-color: var(--ex-navy-line);
-    border-radius: var(--ex-rad-sm);
+    height: 96px;
+    padding-right: 60px;
+    margin-left: -24px;
 }
 
 .plate__rank {
     align-items: center;
     justify-content: center;
-    width: 86px;
+    width: 110px;
     height: 100%;
-    background-color: var(--ex-accent);
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
 }
 
-.plate__rank-word { font-size: 18px; color: rgba(255, 255, 255, 0.75); }
-.plate__rank-num { font-size: 34px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+.plate__rank-word { font-size: 24px; -unity-font-style: bold-and-italic; color: rgb(255, 214, 58); }
+.plate__rank-num { font-size: 50px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); margin-top: -10px; }
 
 .plate__body { justify-content: center; padding-left: var(--ex-space-2); }
 .plate__name { font-size: 30px; -unity-font-style: bold; color: rgb(255, 255, 255); }
@@ -250,9 +248,6 @@
     height: 120px;
     padding-left: var(--ex-space-2);
     padding-right: var(--ex-space-2);
-    background-color: var(--ex-navy);
-    border-bottom-width: 4px;
-    border-bottom-color: var(--ex-accent);
 }
 
 .topbar__title {
@@ -262,20 +257,19 @@
 }
 
 /* The sheet's small buttons are white discs with a navy glyph, on the bar rather than in it. */
+/* Bare navy glyphs, as the reference sets its settings cog and home. */
 .topbar__btn {
     width: 82px;
     height: 82px;
     flex-shrink: 0;
     margin-left: var(--ex-space-1);
-    background-color: rgb(255, 255, 255);
-    border-width: 3px;
-    border-color: rgb(186, 214, 240);
-    border-radius: 41px;
-    color: var(--ex-navy);
-    font-size: 38px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    color: rgb(34, 54, 96);
+    font-size: 56px;
 }
 
-.topbar__btn:hover { background-color: var(--ex-accent-wash); }
+.topbar__btn:hover { color: rgb(20, 150, 210); }
 
 .topbar .spacer { flex-grow: 1; flex-shrink: 1; min-width: 0; }
 
@@ -292,11 +286,8 @@
     flex-shrink: 0;
     height: 74px;
     margin-left: var(--ex-space-2);
-    padding-left: var(--ex-space-1);
-    background-color: rgb(255, 255, 255);
-    border-width: 3px;
-    border-color: rgb(186, 214, 240);
-    border-radius: 37px;
+    padding-left: 28px;
+    padding-right: 10px;
 }
 
 .chip__icon { font-size: 40px; height: 64px; width: 64px; color: var(--ex-gold); margin-right: var(--ex-space-1); }
@@ -419,7 +410,9 @@
     flex-grow: 1;
     flex-shrink: 1;
     min-height: 0;
-    background-color: var(--ex-surface);
+    /* Transparent: the backdrop is painted on the root (Chrome.DrawBackdrop), and every screen
+       sits on it the way the reference's menus sit on its sky. */
+    background-color: rgba(0, 0, 0, 0);
     overflow: hidden;
 }
 
@@ -3623,9 +3616,9 @@
 
 .chip__plus {
     width: 58px;
-    font-size: 40px;
+    font-size: 48px;
     -unity-font-style: bold;
-    color: var(--ex-accent);
+    color: rgb(40, 190, 240);
     -unity-text-align: middle-center;
 }
 
@@ -4246,7 +4239,9 @@
     color: var(--ex-accent-deep);
 }
 
-/* ---------------------------------------------------------------- landscape lobby (home) */
+/* ---------------------------------------------------------------- landscape lobby (home)
+   Laid out off the reference lobby screenshots: the character large and standing in the middle,
+   a 2x2 grid of coloured glyphs top-left, a white speech bubble, and the 업무 folder bottom-right. */
 
 .home {
     flex-grow: 1;
@@ -4256,71 +4251,74 @@
 
 .home__char-container {
     position: absolute;
-    left: 8%;
-    bottom: -10%;
-    width: 45%;
-    height: 120%;
+    left: 20%;
+    bottom: -14%;
+    width: 46%;
+    height: 128%;
     -unity-background-scale-mode: scale-and-crop;
     background-position-y: top;
+    border-radius: 24px;
     transition-duration: 0.15s;
 }
 
-.home__circle-btn {
+.home__icons {
     position: absolute;
-    left: 48px;
-    width: 110px;
-    height: 110px;
-    border-radius: 55px;
-    background-color: rgba(255, 255, 255, 0.92);
-    border-width: 3px;
-    border-color: rgb(186, 214, 240);
+    left: 40px;
+    top: 30px;
+    width: 300px;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.home__icon {
+    width: 140px;
+    height: 150px;
+    margin-bottom: 10px;
     align-items: center;
     justify-content: center;
-    transition-duration: 0.1s;
-    padding: 0;
 }
 
-.home__circle-btn:hover {
-    background-color: rgb(226, 240, 253);
-    scale: 1.05 1.05;
+.home__icon:hover { scale: 1.06 1.06; }
+
+.home__glyph {
+    font-size: 88px;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(255, 255, 255);
 }
 
-.home__circle-icon {
-    font-size: 54px;
-    color: rgb(31, 111, 235);
-}
+.home__glyph--pink { color: rgb(255, 110, 160); }
+.home__glyph--blue { color: rgb(40, 130, 230); }
+.home__glyph--cyan { color: rgb(30, 190, 240); }
+.home__glyph--navy { color: rgb(40, 62, 108); }
 
-.home__circle-label {
-    font-size: 18px;
+/* Dark type with a white edge, legible on any backdrop — how the reference labels its desk. */
+.home__icon-label {
+    margin-top: -4px;
+    font-size: 26px;
     -unity-font-style: bold;
-    color: rgb(26, 46, 78);
-    margin-top: -2px;
+    color: rgb(30, 44, 70);
+    -unity-text-outline-width: 1.5px;
+    -unity-text-outline-color: rgb(255, 255, 255);
 }
 
 .home__bubble {
     position: absolute;
-    left: 45%;
-    top: 25%;
-    width: 48%;
-    background-color: rgba(255, 255, 255, 0.90);
-    border-radius: 28px;
-    border-width: 2px;
-    border-color: rgb(212, 216, 222);
-    padding: 24px 32px;
-    border-left-width: 10px;
-    border-left-color: rgb(31, 111, 235); /* Sky Blue Accent */
+    left: 58%;
+    top: 20%;
+    width: 36%;
+    padding: 30px 40px 34px 40px;
 }
 
 .home__who {
-    font-size: 32px;
+    font-size: 30px;
     -unity-font-style: bold;
-    color: rgb(31, 111, 235);
+    color: rgb(40, 150, 220);
 }
 
 .home__speech {
     font-size: 38px;
-    color: rgb(40, 42, 48);
-    margin-top: 10px;
+    color: rgb(30, 40, 60);
+    margin-top: 8px;
     white-space: normal;
 }
 
@@ -4333,57 +4331,76 @@
 .home__bond-level {
     font-size: 24px;
     -unity-font-style: bold;
-    color: rgb(220, 53, 69); /* Pink/red affection */
+    color: rgb(232, 60, 120);
     margin-right: 12px;
 }
 
 .home__bond-track {
     flex-grow: 1;
     height: 10px;
-    background-color: rgb(230, 234, 240);
+    background-color: rgb(230, 236, 244);
     border-radius: 5px;
     overflow: hidden;
 }
 
 .home__bond-fill {
     height: 100%;
-    background-color: rgb(220, 53, 69);
+    background-color: rgb(255, 110, 160);
     width: 0%;
 }
 
-/* Campaign/Battle prominent button */
-.home__campaign-container {
+.home__campaign {
     position: absolute;
-    right: 48px;
-    bottom: 180px;
-    width: 360px;
-    height: 180px;
-    align-items: flex-end;
-    justify-content: flex-end;
+    right: 70px;
+    bottom: 40px;
+    width: 340px;
+    height: 300px;
+    align-items: center;
 }
 
-.home__campaign-badge {
-    position: absolute;
-    left: 12px;
-    top: -12px;
-    background-color: rgb(240, 60, 110); /* Pinkish Event/Campaign progress */
-    border-radius: 12px;
-    padding: 4px 16px;
-    rotate: -4deg;
-    z-index: 10;
+.home__campaign:hover { scale: 1.03 1.03; }
+
+.home__folder {
+    width: 230px;
+    height: 170px;
+    align-items: center;
+    justify-content: center;
+    padding-top: 22px;
 }
 
-.home__campaign-badge-text {
-    font-size: 20px;
-    -unity-font-style: bold;
+.home__folder-glyph {
+    font-size: 96px;
     color: rgb(255, 255, 255);
 }
 
-.home__campaign-btn {
-    width: 100%;
-    height: 140px;
-    font-size: 46px;
+.home__campaign-plate {
+    width: 320px;
+    height: 96px;
+    margin-top: -14px;
+    align-items: center;
+    justify-content: center;
+}
+
+.home__campaign-label {
+    font-size: 52px;
+    -unity-font-style: bold-and-italic;
+    color: rgb(22, 38, 63);
+}
+
+.home__campaign-tag {
+    position: absolute;
+    left: 0;
+    top: 118px;
+    height: 48px;
+    padding: 0 22px;
+    align-items: center;
+    justify-content: center;
+}
+
+.home__campaign-tag-text {
+    font-size: 24px;
     -unity-font-style: bold;
+    color: rgb(255, 255, 255);
 }
 
 /* ---------------------------------------------------------------- battle complete popup */

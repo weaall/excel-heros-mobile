@@ -591,3 +591,28 @@ Three traps met on the way, all general:
 Not yet done: the page background (the sheet is pale sky blue with light streaks), the top resource
 bar (the sheet's is one long slanted glass plate), HP/EXP bars, round icon buttons, and the gacha
 screen's two recruit buttons, which are not `btn` plates at all.
+
+## The shell and the lobby, to the reference screenshots
+
+`temp_images/` also holds real Blue Archive screenshots (lobby, 부대 편성, 학생, 현상수배, 모집
+result, battle, shop modal). Read together they fix the shell, and `Chrome.cs` now paints it:
+
+- **Backdrop** — pale sky to near-white, broad `/` light bands, a faint triangle lattice in the
+  lower half. Painted on the root; `.sheet` is transparent so every screen sits on it.
+- **No navy app bar.** A pale translucent strip; the back button is a navy disc with a white rim;
+  the screen name is dark ink with a **yellow underline**; settings and home are bare navy glyphs.
+- **Currencies** are separate slanted translucent pills with a cyan +.
+- **Player plate** (lobby) is a navy slanted block: yellow italic "Lv", big white italic number.
+- **Bottom bar** is one long translucent-white slanted strip.
+
+The lobby follows the reference's: a 2x2 grid of coloured glyphs top-left (no discs), a white
+bubble with a tail, and the way in is a **cyan folder** with a white `업무` plate and a pink
+"캠페인 진행중" tag. `home_bg` (an orange sunset) is no longer drawn — the reference lobby is a bright
+office, and the painted sky stands in until the generated backgrounds exist.
+
+`SkewPlate.Apply` called twice now CHANGES the kind instead of being ignored or painting a second
+plate — the lobby built a `btn` (Light) and then asked for Primary, and got two glows and the wrong
+colour, then (with a plain guard) the wrong colour alone.
+
+The lobby character still sits in a visible rectangle because the card art has a painted
+background. The transparent regeneration fixes that; nothing in the layout needs to change for it.

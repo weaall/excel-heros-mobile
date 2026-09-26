@@ -150,6 +150,10 @@ namespace ExcelHeroes.UI
             Glyph("tabChartIcon", Icons.Chart);
             Glyph("tabGachaIcon", Icons.Gacha);
 
+            // The shell's own look — backdrop, top strip, pills, player plate, bottom strip —
+            // painted to the reference screenshots. See Chrome.
+            Chrome.Dress(root.Q<VisualElement>("root") ?? root);
+
             // Keeps the chrome clear of the notch and the gesture bar.
             (gameObject.GetComponent<SafeArea>() ?? gameObject.AddComponent<SafeArea>()).Bind(root);
 
