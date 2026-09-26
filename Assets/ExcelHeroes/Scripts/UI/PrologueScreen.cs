@@ -63,9 +63,8 @@ namespace ExcelHeroes.UI
             ModalFrame.Painted(_sheet, (ctx, r) =>
             {
                 if (_sheetAlpha <= 0.01f) return;
-                var cols = 5;
-                var spec = new BackSheet.Spec(cols, 3, Mathf.RoundToInt(_sheetFill * cols * 3), false, "B", null,
-                                              UiPaint.C(90, 210, 255), true, 0);
+                var spec = new BackSheet.Spec(Mathf.RoundToInt(_sheetFill * BackSheet.CellCount), UiPaint.C(90, 200, 255),
+                                              BackSheet.FrameFor("B"), BackSheet.Pattern.Diagonal, false, true);
                 BackSheet.Draw(ctx, r, spec);
             });
 

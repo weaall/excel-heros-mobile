@@ -219,6 +219,19 @@ namespace ExcelHeroes.Data
             return Resources.Load<Sprite>($"Art/Standing/{key}") ?? (heroId == MainId ? Resources.Load<Sprite>($"Art/Standing/{heroId}") : null);
         }
 
+        /// <summary>The SD (chibi) battle sprite, cut out and normalised (768x960, feet at 944), or null.</summary>
+        public static Sprite SdArt(string heroId)
+        {
+            var key = heroId == MainId ? "intern" : heroId;
+            return Resources.Load<Sprite>($"Art/SD/{key}");
+        }
+
+        /// <summary>A monster's SD sprite (bosses by boss id), or null.</summary>
+        public static Sprite MonsterSd(string typeId) => typeId == null ? null : Resources.Load<Sprite>($"Art/SDMonsters/{typeId}");
+
+        /// <summary>The painted battle backdrop for a mood (day / evening / night), or null.</summary>
+        public static Sprite BattleBackdrop(string mood) => Resources.Load<Sprite>($"Art/Battle/office_{mood}");
+
         /// <summary>An illustrated UI icon (Resources/Art/Icons), or null if it has not been generated.</summary>
         public static Sprite Icon(string name) => Resources.Load<Sprite>($"Art/Icons/{name}");
 

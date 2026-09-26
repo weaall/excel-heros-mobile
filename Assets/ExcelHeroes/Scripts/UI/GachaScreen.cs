@@ -460,7 +460,7 @@ namespace ExcelHeroes.UI
                     if (sprite != null)
                     {
                         UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(UiPaint.C(236, 244, 252), UiPaint.C(200, 220, 242), dest.yMin, dest.yMax));
-                        UiPaint.ImageFocus(ctx, artPoly, sprite, dest, 1.7f, 0.21f);
+                        UiKit.PaintPortrait(ctx, artPoly, sprite, r.hero.id, dest, UiKit.Crop.Bust);
                     }
                     else UiPaint.Image(ctx, artPoly, card, dest, 0.1f);
                     var band = UiPaint.Clip(inner, new List<Vector2>

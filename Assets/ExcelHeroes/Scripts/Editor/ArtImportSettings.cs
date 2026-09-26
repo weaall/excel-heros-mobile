@@ -38,6 +38,11 @@ namespace ExcelHeroes.EditorTools
         /// </summary>
         const string StandingRoot = ArtRoot + "Standing/";
 
+        /// <summary>SD battle sprites and stage backdrops: seen small, so they keep mipmaps.</summary>
+        const string SdRoot = ArtRoot + "SD/";
+        const string BattleRoot = ArtRoot + "Battle/";
+        const string SdMonRoot = ArtRoot + "SDMonsters/";
+
         /// <summary>
         /// The UI skin from tools/gen-ui-skin.py. It lives OUTSIDE Resources/Art because nothing
         /// loads it by name at runtime — App.uss references it by path — and it needs the opposite
@@ -48,7 +53,7 @@ namespace ExcelHeroes.EditorTools
         /// </summary>
         const string UiRoot = "Assets/ExcelHeroes/Art/UI/";
 
-        public const string Stamp = "excel-heroes-art-v9";
+        public const string Stamp = "excel-heroes-art-v10";
 
         /// <summary>
         /// Unity re-imports the assets a postprocessor handles only when this number changes.
@@ -86,6 +91,20 @@ namespace ExcelHeroes.EditorTools
                 importer.maxTextureSize = 256;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 ClearPlatformOverrides(importer);
+                importer.userData = Stamp;
+                return;
+            }
+
+            if (assetPath.StartsWith(SdRoot) || assetPath.StartsWith(BattleRoot) || assetPath.StartsWith(SdMonRoot))
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.mipmapEnabled = true;
+                importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                importer.alphaIsTransparency = true;
+                importer.isReadable = false;
+                importer.wrapMode = TextureWrapMode.Clamp;
+                Apply(importer, 2048, TextureImporterFormat.DXT5);
                 importer.userData = Stamp;
                 return;
             }

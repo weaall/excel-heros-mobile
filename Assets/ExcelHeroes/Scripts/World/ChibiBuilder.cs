@@ -11,6 +11,8 @@ namespace ExcelHeroes.World
     {
         public Transform Root, Body, Head, ArmL, ArmR, LegL, LegR, Sheet;
         public Renderer SheetRenderer;
+        public bool Sprite;                 // an SD sprite (SdSprite) rather than a built model
+        public Renderer SpriteRenderer;
         public float Height = 0.95f;
         public int SheetSide = 1;           // +1 = the character's left (+Z), -1 = right
         public readonly List<Renderer> Renderers = new();
@@ -241,18 +243,24 @@ namespace ExcelHeroes.World
             rig.SheetSide = side;
             var pivot = new GameObject("sheet") { layer = layer }.transform;
             pivot.SetParent(rig.Root, false);
-            pivot.localPosition = new Vector3(-0.17f, 0.66f, side * 0.13f);
+            pivot.localPosition = rig.Sprite ? SpriteSheetSpot(rig, side) : new Vector3(-0.17f, 0.66f, side * 0.13f);
+            if (rig.Sprite) pivot.localScale = Vector3.one * 1.5f;
             rig.Sheet = pivot;
             if (_sheetQuad == null)
             {
                 var sb = new MeshKit.Builder();
-                sb.Quad(Vector3.zero, new Vector3(0.24f, 0f, 0f), new Vector3(0f, 0.172f, 0f), Color.white);
+                // the four-cell strip (SheetTexture.Aspect ≈ 4.5 : 1)
+                sb.Quad(Vector3.zero, new Vector3(0.27f, 0f, 0f), new Vector3(0f, 0.27f / SheetTexture.Aspect, 0f), Color.white);
                 _sheetQuad = sb.Bake("sheet");
             }
             var go = MeshKit.Part("sheetQuad", pivot, _sheetQuad, MeshKit.NewGlass(tex), layer);
             rig.SheetRenderer = go.GetComponent<MeshRenderer>();
             rig.Renderers.Add(rig.SheetRenderer);
         }
+
+        /// <summary>On a sprite: just behind the upper back, above the shoulder on the back side.</summary>
+        public static Vector3 SpriteSheetSpot(ChibiRig rig, int side) =>
+            new(-0.3f, rig.Height * (side > 0 ? 0.92f : 0.8f), 0.04f);
 
         static Transform Leg(string name, Transform parent, Vector3 pivot, Color col, bool bare, Material mat, int layer)
         {

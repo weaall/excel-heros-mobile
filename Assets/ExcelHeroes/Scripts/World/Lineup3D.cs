@@ -104,18 +104,24 @@ namespace ExcelHeroes.World
             {
                 var id = ids[i];
                 if (string.IsNullOrEmpty(id)) continue;
-                var tpl = Template(id);
-                var go = Instantiate(tpl, _cast);
-                go.SetActive(true);
-                SetLayer(go.transform, Layer);
-                var rig = ChibiRig.Bind(go.transform, 0.95f);
+                // the SD sprite when it exists, the built model otherwise
+                var rig = SdSprite.Build(id, _cast, Layer);
+                if (rig == null)
+                {
+                    var go = Instantiate(Template(id), _cast);
+                    go.SetActive(true);
+                    SetLayer(go.transform, Layer);
+                    rig = ChibiRig.Bind(go.transform, 0.95f);
+                }
                 var def = GameData.Hero(id);
                 var owned = Game.Player?.Find(id);
                 var spec = BackSheet.For(def, owned);
-                ChibiBuilder.AddSheet(rig, SheetTexture.For(spec, id), DollData.For(id).sheetSide == "left" ? 1 : -1, Layer);
+                ChibiBuilder.AddSheet(rig, SheetTexture.For(spec, id), spec.Left ? 1 : -1, Layer);
+                SetLayer(rig.Root, Layer);
                 rig.Root.localPosition = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
-                rig.Root.localScale = Vector3.one * scale;
-                rig.Root.localRotation = Quaternion.Euler(0f, 68f, 0f);
+                var s = rig.Sprite ? Mathf.Min(floor * worldH * 1.02f / rig.Height, slotW * worldW * 1.6f) : scale;
+                rig.Root.localScale = Vector3.one * s;
+                rig.Root.localRotation = rig.Sprite ? Quaternion.identity : Quaternion.Euler(0f, 68f, 0f);
                 _figs.Add((rig, i * 1.3f));
             }
             _cam.enabled = true;
@@ -151,6 +157,16 @@ namespace ExcelHeroes.World
             {
                 if (rig?.Root == null) continue;
                 var br = Mathf.Sin(_t * 2.2f + phase);
+                if (rig.Sprite)
+                {
+                    // breathing, and a small hop now and then
+                    var hop = Mathf.Max(0f, Mathf.Sin(_t * 1.1f + phase * 2f) - 0.96f) * 25f;
+                    rig.Body.localScale = new Vector3(1f - br * 0.012f, 1f + br * 0.018f, 1f);
+                    rig.Body.localPosition = new Vector3(0f, Mathf.Sin(hop * Mathf.PI) * 0.06f, 0f);
+                    if (rig.Sheet != null)
+                        rig.Sheet.localPosition = ChibiBuilder.SpriteSheetSpot(rig, rig.SheetSide) + new Vector3(0f, Mathf.Sin(_t * 1.6f + phase) * 0.02f, 0f);
+                    continue;
+                }
                 if (rig.Body != null) rig.Body.localPosition = new Vector3(0f, br * 0.004f, 0f);
                 if (rig.Head != null) rig.Head.localRotation = Quaternion.Euler(br * 2f, 0f, Mathf.Sin(_t * 0.7f + phase) * 3f);
                 if (rig.ArmL != null) rig.ArmL.localRotation = Quaternion.Euler(-8f, 0f, br * 3f);

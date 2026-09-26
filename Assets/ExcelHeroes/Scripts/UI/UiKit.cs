@@ -147,12 +147,56 @@ namespace ExcelHeroes.UI
             e.AddToClassList("portrait");
             var (zoom, focus) = CropOf(crop);
             var bg = backdrop ?? UiPaint.C(222, 234, 248);
+            var head = FaceBox(heroId);
             ModalFrame.Painted(e, (ctx, r) =>
             {
                 var poly = round ? UiPaint.Ellipse(r.center, r.width * 0.5f, r.height * 0.5f) : UiPaint.RoundRect(r, 0f, 1);
                 UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.WithAlpha(Color.Lerp(bg, Color.white, 0.55f), bg.a), bg, r.yMin, r.yMax));
-                UiPaint.ImageFocus(ctx, poly, standing, r, zoom, focus);
+                if (head.HasValue)
+                {
+                    // Cropped on the detected head: its size in the frame and where it sits.
+                    var hb = head.Value;
+                    var (share, y) = crop switch
+                    {
+                        Crop.Face => (0.74f, 0.52f),
+                        Crop.Bust => (0.4f, 0.3f),
+                        _ => (0.34f, 0.3f),
+                    };
+                    var imgH = r.height * share / Mathf.Max(0.02f, hb.height);
+                    UiPaint.ImageAt(ctx, poly, standing, imgH, hb.center, new Vector2(r.center.x, r.yMin + r.height * y));
+                }
+                else UiPaint.ImageFocus(ctx, poly, standing, r, zoom, focus);
             });
+        }
+
+        [Serializable] class FaceRow { public string id; public float x0, y0, x1, y1; }
+        [Serializable] class FaceFile { public System.Collections.Generic.List<FaceRow> items = new(); }
+        static System.Collections.Generic.Dictionary<string, Rect> _faces;
+
+        /// <summary>The head box on a standing illustration (canvas fractions, y from the top) — tools/face_boxes.py.</summary>
+        public static Rect? FaceBox(string heroId)
+        {
+            if (_faces == null)
+            {
+                _faces = new System.Collections.Generic.Dictionary<string, Rect>();
+                var asset = Resources.Load<TextAsset>("Data/faces");
+                if (asset != null)
+                    foreach (var f in JsonUtility.FromJson<FaceFile>(asset.text).items)
+                        _faces[f.id] = Rect.MinMaxRect(f.x0, f.y0, f.x1, f.y1);
+            }
+            var key = heroId == GameData.MainId ? "intern" : heroId;
+            return key != null && _faces.TryGetValue(key, out var r) ? r : null;
+        }
+
+        /// <summary>Paints a hero's standing art into poly, cropped on the detected head.</summary>
+        public static void PaintPortrait(MeshGenerationContext ctx, System.Collections.Generic.IList<Vector2> poly, Sprite standing, string heroId, Rect r, Crop crop)
+        {
+            var head = FaceBox(heroId);
+            var (zoom, focus) = CropOf(crop);
+            if (!head.HasValue) { UiPaint.ImageFocus(ctx, poly, standing, r, zoom, focus); return; }
+            var (share, y) = crop switch { Crop.Face => (0.74f, 0.52f), Crop.Bust => (0.4f, 0.3f), _ => (0.34f, 0.3f) };
+            var hb = head.Value;
+            UiPaint.ImageAt(ctx, poly, standing, r.height * share / Mathf.Max(0.02f, hb.height), hb.center, new Vector2(r.center.x, r.yMin + r.height * y));
         }
 
         public static string Stars(int star) => new string('★', Math.Clamp(star, 0, 5)).PadRight(5, '☆');

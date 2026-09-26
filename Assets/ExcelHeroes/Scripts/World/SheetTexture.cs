@@ -5,19 +5,19 @@ using UnityEngine;
 namespace ExcelHeroes.World
 {
     /// <summary>
-    /// The back sheet (BackSheet.Spec) as a texture, for the 3D figure to carry. Same reading as the
-    /// UI version: grade sets the grid and the frame, level/★ fill the cells, the trait marks them,
-    /// A and up get a bar chart, S gets gold and stacked tabs. Flat rectangles here — the quad
-    /// itself is tilted in 3D, which is what the UI version's slant was imitating.
+    /// The back sheet (BackSheet.Spec) as a texture for the 3D figure: the same four-cell strip the
+    /// UI draws — frame by grade, filled cells in the character's colour with their solid pattern,
+    /// empty cells translucent white.
     /// </summary>
     public static class SheetTexture
     {
-        const int W = 256, H = 184;
+        const int W = 288, H = 64;
+        public const float Aspect = W / (float)H;
         static readonly Dictionary<string, Texture2D> Cache = new();
 
         public static Texture2D For(BackSheet.Spec s, string key)
         {
-            key = $"{key}:{s.Cols}x{s.Rows}:{s.Filled}:{s.Bars}:{s.Trait}";
+            key = $"{key}:{s.Filled}:{s.Gold}:{s.Pattern}";
             if (Cache.TryGetValue(key, out var t) && t != null) return t;
             t = Paint(s);
             Cache[key] = t;
@@ -27,97 +27,42 @@ namespace ExcelHeroes.World
         static Texture2D Paint(BackSheet.Spec s)
         {
             var px = new Color[W * H];
-            var accent = s.Accent;
-            var glass = Color.Lerp(Color.white, accent, 0.2f);
-
+            void Put(int x, int y, Color c)
+            {
+                if (x < 0 || y < 0 || x >= W || y >= H) return;
+                var i = (H - 1 - y) * W + x;   // y from the top
+                px[i] = Over(px[i], c);
+            }
             void Rect(float x0, float y0, float x1, float y1, Color c)
             {
-                // y measured from the TOP, as the UI version lays it out.
-                var ix0 = Mathf.Clamp(Mathf.RoundToInt(x0), 0, W); var ix1 = Mathf.Clamp(Mathf.RoundToInt(x1), 0, W);
-                var iy0 = Mathf.Clamp(Mathf.RoundToInt(y0), 0, H); var iy1 = Mathf.Clamp(Mathf.RoundToInt(y1), 0, H);
-                for (var y = iy0; y < iy1; y++)
-                    for (var x = ix0; x < ix1; x++)
+                for (var y = Mathf.RoundToInt(y0); y < Mathf.RoundToInt(y1); y++)
+                    for (var x = Mathf.RoundToInt(x0); x < Mathf.RoundToInt(x1); x++) Put(x, y, c);
+            }
+
+            // body and frame
+            Rect(0, 0, W, H, new Color(1f, 1f, 1f, 0.55f));
+            var f = s.Frame; f.a = 0.95f;
+            Rect(0, 0, W, 3, f); Rect(0, H - 3, W, H, f); Rect(0, 0, 3, H, f); Rect(W - 3, 0, W, H, f);
+
+            const float pad = 7f, gap = 5f;
+            var cw = (W - pad * 2f - gap * (BackSheet.CellCount - 1)) / BackSheet.CellCount;
+            var ch = H - pad * 2f;
+            for (var i = 0; i < BackSheet.CellCount; i++)
+            {
+                var x0 = pad + i * (cw + gap);
+                if (i >= s.Filled)
+                {
+                    Rect(x0, pad, x0 + cw, pad + ch, new Color(0.86f, 0.9f, 0.96f, 0.7f));
+                    continue;
+                }
+                var col = BackSheet.CellColor(s, i); col.a = 1f;
+                var ink = Color.Lerp(col, Color.white, 0.38f); ink.a = 0.92f;
+                for (var y = 0; y < Mathf.RoundToInt(ch); y++)
+                    for (var x = 0; x < Mathf.RoundToInt(cw); x++)
                     {
-                        var i = (H - 1 - y) * W + x;
-                        px[i] = Over(px[i], c);
+                        var u = x / cw; var v = y / ch;
+                        Put(Mathf.RoundToInt(x0) + x, Mathf.RoundToInt(pad) + y, BackSheet.Ink(s.Pattern, u, v) ? ink : col);
                     }
-            }
-
-            // body: translucent glass, brighter at the top
-            for (var y = 0; y < H; y++)
-            {
-                var k = y / (float)H;
-                var c = new Color(glass.r, glass.g, glass.b, Mathf.Lerp(0.34f, 0.58f, k));
-                for (var x = 0; x < W; x++) px[y * W + x] = c;
-            }
-            // frame
-            var frame = s.GoldFrame ? new Color(1f, 0.81f, 0.24f, 1f) : new Color(accent.r, accent.g, accent.b, 0.95f);
-            var fw = s.GoldFrame ? 6 : 4;
-            Rect(0, 0, W, fw, frame); Rect(0, H - fw, W, H, frame);
-            Rect(0, 0, fw, H, frame); Rect(W - fw, 0, W, H, frame);
-
-            const float pad = 12f;
-            float ix = pad, iy = pad, iw = W - pad * 2, ih = H - pad * 2;
-            var yy = iy;
-            if (s.FormulaBar)
-            {
-                var fh = ih * 0.11f;
-                Rect(ix, yy, ix + iw, yy + fh, new Color(1, 1, 1, 0.8f));
-                Rect(ix + 3, yy + 3, ix + fh - 3, yy + fh - 3, new Color(accent.r, accent.g, accent.b, 0.95f));
-                Rect(ix + fh + 4, yy + fh * 0.4f, ix + iw * 0.6f, yy + fh * 0.6f,
-                     s.Gold ? new Color(0.9f, 0.67f, 0.08f, 0.95f) : new Color(0.3f, 0.36f, 0.48f, 0.6f));
-                yy += fh + 5;
-            }
-
-            var chartW = s.Chart ? iw * 0.22f : 0f;
-            var gx = ix + (s.HeaderCol ? iw * 0.08f : 0f);
-            var gw = iw - (gx - ix) - chartW - (s.Chart ? 6f : 0f);
-            if (s.HeaderRow)
-            {
-                var hh = ih * 0.09f;
-                Rect(gx, yy, gx + gw, yy + hh, new Color(accent.r, accent.g, accent.b, 0.45f));
-                yy += hh + 3;
-            }
-
-            var rows = BackSheet.RowsMax;
-            var totalRow = s.Trait == "rally";
-            var gh = iy + ih - yy - (totalRow ? ih * 0.1f : 0f);
-            var cw = gw / s.Cols;
-            var ch = gh / rows;
-            if (s.HeaderCol) Rect(ix, yy, gx - 3, yy + gh, new Color(accent.r, accent.g, accent.b, 0.32f));
-
-            var fill = s.Gold ? new Color(1f, 0.78f, 0.16f, 0.95f) : new Color(accent.r, accent.g, accent.b, 0.88f);
-            var idx = 0;
-            for (var r = 0; r < rows; r++)
-            {
-                var open = r < s.Rows;
-                for (var c = 0; c < s.Cols; c++, idx += open ? 1 : 0)
-                {
-                    var x0 = gx + c * cw + 1.5f; var y0 = yy + r * ch + 1.5f;
-                    var x1 = x0 + cw - 3f; var y1 = y0 + ch - 3f;
-                    if (s.Trait == "splash" && c % 2 == 0 && c + 1 < s.Cols) x1 = x0 + cw * 2 - 3f;
-                    else if (s.Trait == "splash" && c % 2 == 1) continue;
-                    if (!open) { Rect(x0, y0, x1, y1, new Color(0.47f, 0.51f, 0.59f, 0.14f)); continue; }
-                    var filled = idx < s.Filled;
-                    var col = !filled ? new Color(1, 1, 1, 0.6f)
-                        : s.Trait == "crit" && idx % 4 == 2 ? new Color(0.9f, 0.27f, 0.27f, 0.95f)
-                        : fill;
-                    Rect(x0, y0, x1, y1, col);
-                }
-            }
-            if (totalRow) Rect(gx, yy + gh + 3, gx + gw, iy + ih, new Color(accent.r, accent.g, accent.b, 0.9f));
-
-            if (s.Chart)
-            {
-                var cx = ix + iw - chartW;
-                Rect(cx, yy, cx + chartW, yy + gh, new Color(1, 1, 1, 0.62f));
-                var bw = (chartW - 8f) / 4f;
-                for (var b = 0; b < 4; b++)
-                {
-                    var hgt = Mathf.Clamp01(0.25f + 0.15f * (b + s.Bars)) * (gh - 8f);
-                    Rect(cx + 4 + b * bw + 1.5f, yy + gh - 4 - hgt, cx + 4 + (b + 1) * bw - 1.5f, yy + gh - 4,
-                         s.Gold ? new Color(0.94f, 0.7f, 0.12f, 0.95f) : new Color(accent.r, accent.g, accent.b, 0.95f));
-                }
             }
 
             var tex = new Texture2D(W, H, TextureFormat.RGBA32, true) { wrapMode = TextureWrapMode.Clamp, name = "sheet", anisoLevel = 4 };

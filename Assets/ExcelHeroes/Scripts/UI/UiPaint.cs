@@ -317,6 +317,35 @@ namespace ExcelHeroes.UI
             }
         }
 
+        /// <summary>
+        /// The picture drawn `imgH` tall, placed so that its point `focus` (fractions of the canvas,
+        /// y from the top) lands on `at`, clipped to poly. The crop that follows a detected face.
+        /// </summary>
+        public static void ImageAt(MeshGenerationContext ctx, IList<Vector2> poly, Sprite sprite, float imgH, Vector2 focus, Vector2 at, Color? tint = null)
+        {
+            if (sprite == null || poly.Count < 3) return;
+            var tex = sprite.texture;
+            var tr = sprite.rect;
+            var uvMin = new Vector2(tr.xMin / tex.width, tr.yMin / tex.height);
+            var uvSize = new Vector2(tr.width / tex.width, tr.height / tex.height);
+            var w = imgH * tr.width / tr.height;
+            var img = new Rect(at.x - focus.x * w, at.y - focus.y * imgH, w, imgH);
+            var c = tint ?? Color.white;
+            var n = poly.Count;
+            var mesh = ctx.Allocate(n + 1, n * 3, tex);
+            var centre = Vector2.zero;
+            foreach (var p in poly) centre += p;
+            centre /= n;
+            mesh.SetNextVertex(TexV(centre, img, uvMin, uvSize, c));
+            foreach (var p in poly) mesh.SetNextVertex(TexV(p, img, uvMin, uvSize, c));
+            for (var i = 0; i < n; i++)
+            {
+                mesh.SetNextIndex(0);
+                mesh.SetNextIndex((ushort)(1 + i));
+                mesh.SetNextIndex((ushort)(1 + (i + 1) % n));
+            }
+        }
+
         public static void Image(MeshGenerationContext ctx, IList<Vector2> poly, Sprite sprite, Rect dest, float anchorY = 0f, Color? tint = null)
         {
             if (sprite == null || poly.Count < 3) return;

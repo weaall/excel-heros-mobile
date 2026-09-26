@@ -88,7 +88,7 @@ namespace ExcelHeroes.World
             var k = Mathf.SmoothStep(0f, 1f, _closeUp);
             var target = Vector3.Lerp(new Vector3(-0.1f, 0.5f, 0.35f), _partyCentre + new Vector3(0.9f, 0.5f, 0f), k);
             var pitch = Mathf.Lerp(25f, 12f, k) * Mathf.Deg2Rad;
-            var dist = Mathf.Lerp(9.0f, 4.6f, k);
+            var dist = Mathf.Lerp(9.0f, 6.4f, k);
             var pos = target + new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
@@ -111,7 +111,10 @@ namespace ExcelHeroes.World
             if (_set == null || mood != _setMood)
             {
                 if (_set != null) Object.Destroy(_set.gameObject);
-                _set = OfficeStage.Build(_root, Layer, sim.Stage);
+                // The painted stage (tools/gen_bg_gemini.py) when there is one: a backdrop fixed to
+                // the camera, filling the frame. The procedural office is the fallback.
+                var bg = GameData.BattleBackdrop(mood == 2 ? "night" : mood == 1 ? "evening" : "day");
+                _set = bg != null ? Backdrop(bg) : OfficeStage.Build(_root, Layer, sim.Stage);
                 _setMood = mood;
                 _cam.backgroundColor = mood == 2 ? new Color(0.16f, 0.18f, 0.32f) : new Color(0.86f, 0.93f, 1f);
             }
@@ -122,6 +125,48 @@ namespace ExcelHeroes.World
         }
 
         bool _entering;
+
+        const float BackdropDistance = 40f;
+
+        /// <summary>
+        /// The painted stage on a quad parented to the camera, sized to fill the frustum at 40 m
+        /// and cropped (not stretched) to the frame's aspect, keeping the floor in view.
+        /// </summary>
+        Transform Backdrop(Sprite bg)
+        {
+            var go = new GameObject("backdrop") { layer = Layer };
+            go.transform.SetParent(_cam.transform, false);
+            go.transform.localPosition = new Vector3(0f, 0f, BackdropDistance);
+            var mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = MeshKit.NewGlass(bg.texture);
+            go.AddComponent<MeshFilter>();
+            _backdropSprite = bg;
+            FitBackdrop(go.transform);
+            return go.transform;
+        }
+
+        Sprite _backdropSprite;
+        float _backdropAspect;
+
+        void FitBackdrop(Transform t)
+        {
+            if (t == null || _backdropSprite == null) return;
+            var h = 2f * BackdropDistance * Mathf.Tan(_cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            var w = h * _cam.aspect;
+            var tex = _backdropSprite.texture;
+            var r = _backdropSprite.rect;
+            var imgAspect = r.width / r.height;
+            // cover: crop the image's height when the frame is wider than the picture
+            var vSpan = Mathf.Clamp01(imgAspect / _cam.aspect);
+            var v0 = Mathf.Clamp01(1f - vSpan);                   // keep the top: the painted foreground furniture is what gets cut
+            var uv0 = new Vector2(r.xMin / tex.width, (r.yMin + r.height * v0) / tex.height);
+            var uv1 = new Vector2(r.xMax / tex.width, (r.yMin + r.height * (v0 + vSpan)) / tex.height);
+            var b = new MeshKit.Builder();
+            b.Quad(Vector3.zero, new Vector3(w * 0.5f * 1.04f, 0f, 0f), new Vector3(0f, h * 0.5f * 1.04f, 0f), Color.white, uv0, uv1);
+            var mf = t.GetComponent<MeshFilter>();
+            if (mf != null) mf.sharedMesh = b.Bake("backdrop");
+            _backdropAspect = _cam.aspect;
+        }
 
         public void SetVisible(bool on) => _cam.enabled = on && _rt != null;
 
@@ -136,6 +181,7 @@ namespace ExcelHeroes.World
             _rt.Create();
             _cam.targetTexture = _rt;
             _cam.aspect = w / (float)h;
+            if (_set != null && _set.name == "backdrop") FitBackdrop(_set);
         }
 
         // ------------------------------------------------------------------ mapping --
@@ -181,7 +227,18 @@ namespace ExcelHeroes.World
         {
             if (_actors.TryGetValue(c, out var a)) return a;
             a = new Actor { C = c };
-            if (c.side == Side.Hero)
+            if (c.side == Side.Hero && SdSprite.Build(c.heroId, _root, Layer) is { } sd)
+            {
+                a.Rig = sd;
+                a.Rig.Root.name = c.name;
+                var def = GameData.Hero(c.heroId);
+                var owned = Game.Player?.Find(c.heroId);
+                var spec = BackSheet.For(def, owned);
+                ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
+                a.Scale = c.role == "tank" ? 1.06f : 1f;
+                a.Accent = spec.Accent;
+            }
+            else if (c.side == Side.Hero)
             {
                 var male = c.heroId == GameData.MainId;
                 var key = "h:" + c.heroId;
@@ -199,6 +256,13 @@ namespace ExcelHeroes.World
                 ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), DollData.For(c.heroId).sheetSide == "left" ? 1 : -1, Layer);
                 a.Scale = c.role == "tank" ? 1.08f : 1f;
                 a.Accent = spec.Accent;
+            }
+            else if (SdSprite.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer) is { } sdm)
+            {
+                a.Rig = sdm;
+                a.Rig.Root.name = c.name;
+                a.Scale = c.boss != null ? 1.9f : c.elite ? 1.25f : 1f;
+                a.Accent = new Color(1f, 0.35f, 0.35f);
             }
             else
             {
@@ -260,7 +324,7 @@ namespace ExcelHeroes.World
                     if (e.actor != null && _actors.TryGetValue(e.actor, out var s))
                     {
                         s.Skill = 0.75f;
-                        Spark(s, s.Accent, 1.1f);
+                        SkillBurst(s);
                     }
                     break;
                 case EventKind.Death:
@@ -283,7 +347,7 @@ namespace ExcelHeroes.World
             var living = _actors.Values.Where(a => a.C.side == Side.Hero && a.C.Alive).ToList();
             if (living.Count > 0 && _closeUpTarget <= 0f)
                 _partyCentre = new Vector3(living.Average(a => a.X), 0f, living.Average(a => a.Z));
-            PlaceCamera(shake * (1f - _closeUp));
+            PlaceCamera((shake + _localShake * 20f) * (1f - _closeUp));
 
             foreach (var c in _sim.Heroes) Ensure(c);
             foreach (var c in _sim.Monsters) Ensure(c);
@@ -304,6 +368,8 @@ namespace ExcelHeroes.World
 
             SyncShots();
             UpdateSparks(dt);
+            UpdateFx(dt);
+            _localShake = Mathf.MoveTowards(_localShake, 0f, dt * 1.5f);
         }
 
         void SyncShots()
@@ -421,6 +487,111 @@ namespace ExcelHeroes.World
             _sparks.Add((t, 0.28f, 0.28f, rise ? Vector3.up * 1.2f : Vector3.zero, size));
         }
 
+        static Texture2D _ringTex;
+        static Texture2D RingTex
+        {
+            get
+            {
+                if (_ringTex != null) return _ringTex;
+                const int n = 128;
+                _ringTex = new Texture2D(n, n, TextureFormat.RGBA32, true) { wrapMode = TextureWrapMode.Clamp, name = "ring" };
+                var px = new Color32[n * n];
+                for (var y = 0; y < n; y++)
+                    for (var x = 0; x < n; x++)
+                    {
+                        var d = new Vector2(x - n / 2f + 0.5f, y - n / 2f + 0.5f).magnitude / (n / 2f);
+                        var a = Mathf.Clamp01(1f - Mathf.Abs(d - 0.82f) / 0.12f);
+                        px[y * n + x] = new Color32(255, 255, 255, (byte)(a * a * 255));
+                    }
+                _ringTex.SetPixels32(px);
+                _ringTex.Apply(true);
+                return _ringTex;
+            }
+        }
+
+        static readonly Dictionary<Color, Material> RingMats = new();
+
+        /// <summary>
+        /// EX skill: a ring bursting out on the floor, a second one standing up behind the figure,
+        /// a flash, and the sheet's cells flying off in the character's colour.
+        /// </summary>
+        void SkillBurst(Actor a)
+        {
+            var c = a.Accent; c.a = 0.95f;
+            if (!RingMats.TryGetValue(c, out var ring) || ring == null) RingMats[c] = ring = MeshKit.NewGlass(RingTex, c);
+            var centre = a.Rig.Root.position + Vector3.up * a.Rig.Height * a.Scale * 0.5f;
+
+            var floor = MeshKit.Part("ring", _root, FloorQuad, ring, Layer).transform;
+            floor.position = a.Rig.Root.position + Vector3.up * 0.02f;
+            _fx.Add(new Fx { T = floor, Life = 0.6f, Max = 0.6f, Grow0 = 0.4f, Grow1 = 3.2f, Flat = true });
+
+            var up = MeshKit.Part("ring", _root, Quad, ring, Layer).transform;
+            up.position = centre + new Vector3(0f, 0f, 0.3f);
+            _fx.Add(new Fx { T = up, Life = 0.5f, Max = 0.5f, Grow0 = 0.5f, Grow1 = 2.6f, Face = true });
+
+            Spark(a, Color.white, 2.2f);
+            for (var i = 0; i < 14; i++)
+            {
+                var shard = MeshKit.Part("shard", _root, Cell, MeshKit.Toon, Layer).transform;
+                var mpb = new MaterialPropertyBlock();
+                mpb.SetColor("_Color", MeshKit.Lin(Color.Lerp(a.Accent, Color.white, (i % 3) * 0.25f)));
+                shard.GetComponent<MeshRenderer>().SetPropertyBlock(mpb);
+                shard.position = (a.Rig.Sheet != null ? a.Rig.Sheet.position : centre);
+                var ang = i / 14f * Mathf.PI * 2f;
+                var vel = new Vector3(Mathf.Cos(ang) * 2.2f, 2.4f + (i % 4) * 0.5f, Mathf.Sin(ang) * 1.2f);
+                _fx.Add(new Fx { T = shard, Life = 0.8f, Max = 0.8f, Vel = vel, Gravity = true, Grow0 = 0.9f, Grow1 = 0.4f, Spin = true });
+            }
+            AddShakeLocal(0.35f);
+        }
+
+        float _localShake;
+        void AddShakeLocal(float s) => _localShake = Mathf.Max(_localShake, s);
+
+        struct Fx
+        {
+            public Transform T;
+            public float Life, Max, Grow0, Grow1;
+            public Vector3 Vel;
+            public bool Gravity, Flat, Face, Spin;
+        }
+
+        readonly List<Fx> _fx = new();
+
+        static Mesh _floorQuad;
+        static Mesh FloorQuad
+        {
+            get
+            {
+                if (_floorQuad != null) return _floorQuad;
+                var b = new MeshKit.Builder();
+                b.Quad(Vector3.zero, new Vector3(0.5f, 0f, 0f), new Vector3(0f, 0f, 0.5f), Color.white);
+                return _floorQuad = b.Bake("floorquad");
+            }
+        }
+
+        void UpdateFx(float dt)
+        {
+            for (var i = _fx.Count - 1; i >= 0; i--)
+            {
+                var f = _fx[i];
+                f.Life -= dt;
+                if (f.Life <= 0f || f.T == null)
+                {
+                    if (f.T != null) Object.Destroy(f.T.gameObject);
+                    _fx.RemoveAt(i);
+                    continue;
+                }
+                var k = 1f - f.Life / f.Max;
+                if (f.Gravity) f.Vel += Vector3.down * 9f * dt;
+                f.T.position += f.Vel * dt;
+                var sc = Mathf.Lerp(f.Grow0, f.Grow1, 1f - (1f - k) * (1f - k));
+                f.T.localScale = Vector3.one * sc;
+                if (f.Face) f.T.rotation = Quaternion.LookRotation(f.T.position - _cam.transform.position);
+                if (f.Spin) f.T.rotation = Quaternion.Euler(k * 720f, k * 540f, 0f);
+                _fx[i] = f;
+            }
+        }
+
         void UpdateSparks(float dt)
         {
             for (var i = _sparks.Count - 1; i >= 0; i--)
@@ -446,6 +617,101 @@ namespace ExcelHeroes.World
 
         class Actor
         {
+            /// <summary>
+            /// SD sprite motion. Everything is squash, stretch, hop and lean in the picture plane,
+            /// timed the way SD figures move: a small crouch before every action (anticipation),
+            /// the action overshooting, then settling.
+            /// </summary>
+            void UpdateSprite(float dt, float time, bool walking, Transform cam, MaterialPropertyBlock mpb, float closeUp)
+            {
+                var root = Rig.Root;
+                var body = Rig.Body;
+                // face the camera, upright
+                var fwd = cam.forward; fwd.y = 0f;
+                root.rotation = Quaternion.LookRotation(fwd.sqrMagnitude > 0.001f ? fwd : Vector3.forward, Vector3.up);
+
+                var y = 0f; var lean = 0f; var sx = 1f; var sy = 1f; var dx = 0f;
+                var br = Mathf.Sin(time * 3.1f + Z * 2f);
+                sx *= 1f - br * 0.012f; sy *= 1f + br * 0.018f;             // breathing
+
+                if (walking)
+                {
+                    var hop = Mathf.Abs(Mathf.Sin(_walk * 0.9f));
+                    y += hop * 0.1f;
+                    lean -= 4f;
+                    if (hop < 0.2f) { sx *= 1.06f; sy *= 0.94f; }            // landing squash
+                }
+                if (Attack > 0f)
+                {
+                    var a = 1f - Attack / 0.32f;                              // 0 → 1
+                    if (a < 0.3f) { var k = a / 0.3f; sx *= 1f + 0.08f * k; sy *= 1f - 0.1f * k; lean += 6f * k; }
+                    else if (a < 0.55f) { var k = (a - 0.3f) / 0.25f; sx *= 1.08f - 0.14f * k; sy *= 0.9f + 0.18f * k; lean -= 12f * k; dx += 0.14f * k; }
+                    else { var k = (a - 0.55f) / 0.45f; sx *= 0.94f + 0.06f * k; sy *= 1.08f - 0.08f * k; lean -= 12f * (1f - k); dx += 0.14f * (1f - k); }
+                }
+                if (Hit > 0f)
+                {
+                    var k = Hit / 0.16f;
+                    lean += 12f * k;
+                    dx += Mathf.Sin(time * 90f) * 0.03f * k;
+                    sx *= 1f + 0.05f * k; sy *= 1f - 0.05f * k;
+                }
+                var spin = 1f;
+                if (Skill > 0f)
+                {
+                    var k = 1f - Skill / 0.75f;
+                    y += Mathf.Sin(k * Mathf.PI) * 0.5f;
+                    spin = Mathf.Cos(k * Mathf.PI * 2f);                     // a full turn, as a flip
+                    var pop = 1f + Mathf.Sin(k * Mathf.PI) * 0.12f;
+                    sx *= pop; sy *= pop;
+                }
+                if (Cheer > 0f || closeUp > 0.5f && C.Alive)
+                {
+                    var h = Mathf.Abs(Mathf.Sin(time * 7f));
+                    y += h * 0.16f;
+                    if (h < 0.25f) { sx *= 1.07f; sy *= 0.93f; }
+                }
+                var alpha = 1f;
+                if (Dying > 0f || !C.Alive)
+                {
+                    if (Dying > 0f) Dying += dt;
+                    var k = Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f;
+                    lean = 80f * Mathf.SmoothStep(0f, 1f, k);
+                    alpha = Dying > 0f ? 1f - Mathf.Clamp01((Dying - 0.5f) / 0.5f) : 0f;
+                }
+
+                // the errors face left: their lunge and lean mirror the party's
+                var dir = C.side == Side.Hero ? 1f : -1f;
+                dx *= dir; lean *= dir;
+                root.position = root.parent.TransformPoint(new Vector3(X, y, Z));
+                body.localPosition = new Vector3(dx, 0f, 0f);
+                body.localRotation = Quaternion.Euler(0f, 0f, lean);
+                body.localScale = new Vector3(sx * spin, sy, 1f);
+
+                if (Rig.SpriteRenderer != null)
+                {
+                    Rig.SpriteRenderer.GetPropertyBlock(mpb);
+                    mpb.SetFloat("_Glow", Hit > 0.06f ? 0.9f : Skill > 0.6f ? 0.5f : 0f);
+                    mpb.SetColor("_Color", new Color(1f, 1f, 1f, alpha));
+                    Rig.SpriteRenderer.SetPropertyBlock(mpb);
+                }
+                if (Rig.Sheet != null)
+                {
+                    var bob = Mathf.Sin(time * 1.7f + Z) * 0.02f;
+                    var spot = ChibiBuilder.SpriteSheetSpot(Rig, Rig.SheetSide);
+                    Rig.Sheet.localPosition = spot + new Vector3(dx * 0.5f, y + bob + (Attack > 0f ? 0.04f : 0f), 0f);
+                    Rig.Sheet.localRotation = Quaternion.Euler(0f, 0f, 10f + lean * 0.3f);
+                    var flare = Mathf.Max(Attack > 0f ? 0.4f : 0f, Skill > 0f ? 1f : 0f);
+                    Rig.Sheet.localScale = Vector3.one * 1.5f * (1f + flare * 0.15f);
+                    if (Rig.SheetRenderer != null)
+                    {
+                        Rig.SheetRenderer.GetPropertyBlock(mpb);
+                        mpb.SetFloat("_Glow", flare);
+                        mpb.SetColor("_Color", new Color(1f, 1f, 1f, alpha));
+                        Rig.SheetRenderer.SetPropertyBlock(mpb);
+                    }
+                }
+            }
+
             public Combatant C;
             public ChibiRig Rig;
             public float Scale = 1f, X, Z;
@@ -473,6 +739,8 @@ namespace ExcelHeroes.World
                 Hit = Mathf.Max(0f, Hit - dt);
                 Skill = Mathf.Max(0f, Skill - dt);
                 Cheer = Mathf.Max(0f, Cheer - dt);
+
+                if (Rig.Sprite) { UpdateSprite(dt, time, walking, cam, mpb, closeUp); return; }
 
                 // Facing: the party looks right, the errors left, both turned a little to camera.
                 var yaw = hero ? Mathf.Lerp(48f, 82f, closeUp) : 132f;

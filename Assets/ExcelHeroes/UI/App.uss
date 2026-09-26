@@ -5483,3 +5483,13 @@
 .qrow__claim { font-size: 22px; }
 .qrow__claim.plate--primary { color: rgb(30, 46, 76); }
 .qrow__fill { background-color: rgb(78, 196, 247); }
+
+/* COST: the disc was 70px with the word and the number stacked in it, and the word poked out of
+   the top of the circle. A bigger disc, off the screen edge, the word tucked inside. */
+.battle--3d .ex-cost-bar { height: 92px; bottom: 34px; }
+.battle--3d .ex-cost-disc { width: 92px; height: 92px; padding-top: 6px; }
+.battle--3d .ex-cost-disc__word { font-size: 15px; margin-bottom: -8px; color: rgb(170, 215, 250); }
+.battle--3d .ex-cost-text { font-size: 38px; }
+.battle--3d .ex-bar { bottom: 140px; }
+/* the bubble is an absolute Label: without a floor on its width it shrank to one glyph per line */
+.saybubble { min-width: 300px; max-width: 560px; }

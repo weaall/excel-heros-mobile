@@ -1605,7 +1605,7 @@ namespace ExcelHeroes.UI
                     if (standing != null)
                     {
                         UiPaint.Fill(ctx, UiPaint.Offset(poly, -3f), UiPaint.C(226, 238, 250));
-                        UiPaint.ImageFocus(ctx, UiPaint.Offset(poly, -3f), standing, r, 2.4f, 0.16f);
+                        UiKit.PaintPortrait(ctx, UiPaint.Offset(poly, -3f), standing, id, r, UiKit.Crop.Face);
                     }
                     else UiPaint.Image(ctx, UiPaint.Offset(poly, -3f), sprite, r, 0.08f);
                     UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 3f, r.yMax - 8f, r.xMax - 3f, r.yMax - 3f), 0f), gradeColor, 0f);
