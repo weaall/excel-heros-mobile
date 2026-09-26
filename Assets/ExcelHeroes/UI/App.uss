@@ -5056,3 +5056,69 @@
 
 .dtab__label { font-size: 30px; -unity-font-style: bold; color: rgb(92, 112, 140); margin-right: 18px; }
 .dtab--on .dtab__label { color: rgb(22, 38, 63); }
+
+
+/* ================================================================ 편성: standing line-up
+   Reference: 부대 편성 — members stand on the floor, a shadow under each, white plate below. */
+.pslot--stand {
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    overflow: visible;
+}
+
+.pslot--stand .pslot__art {
+    background-color: rgba(0, 0, 0, 0);
+    overflow: visible;
+}
+
+.pslot__figure {
+    position: absolute;
+    left: -24px;
+    right: -24px;
+    top: 0;
+    bottom: 6px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-y: bottom;
+}
+
+.pslot--stand .pslot__tag { margin: 8px 6px 0 6px; background-color: rgba(0, 0, 0, 0); }
+
+.pslot--stand .pslot__plate {
+    margin: 6px 6px 0 6px;
+    padding: 10px 14px 10px 10px;
+    background-color: rgba(0, 0, 0, 0);
+    border-top-width: 0;
+}
+
+.pslot__row { flex-direction: row; align-items: center; }
+
+.pslot__grade {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.pslot__grade-text { font-size: 26px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); }
+.pslot__lines { flex-grow: 1; min-width: 0; }
+.pslot__lv { font-size: 20px; -unity-font-style: bold-and-italic; color: rgb(70, 90, 120); }
+
+.pslot--stand .pslot__name {
+    font-size: 26px;
+    -unity-font-style: bold;
+    color: rgb(22, 38, 63);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pslot__stars-inline {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    font-size: 18px;
+    color: rgb(255, 190, 40);
+}

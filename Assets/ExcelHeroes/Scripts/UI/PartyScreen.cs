@@ -175,13 +175,32 @@ namespace ExcelHeroes.UI
             var grade = GameData.Grade(def.grade);
             var gradeColor = grade?.Color ?? Color.gray;
             var slot = UiKit.Div("pslot");
+            // The reference's 부대 편성 has no cards: the members STAND on the floor, feet on one
+            // line, a soft shadow under each, and a white plate under that. The cut-out standing
+            // art makes that possible; a member without one keeps the card look.
+            var standing = GameData.StandingArt(id);
+            slot.EnableInClassList("pslot--stand", standing != null);
 
             var art = UiKit.Div("pslot__art", slot);
-            UiKit.SetArt(art, GameData.WornCardArt(id));
-            UiKit.GradeBadge(def.grade, gradeColor, "card__grade", slot);
-            UiKit.RoleBadge(def.role, "card__role", slot);
-            if (owned.star > 0)
-                UiKit.Text(new string('★', System.Math.Clamp(owned.star, 0, 5)), "card__stars pslot__stars", slot);
+            if (standing != null)
+            {
+                ModalFrame.Painted(art, (ctx, r) =>
+                {
+                    var c = new Vector2(r.center.x, r.yMax - 14f);
+                    UiPaint.Fill(ctx, UiPaint.Ellipse(c, r.width * 0.36f, 16f), UiPaint.C(20, 40, 80, 0.22f), 10f);
+                });
+                var fig = UiKit.Div("pslot__figure", art);
+                UiKit.SetArt(fig, standing);
+                fig.pickingMode = PickingMode.Ignore;
+            }
+            else
+            {
+                UiKit.SetArt(art, GameData.WornCardArt(id));
+                UiKit.GradeBadge(def.grade, gradeColor, "card__grade", slot);
+                UiKit.RoleBadge(def.role, "card__role", slot);
+                if (owned.star > 0)
+                    UiKit.Text(new string('★', System.Math.Clamp(owned.star, 0, 5)), "card__stars pslot__stars", slot);
+            }
 
             // The navy band under the portrait, as on the reference's line-up: the department
             // above, then the name and the level. The name gets a line of its own — these are
@@ -211,12 +230,34 @@ namespace ExcelHeroes.UI
             UiKit.Text(UiKit.RoleName(def.role), "pslot__tag-role", tag).pickingMode = PickingMode.Ignore;
 
             var plate = UiKit.Div("pslot__plate", slot);
-            UiKit.Text(GameData.Division(def.division)?.name ?? def.division ?? "", "pslot__dept", plate);
-            var line = UiKit.Div("card__line", plate);
-            UiKit.Text(def.name, "card__name pslot__name", line);
-            UiKit.Text($"Lv.{owned.level}", "card__level", line);
-
-            UiKit.CardFrame(gradeColor, slot);
+            if (standing != null)
+            {
+                // White glass plate with the grade as a small coloured badge at its left edge —
+                // where the reference puts the star count.
+                ModalFrame.Painted(plate, (ctx, r) =>
+                {
+                    var body = UiPaint.RoundRect(r, 8f, 4);
+                    UiPaint.Shadow(ctx, body, new Vector2(0f, 3f), UiPaint.C(20, 40, 80, 0.2f), 8f);
+                    UiPaint.Fill(ctx, body, UiPaint.C(255, 255, 255, 0.96f));
+                });
+                var row = UiKit.Div("pslot__row", plate);
+                var badge = UiKit.Div("pslot__grade", row);
+                badge.style.backgroundColor = gradeColor;
+                UiKit.Text(def.grade, "pslot__grade-text", badge);
+                var lines = UiKit.Div("pslot__lines", row);
+                UiKit.Text($"Lv.{owned.level}", "pslot__lv", lines);
+                UiKit.Text(def.name, "pslot__name", lines);
+                if (owned.star > 0)
+                    UiKit.Text(new string('★', System.Math.Clamp(owned.star, 0, 5)), "pslot__stars-inline", plate);
+            }
+            else
+            {
+                UiKit.Text(GameData.Division(def.division)?.name ?? def.division ?? "", "pslot__dept", plate);
+                var line = UiKit.Div("card__line", plate);
+                UiKit.Text(def.name, "card__name pslot__name", line);
+                UiKit.Text($"Lv.{owned.level}", "card__level", line);
+                UiKit.CardFrame(gradeColor, slot);
+            }
 
             slot.RegisterCallback<ClickEvent>(_ => _app.OpenDetail(id));
             return slot;
