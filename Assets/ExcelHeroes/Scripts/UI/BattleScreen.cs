@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ExcelHeroes.Core;
 using ExcelHeroes.Data;
+using ExcelHeroes.World;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -59,6 +60,12 @@ namespace ExcelHeroes.UI
         ScrollView _log;
         readonly System.Collections.Generic.List<string> _logLines = new();
         BattleSim _sim;
+
+        // The 3D field (World/BattleWorld): the office set and the SD cast, rendered into a texture
+        // that becomes this stage's background. The 2D fighter views stay, stripped to their HP
+        // bars, and ride the projected head of each figure so every number still lands on it.
+        BattleWorld _world;
+        RenderTexture _worldTex;
 
         readonly Dictionary<Combatant, VisualElement> _views = new();
         // The y is carried here rather than read back from resolvedStyle: on the frame a floater
@@ -189,8 +196,13 @@ namespace ExcelHeroes.UI
             }
             if (_backdropView != null) _backdropView.style.backgroundImage = new StyleBackground(_backdrop);
 
+            _world = BattleWorld.Instance;
             foreach (var h in _sim.Heroes) AddFighterView(h);
             foreach (var m in _sim.Monsters) AddFighterView(m);
+
+            _world.Begin(_sim);
+            _worldTex = null;
+            _stage.AddToClassList("battle__stage--3d");
 
             BuildExBar();
         }
@@ -400,6 +412,7 @@ namespace ExcelHeroes.UI
             if (c.boss != null) classes += " fighter--boss";
             else if (c.elite) classes += " fighter--elite";
 
+            if (_world != null) classes += " fighter--3d";
             var el = UiKit.Div(classes, _stage);
             var bodyEl = UiKit.Div("fighter__body", el);
 
@@ -493,6 +506,7 @@ namespace ExcelHeroes.UI
                 // Off-screen the events still have to be consumed or the queue grows without bound,
                 // but nothing is drawn for them.
                 _sim.Events.Clear();
+                _world?.SetVisible(false);
                 Finish(dt);
                 return;
             }
@@ -548,6 +562,7 @@ namespace ExcelHeroes.UI
             while (_sim.Events.Count > 0)
             {
                 var e = _sim.Events.Dequeue();
+                _world?.OnEvent(e);
                 switch (e.kind)
                 {
                     case EventKind.Spawn:
@@ -758,6 +773,12 @@ namespace ExcelHeroes.UI
             _camX = -CamX0 * _scale;
             _groundY = height * GroundAnchor;
 
+            if (_world != null)
+            {
+                Layout3D(width, height, dt);
+                return;
+            }
+
             if (_backdropView != null)
             {
                 // The street is drawn at field scale and slid under the camera, so the road, the
@@ -842,6 +863,75 @@ namespace ExcelHeroes.UI
             }
 
             SortByDepth();
+        }
+
+        /// <summary>The drawn lane x of a fighter: its sim x, with a melee lunge played out.</summary>
+        float DrawX(Combatant c)
+        {
+            var drawX = c.x;
+            if (c.dashT > 0f && c.dashTo != 0f)
+            {
+                var k = 1f - c.dashT / 0.45f;
+                var reach = k < 0.3f ? Mathf.Sin(k / 0.3f * Mathf.PI * 0.5f)
+                          : k < 0.55f ? 1f
+                          : Mathf.Max(0f, 1f - (k - 0.55f) / 0.35f);
+                drawX = Mathf.Lerp(c.homeX, c.dashTo, reach);
+            }
+            return drawX;
+        }
+
+        /// <summary>
+        /// The 3D field. The render target follows the stage's size in real pixels; the fighter
+        /// views are only HP bars now, pinned over each figure's head.
+        /// </summary>
+        void Layout3D(float width, float height, float dt)
+        {
+            var panelW = _stage.panel?.visualTree?.worldBound.width ?? 0f;
+            var px = panelW > 1f ? Screen.width / panelW : 1f;
+            // a little supersampling: the texture is filtered down onto the panel
+            const float ss = 1.25f;
+            _world.Resize(Mathf.RoundToInt(width * px * ss), Mathf.RoundToInt(height * px * ss));
+            _world.SetVisible(true);
+            if (_worldTex != _world.Texture)
+            {
+                _worldTex = _world.Texture;
+                _stage.style.backgroundImage = Background.FromRenderTexture(_worldTex);
+            }
+            if (_backdropView != null) _backdropView.style.display = DisplayStyle.None;
+
+            _world.Sync(dt, DrawX, _sim.Shake);
+
+            if (_fx != null)
+            {
+                // the 2D sparks ride a linear fit of the projection along the lane
+                var a = _world.ProjectSim(0f, BattleSim.GroundY);
+                var b = _world.ProjectSim(BattleSim.FieldW, BattleSim.GroundY);
+                var c = _world.ProjectSim(0f, BattleSim.GroundY - 64f);
+                _fx.ScaleX = (b.x - a.x) * width / BattleSim.FieldW;
+                _fx.ScaleY = (a.y - c.y) * height / 64f;
+                _fx.OffsetX = a.x * width;
+                _fx.OffsetY = a.y * height - BattleSim.GroundY * _fx.ScaleY;
+            }
+
+            foreach (var (c, el) in _views.ToList())
+            {
+                if (c.side == Side.Monster && !_sim.Monsters.Contains(c) && !c.Alive)
+                {
+                    el.RemoveFromHierarchy();
+                    _views.Remove(c);
+                    continue;
+                }
+                if (!_world.Head(c, out var head)) continue;
+                var w = el.resolvedStyle.width;
+                if (float.IsNaN(w) || w <= 1f) w = 120f;
+                el.style.scale = new Scale(Vector2.one);
+                el.style.left = head.x * width - w * 0.5f;
+                el.style.top = head.y * height - 26f;
+
+                var fill = el.Q(className: "fighter__hpfill");
+                if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);
+                el.EnableInClassList("fighter--dead", !c.Alive);
+            }
         }
 
         /// <summary>

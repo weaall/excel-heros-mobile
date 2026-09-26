@@ -1,0 +1,1102 @@
+{
+ "items": [
+  {
+   "id": "staff_park",
+   "hair": "short",
+   "hairColor": "#5e4f52",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#bbc5d6",
+   "shirt": "#bbc6d7",
+   "bottom": "pants",
+   "bottomColor": "#2c3345",
+   "acc": [
+    "tie:#2f3d5c",
+    "badge"
+   ],
+   "eye": "#9aa5b1",
+   "sheetSide": "right"
+  },
+  {
+   "id": "parttime",
+   "hair": "bob",
+   "hairColor": "#8a5a3b",
+   "skin": "fair",
+   "outfit": "cardigan",
+   "top": "#30323a",
+   "shirt": "#30323b",
+   "bottom": "skirt",
+   "bottomColor": "#2ec4a5",
+   "acc": [],
+   "eye": "#4b6584",
+   "sheetSide": "left"
+  },
+  {
+   "id": "guard",
+   "hair": "short",
+   "hairColor": "#d1e4ed",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#161f40",
+   "shirt": "#b9f2fd",
+   "bottom": "pants",
+   "bottomColor": "#2b3a5c",
+   "acc": [
+    "badge"
+   ],
+   "eye": "#8395a7",
+   "sheetSide": "right"
+  },
+  {
+   "id": "barista",
+   "hair": "bun",
+   "hairColor": "#e98c5d",
+   "skin": "fair",
+   "outfit": "apron",
+   "top": "#65453b",
+   "shirt": "#f9d7c2",
+   "bottom": "skirt",
+   "bottomColor": "#2d2d2d",
+   "acc": [],
+   "eye": "#ffcc80",
+   "sheetSide": "left"
+  },
+  {
+   "id": "courier",
+   "hair": "short",
+   "hairColor": "#b67550",
+   "skin": "light",
+   "outfit": "hoodie",
+   "top": "#8ba0a7",
+   "shirt": "#849aa2",
+   "bottom": "pants",
+   "bottomColor": "#2f2f2f",
+   "acc": [
+    "cap:#3b5bd6"
+   ],
+   "eye": "#95a5a6",
+   "sheetSide": "right"
+  },
+  {
+   "id": "contract",
+   "hair": "bob",
+   "hairColor": "#dcdcdc",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#958a82",
+   "shirt": "#978a81",
+   "bottom": "skirt",
+   "bottomColor": "#9aa0a6",
+   "acc": [
+    "badge"
+   ],
+   "eye": "#bdc3c7",
+   "sheetSide": "left"
+  },
+  {
+   "id": "vlookup",
+   "hair": "short",
+   "hairColor": "#15376a",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#33c1d4",
+   "shirt": "#143863",
+   "bottom": "pants",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "glasses",
+    "lanyard:#ff7eb6"
+   ],
+   "eye": "#00b894",
+   "sheetSide": "left"
+  },
+  {
+   "id": "pivot",
+   "hair": "bun",
+   "hairColor": "#4a3b2a",
+   "skin": "light",
+   "outfit": "shirt",
+   "top": "#c9ccd0",
+   "shirt": "#caccd0",
+   "bottom": "pants",
+   "bottomColor": "#2f3a4a",
+   "acc": [
+    "tie:#111111",
+    "suspenders"
+   ],
+   "eye": "#a3ffd6",
+   "sheetSide": "left"
+  },
+  {
+   "id": "macro",
+   "hair": "spiky",
+   "hairColor": "#151515",
+   "skin": "light",
+   "outfit": "hoodie",
+   "top": "#546787",
+   "shirt": "#57698a",
+   "bottom": "pants",
+   "bottomColor": "#2a2a3a",
+   "acc": [
+    "headphones:#2ad4e0"
+   ],
+   "eye": "#00cec9",
+   "sheetSide": "left"
+  },
+  {
+   "id": "hr_jung",
+   "hair": "long",
+   "hairColor": "#806361",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#14a599",
+   "shirt": "#13a699",
+   "bottom": "skirt",
+   "bottomColor": "#3cb389",
+   "acc": [
+    "badge"
+   ],
+   "eye": "#ff7675",
+   "sheetSide": "right"
+  },
+  {
+   "id": "audit_han",
+   "hair": "short",
+   "hairColor": "#1b2d43",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#fde2d0",
+   "shirt": "#fbaa44",
+   "bottom": "pants",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "sunglasses",
+    "tie:#f5c542"
+   ],
+   "eye": "#dcdde1",
+   "sheetSide": "right"
+  },
+  {
+   "id": "acct_lead",
+   "hair": "bun",
+   "hairColor": "#d8ebe7",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#14a6b9",
+   "shirt": "#15a6ba",
+   "bottom": "skirt",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "glasses",
+    "badge"
+   ],
+   "eye": "#ffeaa7",
+   "sheetSide": "left"
+  },
+  {
+   "id": "dev_lead",
+   "hair": "curly",
+   "hairColor": "#fa7697",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#0672da",
+   "shirt": "#0572d9",
+   "bottom": "pants",
+   "bottomColor": "#2a2a3a",
+   "acc": [
+    "headset"
+   ],
+   "eye": "#00cec9",
+   "sheetSide": "left"
+  },
+  {
+   "id": "ga_lead",
+   "hair": "short",
+   "hairColor": "#dee6ef",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#0d427c",
+   "shirt": "#0d437d",
+   "bottom": "pants",
+   "bottomColor": "#7f8c8d",
+   "acc": [
+    "tie:#c0392b"
+   ],
+   "eye": "#dfe6e9",
+   "sheetSide": "right"
+  },
+  {
+   "id": "welfare",
+   "hair": "bob",
+   "hairColor": "#cf1136",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#0e7896",
+   "shirt": "#fcbfad",
+   "bottom": "skirt",
+   "bottomColor": "#7f8c8d",
+   "acc": [
+    "flower:#ffd166",
+    "scarf:#ffb7a1"
+   ],
+   "eye": "#ff9ff3",
+   "sheetSide": "left"
+  },
+  {
+   "id": "cfo",
+   "hair": "short",
+   "hairColor": "#ebecf2",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#614783",
+   "shirt": "#614683",
+   "bottom": "pants",
+   "bottomColor": "#472257",
+   "acc": [
+    "glasses",
+    "tie:#d4a017",
+    "trim:#d4a017"
+   ],
+   "eye": "#ffeaa7",
+   "sheetSide": "left"
+  },
+  {
+   "id": "cto",
+   "hair": "spiky",
+   "hairColor": "#111111",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#31446d",
+   "shirt": "#2d384c",
+   "bottom": "pants",
+   "bottomColor": "#1a1d2a",
+   "acc": [
+    "sunglasses",
+    "trim:#2ad4e0"
+   ],
+   "eye": "#00b894",
+   "sheetSide": "left"
+  },
+  {
+   "id": "coo",
+   "hair": "bob",
+   "hairColor": "#96b0d3",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#1050a1",
+   "shirt": "#f8dfbf",
+   "bottom": "pants",
+   "bottomColor": "#1f2a44",
+   "acc": [
+    "badge",
+    "trim:#d4a017"
+   ],
+   "eye": "#dfe6e9",
+   "sheetSide": "right"
+  },
+  {
+   "id": "ceo",
+   "hair": "long",
+   "hairColor": "#f2f2f2",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#d5bbba",
+   "shirt": "#cfb6b5",
+   "bottom": "pants",
+   "bottomColor": "#111111",
+   "acc": [
+    "sunglasses",
+    "trim:#d4a017"
+   ],
+   "eye": "#fbc531",
+   "sheetSide": "right"
+  },
+  {
+   "id": "chairman",
+   "hair": "short",
+   "hairColor": "#d0d0d0",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#1b4257",
+   "shirt": "#f4f4f4",
+   "bottom": "pants",
+   "bottomColor": "#151515",
+   "acc": [
+    "crown",
+    "trim:#d4a017"
+   ],
+   "eye": "#f5f6fa",
+   "sheetSide": "right"
+  },
+  {
+   "id": "helpdesk",
+   "hair": "bob",
+   "hairColor": "#152238",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#423f47",
+   "shirt": "#865d54",
+   "bottom": "skirt",
+   "bottomColor": "#2f7fd6",
+   "acc": [
+    "headset"
+   ],
+   "eye": "#dfe6e9",
+   "sheetSide": "left"
+  },
+  {
+   "id": "cleaner",
+   "hair": "bun",
+   "hairColor": "#908480",
+   "skin": "light",
+   "outfit": "cardigan",
+   "top": "#627285",
+   "shirt": "#a67962",
+   "bottom": "skirt",
+   "bottomColor": "#222222",
+   "acc": [],
+   "eye": "#ffeaa7",
+   "sheetSide": "left"
+  },
+  {
+   "id": "sales_kang",
+   "hair": "short",
+   "hairColor": "#121e41",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#823653",
+   "shirt": "#f4f4f4",
+   "bottom": "pants",
+   "bottomColor": "#5a2a22",
+   "acc": [
+    "tie:#c0392b"
+   ],
+   "eye": "#fdcb6e",
+   "sheetSide": "left"
+  },
+  {
+   "id": "legal_yoon",
+   "hair": "long",
+   "hairColor": "#495881",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#f6eff0",
+   "shirt": "#b2cade",
+   "bottom": "skirt",
+   "bottomColor": "#1f2a44",
+   "acc": [
+    "glasses"
+   ],
+   "eye": "#dfe6e9",
+   "sheetSide": "right"
+  },
+  {
+   "id": "pm_lead",
+   "hair": "bob",
+   "hairColor": "#243b6e",
+   "skin": "fair",
+   "outfit": "shirt",
+   "top": "#ced7e2",
+   "shirt": "#cdd7e2",
+   "bottom": "skirt",
+   "bottomColor": "#3a4a6a",
+   "acc": [
+    "lanyard:#3b5bd6",
+    "badge"
+   ],
+   "eye": "#00cec9",
+   "sheetSide": "left"
+  },
+  {
+   "id": "design_lead",
+   "hair": "curly",
+   "hairColor": "#f2789f",
+   "skin": "fair",
+   "outfit": "shirt",
+   "top": "#e3aeab",
+   "shirt": "#e7b9b6",
+   "bottom": "skirt",
+   "bottomColor": "#5b9bd5",
+   "acc": [
+    "cap:#5b9bd5"
+   ],
+   "eye": "#ffeaa7",
+   "sheetSide": "right"
+  },
+  {
+   "id": "cmo",
+   "hair": "long",
+   "hairColor": "#f6918a",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#0f2648",
+   "shirt": "#e3b6b3",
+   "bottom": "pants",
+   "bottomColor": "#1f2a3a",
+   "acc": [
+    "sunglasses"
+   ],
+   "eye": "#ffeaa7",
+   "sheetSide": "right"
+  },
+  {
+   "id": "founder",
+   "hair": "long",
+   "hairColor": "#e8eaf0",
+   "skin": "fair",
+   "outfit": "coat",
+   "top": "#533d20",
+   "shirt": "#896536",
+   "bottom": "pants",
+   "bottomColor": "#1e2236",
+   "acc": [
+    "glasses",
+    "trim:#d4a017"
+   ],
+   "eye": "#f5f6fa",
+   "sheetSide": "right"
+  },
+  {
+   "id": "intern_seo",
+   "hair": "long",
+   "hairColor": "#b98a5c",
+   "skin": "fair",
+   "outfit": "shirt",
+   "top": "#d3ced5",
+   "shirt": "#3f343b",
+   "bottom": "skirt",
+   "bottomColor": "#8fb8e8",
+   "acc": [
+    "lanyard:#3b5bd6"
+   ],
+   "eye": "#fd79a8",
+   "sheetSide": "left"
+  },
+  {
+   "id": "pr_yoo",
+   "hair": "bob",
+   "hairColor": "#be3646",
+   "skin": "fair",
+   "outfit": "shirt",
+   "top": "#79c3e2",
+   "shirt": "#79c3e1",
+   "bottom": "skirt",
+   "bottomColor": "#3b6fd8",
+   "acc": [],
+   "eye": "#e84393",
+   "sheetSide": "left"
+  },
+  {
+   "id": "nurse_han",
+   "hair": "bun",
+   "hairColor": "#b5e8fc",
+   "skin": "fair",
+   "outfit": "labcoat",
+   "top": "#80bed4",
+   "shirt": "#7fbdd4",
+   "bottom": "skirt",
+   "bottomColor": "#f0f0f0",
+   "acc": [
+    "badge"
+   ],
+   "eye": "#00cec9",
+   "sheetSide": "right"
+  },
+  {
+   "id": "lab_park",
+   "hair": "long",
+   "hairColor": "#e2eaf0",
+   "skin": "fair",
+   "outfit": "labcoat",
+   "top": "#99cdd8",
+   "shirt": "#9aced8",
+   "bottom": "skirt",
+   "bottomColor": "#4a90e2",
+   "acc": [
+    "glasses",
+    "lanyard:#3b5bd6"
+   ],
+   "eye": "#0984e3",
+   "sheetSide": "left"
+  },
+  {
+   "id": "chro",
+   "hair": "long",
+   "hairColor": "#151515",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#9e8a7d",
+   "shirt": "#6d5d53",
+   "bottom": "skirt",
+   "bottomColor": "#7b8b5a",
+   "acc": [
+    "trim:#d4a017",
+    "earring"
+   ],
+   "eye": "#ffeaa7",
+   "sheetSide": "left"
+  },
+  {
+   "id": "intern_min",
+   "hair": "twin",
+   "hairColor": "#f4898d",
+   "skin": "fair",
+   "outfit": "cardigan",
+   "top": "#f7eaf1",
+   "shirt": "#539daf",
+   "bottom": "skirt",
+   "bottomColor": "#6fa8dc",
+   "acc": [
+    "flower:#bfe6ff"
+   ],
+   "eye": "#ffffff",
+   "sheetSide": "right"
+  },
+  {
+   "id": "security_yang",
+   "hair": "bob",
+   "hairColor": "#2a3547",
+   "skin": "light",
+   "outfit": "shirt",
+   "top": "#ddeef4",
+   "shirt": "#a35748",
+   "bottom": "pants",
+   "bottomColor": "#1f2a44",
+   "acc": [
+    "badge",
+    "headset"
+   ],
+   "eye": "#8fb8e8",
+   "sheetSide": "left"
+  },
+  {
+   "id": "mail_cho",
+   "hair": "short",
+   "hairColor": "#6b4a2f",
+   "skin": "light",
+   "outfit": "shirt",
+   "top": "#2f4c63",
+   "shirt": "#3f8fd6",
+   "bottom": "pants",
+   "bottomColor": "#2c3345",
+   "acc": [
+    "cap:#2c3345",
+    "lanyard:#f5f6fa"
+   ],
+   "eye": "#f5f6fa",
+   "sheetSide": "left"
+  },
+  {
+   "id": "qa_lee",
+   "hair": "bob",
+   "hairColor": "#43538d",
+   "skin": "fair",
+   "outfit": "hoodie",
+   "top": "#9271dc",
+   "shirt": "#9372dc",
+   "bottom": "pants",
+   "bottomColor": "#22223b",
+   "acc": [
+    "glasses"
+   ],
+   "eye": "#9ae6b4",
+   "sheetSide": "right"
+  },
+  {
+   "id": "reception_go",
+   "hair": "long",
+   "hairColor": "#382826",
+   "skin": "fair",
+   "outfit": "cardigan",
+   "top": "#a98680",
+   "shirt": "#243755",
+   "bottom": "skirt",
+   "bottomColor": "#3b3b3b",
+   "acc": [
+    "lanyard:#3b5bd6",
+    "badge"
+   ],
+   "eye": "#ffffff",
+   "sheetSide": "left"
+  },
+  {
+   "id": "trainer_seok",
+   "hair": "short",
+   "hairColor": "#303344",
+   "skin": "tan",
+   "outfit": "vest",
+   "top": "#f9a75a",
+   "shirt": "#b77773",
+   "bottom": "pants",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "lanyard:#f5f6fa"
+   ],
+   "eye": "#ffffff",
+   "sheetSide": "left"
+  },
+  {
+   "id": "translator_ji",
+   "hair": "long",
+   "hairColor": "#c5e9fa",
+   "skin": "fair",
+   "outfit": "coat",
+   "top": "#fdede8",
+   "shirt": "#f3f8fa",
+   "bottom": "skirt",
+   "bottomColor": "#2f3640",
+   "acc": [],
+   "eye": "#ffffff",
+   "sheetSide": "left"
+  },
+  {
+   "id": "secretary_yun",
+   "hair": "bun",
+   "hairColor": "#34425b",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#69697d",
+   "shirt": "#68687b",
+   "bottom": "skirt",
+   "bottomColor": "#151515",
+   "acc": [
+    "trim:#d4a017"
+   ],
+   "eye": "#d4a017",
+   "sheetSide": "right"
+  },
+  {
+   "id": "logistics_bae",
+   "hair": "short",
+   "hairColor": "#fceec1",
+   "skin": "tan",
+   "outfit": "vest",
+   "top": "#75aad1",
+   "shirt": "#eb9764",
+   "bottom": "pants",
+   "bottomColor": "#2f3640",
+   "acc": [
+    "badge"
+   ],
+   "eye": "#f39c12",
+   "sheetSide": "left"
+  },
+  {
+   "id": "cro",
+   "hair": "bun",
+   "hairColor": "#2b2b3a",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#424453",
+   "shirt": "#424553",
+   "bottom": "skirt",
+   "bottomColor": "#263238",
+   "acc": [
+    "glasses",
+    "badge",
+    "trim:#ffd54f"
+   ],
+   "eye": "#ffd54f",
+   "sheetSide": "left"
+  },
+  {
+   "id": "cpo",
+   "hair": "short",
+   "hairColor": "#53403b",
+   "skin": "light",
+   "outfit": "shirt",
+   "top": "#58909e",
+   "shirt": "#5b7a89",
+   "bottom": "pants",
+   "bottomColor": "#00695c",
+   "acc": [
+    "headset"
+   ],
+   "eye": "#b2dfdb",
+   "sheetSide": "left"
+  },
+  {
+   "id": "ir_lead",
+   "hair": "side",
+   "hairColor": "#1a1a1a",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#34323d",
+   "shirt": "#b78076",
+   "bottom": "pants",
+   "bottomColor": "#311b92",
+   "acc": [
+    "tie:#e1bee7",
+    "trim:#d4a017"
+   ],
+   "eye": "#e1bee7",
+   "sheetSide": "left"
+  },
+  {
+   "id": "labor_atty",
+   "hair": "long",
+   "hairColor": "#795755",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#4a3f3f",
+   "shirt": "#ab7570",
+   "bottom": "skirt",
+   "bottomColor": "#90a4ae",
+   "acc": [
+    "glasses"
+   ],
+   "eye": "#ff8a65",
+   "sheetSide": "right"
+  },
+  {
+   "id": "bd_lead",
+   "hair": "spiky",
+   "hairColor": "#2f303e",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#935e5d",
+   "shirt": "#945f5d",
+   "bottom": "pants",
+   "bottomColor": "#e65100",
+   "acc": [
+    "tie:#ffe0b2"
+   ],
+   "eye": "#ffe0b2",
+   "sheetSide": "right"
+  },
+  {
+   "id": "cdo",
+   "hair": "long",
+   "hairColor": "#151515",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#2f3546",
+   "shirt": "#fdeae5",
+   "bottom": "pants",
+   "bottomColor": "#1e272e",
+   "acc": [
+    "trim:#00d2ff"
+   ],
+   "eye": "#00d2ff",
+   "sheetSide": "left"
+  },
+  {
+   "id": "cco",
+   "hair": "bob",
+   "hairColor": "#f4a9c8",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#e2adab",
+   "shirt": "#b77873",
+   "bottom": "skirt",
+   "bottomColor": "#2f3640",
+   "acc": [
+    "badge"
+   ],
+   "eye": "#ffffff",
+   "sheetSide": "right"
+  },
+  {
+   "id": "chief_of_staff",
+   "hair": "ponytail",
+   "hairColor": "#f5cb94",
+   "skin": "tan",
+   "outfit": "suit",
+   "top": "#fdebae",
+   "shirt": "#fde9a7",
+   "bottom": "pants",
+   "bottomColor": "#151515",
+   "acc": [
+    "tie:#151515",
+    "trim:#d4a017"
+   ],
+   "eye": "#d4a017",
+   "sheetSide": "left"
+  },
+  {
+   "id": "cso",
+   "hair": "long",
+   "hairColor": "#c8b6ff",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#c997b3",
+   "shirt": "#cc9bb5",
+   "bottom": "skirt",
+   "bottomColor": "#1f2a44",
+   "acc": [
+    "trim:#d4a017",
+    "badge"
+   ],
+   "eye": "#8c7ae6",
+   "sheetSide": "right"
+  },
+  {
+   "id": "ai_lead",
+   "hair": "long",
+   "hairColor": "#9ff3e6",
+   "skin": "fair",
+   "outfit": "labcoat",
+   "top": "#36888c",
+   "shirt": "#1f2835",
+   "bottom": "skirt",
+   "bottomColor": "#1e272e",
+   "acc": [
+    "glasses",
+    "trim:#00cec9"
+   ],
+   "eye": "#00cec9",
+   "sheetSide": "right"
+  },
+  {
+   "id": "union_chief",
+   "hair": "spiky",
+   "hairColor": "#e8c65a",
+   "skin": "tan",
+   "outfit": "suit",
+   "top": "#8d5532",
+   "shirt": "#975632",
+   "bottom": "pants",
+   "bottomColor": "#1f2330",
+   "acc": [
+    "tie:#f5f6fa",
+    "trim:#f5c542"
+   ],
+   "eye": "#f5f6fa",
+   "sheetSide": "right"
+  },
+  {
+   "id": "hacker",
+   "hair": "bob",
+   "hairColor": "#1e272e",
+   "skin": "fair",
+   "outfit": "hoodie",
+   "top": "#292d46",
+   "shirt": "#292d45",
+   "bottom": "skirt",
+   "bottomColor": "#2b2f4a",
+   "acc": [
+    "headset",
+    "trim:#d4a017"
+   ],
+   "eye": "#00d2ff",
+   "sheetSide": "left"
+  },
+  {
+   "id": "chairwoman",
+   "hair": "long",
+   "hairColor": "#eef2f7",
+   "skin": "fair",
+   "outfit": "suit",
+   "top": "#4b6693",
+   "shirt": "#4a6693",
+   "bottom": "pants",
+   "bottomColor": "#111111",
+   "acc": [
+    "tiara",
+    "trim:#d4a017"
+   ],
+   "eye": "#d4a017",
+   "sheetSide": "right"
+  },
+  {
+   "id": "intern",
+   "hair": "short",
+   "hairColor": "#fdecc0",
+   "skin": "light",
+   "outfit": "shirt",
+   "top": "#1e5690",
+   "shirt": "#052582",
+   "bottom": "pants",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "lanyard:#3b5bd6"
+   ],
+   "eye": "#e6f7ff",
+   "sheetSide": "left"
+  },
+  {
+   "id": "staff",
+   "hair": "short",
+   "hairColor": "#fee1cf",
+   "skin": "light",
+   "outfit": "shirt",
+   "top": "#57ece0",
+   "shirt": "#2ec4b6",
+   "bottom": "pants",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "tie:#1f2a44"
+   ],
+   "eye": "#e6f7ff",
+   "sheetSide": "left"
+  },
+  {
+   "id": "sales_senior",
+   "hair": "short",
+   "hairColor": "#fef0ec",
+   "skin": "light",
+   "outfit": "shirt",
+   "top": "#a5c0e0",
+   "shirt": "#a9c3e2",
+   "bottom": "pants",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "tie:#c0392b",
+    "lanyard:#c0392b"
+   ],
+   "eye": "#ffd9d4",
+   "sheetSide": "right"
+  },
+  {
+   "id": "sales_manager",
+   "hair": "short",
+   "hairColor": "#151515",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#433b3e",
+   "shirt": "#443d3f",
+   "bottom": "pants",
+   "bottomColor": "#1f1f2a",
+   "acc": [
+    "tie:#c0392b"
+   ],
+   "eye": "#ffd9d4",
+   "sheetSide": "left"
+  },
+  {
+   "id": "sales",
+   "hair": "spiky",
+   "hairColor": "#353849",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#a2152e",
+   "shirt": "#292d43",
+   "bottom": "pants",
+   "bottomColor": "#1f1f2a",
+   "acc": [
+    "sunglasses",
+    "trim:#d4a017"
+   ],
+   "eye": "#ffd76a",
+   "sheetSide": "left"
+  },
+  {
+   "id": "finance_senior",
+   "hair": "short",
+   "hairColor": "#7095af",
+   "skin": "light",
+   "outfit": "vest",
+   "top": "#fdddc8",
+   "shirt": "#f4f4f4",
+   "bottom": "pants",
+   "bottomColor": "#1f2a44",
+   "acc": [
+    "glasses",
+    "tie:#16a085"
+   ],
+   "eye": "#d5f5ec",
+   "sheetSide": "right"
+  },
+  {
+   "id": "finance_manager",
+   "hair": "short",
+   "hairColor": "#fee7ab",
+   "skin": "light",
+   "outfit": "suit",
+   "top": "#3aabbb",
+   "shirt": "#fdeeea",
+   "bottom": "pants",
+   "bottomColor": "#1f2a44",
+   "acc": [
+    "glasses",
+    "tie:#1f2a44"
+   ],
+   "eye": "#d5f5ec",
+   "sheetSide": "left"
+  },
+  {
+   "id": "finance",
+   "hair": "short",
+   "hairColor": "#fcbb71",
+   "skin": "light",
+   "outfit": "vest",
+   "top": "#05adbe",
+   "shirt": "#05acbe",
+   "bottom": "pants",
+   "bottomColor": "#1f2a44",
+   "acc": [
+    "glasses",
+    "tie:#d4a017",
+    "trim:#d4a017"
+   ],
+   "eye": "#ffd76a",
+   "sheetSide": "left"
+  },
+  {
+   "id": "admin_senior",
+   "hair": "short",
+   "hairColor": "#3c4356",
+   "skin": "light",
+   "outfit": "vest",
+   "top": "#9c5e3d",
+   "shirt": "#faece2",
+   "bottom": "pants",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "badge"
+   ],
+   "eye": "#ffe3c2",
+   "sheetSide": "left"
+  },
+  {
+   "id": "admin_manager",
+   "hair": "short",
+   "hairColor": "#f2e880",
+   "skin": "light",
+   "outfit": "coat",
+   "top": "#f7a560",
+   "shirt": "#3e4249",
+   "bottom": "pants",
+   "bottomColor": "#2c3e50",
+   "acc": [
+    "hardhat:#f1c40f",
+    "badge"
+   ],
+   "eye": "#ffe3c2",
+   "sheetSide": "right"
+  },
+  {
+   "id": "admin",
+   "hair": "short",
+   "hairColor": "#151515",
+   "skin": "light",
+   "outfit": "coat",
+   "top": "#9b98aa",
+   "shirt": "#1e2739",
+   "bottom": "pants",
+   "bottomColor": "#1f1f1f",
+   "acc": [
+    "badge",
+    "trim:#d4a017"
+   ],
+   "eye": "#ffd76a",
+   "sheetSide": "right"
+  },
+  {
+   "id": "main",
+   "hair": "short",
+   "hairColor": "#151515",
+   "skin": "light",
+   "outfit": "shirt",
+   "top": "#f4f4f4",
+   "shirt": "#f4f4f4",
+   "bottom": "pants",
+   "bottomColor": "#2a3350",
+   "acc": [
+    "lanyard:#3b5bd6"
+   ],
+   "eye": "#3a3f58",
+   "sheetSide": "right"
+  }
+ ]
+}

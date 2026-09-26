@@ -5122,3 +5122,39 @@
     font-size: 18px;
     color: rgb(255, 190, 40);
 }
+
+
+/* ================================================================ 3D field (World/BattleWorld)
+   The stage's background is the 3D render; fighter views are only HP bars over each head. */
+.battle__stage--3d {
+    background-color: rgb(220, 236, 255);
+    -unity-background-scale-mode: stretch-to-fill;
+}
+
+.battle__stage--3d .mote { display: none; }
+.battle__stage--3d .shot { display: none; }
+
+.fighter--3d {
+    width: 120px;
+    height: 30px;
+    align-items: center;
+}
+
+.fighter--3d .fighter__body,
+.fighter--3d .fighter__shadow,
+.fighter--3d .fighter__name { display: none; }
+
+.fighter--3d .fighter__hpbar {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 104px;
+    height: 12px;
+    border-radius: 3px;
+    border-width: 2px;
+    border-color: rgb(27, 29, 37);
+    background-color: rgba(20, 24, 36, 0.7);
+}
+
+.fighter--3d.fighter--boss .fighter__hpbar { width: 180px; height: 16px; }
+.fighter--3d.fighter--dead { opacity: 0; }

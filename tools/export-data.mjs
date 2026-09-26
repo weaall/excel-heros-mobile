@@ -26,6 +26,8 @@ const milestone = await load('src/data/milestones.js');
 const equipment = await load('src/data/equipment.js').catch(() => ({}));
 const codesMod  = await load('src/data/codes.js').catch(() => ({}));
 const skinsMod  = await load('src/data/skins.js').catch(() => ({}));
+const dollsMod  = await load('src/data/dollSprites.js');
+const designMod = await load('src/data/design.js');
 
 const { GRADES, ROLES, SKILLS, TRAITS, HEROES, MAIN_JOBS, MAIN_ID } = heroes;
 const { PROFILES } = profiles;
@@ -68,7 +70,26 @@ const mainJobs = rows(MAIN_JOBS).map((j) => ({
 // list is wrapped as { items: [...] }. Keep this in sync with GameData.cs.
 const wrap = (items) => ({ items });
 
+// 3D SD 모델의 설계도: 웹의 페이퍼돌 스펙(머리 모양·색, 의상, 소품)에 일러에서 뽑은 색을 덮은 것,
+// 그리고 등 뒤 시트가 기대는 쪽. 주인공(main)은 김인턴 — 검은 단발, 흰 셔츠, 남색 바지로 고정.
+const dollRows = Object.keys(dollsMod.DOLLS).map((id) => {
+  const d = dollsMod.dollSpec(id) ?? dollsMod.DOLLS[id];
+  return {
+    id, hair: d.hair, hairColor: d.hairColor, skin: d.skin ?? 'fair', outfit: d.outfit,
+    top: d.top, shirt: d.shirt ?? d.top, bottom: d.bottom, bottomColor: d.bottomColor,
+    acc: d.acc ?? [], eye: ART_EYE(id), sheetSide: designMod.sheetSide(id),
+  };
+});
+function ART_EYE(id) {
+  const h = HEROES.find((x) => x.id === id);
+  return h?.palette?.W || dollsMod.DOLLS[id]?.halo || '#5b8fd6';
+}
+const internDoll = dollRows.find((d) => d.id === 'intern');
+if (internDoll) dollRows.push({ ...internDoll, id: MAIN_ID, hairColor: '#151515', top: '#f4f4f4', shirt: '#f4f4f4',
+  bottomColor: '#2a3350', eye: '#3a3f58', sheetSide: designMod.sheetSide(MAIN_ID) });
+
 const files = {
+  'dolls.json':     wrap(dollRows),
   'grades.json':    wrap(rows(GRADES).map((g) => ({ ...g, baseAtk: g.base.atk, baseHp: g.base.hp, base: undefined }))),
   'roles.json':     wrap(rows(ROLES).map((r) => ({ ...r, slot: undefined }))),
   'skills.json':    wrap(rows(SKILLS)),

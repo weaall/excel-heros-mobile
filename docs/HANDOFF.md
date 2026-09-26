@@ -701,3 +701,12 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 ## 편성 → 바닥에 선 라인업 (BA `부대 편성` 기준)
 - Standing 일러가 있는 멤버는 카드가 아니라 **바닥에 선 전신**(`pslot--stand`): 발 밑 그림자 타원, FRONT/MIDDLE/BACK + 역할 태그, 흰 이름판(등급 배지 · Lv · 이름 · 별).
 - Standing이 없는 멤버는 기존 카드 모양 그대로(폴백).
+
+## 3D 전투 (World/) — BA 전투 화면 기준
+- `World/BattleWorld`가 사무실 무대 + SD 캐릭터를 자기 카메라로 **RenderTexture**에 그리고, `BattleScreen`은 그걸 `battle__stage` 배경으로 쓴다(`battle__stage--3d`). 시뮬(BattleSim)은 그대로 — 월드는 따라가기만 한다.
+- 캐릭터: `ChibiBuilder`(약 2.4등신 SD, 얼굴은 `FaceTexture`로 그려 머리 앞면에 투영). 설계도는 웹 `dollSprites.js` → `tools/export-data.mjs` → `Resources/Data/dolls.json`(`DollData`). 머리 9종·의상 9종·소품. 주인공(main)은 검은 단발·흰 셔츠·남자 눈.
+- 등 뒤 시트: `SheetTexture`가 `BackSheet.Spec`(등급·레벨·★·특성)을 텍스처로, 어깨 너머에 고정·카메라를 향함. 공격 때 살짝 떠오르고 스킬 때 빛남(_Glow). 원거리 공격 투사체는 **시트에서 떨어져 나온 셀**.
+- 몬스터: `MonsterBuilder` — 도감 모양 14종 + 화난 얼굴, 보스 2.3배 + 빨간 깃발.
+- 무대: `OfficeStage` — 스프레드시트 바닥(셀 격자), 파티 줄의 초록 선택 테두리, 창문 벽, 책상·모니터·의자·화분, 앞쪽 캐비닛. Phase 20부터 저녁, 40부터 야근 밤.
+- 셰이더: `Resources/Shaders/Toon.shader`(2톤 셀 + 림 + 역헐 외곽선 #1b1d25, 피격 _Flash), `Glass.shader`(반투명). **프로젝트 URP는 2D Renderer** → 본체 패스를 `Universal2D`와 `UniversalForward` 둘 다로 태그, 유리는 LightMode 없음.
+- 캐릭터 템플릿은 id별로 한 번 만들고 Instantiate(피격 번쩍임은 MaterialPropertyBlock). 레이어 30, 월드 루트 y=-300.
