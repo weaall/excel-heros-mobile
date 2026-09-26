@@ -146,6 +146,18 @@ namespace ExcelHeroes.Core
                     yield return Shoot($"{n:00}-{sheet}");
                     n++;
 
+                    // The battle's result lands over its HUD almost at once, so the HUD itself was
+                    // never photographed. Take the result away and shoot the field underneath.
+                    if (sheet == AppRoot.Sheet.Battle)
+                    {
+                        var docRoot = app.GetComponent<UnityEngine.UIElements.UIDocument>()?.rootVisualElement;
+                        if (docRoot != null)
+                            UnityEngine.UIElements.UQueryExtensions.Query<UnityEngine.UIElements.VisualElement>(docRoot, null, "bresult")
+                                .ForEach(e => e.RemoveFromHierarchy());
+                        yield return new WaitForSeconds(0.3f);
+                        yield return Shoot($"{n:00}-BattleHud");
+                    }
+
                     // The home sheet gets a second shot a few seconds later. The first one keeps
                     // landing on an EX cut-in, and a screen that is 40% covered by a portrait tells
                     // you nothing about the fight underneath it.
@@ -216,6 +228,12 @@ namespace ExcelHeroes.Core
                 yield return null;
                 yield return null;
                 yield return Shoot($"{n++:00}-Pull10");
+                app.CloseOverlay();
+
+                app.OpenOverlay(UiGallery.BuildSheets(app.CloseOverlay));
+                yield return null;
+                yield return null;
+                yield return Shoot($"{n++:00}-Sheets");
                 app.CloseOverlay();
 
                 // Every plate and the modal on one page, laid out like the reference sheet, so

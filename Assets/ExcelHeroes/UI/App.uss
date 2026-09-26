@@ -4844,3 +4844,121 @@
 }
 
 .pslot__stars { bottom: 144px; }
+
+
+/* ================================================================ 등 뒤 시트 (BackSheet.cs)
+   Behind the portrait, leaning out past one shoulder; top edge below the head. */
+.backsheet { position: absolute; }
+
+.home__sheet { top: 16%; width: 30%; height: 56%; }
+.home__sheet.backsheet--left { left: 10%; }
+.home__sheet.backsheet--right { left: 46%; }
+
+.kit__sheets { flex-direction: row; justify-content: space-between; margin-top: 30px; }
+.kit__sheet-cell { width: 420px; height: 600px; align-items: center; }
+.kit__sheet { left: 10px; right: 10px; top: 0; bottom: 70px; }
+.kit__sheet-label { position: absolute; bottom: 10px; font-size: 32px; -unity-font-style: bold; color: rgb(30, 44, 70); }
+
+
+/* ================================================================ battle HUD (reference: 전투)
+   No white band: the skill cards float bottom-right over the field with the cost gauge under
+   them; the toggles are glass plates on a glass strip top-right; the office upgrades go
+   bottom-left as glass tiles. */
+.battle__hud { background-color: rgba(0, 0, 0, 0); border-width: 0; padding: 8px 20px 8px 40px; height: 88px; }
+.battle__wave { color: rgb(22, 38, 63); }
+.battle__wave--enraged { color: rgb(220, 60, 60); }
+.forecast { color: rgb(60, 80, 110); }
+.auto-toggle { height: 60px; min-width: 120px; margin-left: 10px; padding: 0 18px; font-size: 26px; }
+.auto-toggle--on.plate--glass { color: rgb(10, 120, 180); }
+
+.ex-bar {
+    position: absolute;
+    right: 50px;
+    bottom: 96px;
+    height: 200px;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.ex-button {
+    width: 170px;
+    height: 196px;
+    margin-left: 14px;
+    margin-right: 0;
+    border-width: 0;
+    border-radius: 12px;
+    background-color: rgb(206, 222, 238);
+    overflow: visible;
+}
+
+.ex-button--ready { scale: 1.06 1.06; }
+
+.ex-button__art { border-radius: 12px; overflow: hidden; background-position-y: top; }
+
+.ex-button__cost {
+    position: absolute;
+    left: -14px;
+    top: -14px;
+    width: 58px;
+    height: 58px;
+    align-items: center;
+    justify-content: center;
+}
+
+.ex-button__label {
+    width: auto;
+    font-size: 30px;
+    -unity-font-style: bold-and-italic;
+    color: rgb(255, 255, 255);
+    background-color: rgba(0, 0, 0, 0);
+    padding: 0;
+}
+
+.ex-cost-bar {
+    position: absolute;
+    right: 50px;
+    bottom: 22px;
+    width: 940px;
+    height: 70px;
+    background-color: rgba(0, 0, 0, 0);
+    overflow: visible;
+}
+
+.ex-cost-disc {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 70px;
+    height: 70px;
+    align-items: center;
+    justify-content: center;
+}
+
+.ex-cost-disc__word { font-size: 14px; -unity-font-style: bold; color: rgb(180, 220, 250); margin-bottom: -6px; }
+.ex-cost-text {
+    position: relative;
+    left: 0;
+    font-size: 34px;
+    -unity-font-style: bold-and-italic;
+    color: rgb(255, 255, 255);
+}
+
+.upgrades { left: 50px; right: auto; bottom: 22px; height: 130px; }
+.upgrade {
+    width: 230px;
+    background-color: rgba(255, 255, 255, 0.82);
+    border-width: 2px;
+    border-color: rgb(186, 208, 228);
+    border-bottom-width: 2px;
+    border-radius: 12px;
+}
+.upgrade__name { color: rgb(60, 80, 110); }
+.upgrade--ready { background-color: rgba(96, 226, 255, 0.95); border-color: rgb(20, 150, 210); }
+.upgrade--ready .upgrade__name { color: rgb(22, 38, 63); }
+
+/* Ink on the battle HUD: dark on the glass, everywhere. */
+.battle__hud .auto-toggle { color: rgb(22, 38, 63); }
+.battle__hud .auto-toggle--on { color: rgb(0, 130, 200); }
+.upgrade .upgrade__level { color: rgb(22, 38, 63); }
+.upgrade .upgrade__cost { color: rgb(190, 130, 0); }
+.upgrade--ready .upgrade__cost { color: rgb(22, 38, 63); }

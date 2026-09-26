@@ -13,6 +13,33 @@ namespace ExcelHeroes.UI
     /// </summary>
     public static class UiGallery
     {
+        /// <summary>
+        /// Every grade's sheet side by side, each on a different trait, star count and level,
+        /// plus an awakened one — the whole ladder on one page, as BackSheet describes it.
+        /// </summary>
+        public static VisualElement BuildSheets(System.Action close)
+        {
+            var root = UiKit.Div("kit");
+            var col = UiKit.Div("kit__col", root);
+            UiKit.Text("(7) 등 뒤 시트 — 등급 D → S, 특성·★·레벨별", "kit__cap", col);
+            var row = UiKit.Div("kit__sheets", col);
+            var samples = new (string grade, string trait, int star, float fill, bool awake)[]
+            {
+                ("D", "swift", 1, 0.6f, false), ("C", "crit", 2, 0.5f, false), ("B", "lifesteal", 3, 0.7f, false),
+                ("A", "rally", 4, 0.8f, false), ("S", "splash", 5, 1f, true),
+            };
+            foreach (var (grade, trait, star, fill, awake) in samples)
+            {
+                var def = Data.GameData.Heroes.Find(h => h.grade == grade && h.trait == trait) ?? Data.GameData.Heroes.Find(h => h.grade == grade);
+                var o = new Core.OwnedHero(def.id) { star = star, awakened = awake, skillLv = 2 };
+                o.level = UnityEngine.Mathf.RoundToInt(Core.StatMath.LevelCap(o) * fill);
+                var cell = UiKit.Div("kit__sheet-cell", row);
+                BackSheet.Add(cell, def, o, "backsheet kit__sheet");
+                UiKit.Text($"{grade} · {Data.GameData.Trait(def.trait)?.name ?? def.trait} · ★{star}", "kit__sheet-label", cell);
+            }
+            return root;
+        }
+
         public static VisualElement Build(Action close)
         {
             var root = UiKit.Div("kit");

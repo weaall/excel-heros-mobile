@@ -672,3 +672,22 @@ photographs an empty sheet, and did.
 
 Next: the battle HUD itself (the chips and grey upgrade tiles under the field are from before),
 and the hero detail as a full page rather than a modal.
+
+## 등 뒤 시트, and the battle HUD without its white band
+
+**`BackSheet`** is the game's device where the reference has a halo — a translucent spreadsheet
+behind the hero, leaning out past one shoulder. Same rules as the web repo's `src/data/design.js`:
+grade → columns (3…7) and chrome (header row C+, header column and formula bar B+, gold frame and
+bar chart A+, three stacked tabs S), ★ → open rows, level ÷ cap → filled cells, awakened → gold,
+skill level → chart bars, trait → one spreadsheet feature as a cell pattern, `colorAccent` tints
+it, and the side comes from the same id hash. One shear (`Map`) moves the frame and every cell, so
+the grid leans with its frame. A pale accent is pulled toward navy (luminance > 0.72) or a filled
+cell cannot be told from an empty one. It sits behind the lobby portrait; `UiGallery.BuildSheets`
+shows the whole ladder (`NN-Sheets.png`). It becomes the point of the lobby once the transparent
+art replaces the boxed cards.
+
+**Battle HUD** to the reference screenshot: no white band under the field. Skill cards float
+bottom-right with a white frame and a navy cost disc in the corner; under them a ten-cell slanted
+cost gauge with the whole number in a navy disc; the toggles are glass plates on a glass strip
+top-right; the office upgrades are glass tiles bottom-left. The driver now removes the result
+overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been photographed.

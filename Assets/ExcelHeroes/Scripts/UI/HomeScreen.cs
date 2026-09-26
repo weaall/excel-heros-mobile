@@ -42,6 +42,8 @@ namespace ExcelHeroes.UI
             var owned = p.owned.FirstOrDefault(x => x.id == _heroId) ?? new OwnedHero(_heroId);
 
             // ---- Left: Character Visual Element -------------------------------------------
+            // The hero's sheet, behind the portrait and leaning out past one shoulder.
+            BackSheet.Add(_root, def, owned, "backsheet home__sheet");
             _charContainer = UiKit.Div("home__char-container", _root);
             if (def != null)
             {

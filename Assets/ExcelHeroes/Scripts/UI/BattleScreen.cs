@@ -107,6 +107,13 @@ namespace ExcelHeroes.UI
             // Added after the field so they draw over it: UI Toolkit has no z-index, and the
             // order things are built in is the only thing that decides what is on top.
             var hud = UiKit.Div("battle__hud", _root);
+            // Its own glass strip: Chrome.DrawPill draws only a divider slash inside screens.
+            ModalFrame.Painted(hud, (ctx, r) =>
+            {
+                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 10f);
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.3f), 8f);
+                UiPaint.Fill(ctx, poly, UiPaint.C(255, 255, 255, 0.86f));
+            });
             _waveLabel = UiKit.Text("", "battle__wave", hud);
             // One toggle, called what it is. The ×1–3 speed control went with it: the run now keeps
             // going while you are on another sheet, so the reason to fast-forward was gone.
@@ -124,10 +131,15 @@ namespace ExcelHeroes.UI
             // 야근 — the one fight in this game a player chooses to start. Everything else runs
             // whether or not anyone is watching, which is what makes this worth a button.
             _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn", StartOvertime, hud);
+            foreach (var t in hud.Query<Button>(className: "auto-toggle").ToList()) SkewPlate.Apply(t, SkewPlate.Kind.Glass);
 
             _costBar = UiKit.Div("ex-cost-bar", _root);
+            ModalFrame.Painted(_costBar, DrawCost);
             _costFill = UiKit.Div("ex-cost-fill", _costBar);
-            _costLabel = UiKit.Text("COST: 0.0 / 10", "ex-cost-text", _costBar);
+            _costFill.AddToClassList("hidden");
+            var disc = UiKit.Div("ex-cost-disc", _costBar);
+            UiKit.Text("COST", "ex-cost-disc__word", disc);
+            _costLabel = UiKit.Text("0", "ex-cost-text", disc);
 
             _exBar = UiKit.Div("ex-bar", _root);
 
@@ -1237,10 +1249,58 @@ namespace ExcelHeroes.UI
 
                 var charge = UiKit.Div("ex-button__charge", btn);
                 var cost = BattleSim.CostOf(combatant);
-                var label = UiKit.Text($"{cost} COST", "ex-button__label", btn);
+                var def = GameData.Hero(combatant.heroId);
+                UiKit.CardFrame(GameData.Grade(def?.grade)?.Color ?? Color.white, btn, 12f);
+                var badge = UiKit.Div("ex-button__cost", btn);
+                ModalFrame.Painted(badge, (ctx, r) =>
+                {
+                    var d = UiPaint.Ellipse(r.center, r.width * 0.5f, r.height * 0.5f);
+                    UiPaint.Shadow(ctx, d, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.35f), 4f);
+                    UiPaint.Fill(ctx, d, Color.white);
+                    UiPaint.Fill(ctx, UiPaint.Ellipse(r.center, r.width * 0.5f - 3f, r.height * 0.5f - 3f),
+                                 UiPaint.Vertical(UiPaint.C(46, 70, 118), UiPaint.C(24, 38, 72), r.yMin, r.yMax));
+                });
+                var label = UiKit.Text(cost.ToString(), "ex-button__label", badge);
+                Juice.Press(btn);
 
                 _exButtons[combatant] = (btn, charge, label);
             }
+        }
+
+        /// <summary>
+        /// The reference's cost gauge: ten slanted cells in a navy frame, lit cyan up to the
+        /// current cost with the next cell filling, and the whole number in a disc on the left.
+        /// </summary>
+        void DrawCost(MeshGenerationContext ctx, Rect r)
+        {
+            var cost = _sim != null ? Mathf.Clamp(_sim.Cost, 0f, BattleSim.MaxCost) : 0f;
+            var bar = Rect.MinMaxRect(r.xMin + r.height * 1.1f, r.yMin + r.height * 0.25f, r.xMax, r.yMax - r.height * 0.18f);
+            var slant = SkewPlate.SlantFor(bar.height);
+            var frame = UiPaint.SkewRect(bar, slant, 4f);
+            UiPaint.Shadow(ctx, frame, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.35f), 6f);
+            UiPaint.Fill(ctx, frame, UiPaint.C(20, 32, 60, 0.92f));
+            var cells = (int)BattleSim.MaxCost;
+            var inner = new Rect(bar.xMin + 6f, bar.yMin + 5f, bar.width - 12f, bar.height - 10f);
+            var cw = inner.width / cells;
+            for (var i = 0; i < cells; i++)
+            {
+                var c = new Rect(inner.xMin + i * cw + 2f, inner.yMin, cw - 4f, inner.height);
+                var poly = UiPaint.SkewRect(c, slant * (inner.height / bar.height), 2f, 2);
+                UiPaint.Fill(ctx, poly, UiPaint.C(60, 80, 120, 0.8f));
+                var lit = Mathf.Clamp01(cost - i);
+                if (lit >= 1f)
+                    UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(120, 236, 255), UiPaint.C(30, 190, 245), c.yMin, c.yMax));
+                else if (lit > 0f)
+                {
+                    var part = UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(c.xMin - 10f, c.yMin - 2f, c.xMin + (c.width + 10f) * lit, c.yMax + 2f), 0f));
+                    UiPaint.Fill(ctx, part, UiPaint.C(90, 200, 240, 0.8f), 0f);
+                }
+            }
+            var disc = UiPaint.Ellipse(new Vector2(r.xMin + r.height * 0.5f, r.center.y), r.height * 0.5f, r.height * 0.5f);
+            UiPaint.Shadow(ctx, disc, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.35f), 6f);
+            UiPaint.Fill(ctx, disc, Color.white);
+            UiPaint.Fill(ctx, UiPaint.Ellipse(new Vector2(r.xMin + r.height * 0.5f, r.center.y), r.height * 0.5f - 4f, r.height * 0.5f - 4f),
+                         UiPaint.Vertical(UiPaint.C(46, 70, 118), UiPaint.C(24, 38, 72), r.yMin, r.yMax));
         }
 
         void UpdateExBar()
@@ -1255,8 +1315,9 @@ namespace ExcelHeroes.UI
             }
             if (_costLabel != null)
             {
-                _costLabel.text = $"COST: {_sim.Cost:F1} / 10";
+                _costLabel.text = Mathf.FloorToInt(_sim.Cost).ToString();
             }
+            _costBar?.MarkDirtyRepaint();
 
             // Update EX Buttons
             foreach (var pair in _exButtons)
