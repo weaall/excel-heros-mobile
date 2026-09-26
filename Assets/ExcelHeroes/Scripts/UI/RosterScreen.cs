@@ -222,16 +222,22 @@ namespace ExcelHeroes.UI
             var grade = GameData.Grade(def.grade);
             var division = GameData.Division(def.division);
 
+            // A page, as the reference's 학생 screen is, not a modal over the roster: the shell's
+            // own backdrop behind it, the top bar still above it, the back arrow closing it.
             var view = UiKit.Div("detail");
-            ModalFrame.Frame(view);
+            ModalFrame.Painted(view, Chrome.DrawBackdrop);
 
             // The whole illustration, not a crop of it. The card is the thing the player pulled;
             // showing them the middle third of it in a box of a fixed height is the one place in
             // the game where cropping is simply wrong. The plate takes its height from the
             // picture's own aspect ratio, so nothing is cut and there are no bars either.
             var art = UiKit.Div("detail__art", view);
-            UiKit.SetArt(art, GameData.WornCardArt(heroId));
-            ArtMotion.Breathe(art);
+            BackSheet.Add(art, def, owned, "backsheet detail__sheet");
+            var figure = UiKit.Div("detail__figure", art);
+            var standing = GameData.StandingArt(heroId);
+            UiKit.SetArt(figure, standing ?? GameData.WornCardArt(heroId));
+            figure.EnableInClassList("detail__figure--standing", standing != null);
+            ArtMotion.Breathe(figure);
 
             // The name plate sits ON the picture, bottom-left, the way the reference does it.
             // It used to be a navy bar at the top of the RIGHT column, which spent a band of the
@@ -239,6 +245,15 @@ namespace ExcelHeroes.UI
             // captionless. Everything identifying the hero is here now: 부문, 등급, name, level,
             // ★ and the bond — so the right column is nothing but what you came to read.
             var plate = UiKit.Div("dplate", art);
+            ModalFrame.Painted(plate, (ctx, r) =>
+            {
+                var band = Rect.MinMaxRect(r.xMin, r.yMin + 44f, r.xMax, r.yMax);
+                var poly = UiPaint.SkewRect(band, SkewPlate.SlantFor(band.height) * 0.5f, 6f);
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), UiPaint.C(0, 0, 0, 0.3f), 10f);
+                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(40, 62, 108), UiPaint.C(22, 36, 70), band.yMin, band.yMax));
+                var tag = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin + 10f, r.yMin, r.xMin + r.width * 0.62f, r.yMin + 42f), 8f, 3f, 2);
+                UiPaint.Fill(ctx, tag, UiPaint.C(255, 255, 255, 0.95f));
+            });
             var plateTop = UiKit.Div("dplate__top", plate);
             UiKit.Text(def.dept ?? "", "dplate__dept", plateTop);
             var gradeChip = UiKit.Text(grade?.label ?? def.grade, "dplate__grade", plateTop);
@@ -261,6 +276,12 @@ namespace ExcelHeroes.UI
 
             // Everything except the picture lives in the right column.
             var right = UiKit.Div("detail__right", view);
+            ModalFrame.Painted(right, (ctx, r) =>
+            {
+                var body = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin + 70f, r.xMax, r.yMax), 14f, 6);
+                UiPaint.Shadow(ctx, body, new Vector2(0f, 6f), UiPaint.C(20, 40, 80, 0.22f), 16f);
+                UiPaint.Fill(ctx, body, UiPaint.C(255, 255, 255, 0.95f));
+            });
 
             // Pill tabs, as the reference puts them on its own card sheet. Everything this
             // modal knows about a hero — stats, levelling, the skill, the trait, the bond, the
@@ -1017,11 +1038,26 @@ namespace ExcelHeroes.UI
 
         void Tab(VisualElement parent, string id, string label, string heroId, System.Action onClose)
         {
-            var b = UiKit.Btn(label, "dtab", () => { _tab = id; Reopen(heroId, onClose); }, parent);
+            // The label is a child: a painted element covers its own text (see UiKit.Ribbon).
+            var b = UiKit.Btn("", "dtab", () => { _tab = id; Reopen(heroId, onClose); }, parent);
             b.EnableInClassList("dtab--on", _tab == id);
-            // The reference's tabs are the same slanted plates as its buttons: cyan for the open
-            // one, white glass for the rest.
-            SkewPlate.Apply(b, _tab == id ? SkewPlate.Kind.Primary : SkewPlate.Kind.Light);
+            UiKit.Text(label, "dtab__label", b);
+            // Folder tabs, as the reference's 학생 panel has: a rectangle with a slanted right
+            // edge, the open one white and joined to the panel below it, the rest pale blue-grey.
+            var on = _tab == id;
+            ModalFrame.Painted(b, (ctx, r) =>
+            {
+                var slant = r.height * 0.35f;
+                var poly = new System.Collections.Generic.List<Vector2>
+                {
+                    new Vector2(r.xMin, r.yMin), new Vector2(r.xMax - slant, r.yMin),
+                    new Vector2(r.xMax, r.yMax + (on ? 2f : 0f)), new Vector2(r.xMin, r.yMax + (on ? 2f : 0f)),
+                };
+                UiPaint.Fill(ctx, UiPaint.Round(poly, 6f, 3), on ? UiPaint.Flat(UiPaint.C(255, 255, 255, 0.98f))
+                                                                  : UiPaint.Vertical(UiPaint.C(214, 226, 238), UiPaint.C(196, 212, 228), r.yMin, r.yMax));
+                if (on) UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 20f, r.yMax - 6f, r.xMax - slant - 20f, r.yMax - 2f), 2f), UiPaint.C(255, 206, 60));
+            });
+            Juice.Press(b);
         }
 
         /// <summary>Rebuilds the sheet in place so levelling shows the new numbers immediately.</summary>

@@ -4962,3 +4962,97 @@
 .upgrade .upgrade__level { color: rgb(22, 38, 63); }
 .upgrade .upgrade__cost { color: rgb(190, 130, 0); }
 .upgrade--ready .upgrade__cost { color: rgb(22, 38, 63); }
+
+
+/* The transparent standing art: full height, no box, feet at the floor line. */
+.home__char-container--standing {
+    left: 22%;
+    width: 36%;
+    top: -2%;
+    bottom: -2%;
+    height: auto;
+    border-radius: 0;
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-y: bottom;
+}
+
+
+/* ================================================================ hero page (reference: 학생)
+   A page under the top bar: figure and sheet on the left, name plate bottom-left, a white panel
+   with folder tabs on the right. */
+.overlay--page {
+    top: 120px;
+    background-color: rgba(0, 0, 0, 0);
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.overlay--page .detail {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    padding: 0;
+}
+
+.overlay--page .detail__close { display: none; }
+
+.overlay--page .detail__art {
+    width: 46%;
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    overflow: visible;
+}
+
+.detail__figure {
+    position: absolute;
+    left: 14%;
+    right: 6%;
+    top: 3%;
+    bottom: 10%;
+    -unity-background-scale-mode: scale-and-crop;
+    border-radius: 18px;
+}
+
+.detail__figure--standing {
+    left: 6%;
+    right: 0;
+    top: -2%;
+    bottom: 0;
+    border-radius: 0;
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-y: bottom;
+}
+
+.detail__sheet { top: 8%; width: 46%; height: 50%; }
+.detail__sheet.backsheet--left { left: 8%; }
+.detail__sheet.backsheet--right { left: 46%; }
+
+.overlay--page .dplate {
+    left: 36px;
+    right: auto;
+    bottom: 36px;
+    width: 680px;
+    padding: 0 40px 18px 30px;
+    background-color: rgba(0, 0, 0, 0);
+    border-top-width: 0;
+}
+
+.overlay--page .dplate__top { height: 42px; padding-left: 24px; }
+.overlay--page .dplate__dept { color: rgb(22, 38, 63); -unity-font-style: bold; font-size: 24px; }
+.overlay--page .dplate__namerow { margin-top: 10px; padding-left: 20px; }
+.overlay--page .dplate__name { font-size: 76px; -unity-font-style: bold-and-italic; }
+.overlay--page .dplate__meta { padding-left: 20px; }
+.overlay--page .dplate__lv { -unity-font-style: bold-and-italic; font-size: 34px; }
+
+.overlay--page .detail__right {
+    margin: 10px 50px 30px 10px;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.overlay--page .dtabs { padding: 0 20px; height: 70px; }
+.overlay--page .dtab { height: 70px; margin-right: 6px; font-size: 32px; -unity-font-style: bold; }
+.overlay--page .detail__body { padding: 20px 30px; }
+.overlay--page .detail__foot { border-top-width: 0; padding: 10px 30px 24px 30px; }
+
+.dtab__label { font-size: 30px; -unity-font-style: bold; color: rgb(92, 112, 140); margin-right: 18px; }
+.dtab--on .dtab__label { color: rgb(22, 38, 63); }

@@ -47,7 +47,16 @@ namespace ExcelHeroes.UI
             _charContainer = UiKit.Div("home__char-container", _root);
             if (def != null)
             {
-                UiKit.SetArt(_charContainer, GameData.WornCardArt(_heroId));
+                // The transparent standing art when it exists: the character stands in the room
+                // at full height, as on the reference lobby, with the sheet behind her. Until it
+                // exists, the boxed card.
+                var standing = GameData.StandingArt(_heroId);
+                if (standing != null)
+                {
+                    _charContainer.AddToClassList("home__char-container--standing");
+                    UiKit.SetArt(_charContainer, standing);
+                }
+                else UiKit.SetArt(_charContainer, GameData.WornCardArt(_heroId));
             }
 
             // Apply Blue Archive slow breathing animation

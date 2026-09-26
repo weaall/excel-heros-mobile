@@ -135,7 +135,13 @@ namespace ExcelHeroes.UI
             if (settings != null) settings.clicked += OpenAdMenu;
 
             var back = root.Q<Button>("backBtn");
-            if (back != null) back.clicked += () => { AudioService.Play("back", 0.55f); Show(Sheet.Home); };
+            // Back closes a page opened over the screen first (the hero page), then goes home.
+            if (back != null) back.clicked += () =>
+            {
+                AudioService.Play("back", 0.55f);
+                if (Overlay != null && Overlay.ClassListContains("overlay--page") && !Overlay.ClassListContains("hidden")) CloseOverlay();
+                else Show(Sheet.Home);
+            };
             var home = root.Q<Button>("homeBtn");
             if (home != null) home.clicked += () => { AudioService.Play("nav", 0.5f); Show(Sheet.Home); };
             // Illustrated icons (Resources/Art/Icons, tools/gen_icons_gemini.py). The reference's
@@ -496,6 +502,8 @@ namespace ExcelHeroes.UI
             if (!string.IsNullOrEmpty(tab)) _detail.ShowTab(tab);
             Overlay.Clear();
             Overlay.RemoveFromClassList("hidden");
+            // A page under the top bar, not a modal over everything (see HeroDetail.Build).
+            Overlay.AddToClassList("overlay--page");
             Overlay.Add(_detail.Build(heroId, CloseOverlay));
             Juice.PressAll(Overlay);
         }
@@ -503,6 +511,7 @@ namespace ExcelHeroes.UI
         /// <summary>Puts one panel on the dimmed overlay.</summary>
         public void OpenOverlay(VisualElement panel)
         {
+            Overlay.RemoveFromClassList("overlay--page");
             Overlay.Clear();
             Overlay.RemoveFromClassList("hidden");
             Overlay.Add(panel);
@@ -511,6 +520,7 @@ namespace ExcelHeroes.UI
 
         public void CloseOverlay()
         {
+            Overlay.RemoveFromClassList("overlay--page");
             Overlay.Clear();
             Overlay.AddToClassList("hidden");
             _current?.Refresh();

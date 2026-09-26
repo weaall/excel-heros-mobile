@@ -691,3 +691,9 @@ bottom-right with a white frame and a navy cost disc in the corner; under them a
 cost gauge with the whole number in a navy disc; the toggles are glass plates on a glass strip
 top-right; the office upgrades are glass tiles bottom-left. The driver now removes the result
 overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been photographed.
+
+## 학생 상세 → 전체 화면 페이지 (BA `학생` 화면 기준)
+- 모달이 아니라 상단 바 아래의 **페이지**: `AppRoot.OpenDetail`이 오버레이에 `overlay--page`를 붙이고(top 120px, 투명), 상단 ← 는 페이지가 열려 있으면 페이지만 닫는다.
+- 왼쪽: 등 뒤 시트(`BackSheet`) → 배경 없는 전신(`GameData.StandingArt`, 없으면 카드 일러) → 이름띠(흰 부서 라벨 + 남색 기울어진 판, 이름 76px 굵은 이탤릭).
+- 오른쪽: 흰 패널(그린 그림자) + 폴더형 탭(오른쪽 모서리 사선, 열린 탭은 흰색·노란 밑줄, 나머지 연청회색). 탭 글자는 자식 Label(칠한 요소는 자기 글자를 덮음).
+- Standing 일러는 `Resources/Art/Standing/`(가져오기 규칙 v9, DXT5). 정규화된 컷아웃(768×1344, 키 1240px, 발끝 y=1318)으로 교체 예정.

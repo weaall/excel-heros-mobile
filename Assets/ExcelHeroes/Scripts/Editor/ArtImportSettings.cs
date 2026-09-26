@@ -31,6 +31,14 @@ namespace ExcelHeroes.EditorTools
         const string IconRoot = ArtRoot + "Icons/";
 
         /// <summary>
+        /// The transparent full-body standing art (web repo tools/art_pipeline.sh). Alpha is the
+        /// point — it goes in front of the painted backdrop and the back sheet — so it is DXT5
+        /// (BC3) rather than the opaque cards' DXT1. 768x1344 divides by 4, as block compression
+        /// needs.
+        /// </summary>
+        const string StandingRoot = ArtRoot + "Standing/";
+
+        /// <summary>
         /// The UI skin from tools/gen-ui-skin.py. It lives OUTSIDE Resources/Art because nothing
         /// loads it by name at runtime — App.uss references it by path — and it needs the opposite
         /// of what the illustrations need: an alpha channel (the slanted shape is transparent at
@@ -40,7 +48,7 @@ namespace ExcelHeroes.EditorTools
         /// </summary>
         const string UiRoot = "Assets/ExcelHeroes/Art/UI/";
 
-        public const string Stamp = "excel-heroes-art-v8";
+        public const string Stamp = "excel-heroes-art-v9";
 
         /// <summary>
         /// Unity re-imports the assets a postprocessor handles only when this number changes.
@@ -55,7 +63,7 @@ namespace ExcelHeroes.EditorTools
         /// **Bump this AND `Stamp` together whenever the settings change.** The version makes Unity
         /// re-import; the stamp makes this code agree to touch the asset again.
         /// </summary>
-        public override uint GetVersion() => 8;
+        public override uint GetVersion() => 9;
 
         void OnPreprocessTexture()
         {
@@ -78,6 +86,19 @@ namespace ExcelHeroes.EditorTools
                 importer.maxTextureSize = 256;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 ClearPlatformOverrides(importer);
+                importer.userData = Stamp;
+                return;
+            }
+
+            if (assetPath.StartsWith(StandingRoot))
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.mipmapEnabled = false;
+                importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                importer.alphaIsTransparency = true;
+                importer.isReadable = false;
+                Apply(importer, 2048, TextureImporterFormat.DXT5);
                 importer.userData = Stamp;
                 return;
             }

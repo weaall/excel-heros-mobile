@@ -208,6 +208,17 @@ namespace ExcelHeroes.Data
             return Resources.Load<Sprite>($"Art/UI/{name}");
         }
 
+        /// <summary>
+        /// The transparent full-body standing art for a hero, or null if it has not been made yet.
+        /// The main hero's is the intern's (his first job); promotions reuse it until they get
+        /// their own.
+        /// </summary>
+        public static Sprite StandingArt(string heroId)
+        {
+            var key = heroId == MainId ? "intern" : heroId;
+            return Resources.Load<Sprite>($"Art/Standing/{key}") ?? (heroId == MainId ? Resources.Load<Sprite>($"Art/Standing/{heroId}") : null);
+        }
+
         /// <summary>An illustrated UI icon (Resources/Art/Icons), or null if it has not been generated.</summary>
         public static Sprite Icon(string name) => Resources.Load<Sprite>($"Art/Icons/{name}");
 
