@@ -4965,11 +4965,13 @@
 
 
 /* The transparent standing art: full height, no box, feet at the floor line. */
+/* The reference's lobby shows the student large, from the thighs up: the cut-out is scaled to
+   almost twice the screen's height and its lower half runs off the bottom edge. */
 .home__char-container--standing {
-    left: 22%;
-    width: 36%;
-    top: -2%;
-    bottom: -2%;
+    left: 14%;
+    width: 54%;
+    top: 3%;
+    bottom: -92%;
     height: auto;
     border-radius: 0;
     -unity-background-scale-mode: scale-to-fit;

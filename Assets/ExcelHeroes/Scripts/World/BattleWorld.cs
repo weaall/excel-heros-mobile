@@ -292,6 +292,8 @@ namespace ExcelHeroes.World
                     _actors.Remove(c);
                     continue;
                 }
+                // The victory shot is the party's: whatever is left of the wave steps out of it.
+                if (c.side == Side.Monster) a.Rig.Root.gameObject.SetActive(_closeUp < 0.05f);
                 a.Update(dt, _time, WX(drawX(c)), _cam.transform, _mpb, _closeUp);
             }
 
