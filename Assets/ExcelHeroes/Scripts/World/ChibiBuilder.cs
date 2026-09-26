@@ -137,6 +137,28 @@ namespace ExcelHeroes.World
                     break;
             }
 
+            // Collar: two small white flaps at the throat, which is most of what makes a tube of
+            // colour read as a shirt. Jackets also get dark lapels either side of the V.
+            if (d.outfit != "hoodie")
+            {
+                var collar = d.outfit == "shirt" ? top : shirt;
+                for (var cs = -1; cs <= 1; cs += 2)
+                {
+                    var save = t.M;
+                    t.M = save * Matrix4x4.TRS(new Vector3(0.074f, 0.492f, cs * 0.03f), Quaternion.Euler(cs * 32f, 0f, -24f), Vector3.one);
+                    t.Box(Vector3.zero, new Vector3(0.034f, 0.02f, 0.055f), MeshKit.Shade(collar, 1.02f));
+                    t.M = save;
+                }
+            }
+            if (d.outfit == "suit" || d.outfit == "coat" || d.outfit == "labcoat" || d.outfit == "cardigan")
+                for (var cs = -1; cs <= 1; cs += 2)
+                {
+                    var save = t.M;
+                    t.M = save * Matrix4x4.TRS(new Vector3(0.076f, 0.43f, cs * 0.034f), Quaternion.Euler(cs * -18f, 0f, 0f), Vector3.one);
+                    t.Box(Vector3.zero, new Vector3(0.008f, 0.1f, 0.016f), MeshKit.Shade(top, 0.78f));
+                    t.M = save;
+                }
+
             if (d.Has("tie"))
                 t.Box(new Vector3(0.078f, 0.41f, 0f), new Vector3(0.01f, 0.12f, 0.022f), MeshKit.Hex(d.AccColor("tie", "#2f3d5c"), Color.blue));
             if (d.Has("suspenders"))
@@ -306,13 +328,13 @@ namespace ExcelHeroes.World
         static void Bangs(MeshKit.Builder b, Color c, int n, float drop = 0f)
         {
             var r = new Vector3(HeadR * 1.0f, HeadR * 0.98f, HeadR * 1.04f) * 1.09f;
-            var baseEdge = 1.22f + drop * 3f;
+            var baseEdge = 1.36f + drop * 3f;
             b.Grid(40, 8, (u, v) =>
             {
                 var phi = Mathf.Lerp(-1.15f, 1.15f, u);
                 // pointed tips: a triangle wave across the width, longest in the middle
                 var tri = 1f - Mathf.Abs(Mathf.Repeat(u * n, 1f) - 0.5f) * 2f;
-                var edge = baseEdge + tri * 0.2f - Mathf.Abs(phi) * 0.12f;
+                var edge = baseEdge + tri * 0.16f - Mathf.Abs(phi) * 0.1f;
                 var th = Mathf.Lerp(0.25f, edge, v);
                 // the fringe stands a little off the forehead at its tips
                 var lift = 1f + v * v * 0.05f;
@@ -331,6 +353,10 @@ namespace ExcelHeroes.World
         static void Hair(MeshKit.Builder b, string style, Color c, bool male)
         {
             var dark = MeshKit.Shade(c, 0.86f);
+            // The back of an SD head is a round bulb of hair a size up from the skull; without it
+            // every style reads as a helmet from the three-quarter camera.
+            b.Ellipsoid(HeadC + new Vector3(-0.045f, 0.01f, 0f), new Vector3(HeadR * 0.98f, HeadR * 1.0f, HeadR * 1.06f), c, 22,
+                        phi => Mathf.Cos(phi) > 0.2f ? 0.0001f : 2.1f);
             switch (style)
             {
                 case "bob":

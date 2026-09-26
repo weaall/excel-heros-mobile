@@ -38,8 +38,9 @@ namespace ExcelHeroes.World
             var brow = Color.Lerp(k.Hair, lash, 0.45f);
             var eyeDark = Color.Lerp(k.Eye, lash, 0.55f);
             var eyeLight = Color.Lerp(k.Eye, Color.white, 0.35f);
-            var ry = k.Male ? 0.098f : 0.118f;
-            var rx = k.Male ? 0.078f : 0.082f;
+            // Big, as the reference's SD eyes are: about a third of the face's height.
+            var ry = k.Male ? 0.11f : 0.135f;
+            var rx = k.Male ? 0.084f : 0.092f;
 
             for (var y = 0; y < N; y++)
                 for (var x = 0; x < N; x++)
@@ -51,14 +52,14 @@ namespace ExcelHeroes.World
                     // blush
                     for (var s = -1; s <= 1; s += 2)
                     {
-                        var d = Ell(u, v, 0.5f + s * 0.245f, 0.33f, 0.07f, 0.03f);
+                        var d = Ell(u, v, 0.5f + s * 0.25f, 0.3f, 0.07f, 0.03f);
                         if (d < 1f) c = Over(c, new Color(1f, 0.55f, 0.6f, 0.32f * (1f - d)));
                     }
 
                     for (var s = -1; s <= 1; s += 2)
                     {
                         var cx = 0.5f + s * 0.185f;
-                        const float cy = 0.445f;
+                        const float cy = 0.415f;
 
                         if (k.Closed)
                         {
@@ -122,12 +123,12 @@ namespace ExcelHeroes.World
                         }
                     }
 
-                    if ((k.Glasses || k.Sunglasses) && Mathf.Abs(v - 0.46f) < 0.007f && Mathf.Abs(u - 0.5f) < 0.07f)
+                    if ((k.Glasses || k.Sunglasses) && Mathf.Abs(v - 0.43f) < 0.007f && Mathf.Abs(u - 0.5f) < 0.07f)
                         c = Over(c, new Color(0.18f, 0.18f, 0.22f, 1f));
 
                     // mouth: a small soft smile
-                    var m = Ell(u, v, 0.5f, 0.285f, 0.035f, 0.02f);
-                    if (m < 1f && v < 0.285f) c = Over(c, new Color(0.62f, 0.25f, 0.28f, 1f));
+                    var m = Ell(u, v, 0.5f, 0.255f, 0.035f, 0.02f);
+                    if (m < 1f && v < 0.255f) c = Over(c, new Color(0.62f, 0.25f, 0.28f, 1f));
 
                     px[y * N + x] = c;
                 }
