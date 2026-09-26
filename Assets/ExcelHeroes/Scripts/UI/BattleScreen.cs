@@ -1439,6 +1439,7 @@ namespace ExcelHeroes.UI
 
                 var art = UiKit.Div("ex-button__art", btn);
                 UiKit.SetPortrait(art, combatant.heroId, UiKit.Crop.Face);
+                UiKit.Div("ex-button__dim", btn).pickingMode = PickingMode.Ignore;
 
                 var charge = UiKit.Div("ex-button__charge", btn);
                 var cost = BattleSim.CostOf(combatant);

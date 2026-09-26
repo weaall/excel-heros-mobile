@@ -86,9 +86,9 @@ namespace ExcelHeroes.World
         void PlaceCamera(float shake)
         {
             var k = Mathf.SmoothStep(0f, 1f, _closeUp);
-            var target = Vector3.Lerp(new Vector3(0.1f, 0.55f, 0.35f), _partyCentre + new Vector3(0.9f, 0.5f, 0f), k);
+            var target = Vector3.Lerp(new Vector3(-0.1f, 0.5f, 0.35f), _partyCentre + new Vector3(0.9f, 0.5f, 0f), k);
             var pitch = Mathf.Lerp(25f, 12f, k) * Mathf.Deg2Rad;
-            var dist = Mathf.Lerp(7.7f, 4.6f, k);
+            var dist = Mathf.Lerp(9.0f, 4.6f, k);
             var pos = target + new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;

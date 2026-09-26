@@ -156,6 +156,15 @@ namespace ExcelHeroes.Core
                                 .ForEach(e => e.RemoveFromHierarchy());
                         yield return new WaitForSeconds(0.3f);
                         yield return Shoot($"{n:00}-BattleHud");
+
+                        // The fight itself: the next run starts on its own after the result, so
+                        // wait it out and take a burst from the party's entrance onwards.
+                        yield return new WaitForSeconds(2.9f);
+                        for (var f = 0; f < 6; f++)
+                        {
+                            yield return new WaitForSeconds(0.45f);
+                            yield return Shoot($"{n:00}-Fight{f}");
+                        }
                     }
 
                     // The home sheet gets a second shot a few seconds later. The first one keeps
@@ -164,12 +173,7 @@ namespace ExcelHeroes.Core
                     // A burst of frames rather than one. Combat effects live for a fifth of a
                     // second, so a single capture lands on a lull as often as on a hit and says
                     // nothing about whether the fight has any impact in it.
-                    if (sheet == AppRoot.Sheet.Home)
-                        for (var f = 0; f < 6; f++)
-                        {
-                            yield return new WaitForSeconds(0.55f);
-                            yield return Shoot($"{n:00}-Fight{f}");
-                        }
+
                 }
 
                 // The state that has been wrong and invisible: a card opened at full size. It is

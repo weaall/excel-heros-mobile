@@ -5373,3 +5373,13 @@
 }
 .mt-bubble--mine { align-self: flex-end; background-color: rgb(74, 144, 226); border-top-left-radius: 14px; border-top-right-radius: 4px; }
 .mt-bubble__text { font-size: 26px; color: rgb(255, 255, 255); white-space: normal; }
+
+/* EX cards, as the reference has them: always opaque; one you cannot afford yet is dimmed by a
+   dark wash over the portrait (not faded into the field), one that is ready lifts and glows. */
+.battle--3d .ex-button--spent,
+.battle--3d .ex-button--poor { opacity: 1; }
+.ex-button__dim { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(16, 24, 44, 0.5); display: none; }
+.battle--3d .ex-button--poor .ex-button__dim { display: flex; }
+/* the part of the card still charging: a navy shutter, not a beige wash */
+.battle--3d .ex-button__charge { background-color: rgba(16, 24, 44, 0.55); }
+.battle--3d .ex-button--ready { border-color: rgb(255, 214, 70); scale: 1.08 1.08; translate: 0 -8px; }

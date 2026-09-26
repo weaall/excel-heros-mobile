@@ -734,3 +734,5 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 ## 오류 도감 3D 썸네일 · 전투 입장
 - `World/Snapshot3D`: 모델을 256px 투명 텍스처로 한 번 찍어 캐시(도감 타일). **대기열 방식** — 카메라를 켜고 2프레임 뒤 ReadPixels. `RenderPipeline.SubmitRenderRequest`는 2D Renderer에서 빈 결과였음. 카메라를 기울이면 그만큼 올려야 인물이 화면 가운데 옴(10° × 6m ≈ 1m).
 - 전투 시작마다 파티가 왼쪽에서 달려 들어옴(`Actor.Enter`, 4.5m, 약 0.8초).
+- 전투 카메라: 거리 9.0, 목표 x -0.1 — 파티(좌 -3.6)와 적(우 +2.8)이 한 화면에. EX 카드는 불투명, 충전 중인 부분은 남색 셔터, 비용 부족이면 어둡게(`ex-button__dim`).
+- ScreenshotDriver: `NN-Fight0..5`는 이제 **전투 화면**에서 다음 판이 시작된 뒤 0.45초 간격으로 찍음(예전엔 로비를 찍고 있었음).
