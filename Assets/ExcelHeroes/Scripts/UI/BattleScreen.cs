@@ -1297,11 +1297,11 @@ namespace ExcelHeroes.UI
                 ? $"전 구간 처리 완료 — 골드 +{_sim.GoldEarned:N0} · 보석 +{gems}"
                 : $"처리 실패 — 골드 +{_sim.GoldEarned:N0} · 보석 +{gems}");
 
-            // The reference sheet's result window (panel 5): a head with the title, a lead line,
-            // the rewards in tiles under a navy ribbon, and two plates — go on, or run it again.
-            // It sits on its own dim layer inside the battle screen rather than on the app
-            // overlay, so the battle keeps drawing behind the glass as it does on the sheet.
-            var popup = UiKit.Div("battle-result", _root);
+            // The reference game's result is not a window. The fight stays on screen, a large
+            // yellow italic title lands top-left, the run's numbers sit in a navy plate
+            // top-right, the squad that fought is a strip of small cards bottom-left, and the way
+            // on is one cyan plate bottom-right.
+            var popup = UiKit.Div("bresult", _root);
             void Close()
             {
                 popup.RemoveFromHierarchy();
@@ -1309,20 +1309,49 @@ namespace ExcelHeroes.UI
                 NewRun();
             }
 
-            var body = UiKit.Modal(_sim.Won ? "업무 처리 완료!" : "업무 처리 실패", Close, out var panel);
-            popup.Add(panel);
-            UiKit.Text(_sim.Won ? "수고하셨습니다!" : "다시 한번 가 봅시다", "modal__lead", body);
-            UiKit.Text(_sim.Won ? "이번 Phase의 성과가 정산되었습니다." : "벌어 둔 만큼은 그대로 정산됩니다.", "modal__sub", body);
+            var title = UiKit.Text(_sim.Won ? "업무 완료!" : _sim.TimedOut ? "시간 초과" : "업무 실패",
+                                   "bresult__title" + (_sim.Won ? "" : " bresult__title--lose"), popup);
+            title.pickingMode = PickingMode.Ignore;
 
-            var inset = UiKit.Div("modal__inset", body);
-            ModalFrame.Inset(inset);
-            UiKit.RewardTile(Icons.Gold, $"+{_sim.GoldEarned:N0}", "icon rtile__glyph--gold", inset);
-            UiKit.RewardTile(Icons.Gem, $"x{gems:N0}", "icon", inset, gems > 0 ? UiPaint.C(190, 120, 255, 0.45f) : (Color?)null);
-            UiKit.Ribbon("획득 보상", inset);
+            var info = UiKit.Div("bresult__info", popup);
+            ModalFrame.Painted(info, (ctx, r) =>
+            {
+                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 8f);
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), UiPaint.C(0, 0, 0, 0.3f), 10f);
+                UiPaint.Fill(ctx, poly, UiPaint.C(20, 34, 64, 0.88f));
+            });
+            var line = UiKit.Div("bresult__line", info);
+            UiKit.Text($"Phase {_sim.Stage}", "bresult__phase", line);
+            var secs = Mathf.FloorToInt(_sim.Elapsed);
+            UiKit.Text($"소요 시간  {secs / 60:00}:{secs % 60:00}", "bresult__time", line);
+            var gainRow = UiKit.Div("bresult__gains", info);
+            Gain(gainRow, "gold", Icons.Gold, $"+{_sim.GoldEarned:N0}");
+            Gain(gainRow, "gem", Icons.Gem, $"+{gems:N0}");
 
-            var acts = UiKit.Div("modal__acts", body);
-            var confirmBtn = UiKit.Btn(_sim.Won ? "다음 Phase" : "다시 도전", "btn btn--primary", Close, acts);
-            UiKit.Btn("확인", "btn", Close, acts);
+            var squad = UiKit.Div("bresult__squad", popup);
+            UiKit.Text("출근 인원", "bresult__squad-label", squad);
+            var strip = UiKit.Div("bresult__strip", squad);
+            foreach (var id in Game.Player.party)
+            {
+                var def = GameData.Hero(id);
+                if (def == null) continue;
+                var mini = UiKit.Div("bresult__mini", strip);
+                var sprite = GameData.WornCardArt(id);
+                var gradeColor = GameData.Grade(def.grade)?.Color ?? Color.gray;
+                ModalFrame.Painted(mini, (ctx, r) =>
+                {
+                    var poly = UiPaint.RoundRect(r, 8f, 4);
+                    UiPaint.Shadow(ctx, poly, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.3f), 6f);
+                    UiPaint.Fill(ctx, poly, Color.white);
+                    UiPaint.Image(ctx, UiPaint.Offset(poly, -3f), sprite, r, 0.08f);
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 3f, r.yMax - 8f, r.xMax - 3f, r.yMax - 3f), 0f), gradeColor, 0f);
+                });
+            }
+
+            var acts = UiKit.Div("bresult__acts", popup);
+            UiKit.Btn("확인", "btn bresult__btn", Close, acts);
+            var confirmBtn = UiKit.Btn(_sim.Won ? "다음 Phase" : "다시 도전", "btn btn--primary bresult__btn", Close, acts);
+            Juice.PressAll(popup);
 
             // If auto-advance is ON, we automatically auto-confirm after 3.2 seconds so it doesn't block idle loop
             if (Game.Player.autoAdvance)
@@ -1332,6 +1361,15 @@ namespace ExcelHeroes.UI
                     if (popup.parent != null) Close();
                 }).ExecuteLater(3200);
             }
+        }
+
+        static void Gain(VisualElement parent, string icon, string glyph, string text)
+        {
+            var g = UiKit.Div("bresult__gain", parent);
+            var sprite = GameData.Icon(icon);
+            if (sprite != null) UiKit.SetArt(UiKit.Div("bresult__gain-icon", g), sprite);
+            else UiKit.Text(glyph, "icon bresult__gain-glyph", g);
+            UiKit.Text(text, "bresult__gain-text", g);
         }
 
         static void Row(VisualElement sheet, int n, string label, string value, bool accent = false)

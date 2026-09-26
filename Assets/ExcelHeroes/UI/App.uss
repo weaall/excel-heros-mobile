@@ -4698,3 +4698,149 @@
 
 /* The drawn icons rise above the bottom strip; nothing on the way may clip them. */
 .navbar, .navtab, .navcta { overflow: visible; }
+
+
+/* ================================================================ roster toolbar
+   One row: grade tabs left, 필터 / 회수 / count right. The bottom bar is gone inside screens, so
+   the cards take the height back. */
+.roster-bar {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 104px;
+    padding: 0 60px 0 70px;
+}
+
+.roster-bar__tabs { flex-direction: row; align-items: center; }
+
+.roster-tab {
+    width: 118px;
+    height: 72px;
+    margin-right: 8px;
+    font-size: 34px;
+    -unity-text-align: middle-center;
+    align-items: center;
+    justify-content: center;
+}
+
+.roster-bar__btn {
+    width: 230px;
+    height: 76px;
+    margin-left: 14px;
+    padding: 0 20px;
+    font-size: 32px;
+}
+
+.roster-bar__count {
+    margin-left: 26px;
+    font-size: 34px;
+    -unity-font-style: bold;
+    color: rgb(30, 44, 70);
+}
+
+.roster .card { height: 336px; }
+
+.filter-sheet__row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 26px;
+}
+
+
+/* ================================================================ battle result (reference: 전투 완료)
+   Over the field, not in a window. */
+.bresult {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(10, 20, 40, 0.55);
+}
+
+.bresult__title {
+    position: absolute;
+    left: 80px;
+    top: 40px;
+    font-size: 120px;
+    -unity-font-style: bold-and-italic;
+    color: rgb(255, 222, 60);
+    -unity-text-outline-width: 5px;
+    -unity-text-outline-color: rgb(120, 70, 0);
+    rotate: -3deg;
+}
+
+.bresult__title--lose { color: rgb(200, 214, 232); -unity-text-outline-color: rgb(40, 54, 84); }
+
+.bresult__info {
+    position: absolute;
+    right: 70px;
+    top: 50px;
+    width: 700px;
+    padding: 20px 40px 22px 50px;
+}
+
+.bresult__line { flex-direction: row; align-items: center; justify-content: space-between; }
+.bresult__phase { font-size: 40px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); }
+.bresult__time { font-size: 30px; color: rgb(180, 220, 250); }
+.bresult__gains { flex-direction: row; margin-top: 12px; }
+.bresult__gain { flex-direction: row; align-items: center; margin-right: 40px; }
+.bresult__gain-icon { width: 60px; height: 60px; -unity-background-scale-mode: scale-to-fit; margin-right: 10px; }
+.bresult__gain-glyph { font-size: 50px; color: rgb(255, 214, 58); margin-right: 10px; }
+.bresult__gain-text { font-size: 40px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+
+.bresult__squad {
+    position: absolute;
+    left: 80px;
+    bottom: 60px;
+}
+
+.bresult__squad-label {
+    font-size: 30px;
+    -unity-font-style: bold-and-italic;
+    color: rgb(255, 90, 110);
+    -unity-text-outline-width: 1.5px;
+    -unity-text-outline-color: rgb(255, 255, 255);
+    margin-bottom: 8px;
+}
+
+.bresult__strip { flex-direction: row; }
+.bresult__mini { width: 150px; height: 150px; margin-right: 16px; }
+
+.bresult__acts {
+    position: absolute;
+    right: 70px;
+    bottom: 60px;
+    flex-direction: row;
+}
+
+.bresult__btn { width: 380px; height: 116px; margin-left: 24px; font-size: 44px; }
+
+
+/* 편성: FRONT / MIDDLE / BACK over a coloured role plate, above the name band. */
+.pslot__tag {
+    flex-shrink: 0;
+    height: 40px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgb(28, 44, 80);
+}
+
+.pslot__tag-pos {
+    width: 52%;
+    font-size: 22px;
+    -unity-font-style: bold-and-italic;
+    -unity-text-align: middle-center;
+    color: rgb(255, 255, 255);
+}
+
+.pslot__tag-role {
+    flex-grow: 1;
+    font-size: 22px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: rgb(255, 255, 255);
+}
+
+.pslot__stars { bottom: 144px; }

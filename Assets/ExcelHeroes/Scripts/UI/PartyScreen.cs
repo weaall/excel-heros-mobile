@@ -186,6 +186,30 @@ namespace ExcelHeroes.UI
             // The navy band under the portrait, as on the reference's line-up: the department
             // above, then the name and the level. The name gets a line of its own — these are
             // job titles, and "VLOOKUP 분석가" does not fit beside anything.
+            // The reference's line-up tags each member with where they stand — FRONT, MIDDLE,
+            // BACK on a dark slanted plate — joined to a coloured plate with what they do.
+            // Position follows the role: tanks hold the front, melee the middle, the rest the back.
+            var pos = def.role == "tank" ? "FRONT" : def.role == "melee" ? "MIDDLE" : "BACK";
+            var roleColor = def.role switch
+            {
+                "tank" => UiPaint.C(214, 140, 30),
+                "melee" => UiPaint.C(200, 40, 60),
+                "healer" => UiPaint.C(40, 150, 90),
+                _ => UiPaint.C(40, 110, 200),
+            };
+            var tag = UiKit.Div("pslot__tag", slot);
+            ModalFrame.Painted(tag, (ctx, r) =>
+            {
+                var split = r.xMin + r.width * 0.52f;
+                var slant = SkewPlate.SlantFor(r.height);
+                var left = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin, r.yMin, split + slant * 0.5f, r.yMax), slant, 2f, 2);
+                var right = UiPaint.SkewRect(Rect.MinMaxRect(split - slant * 0.5f, r.yMin, r.xMax, r.yMax), slant, 2f, 2);
+                UiPaint.Fill(ctx, left, UiPaint.C(28, 40, 70));
+                UiPaint.Fill(ctx, right, roleColor);
+            });
+            UiKit.Text(pos, "pslot__tag-pos", tag).pickingMode = PickingMode.Ignore;
+            UiKit.Text(UiKit.RoleName(def.role), "pslot__tag-role", tag).pickingMode = PickingMode.Ignore;
+
             var plate = UiKit.Div("pslot__plate", slot);
             UiKit.Text(GameData.Division(def.division)?.name ?? def.division ?? "", "pslot__dept", plate);
             var line = UiKit.Div("card__line", plate);

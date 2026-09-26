@@ -37,20 +37,19 @@ namespace ExcelHeroes.UI
             // to answer it is to read every card. The 등급 row doubles as the grade sections the
             // list used to be cut into — each chip carries its own owned/total count, so picking
             // one IS opening that section.
-            var bar = UiKit.Div("filter-bar", _root);
-            _gradeRow = UiKit.Div("filter-row", bar);
+            // ONE toolbar row, as the reference's student list has: the grade tabs on the left,
+            // and 필터 · 회수 · the count on the right. Role and ownership used to be a second
+            // row of chips, which is how a web page filters; a phone game puts them behind one
+            // button and a modal, and gives the cards the height back.
+            var bar = UiKit.Div("roster-bar", _root);
+            _gradeRow = UiKit.Div("roster-bar__tabs", bar);
+            UiKit.Div("spacer", bar);
 
-            var right = UiKit.Div("filter-row", bar);
-            Chips(right, "역할", new[] { ("", "전체"), ("tank", "탱커"), ("melee", "근접"), ("ranged", "원거리"), ("healer", "힐러") },
-                  () => _role, v => _role = v);
-            Chips(right, "보유", new[] { ("", "전체"), ("1", "보유만"), ("0", "미보유"), ("party", "편성") },
-                  () => _owned, v => _owned = v);
-            UiKit.Div("spacer", right);
+            _filterBtn = UiKit.Btn("필터", "btn roster-bar__btn", OpenFilter, bar);
 
             // 레벨 회수 lives on the roster because that is where a player sees the low-grade card
-            // they levelled at Phase 3 and now regrets. The refund is full, so gold can move to a
-            // better card for the cost of one tap.
-            var reclaim = UiKit.Btn("↺ 대기 레벨 회수", "head-btn head-btn--quiet", () =>
+            // they levelled at Phase 3 and now regrets. The refund is full.
+            var reclaim = UiKit.Btn("레벨 회수", "btn roster-bar__btn", () =>
             {
                 var (heroes, gold) = DismissService.ReclaimBench(Game.Player);
                 _app.SetStatus(heroes > 0
@@ -58,10 +57,10 @@ namespace ExcelHeroes.UI
                     : "회수할 레벨이 없습니다");
                 if (heroes > 0) AudioService.Play("bond");
                 Game.Touch();
-            }, right);
+            }, bar);
             reclaim.SetEnabled(Game.Player.owned.Any(o => DismissService.CanReclaim(Game.Player, o)));
 
-            _counter = UiKit.Text("", "filter-row__count", right);
+            _counter = UiKit.Text("", "roster-bar__count", bar);
 
             // A fixed grid rather than a scroll. Held sideways there is room for fourteen cards at
             // a size a thumb can hit, and a page turn keeps a place the way a scroll position does
@@ -72,6 +71,8 @@ namespace ExcelHeroes.UI
             _prev = UiKit.Btn("◀", "pager__btn", () => Turn(-1), pager);
             _pageLabel = UiKit.Text("", "pager__label", pager);
             _next = UiKit.Btn("▶", "pager__btn", () => Turn(1), pager);
+            SkewPlate.Apply(_prev, SkewPlate.Kind.Glass);
+            SkewPlate.Apply(_next, SkewPlate.Kind.Glass);
 
             Refresh();
             return _root;
@@ -90,6 +91,7 @@ namespace ExcelHeroes.UI
         string _grade = "", _role = "", _owned = "";
         int _page;
         VisualElement _grid, _gradeRow;
+        Button _filterBtn;
         Button _prev, _next;
         Label _pageLabel;
 
@@ -98,6 +100,29 @@ namespace ExcelHeroes.UI
             _page += by;
             AudioService.Play("nav", 0.4f);
             Refresh();
+        }
+
+        /// <summary>역할 and 보유, in a modal behind the 필터 button.</summary>
+        void OpenFilter()
+        {
+            var body = UiKit.Modal("필터", _app.CloseOverlay, out var panel);
+            BuildFilterRows(body);
+            _app.OpenOverlay(panel);
+        }
+
+        void BuildFilterRows(VisualElement body)
+        {
+            body.Clear();
+            var roles = UiKit.Div("filter-sheet__row", body);
+            Chips(roles, "역할", new[] { ("", "전체"), ("tank", "탱커"), ("melee", "근접"), ("ranged", "원거리"), ("healer", "힐러") },
+                  () => _role, v => { _role = v; BuildFilterRows(body); });
+            var owned = UiKit.Div("filter-sheet__row", body);
+            Chips(owned, "보유", new[] { ("", "전체"), ("1", "보유만"), ("0", "미보유"), ("party", "편성") },
+                  () => _owned, v => { _owned = v; BuildFilterRows(body); });
+            var acts = UiKit.Div("modal__acts", body);
+            UiKit.Btn("초기화", "btn", () => { _role = ""; _owned = ""; _page = 0; Refresh(); _app.CloseOverlay(); }, acts);
+            UiKit.Btn("확인", "btn btn--primary", () => { AudioService.Play("confirm", 0.5f); _app.CloseOverlay(); }, acts);
+            Juice.PressAll(body);
         }
 
         /// <summary>One row of the filter bar. Chips rather than dropdowns: a select on a phone is
@@ -109,7 +134,7 @@ namespace ExcelHeroes.UI
             foreach (var (value, text) in options)
             {
                 var v = value;
-                var chip = UiKit.Btn(text, "filter-chip", () => { set(v); _page = 0; Refresh(); }, parent);
+                var chip = UiKit.Btn(text, "filter-chip", () => { _page = 0; set(v); Refresh(); }, parent);
                 chip.EnableInClassList("filter-chip--on", get() == v);
             }
         }
@@ -118,27 +143,22 @@ namespace ExcelHeroes.UI
         void BuildGradeChips(PlayerState p)
         {
             _gradeRow.Clear();
-            UiKit.Text("등급", "filter-row__label", _gradeRow);
-
-            Chip("", "전체", GameData.Heroes.Count, GameData.Heroes.Count(h => p.Owns(h.id)));
+            Tab("", "전체");
             foreach (var grade in GameData.Grades.OrderByDescending(g => GameData.GradeRank(g.id)))
-            {
-                var inGrade = GameData.Heroes.Where(h => h.grade == grade.id).ToList();
-                if (inGrade.Count == 0) continue;
-                var chip = Chip(grade.id, grade.id, inGrade.Count, inGrade.Count(h => p.Owns(h.id)));
-                // The grade's own colour, so the row reads as the grade ladder it is.
-                if (_grade == grade.id) chip.style.backgroundColor = grade.Color;
-            }
+                if (GameData.Heroes.Any(h => h.grade == grade.id)) Tab(grade.id, grade.id);
 
-            Button Chip(string value, string text, int total, int have)
+            void Tab(string value, string text)
             {
                 var v = value;
-                var chip = UiKit.Btn($"{text} {have}/{total}", "filter-chip",
-                    () => { _grade = v; _page = 0; Refresh(); }, _gradeRow);
-                chip.EnableInClassList("filter-chip--on", _grade == v);
-                return chip;
+                var on = _grade == v;
+                var tab = UiKit.Btn(text, "roster-tab", () => { _grade = v; _page = 0; AudioService.Play("tap", 0.5f); Refresh(); }, _gradeRow);
+                SkewPlate.Apply(tab, on ? SkewPlate.Kind.Navy : SkewPlate.Kind.Light);
+                Juice.Press(tab);
             }
         }
+
+        /// <summary>How many of 역할 / 보유 are narrowing the list, for the 필터 button's label.</summary>
+        int ActiveFilters => (_role != "" ? 1 : 0) + (_owned != "" ? 1 : 0);
 
         public void Refresh()
         {
@@ -162,7 +182,9 @@ namespace ExcelHeroes.UI
                 .ToList();
 
             BuildGradeChips(p);
-            _counter.text = $"{p.owned.Count}/{GameData.Heroes.Count}";
+            _counter.text = $"보유 {p.owned.Count}/{GameData.Heroes.Count}";
+            UiKit.SetBtnText(_filterBtn, ActiveFilters > 0 ? $"필터 · {ActiveFilters}" : "필터");
+            SkewPlate.Apply(_filterBtn, ActiveFilters > 0 ? SkewPlate.Kind.Primary : SkewPlate.Kind.Light);
 
             var pages = Mathf.Max(1, Mathf.CeilToInt(shown.Count / (float)PageSize));
             _page = Mathf.Clamp(_page, 0, pages - 1);

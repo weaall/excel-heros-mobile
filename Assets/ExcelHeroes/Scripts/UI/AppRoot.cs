@@ -57,7 +57,7 @@ namespace ExcelHeroes.UI
         VisualElement _content;
         Label _progressBadge;
         Label _gems, _gold, _dailyBadge, _status, _stage, _plateSub, _screenTitle;
-        VisualElement _plate, _navBack;
+        VisualElement _plate, _navBack, _navbar;
         readonly Dictionary<Sheet, IScreen> _screens = new();
         readonly Dictionary<Sheet, Button> _tabs = new();
         readonly Dictionary<Sheet, string> _tabNames = new();
@@ -87,6 +87,7 @@ namespace ExcelHeroes.UI
             _plate = root.Q<VisualElement>("playerPlate");
             _navBack = root.Q<VisualElement>("navBack");
             _screenTitle = root.Q<Label>("screenTitle");
+            _navbar = root.Q<VisualElement>("navbar");
 
             _screens[Sheet.Home] = new HomeScreen(this);
             _screens[Sheet.Battle] = new BattleScreen(this);
@@ -316,6 +317,10 @@ namespace ExcelHeroes.UI
             _plate?.EnableInClassList("hidden", !home);
             _navBack?.EnableInClassList("hidden", home);
             Chrome.SetLobby(_doc.rootVisualElement, home);
+            // The bottom bar belongs to the lobby only. Inside a screen the reference has none —
+            // the top edge's home button is the way out — and the screen gets the height back,
+            // which is most of what "made for a phone" means on a 1080-tall landscape display.
+            _navbar?.EnableInClassList("hidden", !home);
             if (_screenTitle != null) _screenTitle.text = TitleOf(sheet);
         }
 

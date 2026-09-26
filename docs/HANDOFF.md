@@ -655,3 +655,20 @@ screen height. What changed because of them:
 
 The screenshot driver now waits 0.4s after each screen change: a shot inside the slide-in
 photographs an empty sheet, and did.
+
+## Screens to the reference: no bottom bar inside, one roster toolbar, result over the field
+
+- **The bottom bar is lobby-only.** The reference has none inside a screen — the top edge's home
+  button is the way out — and every screen gets 140px of height back.
+- **Roster**: one toolbar row — grade tabs as slanted plates (navy = on), then 필터 · 레벨 회수 ·
+  보유 count. 역할 and 보유 moved behind 필터 into a modal. The filter button turns cyan and
+  reads "필터 · N" while N filters narrow the list. Cards grew to 336px with the height freed.
+- **Battle result** is no longer a window: a large yellow italic title top-left, a navy plate
+  top-right (Phase, time, gold and gems with the drawn icons), the squad as mini cards bottom-left,
+  확인 / 다음 Phase bottom-right, over a 55% dim of the field.
+- **Party**: each slot carries FRONT / MIDDLE / BACK on a navy plate joined to a role-coloured one
+  (tank front, melee middle, the rest back).
+- The pager arrows are glass plates.
+
+Next: the battle HUD itself (the chips and grey upgrade tiles under the field are from before),
+and the hero detail as a full page rather than a modal.
