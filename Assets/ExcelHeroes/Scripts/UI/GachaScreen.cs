@@ -17,6 +17,31 @@ namespace ExcelHeroes.UI
     /// </summary>
     public class GachaScreen : IScreen
     {
+        static List<Vector2> Star4(Vector2 c, float r)
+        {
+            var pts = new List<Vector2>();
+            for (var i = 0; i < 8; i++)
+            {
+                var a = i / 8f * Mathf.PI * 2f - Mathf.PI / 2f;
+                var rad = i % 2 == 0 ? r : r * 0.32f;
+                pts.Add(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * rad);
+            }
+            return pts;
+        }
+
+        static List<Vector2> Heart(Vector2 c, float r)
+        {
+            var pts = new List<Vector2>();
+            for (var i = 0; i < 40; i++)
+            {
+                var t = i / 40f * Mathf.PI * 2f;
+                var x = 16f * Mathf.Pow(Mathf.Sin(t), 3f);
+                var y = 13f * Mathf.Cos(t) - 5f * Mathf.Cos(2f * t) - 2f * Mathf.Cos(3f * t) - Mathf.Cos(4f * t);
+                pts.Add(c + new Vector2(x, -y) * (r / 16f));
+            }
+            return pts;
+        }
+
         public string Cell => "D4";
         public string Formula => "=QUERY(외부_데이터!A:F, \"select * where C is not null\")";
 
@@ -439,9 +464,11 @@ namespace ExcelHeroes.UI
                 // whole card — pink for the top grade, gold for the next, none below.
                 var sprite = GameData.StandingArt(r.hero.id);
                 var card = sprite == null ? GameData.CardArt(r.hero.id) : null;
-                var glow = r.grade == "S" ? UiPaint.C(255, 120, 220, 0.6f)
-                         : r.grade == "A" ? UiPaint.C(255, 206, 60, 0.6f) : (Color?)null;
-                var starCount = System.Math.Clamp(r.starAfter, 1, 5);
+                // Only S gets a show: the rainbow-pink glow, a sparkle burst and the shimmer over the
+                // art. Every other grade is a plain card with its grade on the band.
+                var isS = r.grade == "S";
+                var glow = isS ? UiPaint.C(255, 120, 220, 0.7f) : (Color?)null;
+                var gradeCol = grade?.Color ?? Color.gray;
                 ModalFrame.Painted(cell, (ctx, rect) =>
                 {
                     var slant = SkewPlate.SlantFor(rect.height) * 0.55f;
@@ -468,15 +495,61 @@ namespace ExcelHeroes.UI
                         new Vector2(rect.xMin - 50f, bandTop), new Vector2(rect.xMax + 50f, bandTop),
                         new Vector2(rect.xMax + 50f, rect.yMax + 50f), new Vector2(rect.xMin - 50f, rect.yMax + 50f),
                     });
-                    UiPaint.Fill(ctx, band, UiPaint.Vertical(UiPaint.C(120, 128, 140), UiPaint.C(96, 104, 118), bandTop, rect.yMax), 0f);
+                    // the band carries the grade colour (navy for everything below A)
+                    var bandTopCol = isS ? UiPaint.C(255, 150, 210) : r.grade == "A" ? UiPaint.C(180, 120, 236) : UiPaint.C(52, 70, 108);
+                    var bandBotCol = isS ? UiPaint.C(236, 96, 176) : r.grade == "A" ? UiPaint.C(140, 84, 206) : UiPaint.C(34, 48, 80);
+                    UiPaint.Fill(ctx, band, UiPaint.Vertical(bandTopCol, bandBotCol, bandTop, rect.yMax), 0f);
                     // Rarity wash over the art's foot, as the reference tints its top pulls.
                     if (glow.HasValue)
                         UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(UiPaint.WithAlpha(glow.Value, 0f), UiPaint.WithAlpha(glow.Value, 0.35f),
                                                                      rect.yMin + rect.height * 0.45f, bandTop), 0f);
                 });
-                var stars = UiKit.Text(new string('★', starCount), "reveal-grid__stars", cell);
-                stars.pickingMode = PickingMode.Ignore;
-                if (r.isNew) UiKit.Text("New", "reveal-grid__new", cell).pickingMode = PickingMode.Ignore;
+                // the grade, on the band — the letter the whole game uses, not a star count
+                var gtag = UiKit.Div("reveal-grid__gtag", cell);
+                gtag.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(gtag, (ctx, rr) =>
+                {
+                    var d = UiPaint.RoundRect(rr, rr.height * 0.28f, 4);
+                    UiPaint.Fill(ctx, d, Color.white);
+                    UiPaint.Fill(ctx, UiPaint.Offset(d, -3f), gradeCol);
+                });
+                UiKit.Text(r.grade, "reveal-grid__gtext", gtag).pickingMode = PickingMode.Ignore;
+                UiKit.Text(grade?.label ?? "", "reveal-grid__glabel", cell).pickingMode = PickingMode.Ignore;
+
+                if (isS)
+                {
+                    // sparkles round an S card, twinkling
+                    var fx = UiKit.Div("reveal-grid__sfx", cell);
+                    fx.pickingMode = PickingMode.Ignore;
+                    var t0 = Time.realtimeSinceStartup;
+                    ModalFrame.Painted(fx, (ctx, rr) =>
+                    {
+                        var t = Time.realtimeSinceStartup - t0;
+                        for (var i = 0; i < 8; i++)
+                        {
+                            var a = i / 8f * Mathf.PI * 2f + t * 0.6f;
+                            var c = rr.center + new Vector2(Mathf.Cos(a) * rr.width * 0.58f, Mathf.Sin(a) * rr.height * 0.56f);
+                            var k = 0.5f + 0.5f * Mathf.Sin(t * 5f + i * 1.7f);
+                            var sz = 8f + 10f * k;
+                            UiPaint.Fill(ctx, Star4(c, sz), UiPaint.C(255, 240, 255, 0.4f + 0.6f * k));
+                        }
+                    });
+                    fx.schedule.Execute(() => fx.MarkDirtyRepaint()).Every(33);
+                }
+
+                if (r.isNew)
+                {
+                    // a cute sticker instead of the word: a pink heart with a white sparkle
+                    var sticker = UiKit.Div("reveal-grid__heart", cell);
+                    sticker.pickingMode = PickingMode.Ignore;
+                    ModalFrame.Painted(sticker, (ctx, rr) =>
+                    {
+                        var h = Heart(rr.center + new Vector2(0f, 2f), rr.width * 0.46f);
+                        UiPaint.Fill(ctx, UiPaint.Offset(h, 3f), Color.white);
+                        UiPaint.Fill(ctx, h, UiPaint.Vertical(UiPaint.C(255, 140, 180), UiPaint.C(245, 80, 140), rr.yMin, rr.yMax));
+                        UiPaint.Fill(ctx, Star4(rr.center + new Vector2(-rr.width * 0.14f, -rr.height * 0.1f), rr.width * 0.14f), Color.white);
+                    });
+                }
                 UiKit.Text(r.hero.name, "reveal-grid__name", cell).pickingMode = PickingMode.Ignore;
             }
 

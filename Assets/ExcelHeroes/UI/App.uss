@@ -5511,3 +5511,21 @@
 }
 .cutin__skill { font-size: 72px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); }
 .cutin__line { margin-top: 12px; margin-left: 30px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 0, 0, 0.5); }
+
+
+/* 10연: 5 + 5, grade on every card, the show only for S, a heart sticker for new */
+.reveal-grid { width: 80%; }
+.reveal-grid__cell { width: 17%; height: 42%; margin: 1% 1.2%; }
+.reveal-grid__stars, .reveal-grid__new { display: none; }
+.reveal-grid__gtag {
+    position: absolute; left: 10%; bottom: 3%; width: 50px; height: 50px;
+    align-items: center; justify-content: center;
+}
+.reveal-grid__gtext { font-size: 30px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); }
+.reveal-grid__glabel {
+    position: absolute; left: 32%; right: 4%; bottom: 6%; height: 40px;
+    font-size: 22px; -unity-font-style: bold; color: rgb(255, 255, 255); -unity-text-align: middle-left;
+    white-space: nowrap; overflow: hidden;
+}
+.reveal-grid__sfx { position: absolute; left: -12%; right: -12%; top: -8%; bottom: -8%; }
+.reveal-grid__heart { position: absolute; left: -6%; top: -6%; width: 64px; height: 60px; }

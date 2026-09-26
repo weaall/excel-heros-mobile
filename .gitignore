@@ -50,3 +50,7 @@ temp_images/
 
 # Raw generator output (the sliced icons are what ships).
 tools/out/
+
+# reference models for analysis only (not ours, never committed)
+Assets/_Ref/
+Assets/_Ref.meta
