@@ -156,8 +156,10 @@ namespace ExcelHeroes.UI
             UiKit.Text("모집 포인트", "pull-bar__label", points);
             _total = UiKit.Text("0", "pull-bar__value", points);
 
-            _one = UiKit.Btn("", "pull-btn", () => Pull(1), actions);
-            _ten = UiKit.Btn("", "pull-btn pull-btn--primary", () => Pull(10), actions);
+            _one = UiKit.Btn("1회 모집", "pull-btn", () => Pull(1), actions);
+            _ten = UiKit.Btn("10회 모집", "pull-btn pull-btn--primary", () => Pull(10), actions);
+            SkewPlate.Apply(_one, SkewPlate.Kind.Light);
+            SkewPlate.Apply(_ten, SkewPlate.Kind.Primary);
 
             Refresh();
             return _root;
@@ -191,8 +193,8 @@ namespace ExcelHeroes.UI
 
             if (_pickup != null) BuildPickup();
 
-            _one.text = $"1회 모집 · ◈{GachaService.CostFor(1)}";
-            _ten.text = $"10회 모집 · ◈{GachaService.CostFor(10)}";
+            UiKit.SetBtnText(_one, $"1회 모집 · ◈{GachaService.CostFor(1)}");
+            UiKit.SetBtnText(_ten, $"10회 모집 · ◈{GachaService.CostFor(10)}");
             _one.SetEnabled(GachaService.CanAfford(p, 1));
             _ten.SetEnabled(GachaService.CanAfford(p, 10));
         }
@@ -358,6 +360,26 @@ namespace ExcelHeroes.UI
             return view;
         }
 
+        /// <summary>
+        /// A ten-pull result built from made-up pulls — one of each grade, two marked new — for
+        /// the screenshot driver. Nothing is granted and nothing is saved.
+        /// </summary>
+        public static VisualElement Sample(System.Action onClose) => new GachaScreen(null).SampleSummary(onClose);
+
+        public VisualElement SampleSummary(System.Action onClose)
+        {
+            var results = new List<PullResult>();
+            var grades = new[] { "S", "A", "B", "C", "D", "A", "B", "C", "D", "D" };
+            for (var i = 0; i < grades.Length; i++)
+            {
+                var def = GameData.Heroes.Find(h => h.grade == grades[i] && !results.Exists(r => r.hero == h))
+                          ?? GameData.Heroes.Find(h => h.grade == grades[i]);
+                if (def == null) continue;
+                results.Add(new PullResult { hero = def, grade = def.grade, isNew = i == 0 || i == 5, starAfter = def.grade == "S" ? 3 : def.grade == "A" ? 2 : 1 });
+            }
+            return BuildSummary(results, onClose);
+        }
+
         VisualElement BuildSummary(List<PullResult> results, System.Action onClose)
         {
             // Laid out the way the reference lays a ten-pull out: five across and two down on a
@@ -370,17 +392,44 @@ namespace ExcelHeroes.UI
             {
                 var grade = GameData.Grade(r.grade);
                 var cell = UiKit.Div("reveal-grid__cell", grid);
-                cell.style.borderTopColor = cell.style.borderBottomColor =
-                    cell.style.borderLeftColor = cell.style.borderRightColor = grade?.Color ?? Color.gray;
 
-                UiKit.SetArt(UiKit.Div("reveal-grid__art", cell), GameData.CardArt(r.hero.id));
-
-                if (r.isNew) UiKit.Text("NEW", "reveal-grid__new", cell);
-
-                var plate = UiKit.Div("reveal-grid__plate", cell);
-                var stars = UiKit.Text(UiKit.Stars(r.starAfter), "reveal-grid__stars", plate);
-                stars.style.color = grade?.Color ?? Color.white;
-                UiKit.Text(r.hero.name, "reveal-grid__name", plate);
+                // The reference's ten-pull card: a parallelogram, the portrait cut to the slant, a
+                // grey band of stars across the foot, and the rarity as a coloured glow round the
+                // whole card — pink for the top grade, gold for the next, none below.
+                var sprite = GameData.CardArt(r.hero.id);
+                var glow = r.grade == "S" ? UiPaint.C(255, 120, 220, 0.6f)
+                         : r.grade == "A" ? UiPaint.C(255, 206, 60, 0.6f) : (Color?)null;
+                var starCount = System.Math.Clamp(r.starAfter, 1, 5);
+                ModalFrame.Painted(cell, (ctx, rect) =>
+                {
+                    var slant = SkewPlate.SlantFor(rect.height) * 0.55f;
+                    var outer = UiPaint.SkewRect(rect, slant, 6f);
+                    if (glow.HasValue) UiPaint.Ring(ctx, outer, glow.Value, UiPaint.WithAlpha(glow.Value, 0f), 22f);
+                    UiPaint.Shadow(ctx, outer, new Vector2(0f, 5f), UiPaint.C(20, 40, 80, 0.28f), 10f);
+                    UiPaint.Fill(ctx, outer, UiPaint.C(250, 252, 255));
+                    var inner = UiPaint.Offset(outer, -5f);
+                    var bandTop = rect.yMax - rect.height * 0.2f;
+                    var artPoly = UiPaint.Clip(inner, new List<Vector2>
+                    {
+                        new Vector2(rect.xMin - 50f, rect.yMin - 50f), new Vector2(rect.xMax + 50f, rect.yMin - 50f),
+                        new Vector2(rect.xMax + 50f, bandTop), new Vector2(rect.xMin - 50f, bandTop),
+                    });
+                    UiPaint.Image(ctx, artPoly, sprite, Rect.MinMaxRect(rect.xMin, rect.yMin, rect.xMax, bandTop), 0.1f);
+                    var band = UiPaint.Clip(inner, new List<Vector2>
+                    {
+                        new Vector2(rect.xMin - 50f, bandTop), new Vector2(rect.xMax + 50f, bandTop),
+                        new Vector2(rect.xMax + 50f, rect.yMax + 50f), new Vector2(rect.xMin - 50f, rect.yMax + 50f),
+                    });
+                    UiPaint.Fill(ctx, band, UiPaint.Vertical(UiPaint.C(120, 128, 140), UiPaint.C(96, 104, 118), bandTop, rect.yMax), 0f);
+                    // Rarity wash over the art's foot, as the reference tints its top pulls.
+                    if (glow.HasValue)
+                        UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(UiPaint.WithAlpha(glow.Value, 0f), UiPaint.WithAlpha(glow.Value, 0.35f),
+                                                                     rect.yMin + rect.height * 0.45f, bandTop), 0f);
+                });
+                var stars = UiKit.Text(new string('★', starCount), "reveal-grid__stars", cell);
+                stars.pickingMode = PickingMode.Ignore;
+                if (r.isNew) UiKit.Text("New", "reveal-grid__new", cell).pickingMode = PickingMode.Ignore;
+                UiKit.Text(r.hero.name, "reveal-grid__name", cell).pickingMode = PickingMode.Ignore;
             }
 
             var foot = UiKit.Div("reveal-foot", view);

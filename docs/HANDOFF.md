@@ -616,3 +616,19 @@ colour, then (with a plain guard) the wrong colour alone.
 
 The lobby character still sits in a visible rectangle because the card art has a painted
 background. The transparent regeneration fixes that; nothing in the layout needs to change for it.
+
+## The ten-pull, cut to the slant
+
+The reference's ten-pull cards are parallelograms with the portrait CUT to the slant. UI Toolkit
+can clip an image only to a (rounded) rectangle, so `UiPaint.Image` draws the sprite as a textured
+mesh: the polygon's vertices sample the texture where they sit, placed as `scale-and-crop` would
+place it, so the art is clipped, not skewed. Each card is painted whole — rarity glow (pink for S,
+gold for A), white rim, art, a grey star band — with the stars, a yellow italic "New" above the
+corner, and the name under it as labels. The 1회/10회 buttons are plates now; they were the last
+flat buttons on the summon screen. `GachaScreen.Sample` builds a result from made-up pulls for the
+screenshot driver (`NN-Pull10.png`); nothing is granted or saved.
+
+Still to do from the reference screenshots: 부대 편성's left squad tabs and FRONT/MIDDLE/BACK tags,
+the battle result's large yellow "Battle Complete" over the field with the squad strip, and the
+student screen as a full page (portrait left, name band bottom-left, white panel with slanted tabs)
+rather than a modal.

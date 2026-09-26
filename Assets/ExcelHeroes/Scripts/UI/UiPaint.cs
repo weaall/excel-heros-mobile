@@ -269,6 +269,57 @@ namespace ExcelHeroes.UI
         public static void Shadow(MeshGenerationContext ctx, IList<Vector2> poly, Vector2 delta, Color c, float blur)
             => Fill(ctx, Offset(Shift(poly, delta), blur * 0.25f), Flat(c), blur);
 
+        /// <summary>
+        /// Draws a sprite CLIPPED to a convex polygon, undistorted — the image is placed as
+        /// `scale-and-crop` would place it over `dest` (anchored `anchorY` of the way down), and
+        /// the polygon's vertices sample it where they sit. UI Toolkit can only clip an image to a
+        /// rectangle or a rounded one; the reference's ten-pull cards are parallelograms with the
+        /// portrait cut to the slant, and this is how that is drawn.
+        /// </summary>
+        public static void Image(MeshGenerationContext ctx, IList<Vector2> poly, Sprite sprite, Rect dest, float anchorY = 0f, Color? tint = null)
+        {
+            if (sprite == null || poly.Count < 3) return;
+            var tex = sprite.texture;
+            var tr = sprite.textureRect;
+            var uvMin = new Vector2(tr.xMin / tex.width, tr.yMin / tex.height);
+            var uvSize = new Vector2(tr.width / tex.width, tr.height / tex.height);
+
+            // scale-and-crop: cover dest, keep aspect.
+            var aspect = tr.width / tr.height;
+            var w = dest.width;
+            var h = w / aspect;
+            if (h < dest.height) { h = dest.height; w = h * aspect; }
+            var img = new Rect(dest.center.x - w * 0.5f, dest.yMin - (h - dest.height) * anchorY, w, h);
+
+            var c = tint ?? Color.white;
+            var n = poly.Count;
+            var mesh = ctx.Allocate(n + 1, n * 3, tex);
+            var centre = Vector2.zero;
+            foreach (var p in poly) centre += p;
+            centre /= n;
+            mesh.SetNextVertex(TexV(centre, img, uvMin, uvSize, c));
+            foreach (var p in poly) mesh.SetNextVertex(TexV(p, img, uvMin, uvSize, c));
+            for (var i = 0; i < n; i++)
+            {
+                mesh.SetNextIndex(0);
+                mesh.SetNextIndex((ushort)(1 + i));
+                mesh.SetNextIndex((ushort)(1 + (i + 1) % n));
+            }
+        }
+
+        static Vertex TexV(Vector2 p, Rect img, Vector2 uvMin, Vector2 uvSize, Color c)
+        {
+            // UI space is y-down, texture space is y-up.
+            var u = (p.x - img.xMin) / img.width;
+            var v = 1f - (p.y - img.yMin) / img.height;
+            return new Vertex
+            {
+                position = new Vector3(p.x, p.y, Vertex.nearZ),
+                tint = c,
+                uv = new Vector2(uvMin.x + u * uvSize.x, uvMin.y + v * uvSize.y),
+            };
+        }
+
         // ---------------------------------------------------------------- helpers
 
         static Vertex V(Vector2 p, Color c) => new Vertex { position = new Vector3(p.x, p.y, Vertex.nearZ), tint = c };

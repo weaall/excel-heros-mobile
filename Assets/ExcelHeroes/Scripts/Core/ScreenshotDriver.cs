@@ -208,6 +208,13 @@ namespace ExcelHeroes.Core
                     app.CloseOverlay();
                 }
 
+                // The ten-pull result, which only exists after spending gems.
+                app.OpenOverlay(GachaScreen.Sample(app.CloseOverlay));
+                yield return null;
+                yield return null;
+                yield return Shoot($"{n++:00}-Pull10");
+                app.CloseOverlay();
+
                 // Every plate and the modal on one page, laid out like the reference sheet, so
                 // the two can be compared side by side. See UiGallery.
                 app.OpenOverlay(UiGallery.Build(app.CloseOverlay));

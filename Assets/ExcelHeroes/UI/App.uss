@@ -703,7 +703,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: rgba(228, 241, 253, 0.97);
+    background-color: rgba(228, 241, 253, 0.96);
     align-items: center;
     justify-content: center;
 }
@@ -835,37 +835,24 @@
     height: 72%;
 }
 
+/* Painted as a whole (GachaScreen.BuildSummary): only size, and the labels on top. */
 .reveal-grid__cell {
-    width: 17.5%;
-    height: 46%;
-    margin: 0.6%;
-    border-radius: var(--ex-rad-md);
-    border-width: 4px;
-    background-color: var(--ex-surface-raised);
-    overflow: hidden;
+    width: 16.5%;
+    height: 44%;
+    margin: 1% 1.2%;
     justify-content: flex-end;
-}
-
-.reveal-grid__art {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    -unity-background-scale-mode: scale-and-crop;
-}
-
-.reveal-grid__plate {
-    flex-shrink: 0;
-    padding-top: 6px;
-    padding-bottom: 8px;
-    background-color: var(--ex-navy);
     align-items: center;
 }
 
 .reveal-grid__name {
+    position: absolute;
+    bottom: -40px;
+    left: 0;
+    right: 0;
     font-size: 24px;
-    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: rgb(30, 44, 70);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3097,33 +3084,11 @@
     flex-basis: 0;
     height: var(--ex-tap-lg);
     margin-left: var(--ex-space-2);
-    font-size: var(--ex-text-base);
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
-    color: var(--ex-ink);
-    background-color: var(--ex-surface);
-    border-width: 2px;
-    border-color: var(--ex-line);
-    border-bottom-width: 8px;
-    border-bottom-color: var(--ex-line-strong);
-    border-radius: var(--ex-rad-md);
+    font-size: 46px;
     white-space: nowrap;
 }
 
-.pull-btn--primary {
-    flex-grow: 1.8;
-    color: var(--ex-accent-ink);
-    background-color: var(--ex-accent);
-    border-color: var(--ex-accent);
-    border-bottom-color: var(--ex-accent-deep);
-}
-
-.pull-btn:disabled {
-    color: rgb(160, 165, 174);
-    background-color: var(--ex-surface-sunken);
-    border-color: var(--ex-line);
-    border-bottom-color: var(--ex-line);
-}
+.pull-btn--primary { flex-grow: 1.8; }
 
 
 /* The first-run home screen, before anyone has been recruited. It replaces the battlefield rather
@@ -3624,22 +3589,25 @@
 
 /* The star row on the plate, and the corner flag on a card the player did not already own —
    both straight off the reference's ten-pull. */
-.reveal-grid__stars { font-size: 28px; -unity-font-style: bold; }
+.reveal-grid__stars {
+    height: 20%;
+    font-size: 40px;
+    -unity-text-align: middle-center;
+    color: rgb(255, 210, 40);
+    -unity-text-outline-width: 1.5px;
+    -unity-text-outline-color: rgb(120, 76, 0);
+}
 
+/* Yellow italic "New" above the card's top-left, as on the reference. */
 .reveal-grid__new {
     position: absolute;
-    left: 0;
-    top: 12px;
-    padding-left: 14px;
-    padding-right: 14px;
-    height: 46px;
-    font-size: 26px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
-    color: rgb(72, 44, 0);
-    background-color: var(--ex-gold);
-    border-top-right-radius: var(--ex-rad-sm);
-    border-bottom-right-radius: var(--ex-rad-sm);
+    left: 10px;
+    top: -46px;
+    font-size: 40px;
+    -unity-font-style: bold-and-italic;
+    color: rgb(255, 214, 40);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(110, 70, 0);
 }
 
 .reveal-foot { align-items: center; margin-top: var(--ex-space-3); }
