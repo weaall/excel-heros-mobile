@@ -716,3 +716,7 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 승리: `BattleWorld.Celebrate` — 카메라가 파티 앞으로 내려오고(거리 7.7→4.6, 피치 25→12) 캐릭터가 카메라를 보며 환호.
 - 편성: `World/Lineup3D` — 같은 SD 모델을 직교 카메라로 투명 RT에 그려 `party-slots` 배경으로. 슬롯 위치를 GeometryChanged에서 재서 각 이름판 위에 세움. 화면을 떠나면 카메라 정지.
 - **색공간 주의**: 프로젝트는 Linear. 정점 색·틴트는 `MeshKit.Lin`/Bake에서 linear 변환, RT는 `RenderTextureReadWrite.sRGB`. 빠뜨리면 전부 바래 보임.
+
+## 모집 → BA 모집 화면
+- 전면 무대(`gstage`): 픽업 S가 오른쪽 앞, A가 한 걸음 뒤 왼쪽(Standing 컷아웃, 없으면 카드), 뒤에 은은한 스포트라이트. 제목 블록(PICK UP 모집 남색 기울기판 · 이름 110px · 종료까지 N일 · 안내 문구).
+- 왼쪽 배너 탭(`gtabs`), 왼쪽 아래 확률 정보 / 모집 포인트(모달: 등급 확률 + 천장 · 포인트 교환), 오른쪽 아래 1회(흰)·10회(금색) 기울기판.
