@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using ExcelHeroes.Core;
 using ExcelHeroes.Data;
@@ -116,8 +117,15 @@ namespace ExcelHeroes.UI
                 var art = UiKit.Div("mcard__art", card);
                 if (e.Known)
                 {
-                    var sprite = GameData.MonsterSprite(e.SpriteId);
-                    if (sprite != null) UiKit.SetArt(art, sprite);
+                    // The same 3D model the fight uses, rendered once into a picture.
+                    var shape = GameData.MonsterTypes?.FirstOrDefault(t => t.id == e.SpriteId)?.shape ?? "blob";
+                    var snap = World.Snapshot3D.Monster(e.SpriteId, shape, e.Boss, () => art.MarkDirtyRepaint());
+                    if (snap != null) art.style.backgroundImage = new StyleBackground(Background.FromTexture2D(snap));
+                    else
+                    {
+                        var sprite = GameData.MonsterSprite(e.SpriteId);
+                        if (sprite != null) UiKit.SetArt(art, sprite);
+                    }
                 }
                 else UiKit.Text("?", "mcard__unknown", art);
 

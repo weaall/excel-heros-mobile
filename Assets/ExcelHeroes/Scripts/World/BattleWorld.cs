@@ -115,9 +115,13 @@ namespace ExcelHeroes.World
                 _setMood = mood;
                 _cam.backgroundColor = mood == 2 ? new Color(0.16f, 0.18f, 0.32f) : new Color(0.86f, 0.93f, 1f);
             }
+            _entering = sim.Elapsed < 0.5f;
             foreach (var h in sim.Heroes) Ensure(h);
             foreach (var m in sim.Monsters) Ensure(m);
+            _entering = false;
         }
+
+        bool _entering;
 
         public void SetVisible(bool on) => _cam.enabled = on && _rt != null;
 
@@ -216,6 +220,7 @@ namespace ExcelHeroes.World
             a.Rig.Root.localScale = Vector3.one * a.Scale;
             a.Z = ZOf(c);
             a.X = WX(c.x);
+            if (c.side == Side.Hero && _entering) a.Enter = 1f;
             _actors[c] = a;
             return a;
         }
@@ -446,14 +451,18 @@ namespace ExcelHeroes.World
             public float Scale = 1f, X, Z;
             public Color Accent;
             public float Attack, Hit, Skill, Dying, Cheer, Knock;
+            public float Enter;             // 1 → 0: running in from the left at the start of a run
             float _walk, _lastX;
 
             public void Update(float dt, float time, float targetX, Transform cam, MaterialPropertyBlock mpb, float closeUp)
             {
                 var hero = C.side == Side.Hero;
-                var moved = Mathf.Abs(targetX - _lastX);
-                _lastX = targetX;
-                X = targetX + Knock;
+                var drawn = targetX - Mathf.SmoothStep(0f, 1f, Enter) * 4.5f;
+                var moved = Mathf.Abs(drawn - _lastX);
+                _lastX = drawn;
+                // the reference's squads run onto the field at the start of every battle
+                Enter = Mathf.MoveTowards(Enter, 0f, dt * 1.25f);
+                X = targetX + Knock - Mathf.SmoothStep(0f, 1f, Enter) * 4.5f;
                 Knock = Mathf.MoveTowards(Knock, 0f, dt * 1.2f);
 
                 var speed = moved / Mathf.Max(0.0001f, dt);

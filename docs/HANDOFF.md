@@ -730,3 +730,7 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 카드·10연 결과·EX 카드·전투 결과 미니·모모톡 아바타·모집 탭·컷인이 예전 카드 일러(헤일로·어두운 배경) 대신 **새 컷아웃**을 확대해 씀: Face(×2.9, 초점 14.5%), Bust(×1.75, 20%), Cut(×1.35, 26%). 배경은 등급색을 옅게 한 세로 그라데이션.
 - 스킨을 입었거나 Standing이 없으면 카드 일러로 폴백. 앨범(일러 감상)은 카드 일러 그대로.
 - 주의: 타이트 메시 스프라이트의 `textureRect`는 불투명 영역으로 잘려 있음 → 크롭은 `sprite.rect`(정규화된 전체 캔버스) 기준.
+
+## 오류 도감 3D 썸네일 · 전투 입장
+- `World/Snapshot3D`: 모델을 256px 투명 텍스처로 한 번 찍어 캐시(도감 타일). **대기열 방식** — 카메라를 켜고 2프레임 뒤 ReadPixels. `RenderPipeline.SubmitRenderRequest`는 2D Renderer에서 빈 결과였음. 카메라를 기울이면 그만큼 올려야 인물이 화면 가운데 옴(10° × 6m ≈ 1m).
+- 전투 시작마다 파티가 왼쪽에서 달려 들어옴(`Actor.Enter`, 4.5m, 약 0.8초).
