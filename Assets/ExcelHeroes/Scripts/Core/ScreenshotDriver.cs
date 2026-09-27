@@ -189,6 +189,15 @@ namespace ExcelHeroes.Core
                             yield return new WaitForSeconds(0.45f);
                             yield return Shoot($"{n:00}-Fight{f}");
                         }
+                        // The boss HUD (bar, layer badge, trail) and the hit rings only exist in a
+                        // boss wave, which a capture pass never reaches on its own: bring it on.
+                        Debug.Log("[shots] before boss: " + BattleScreen.Current?.DebugState());
+                        BattleScreen.Current?.DebugBoss(0.63f);
+                        yield return new WaitForSeconds(2.6f);
+                        Debug.Log("[shots] at Boss0: " + BattleScreen.Current?.DebugState());
+                        yield return Shoot($"{n:00}-Boss0");
+                        yield return new WaitForSeconds(0.2f);
+                        yield return Shoot($"{n:00}-Boss1");
                         // -burst: a run of close frames (24 × 0.07 s) to judge the motion in time —
                         // joint pops, parts coming loose, the springs settling — on a contact sheet
                         if (ArgValue("-burst") != null || System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-burst") >= 0)

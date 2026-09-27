@@ -80,6 +80,13 @@ namespace ExcelHeroes.UI
         public static BattleScreen Current { get; private set; }
 
         /// <summary>For the screenshot driver: an EX cut-in for the strongest hero on the field, guards off.</summary>
+        /// <summary>Screenshot driver only: the boss on the field now, part-way down (see BattleSim.DebugBossNow).</summary>
+        /// Held until a run is live — a call that lands on a finished run would otherwise do nothing.
+        public void DebugBoss(float hpFrac) { _pendingBoss = hpFrac; Debug.Log($"[shots] boss requested (sim {(_sim == null ? "none" : _sim.Finished ? "finished" : "live")})"); }
+        float _pendingBoss;
+        VisualElement _resultPopup;     // the result overlay on screen, if any (NewRun takes it down)
+        public string DebugState() => _sim == null ? "no sim" : $"P{_sim.Stage} wave {_sim.Wave}/{_sim.WaveCount} t {_sim.Elapsed:F1} finished {_sim.Finished} boss {(_sim.Monsters.FirstOrDefault(m => m.boss != null) is { } b ? $"{b.hp}/{b.maxHp}" : "-")} bar {(_bossBar == null ? "null" : _bossBar.ClassListContains("hidden") ? "hidden" : "shown")}";
+
         public void DebugCutIn()
         {
             var h = _sim?.Heroes.OrderByDescending(x => GameData.GradeRank(GameData.Hero(x.heroId)?.grade)).FirstOrDefault();
@@ -149,6 +156,24 @@ namespace ExcelHeroes.UI
             autoLabel.text = "AUTO";
             _autoButton.AddToClassList("bhud__auto");
             Square(hud, DrawMenuIcon, ToggleMenu, out _);
+
+            // Built before the menu so the menu opens over them (build order is the only z-order).
+            _bossBar = UiKit.Div("bboss hidden", _root);
+            ModalFrame.Painted(_bossBar, DrawBossBar);
+            var bossPlate = UiKit.Div("bboss__plate", _bossBar);
+            _bossLevel = UiKit.Text("", "bboss__lv", bossPlate);
+            _bossName = UiKit.Text("", "bboss__name", bossPlate);
+            _bossCount = UiKit.Text("", "bboss__count", _bossBar);
+
+            var kills = UiKit.Div("bkill", _root);
+            ModalFrame.Painted(kills, (ctx, r) =>
+            {
+                var poly = UiPaint.RoundRect(r, r.height * 0.5f, 8);
+                UiPaint.Fill(ctx, poly, UiPaint.C(18, 28, 50, 0.66f));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.22f), 2f);
+            });
+            ModalFrame.Painted(UiKit.Div("bkill__icon", kills), DrawClipboardIcon);
+            _killLabel = UiKit.Text("", "bkill__num", kills);
 
             _menu = UiKit.Div("bmenu hidden", _root);
             ModalFrame.Painted(_menu, (ctx, r) =>
@@ -337,6 +362,18 @@ namespace ExcelHeroes.UI
         Label _speedLabel, _enemyLabel, _timeLabel;
         VisualElement _menu;
 
+        // 보스 HP 바 — Blue Archive's boss HUD, top centre (layout from tools/gen_hudref_gemini.py
+        // mock-ups of this very screen): a navy plate with the level and name, a long slanted bar
+        // cut into BossBars layers with the next layer's colour under the current one, a pale trail
+        // that waits a beat after a hit and then drains, and "xN" for the layers still to go.
+        const int BossBars = 10;
+        VisualElement _bossBar;
+        Label _bossLevel, _bossName, _bossCount;
+        Combatant _boss;
+        float _bossFrac = 1f, _bossTrail = 1f, _bossTrailHold;
+        // 처리 — the kill counter, top left: monsters put down this run over all it will field.
+        Label _killLabel;
+
         void ToggleMenu()
         {
             if (_menu == null) return;
@@ -403,6 +440,93 @@ namespace ExcelHeroes.UI
             UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad * 0.92f), UiPaint.C(240, 90, 90));
             UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(-rad * 0.35f, -rad * 0.1f), rad * 0.22f, rad * 0.26f), UiPaint.C(255, 255, 255));
             UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(rad * 0.35f, -rad * 0.1f), rad * 0.22f, rad * 0.26f), UiPaint.C(255, 255, 255));
+        }
+
+        /// <summary>Tracks the living boss: shows the bar, and drives the fill, the trail and the layer count.</summary>
+        void UpdateBoss(float dt)
+        {
+            if (_bossBar == null) return;
+            var boss = _sim.Finished ? null : _sim.Monsters.FirstOrDefault(m => m.boss != null && m.Alive);
+            _bossBar.EnableInClassList("hidden", boss == null);
+            // the combo line sits where the bar goes; it steps down while a boss is up
+            _comboLabel?.EnableInClassList("combo--low", boss != null);
+            if (boss == null) { _boss = null; return; }
+            var frac = Mathf.Clamp01(boss.hp / (float)Mathf.Max(1, boss.maxHp));
+            if (boss != _boss)
+            {
+                _boss = boss;
+                _bossLevel.text = $"Lv.{_sim.Stage}";
+                _bossName.text = boss.name;
+                _bossFrac = _bossTrail = frac; _bossTrailHold = 0f;
+            }
+            // a hit that opens a fresh chunk: the trail waits a beat, then drains — faster the
+            // further behind it is, so a steady stream of hits cannot hold it up for ever
+            if (frac < _bossFrac - 1e-5f && _bossTrail <= _bossFrac + 1e-5f) _bossTrailHold = 0.35f;
+            _bossFrac = frac;
+            if (_bossTrailHold > 0f) _bossTrailHold -= dt;
+            else _bossTrail = Mathf.MoveTowards(_bossTrail, frac, dt * Mathf.Max(0.05f, (_bossTrail - frac) * 3f));
+            _bossTrail = Mathf.Max(_bossTrail, frac);
+            var n = Mathf.Max(1, Mathf.CeilToInt(frac * BossBars - 1e-4f));
+            _bossCount.text = n > 1 ? $"x{n}" : "";
+            _bossBar.MarkDirtyRepaint();
+        }
+
+        /// <summary>
+        /// The boss bar: the plate is drawn behind its labels (top left), the bar under it with
+        /// the layer badge at its right end. Within the current layer: the next layer's dark red
+        /// (or an empty well on the last one), the pale trail, then the live red fill.
+        /// </summary>
+        void DrawBossBar(MeshGenerationContext ctx, Rect r)
+        {
+            const float plateH = 48f, barH = 42f, badge = 92f;
+            var plate = new Rect(r.xMin, r.yMin, Mathf.Min(620f, r.width * 0.55f), plateH);
+            var ps = UiPaint.SkewRect(plate, SkewPlate.SlantFor(plateH), 4f, 3);
+            UiPaint.Shadow(ctx, ps, new Vector2(0f, 3f), UiPaint.C(6, 12, 30, 0.3f), 6f);
+            UiPaint.Fill(ctx, ps, UiPaint.Vertical(UiPaint.C(40, 60, 104), UiPaint.C(22, 36, 68), plate.yMin, plate.yMax));
+
+            var bar = new Rect(r.xMin + 6f, r.yMin + plateH + 6f, r.width - 6f - badge * 0.6f, barH);
+            var outer = UiPaint.SkewRect(bar, SkewPlate.SlantFor(barH) * 0.8f, 4f, 3);
+            UiPaint.Shadow(ctx, outer, new Vector2(0f, 3f), UiPaint.C(6, 12, 30, 0.35f), 8f);
+            UiPaint.Fill(ctx, outer, UiPaint.C(255, 255, 255, 0.95f));
+            var well = UiPaint.Offset(outer, -3f);
+            var left = _bossFrac * BossBars;
+            var n = Mathf.Max(1, Mathf.CeilToInt(left - 1e-4f));
+            var inLayer = Mathf.Clamp01(left - (n - 1));
+            var trail = Mathf.Clamp(_bossTrail * BossBars - (n - 1), inLayer, 1f);
+            UiPaint.Fill(ctx, well, n > 1 ? UiPaint.C(118, 22, 34) : UiPaint.C(26, 32, 52));
+            Rect Upto(float t) => Rect.MinMaxRect(bar.xMin - 20f, bar.yMin - 4f, Mathf.Lerp(bar.xMin + 3f, bar.xMax - 3f, t), bar.yMax + 4f);
+            if (trail > inLayer + 1e-4f) UiPaint.Fill(ctx, UiPaint.Clip(well, UiPaint.RoundRect(Upto(trail), 0f)), UiPaint.C(255, 214, 200));
+            if (inLayer > 0f)
+            {
+                var fill = UiPaint.Clip(well, UiPaint.RoundRect(Upto(inLayer), 0f));
+                UiPaint.Fill(ctx, fill, UiPaint.Vertical(UiPaint.C(255, 92, 88), UiPaint.C(214, 34, 46), bar.yMin, bar.yMax));
+                // the glossy upper third
+                var gloss = UiPaint.Clip(fill, UiPaint.RoundRect(Rect.MinMaxRect(bar.xMin - 20f, bar.yMin, bar.xMax, bar.yMin + barH * 0.34f), 0f));
+                UiPaint.Fill(ctx, gloss, UiPaint.C(255, 255, 255, 0.22f));
+            }
+
+            // the layer badge: a navy hexagon with a white rim, over the bar's right end
+            if (n > 1)
+            {
+                var c = new Vector2(r.xMax - badge * 0.5f, bar.center.y);
+                var hex = new List<Vector2>();
+                for (var i = 0; i < 6; i++) { var a = Mathf.PI / 6f + i * Mathf.PI / 3f; hex.Add(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * badge * 0.5f); }
+                UiPaint.Fill(ctx, hex, UiPaint.C(255, 255, 255));
+                UiPaint.Fill(ctx, UiPaint.Offset(hex, -4f), UiPaint.Vertical(UiPaint.C(46, 66, 112), UiPaint.C(22, 34, 66), c.y - badge * 0.5f, c.y + badge * 0.5f));
+            }
+        }
+
+        /// <summary>A clipboard with a tick: the office's word for "handled".</summary>
+        static void DrawClipboardIcon(MeshGenerationContext ctx, Rect r)
+        {
+            var c = r.center; var h = r.height * 0.9f; var w = h * 0.76f;
+            var board = new Rect(c.x - w * 0.5f, c.y - h * 0.44f, w, h * 0.9f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(board, 4f), UiPaint.C(196, 150, 104));
+            UiPaint.Fill(ctx, UiPaint.RoundRect(new Rect(board.xMin + 3f, board.yMin + 5f, w - 6f, board.height - 8f), 2f), UiPaint.C(255, 255, 255));
+            UiPaint.Fill(ctx, UiPaint.RoundRect(new Rect(c.x - w * 0.26f, board.yMin - 3f, w * 0.52f, 8f), 3f), UiPaint.C(90, 200, 255));
+            // the tick: two thick strokes as one polygon
+            var t = 3.2f; var a = new Vector2(c.x - w * 0.24f, c.y + h * 0.04f); var m = new Vector2(c.x - w * 0.06f, c.y + h * 0.2f); var b = new Vector2(c.x + w * 0.26f, c.y - h * 0.14f);
+            UiPaint.Fill(ctx, new List<Vector2> { a + new Vector2(0f, -t), m + new Vector2(0f, -t * 1.4f), b + new Vector2(0f, -t), b + new Vector2(0f, t), m + new Vector2(0f, t * 1.4f), a + new Vector2(0f, t) }, UiPaint.C(40, 170, 90));
         }
 
         static void DrawClockIcon(MeshGenerationContext ctx, Rect r)
@@ -482,6 +606,13 @@ namespace ExcelHeroes.UI
                 return false;
             }
 
+            // The last run's result comes down with it. The auto-restart (Finish, 2.6 s) used to
+            // leave it up, and its own auto-confirm (3.2 s, 자동 진행) then found it still there and
+            // restarted AGAIN — the new fight was covered for 0.6 s and then thrown away. With the
+            // popup gone, that timer's parent check stops it.
+            _resultPopup?.RemoveFromHierarchy();
+            _resultPopup = null;
+            _root?.RemoveFromClassList("battle--result");
             _hitStop = 0f;
             _sim = new BattleSim(Game.Player, Game.Player.stage) { AutoSkill = Game.Player.autoSkill };
             _resultApplied = false;
@@ -597,6 +728,11 @@ namespace ExcelHeroes.UI
                 if (!NewRun()) return;
             }
 
+            if (_pendingBoss > 0f && !_sim.Finished && _sim.Wave >= 1)
+            {
+                _sim.DebugBossNow(_pendingBoss); _pendingBoss = 0f;
+                Debug.Log($"[shots] boss on: wave {_sim.Wave}/{_sim.WaveCount}, boss alive {_sim.Monsters.Any(m => m.boss != null && m.Alive)}");
+            }
             if (_hitStop > 0f) _hitStop -= dt;
             else if (!_sim.Finished) _sim.Tick(dt * _speedMultiplier);
 
@@ -625,6 +761,7 @@ namespace ExcelHeroes.UI
             LayoutFighters(dt);
             ApplyShake();
             UpdateCombo();
+            UpdateBoss(dt);
             UpdateSkillGauges();
             UpdateExBar();
             UpdateFloaters(dt);
@@ -638,6 +775,7 @@ namespace ExcelHeroes.UI
                     ? $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
                     : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}";
             if (_enemyLabel != null) _enemyLabel.text = _sim.Monsters.Count(m => m.Alive).ToString();
+            if (_killLabel != null) _killLabel.text = _sim.EnemyTotal > 0 ? $"{_sim.Kills}/{_sim.EnemyTotal}" : _sim.Kills.ToString();
             if (_timeLabel != null)
             {
                 var left = Mathf.Max(0f, BattleSim.TimeLimit - _sim.Elapsed);
@@ -1604,6 +1742,7 @@ namespace ExcelHeroes.UI
             // top-right, the squad that fought is a strip of small cards bottom-left, and the way
             // on is one cyan plate bottom-right.
             var popup = UiKit.Div("bresult", _root);
+            _resultPopup = popup;
             // the HUD pill, the EX cards and the cost bar make way for the result (the reference
             // shows only the title, the numbers and the squad)
             _root.AddToClassList("battle--result");

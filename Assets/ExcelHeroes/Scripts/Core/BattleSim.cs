@@ -478,9 +478,49 @@ namespace ExcelHeroes.Core
             Spawn(b, FieldW + 60f);
         }
 
+        /// <summary>
+        /// Screenshot driver only: clears the field and brings this run's boss on now, at
+        /// `hpFrac` of its health, so the boss HUD can be photographed without playing to it.
+        /// </summary>
+        public void DebugBossNow(float hpFrac)
+        {
+            if (Finished) return;
+            foreach (var m in Monsters.Where(m => m.Alive).ToList())
+            {
+                m.hp = 0;
+                Events.Enqueue(new BattleEvent { kind = EventKind.Death, target = m });
+            }
+            Wave = WaveCount - 1;
+            SpawnWave();
+            var boss = Monsters.LastOrDefault(m => m.boss != null);
+            // the capture pass seeds a levelled party against an early stage, which would drop the
+            // boss before it is photographed: a much deeper pool, only here
+            if (boss != null) { boss.maxHp = (int)Math.Min(int.MaxValue / 2L, boss.maxHp * 40L); boss.hp = Math.Max(1, (int)(boss.maxHp * hpFrac)); }
+        }
+
+        /// <summary>Monsters fielded so far this run, summons included.</summary>
+        public int Spawned { get; private set; }
+
+        /// <summary>
+        /// Everything this run will field, for the kill counter: what has come on so far plus what
+        /// the waves still to come will bring (a boss is one; its summons join when they arrive).
+        /// −1 in 야근, which has no end to count towards.
+        /// </summary>
+        public int EnemyTotal
+        {
+            get
+            {
+                if (Overtime) return -1;
+                var ahead = 0;
+                for (var w = Wave + 1; w <= WaveCount; w++) ahead += w == WaveCount ? 1 : MinionsThisWave;
+                return Spawned + ahead;
+            }
+        }
+
         void Spawn(Combatant m, float x)
         {
             m.x = x;
+            Spawned++;
             Monsters.Add(m);
             Events.Enqueue(new BattleEvent { kind = EventKind.Spawn, actor = m });
         }

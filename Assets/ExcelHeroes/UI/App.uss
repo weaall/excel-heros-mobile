@@ -5216,6 +5216,67 @@
 .bhud__auto .bhud__sq-label { bottom: auto; top: 0; height: 84px; font-size: 22px; -unity-font-style: bold-and-italic; }
 .bhud__sq--on .bhud__sq-label { color: rgb(60, 40, 0); }
 
+/* 보스 HP 바, top centre between the kill chip and the phase pill (BattleScreen.DrawBossBar paints
+   plate, bar and badge; these place the words on them). Height covers the badge, which stands
+   proud of the bar: plate 48 + gap 6 + bar 42, badge 92 centred on the bar. */
+.bboss {
+    position: absolute;
+    top: 20px;
+    left: 380px;
+    width: 1120px;
+    height: 124px;
+}
+.bboss__plate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 600px;
+    height: 48px;
+    padding-left: 44px;
+    flex-direction: row;
+    align-items: center;
+    overflow: hidden;
+}
+.bboss__lv { color: rgb(255, 210, 60); font-size: 26px; -unity-font-style: bold-and-italic; margin-right: 16px; height: 44px; -unity-text-align: middle-left; }
+.bboss__name {
+    height: 44px;
+    -unity-text-align: middle-left;
+    color: rgb(255, 255, 255);
+    font-size: 26px;        /* 28 needed a 38px line in the 36px the plate leaves */
+    -unity-font-style: bold-and-italic;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bboss__count {
+    position: absolute;
+    right: 0;
+    top: 29px;
+    width: 92px;
+    height: 92px;
+    font-size: 30px;
+    -unity-font-style: bold-and-italic;
+    -unity-text-align: middle-center;
+    color: rgb(255, 255, 255);
+}
+
+/* 처리 — the kill counter chip, top left, the same dark glass as the phase pill. */
+.bkill {
+    position: absolute;
+    top: 24px;
+    left: 40px;
+    height: 64px;
+    padding: 0 26px 0 18px;
+    flex-direction: row;
+    align-items: center;
+}
+.bkill__icon { width: 44px; height: 44px; margin-right: 10px; }
+.bkill__num { color: rgb(255, 255, 255); font-size: 30px; -unity-font-style: bold; }
+
+/* the combo line steps down under the boss bar while one is up */
+.combo--low { top: 176px; }
+
 .bmenu {
     position: absolute;
     top: 120px;

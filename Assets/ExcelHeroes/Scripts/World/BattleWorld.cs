@@ -325,6 +325,7 @@ namespace ExcelHeroes.World
                         t.Hit = 0.16f;
                         t.Knock = e.target.side == Side.Hero ? -0.12f : 0.12f;
                         Spark(t, e.crit ? new Color(1f, 0.85f, 0.3f) : Color.white, e.crit ? 0.7f : 0.45f);
+                        HitRing(t, e.crit);
                     }
                     if (e.actor != null && _actors.TryGetValue(e.actor, out var a) && a.Attack <= 0f) a.Attack = 0.3f;
                     break;
@@ -558,6 +559,27 @@ namespace ExcelHeroes.World
                 _fx.Add(new Fx { T = shard, Life = 0.8f, Max = 0.8f, Vel = vel, Gravity = true, Grow0 = 0.9f, Grow1 = 0.4f, Spin = true });
             }
             AddShakeLocal(0.35f);
+        }
+
+        /// <summary>
+        /// A hit landing (the boss-fight mock-ups, Blue Archive style): a thin white-cyan ring
+        /// spreading on the floor under the target and a smaller one standing at the hit, facing
+        /// the camera. Gold on a crit. At most one pair per target every 0.12 s, so a flurry reads
+        /// as rhythm rather than a pile of rings.
+        /// </summary>
+        void HitRing(Actor at, bool crit)
+        {
+            if (at.LastRing >= 0f && _time - at.LastRing < 0.12f) return;
+            at.LastRing = _time;
+            var c = crit ? new Color(1f, 0.86f, 0.4f, 0.95f) : new Color(0.78f, 0.96f, 1f, 0.9f);
+            if (!RingMats.TryGetValue(c, out var ring) || ring == null) RingMats[c] = ring = MeshKit.NewGlass(RingTex, c);
+            var s = at.Scale * (crit ? 1.3f : 1f);
+            var floor = MeshKit.Part("hitring", _root, FloorQuad, ring, Layer).transform;
+            floor.position = at.Rig.Root.position + Vector3.up * 0.025f;
+            _fx.Add(new Fx { T = floor, Life = 0.3f, Max = 0.3f, Grow0 = 0.25f * s, Grow1 = 1.05f * s, Flat = true });
+            var up = MeshKit.Part("hitring", _root, Quad, ring, Layer).transform;
+            up.position = at.Rig.Root.position + Vector3.up * at.Rig.Height * at.Scale * 0.55f + new Vector3(0f, 0f, -0.32f);
+            _fx.Add(new Fx { T = up, Life = 0.22f, Max = 0.22f, Grow0 = 0.15f * s, Grow1 = 0.75f * s, Face = true });
         }
 
         float _localShake;
@@ -849,6 +871,7 @@ namespace ExcelHeroes.World
             public float Scale = 1f, X, Z;
             public Color Accent;
             public float Attack, Hit, Skill, Dying, Cheer, Knock;
+            public float LastRing = -1f;     // world time of the last hit ring on this actor (HitRing throttle)
             public float Enter;             // 1 → 0: running in from the left at the start of a run
             float _walk, _lastX;
 
