@@ -134,7 +134,7 @@ namespace ExcelHeroes.World
 
     public static class SdPose
     {
-        public const int IdleCount = 6, WinCount = 6;
+        public const int IdleCount = 8, WinCount = 8;
 
         // easing: a body accelerates into a move and settles out of it
         static float EaseOut(float t) { t = Mathf.Clamp01(t); return 1f - (1f - t) * (1f - t) * (1f - t); }
@@ -161,7 +161,9 @@ namespace ExcelHeroes.World
 
         /// <summary>
         /// 0 stand (weight on one leg, sway) · 1 hands on hips · 2 arms crossed · 3 hand at the chin ·
-        /// 4 a relaxed lean, weight back · 5 one hand up at the shoulder, the other on the hip.
+        /// 4 a relaxed lean, weight back · 5 one hand up at the shoulder, the other on the hip ·
+        /// 6 a hand up to the temple (adjusting glasses / tucking hair) every few seconds, else
+        /// hands loose · 7 a slow stretch: arms up and back, then dropped with a shrug.
         /// </summary>
         public static Pose Idle(int variant, float t, float phase)
         {
@@ -208,6 +210,29 @@ namespace ExcelHeroes.World
                     p.RaiseR = 6f; p.SwingR = 22f; p.ElbowR = 95f + br * 3f; p.InR = 10f; p.HandFlexR = -10f; p.HandDevR = 20f;
                     p.RaiseL = -22f; p.SwingL = -12f; p.ElbowL = 22f; p.InL = 52f; p.HandFlexL = 45f; p.HandDevL = -15f;
                     p.ShrugR += 6f; p.HeadTilt += -5f; p.Twist = -3f; break;
+                case 6:
+                    {
+                        // every ~7 s the right hand comes up to the temple for a second (glasses, hair), the head dips to meet it
+                        var cyc = (t * 0.14f + phase * 0.1f) % 1f;
+                        var up = cyc < 0.16f ? EaseInOut(cyc / 0.16f) : cyc < 0.30f ? 1f : cyc < 0.42f ? 1f - EaseInOut((cyc - 0.30f) / 0.12f) : 0f;
+                        p.RaiseR = Mathf.Lerp(-36f, 2f, up); p.SwingR = Mathf.Lerp(3f, 48f, up); p.ElbowR = Mathf.Lerp(14f, 128f, up); p.InR = 30f * up;
+                        p.HandFlexR = Mathf.Lerp(18f, 30f, up); p.HandDevR = 10f * up; p.FistR = Mathf.Lerp(0.25f, 0.55f, up);
+                        p.RaiseL = -34f; p.SwingL = 4f; p.ElbowL = 16f;
+                        p.HeadTilt += 6f * up; p.HeadPitch += 3f * up; p.HeadYaw += -4f * up; p.ShrugR += 4f * up;
+                        break;
+                    }
+                case 7:
+                    {
+                        // a stretch every ~9 s: both arms rise and go back, the chest opens, then they drop with a shrug
+                        var cyc = (t * 0.11f + phase * 0.1f) % 1f;
+                        var up = cyc < 0.22f ? EaseInOut(cyc / 0.22f) : cyc < 0.38f ? 1f : cyc < 0.5f ? 1f - EaseInOut((cyc - 0.38f) / 0.12f) : 0f;
+                        var drop = cyc > 0.5f && cyc < 0.62f ? Impulse((cyc - 0.5f) / 0.12f, 0.3f) : 0f;
+                        p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, 100f, up); p.SwingL = p.SwingR = Mathf.Lerp(3f, -44f, up); p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 6f, up);
+                        p.FistL = p.FistR = Mathf.Lerp(0.25f, 0.9f, up); p.HandFlexL = p.HandFlexR = Mathf.Lerp(18f, 40f, up);
+                        p.SpineBend += -8f * up; p.HeadPitch += -8f * up; p.ShrugL += 8f * up + 9f * drop; p.ShrugR += 8f * up + 9f * drop;
+                        p.Lean += 3f * drop; p.HeadPitch += 4f * drop;
+                        break;
+                    }
             }
             return p;
         }
@@ -249,7 +274,8 @@ namespace ExcelHeroes.World
 
         /// <summary>
         /// 0 both arms up, hopping · 1 fist pump · 2 V-sign by the cheek · 3 a bow · 4 a wave ·
-        /// 5 a spin with arms out. <paramref name="t"/> is time since the win.
+        /// 5 a spin with arms out · 6 a double V, hands out beside the face, bouncing · 7 clapping,
+        /// then a small bow. <paramref name="t"/> is time since the win.
         /// </summary>
         public static Pose Victory(int variant, float t)
         {
@@ -285,6 +311,25 @@ namespace ExcelHeroes.World
                 case 5:
                     p.RaiseL = p.RaiseR = 12f; p.SwingL = p.SwingR = 18f; p.ElbowL = p.ElbowR = 30f;
                     p.Yaw = Mathf.Min(t * 240f, 720f); p.Y = Mathf.Sin(Mathf.Min(t * 3.5f, Mathf.PI)) * 0.25f; break;
+                case 6:
+                    {
+                        // both hands up beside the cheeks in a V, the elbows tucked, a bounce with the head tilting side to side
+                        var tilt = Mathf.Sin(t * 5f) * 8f;
+                        p.RaiseL = p.RaiseR = 18f; p.SwingL = p.SwingR = 52f; p.ElbowL = p.ElbowR = 118f; p.InL = p.InR = 28f;
+                        p.HandFlexL = p.HandFlexR = 30f; p.HandDevL = p.HandDevR = 12f; p.FistL = p.FistR = 0.55f;
+                        p.HeadTilt = tilt; p.SpineSide = -tilt * 0.3f; p.Y = hop * 0.06f; p.KneeL = p.KneeR = (1f - hop) * 14f;
+                        p.ShrugL = p.ShrugR = 8f; break;
+                    }
+                case 7:
+                    {
+                        // clapping in front of the chest for a second and a half, then a small bow with the hands together
+                        var clap = t < 1.5f ? Mathf.Abs(Mathf.Sin(t * 11f)) : 0f;
+                        var bow2 = t > 1.5f ? Mathf.Clamp01(Mathf.Sin(Mathf.Min((t - 1.5f) * 2.0f, Mathf.PI))) : 0f;
+                        p.RaiseL = p.RaiseR = -6f; p.SwingL = p.SwingR = 58f + 6f * clap; p.ElbowL = p.ElbowR = 100f;
+                        p.InL = p.InR = 84f - 18f * clap; p.HandFlexL = p.HandFlexR = -10f; p.HandDevL = p.HandDevR = 20f; p.FistL = p.FistR = 0f;
+                        p.Lean = 22f * bow2; p.HeadPitch = 8f * bow2 - 2f * clap; p.SpineBend = 6f * bow2;
+                        p.ShrugL = p.ShrugR = 5f * clap; p.Y = 0f; break;
+                    }
             }
             return p;
         }
