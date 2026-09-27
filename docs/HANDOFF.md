@@ -791,6 +791,10 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 4. 런타임은 스펙만 읽는다: `SdSpec`(행) → `SdLook`(색·플래그·Fringe/Idle/Win/Attack) → `SdRef`(메시·텍스처·머리·소품) / `SdPose`(IdleOf/WinOf/AttackOf가 스펙 우선, 없으면 해시·역할). 스펙 필드: style(short/bob/long/ponytail/bun/twin/spiky/curly/side), fringe 0–4, ahoge, glasses, sunglasses, hair/eye/skin/top/shirt/bottom/legs/shoes(#hex), outfit, bottomType(pants/skirt), idle 0–5, win 0–5, attack(melee/ranged/caster).
 5. 모션을 늘릴 때는 `SdPose`에 변형만 추가(IdleCount/WinCount) — 캐릭터 배정은 스펙/해시가 알아서. 새 관절 축이 필요하면 `SD_POSETEST`로 실측부터.
 
+## 저장소 구성 — 코드는 GitHub, git 밖 에셋은 구글 드라이브
+- GitHub `weaall/excel-heros-mobile`(master): 코드·데이터·게임에 실리는 아트. 작업 중 패스마다 커밋·푸시.
+- **`G:\내 드라이브\excel-heros-mobile`**: git에 넣지 않는 것 — 샘플 모델 원본/Unity 임포트본(`Assets/_Ref`, `Resources/Art/SDBase`, .meta 포함), 제미나이 채색 폴백 텍스처(`SDTex`), 검수 시트(`tools/out/sd3d`). 그곳의 `README.md`가 표, `python restore.py <클론경로>`가 제자리 복사. 새 PC = clone → restore → Unity.
+
 ## 샘플 모델 기반 편집 (SdRef) — 사용자 지시: "샘플 모델링을 기반으로 조금씩 바꿔가자"
 - `Resources/Art/SDBase/base.fbx`(+ body/face/eyemouth/hair png) = 샘플 CH0184(유우카 체육복)을 그대로 베이스로. **git 제외**(우리 것이 아님). 뼈 Bip001, 서브메시 Body/Face/Hair/Eyebrow/EyeMouth. `isReadable: 1` 필수(빌드에서 메시 편집).
 - `World/SdRef`: 프리팹 Instantiate → 몸 렌더러만(서브메시가 가장 많은 것; 무기·가방 렌더러는 끔) → 바운드로 키 1.2에 발끝 y=0 → 서브메시별 재질 교체 → 본 바인딩(Pelvis/Head/UpperArm/Thigh + Spine/Forearm/Calf). 얼굴은 FBX +Z에 이미 있음(뒤집지 말 것).
