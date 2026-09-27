@@ -3581,7 +3581,7 @@
 
 .chip__plus {
     width: 58px;
-    font-size: 48px;
+    font-size: 40px;        /* 48 needed a 60px line in a 52px pill (LayoutAudit) */
     -unity-font-style: bold;
     color: rgb(40, 190, 240);
     -unity-text-align: middle-center;
@@ -5554,7 +5554,7 @@
 .bresult__strip { flex-direction: row; }
 .bresult__mini { width: 104px; height: 104px; margin-right: 10px; }
 .bresult__acts { right: 60px; bottom: 36px; }
-.bresult__btn { width: 300px; height: 96px; margin-left: 20px; font-size: 38px; }
+.bresult__btn { width: 320px; height: 96px; margin-left: 20px; font-size: 38px; }   /* 320: "다음 Phase" needs 216px between the slanted caps */
 .battle--result .bhud, .battle--result .ex-bar, .battle--result .ex-cost-bar, .battle--result .bmenu { display: none; }
 
 
