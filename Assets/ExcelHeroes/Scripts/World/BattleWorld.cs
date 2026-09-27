@@ -676,7 +676,7 @@ namespace ExcelHeroes.World
                     else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(C.heroId), _winT);
                     else if (Skill > 0f) _pose = SdPose.Skill(1f - Skill / 0.75f);
                     else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
-                    else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.role), 1f - Attack / 0.32f);
+                    else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.heroId, C.role), 1f - Attack / 0.32f);
                     else if (walking) _pose = SdPose.Walk(_walk * 0.9f);
                     else _pose = SdPose.Idle(SdPose.IdleOf(C.heroId), time, Z * 2f);
                     // ease between states so a pose change never pops (fast into an attack, softer otherwise)

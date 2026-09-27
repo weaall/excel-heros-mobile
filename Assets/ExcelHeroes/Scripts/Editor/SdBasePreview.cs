@@ -13,6 +13,63 @@ namespace ExcelHeroes.EditorTools
     /// </summary>
     public static class SdBasePreview
     {
+        /// <summary>
+        /// The review sheet, one PNG per character (SD_SHEET=1): row 1 front / three-quarter /
+        /// side / back, row 2 the head with the four expressions, row 3 the character's own idle,
+        /// victory and attack, and a walk frame — everything the spec decides, on one page, so a
+        /// changed illustration is checked by regenerating its sheet. → SD_PREVIEW_OUT/sheets/&lt;id&gt;.png
+        /// </summary>
+        public static void Sheet()
+        {
+            var outDir = System.Environment.GetEnvironmentVariable("SD_PREVIEW_OUT") ?? Path.Combine(Application.dataPath, "..", "tools", "out", "sd3d");
+            outDir = Path.Combine(outDir, "sheets");
+            Directory.CreateDirectory(outDir);
+            var ids = (System.Environment.GetEnvironmentVariable("SD_IDS") ?? "intern").Split(',');
+            Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
+            if (!ExcelHeroes.Data.GameData.Loaded) ExcelHeroes.Data.GameData.Load();
+            const int W = 220, H = 300;
+            foreach (var id in ids)
+            {
+                var holder = new GameObject("preview").transform;
+                var rig = SdRef.Build(id, holder, 0);
+                if (rig == null) { Debug.LogWarning("[SdBasePreview] no figure for " + id); Object.DestroyImmediate(holder.gameObject); continue; }
+                // one rig rendered many times in one editor frame: Unity skins it once per frame
+                // unless told to redo the matrices per render (only the root bone moved otherwise)
+                if (rig.FaceRenderer is SkinnedMeshRenderer smr) smr.forceMatrixRecalculationPerRender = true;
+                var sheet = new Texture2D(W * 4, H * 3, TextureFormat.RGB24, false);
+                void Put(int col, int row, Texture2D img) { sheet.SetPixels(W * col, H * (2 - row), W, H, img.GetPixels()); Object.DestroyImmediate(img); }
+                void Expr(string e)
+                {
+                    if (rig.EyeSub < 0) return;
+                    var b = new MaterialPropertyBlock(); b.SetTexture("_MainTex", SdRefLook.For(id).EyeSheet(e)); rig.FaceRenderer.SetPropertyBlock(b, rig.EyeSub);
+                }
+                // row 1: the four views in the character's own idle
+                var idle = SdPose.Idle(SdPose.IdleOf(id), 0.4f, 0f);
+                SdPose.Apply(rig, idle);
+                float[] yaws = { 180f, 145f, 90f, 0f };
+                for (var a = 0; a < 4; a++) { rig.Root.rotation = Quaternion.Euler(0f, yaws[a], 0f); Put(a, 0, Shoot(SdBase.Height, W, H)); }
+                // row 2: the head, four expressions (arms down so nothing covers the face)
+                SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
+                rig.Root.rotation = Quaternion.Euler(0f, 180f, 0f);
+                string[] exprs = { "", "happy", "hurt", "angry" };
+                for (var e = 0; e < 4; e++) { Expr(exprs[e]); Put(e, 1, Shoot(SdBase.Height, W, H, 0.22f, 0.8f)); }
+                // row 3: idle · victory · attack · walk, the three-quarter that shows the right arm
+                rig.Root.rotation = Quaternion.Euler(0f, 215f, 0f);
+                var role = ExcelHeroes.Data.GameData.Hero(id == "intern" ? ExcelHeroes.Data.GameData.MainId : id)?.role ?? "melee";
+                var poses = new[] { idle, SdPose.Victory(SdPose.WinOf(id), 0.55f), SdPose.Attack(SdPose.AttackOf(id, role), 0.5f), SdPose.Walk(Mathf.PI / 3f) };
+                for (var p = 0; p < 4; p++)
+                {
+                    SdPose.Apply(rig, poses[p]); rig.Root.localPosition = new Vector3(0f, poses[p].Y, 0f);
+                    Expr(poses[p].Expr ?? "");
+                    Put(p, 2, Shoot(SdBase.Height, W, H));
+                }
+                sheet.Apply();
+                File.WriteAllBytes(Path.Combine(outDir, id + ".png"), sheet.EncodeToPNG());
+                Object.DestroyImmediate(holder.gameObject);
+                Debug.Log("[SdBasePreview] sheet " + id);
+            }
+        }
+
         public static void Run()
         {
             var outDir = System.Environment.GetEnvironmentVariable("SD_PREVIEW_OUT") ?? Path.Combine(Application.dataPath, "..", "tools", "out", "sd3d");

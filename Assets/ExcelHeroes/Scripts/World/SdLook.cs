@@ -18,6 +18,9 @@ namespace ExcelHeroes.World
         public bool Male, Pants, Skirt, Dress, Jacket, Coat, Collar, ShortSleeve, Ahoge, Glasses, Sunglasses;
         public Color Skin, Hair, HairTip, Eye, Top, Shirt, Sleeve, Bottom, Socks, Shoes, Tie, Cuff, Lapel, CollarColor, SkirtHem, Accent;
         public float SockTop = 0.16f;
+        // from the spec (sdspec.json): -1 / "" = not set, decided by hash or role
+        public int Fringe = -1, Idle = -1, Win = -1;
+        public string Attack = "";
 
         [Serializable] class Row { public string id, hair, top, shirt, bottom, legs, shoes, eye, skin; }
         [Serializable] class File { public List<Row> items = new(); }
@@ -42,7 +45,9 @@ namespace ExcelHeroes.World
             if (Cache.TryGetValue(key, out var k)) return k;
             var d = DollData.For(key == "intern" ? "intern" : key);
             var s = Sampled(key);
+            var sp = SdSpec.For(key);
             k = new SdLook { Id = key, Style = d.hair ?? "short", Male = key == "intern" };
+            if (sp != null && sp.style != "") k.Style = sp.style;
             k.Skin = H(s?.skin, d.skin switch { "light" => H("#f7dccb", Color.white), "tan" => H("#e2b894", Color.white), _ => H("#fbe3d4", Color.white) });
             k.Hair = H(s?.hair, H(d.hairColor, new Color(0.25f, 0.2f, 0.2f)));
             if (k.Male) k.Hair = H("#1d1f2a", Color.black);     // 김인턴: black hair, always (CLAUDE.md)
@@ -72,6 +77,25 @@ namespace ExcelHeroes.World
             k.Glasses = d.Has("glasses");
             k.Sunglasses = d.Has("sunglasses");
             k.Ahoge = BackSheetHash(key) % 3 == 0;
+            if (sp != null)
+            {
+                // the spec row is the source of truth for whatever it carries; colours re-derived
+                // from it so the shirt / legs / shoes follow a hand edit
+                if (sp.hair != "") k.Hair = H(sp.hair, k.Hair);
+                if (k.Male) k.Hair = H("#1d1f2a", Color.black);
+                k.HairTip = Color.Lerp(k.Hair, Color.white, 0.12f);
+                if (sp.eye != "") k.Eye = H(sp.eye, k.Eye);
+                if (sp.skin != "") k.Skin = H(sp.skin, k.Skin);
+                if (sp.top != "") k.Top = H(sp.top, k.Top);
+                if (sp.shirt != "") k.Shirt = H(sp.shirt, k.Shirt);
+                if (sp.bottom != "") k.Bottom = H(sp.bottom, k.Bottom);
+                if (sp.legs != "") k.Socks = H(sp.legs, k.Socks);
+                if (sp.shoes != "") k.Shoes = H(sp.shoes, k.Shoes);
+                if (sp.bottomType != "") { k.Skirt = !k.Male && sp.bottomType == "skirt" && !k.Dress; k.Pants = !k.Skirt && !k.Dress; }
+                k.Glasses = sp.glasses; k.Sunglasses = sp.sunglasses; k.Ahoge = sp.ahoge;
+                k.Fringe = sp.fringe; k.Idle = sp.idle; k.Win = sp.win; k.Attack = sp.attack ?? "";
+                k.Lapel = MeshKit.Shade(k.Top, 0.78f);
+            }
             Cache[key] = k;
             return k;
         }

@@ -61,9 +61,11 @@ namespace ExcelHeroes.World
             return Mathf.Abs(h);
         }
 
-        public static int IdleOf(string id) => Hash(id) % IdleCount;
-        public static int WinOf(string id) => (Hash(id) / 7) % WinCount;
-        public static int AttackOf(string role) => role switch { "ranged" => 1, "healer" => 2, _ => 0 };
+        public static int IdleOf(string id) { var k = SdLook.For(id); return k.Idle >= 0 ? k.Idle % IdleCount : Hash(id) % IdleCount; }
+        public static int WinOf(string id) { var k = SdLook.For(id); return k.Win >= 0 ? k.Win % WinCount : (Hash(id) / 7) % WinCount; }
+        public static int AttackOf(string role) => role switch { "ranged" => 1, "healer" => 2, "caster" => 2, _ => 0 };
+        /// <summary>The attack kind for a character: the spec's, else by role.</summary>
+        public static int AttackOf(string id, string role) { var k = SdLook.For(id); return AttackOf(k.Attack is { Length: > 0 } ? k.Attack : role); }
 
         // ------------------------------------------------------------------ idle --
 

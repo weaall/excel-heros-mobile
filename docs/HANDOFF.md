@@ -783,6 +783,14 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 전투·편성 모두 SdBase 우선(→ 2D SD → 인형). 전투 카메라는 참고처럼 낮고 가깝게(피치 15°, 거리 7.6), 배경은 제미나이 거리 세트(`street_{day,evening,night}`, `gen_bg_gemini.py --street`), 결과 화면은 Battle Complete 레이아웃(HUD 숨김, STRIKER 띠).
 - 다음: 43명 나머지 채색(제미나이, 4장×43), 얼굴판 눈 크기 미세 조정, 보스 HP 바·타격 링·킬 카운터(참고 `712980` 우측), 표정 텍스처 교체(EyeMouth 스왑) 구조.
 
+## 캐릭터 틀 — 새 캐릭터 추가 / 일러 교체 절차 (사용자: "틀을 잘 만들어 두면 일러가 바뀌어도 쉽다")
+한 캐릭터 = 풀 일러 → 2D SD 컷아웃 → **스펙 한 줄** → 3D SD(샘플 베이스 편집) + 모션(포즈 라이브러리) + 검수 시트. 사람 손이 닿는 곳은 스펙 파일과 시트 검수뿐.
+1. 일러 → 웹 repo에서 컷아웃·SD: `SD=1 node scripts/genCardsHF.mjs <id>` → `ArtSource/SD/<id>.png`(시트 없는 원본), `bake_sheet.py`로 시트 박힌 본.
+2. `python tools/sd_review.py <id …>` 한 명령: `sample_looks.py`(일러에서 머리·눈·피부·상의·하의·다리·신발 색 샘플 → `looks.json`) → `sd_spec.py`(dolls.json 스타일·소품 + looks 색 → **`Resources/Data/sdspec.json`** 한 줄; `manual`에 적힌 손 편집 필드는 보존) → Unity `SdBasePreview.Sheet`(캐릭터당 `tools/out/sd3d/sheets/<id>.png`: 1행 4면, 2행 얼굴 표정 4, 3행 대기·승리·공격·걷기) → `tools/out/sd3d/review.png` 모아보기.
+3. 시트를 보고 고칠 건 스펙만: `python tools/sd_spec.py --set <id> style=bob fringe=2 idle=3 win=1 attack=ranged glasses=true hair=#112233` → 다시 2.
+4. 런타임은 스펙만 읽는다: `SdSpec`(행) → `SdLook`(색·플래그·Fringe/Idle/Win/Attack) → `SdRef`(메시·텍스처·머리·소품) / `SdPose`(IdleOf/WinOf/AttackOf가 스펙 우선, 없으면 해시·역할). 스펙 필드: style(short/bob/long/ponytail/bun/twin/spiky/curly/side), fringe 0–4, ahoge, glasses, sunglasses, hair/eye/skin/top/shirt/bottom/legs/shoes(#hex), outfit, bottomType(pants/skirt), idle 0–5, win 0–5, attack(melee/ranged/caster).
+5. 모션을 늘릴 때는 `SdPose`에 변형만 추가(IdleCount/WinCount) — 캐릭터 배정은 스펙/해시가 알아서. 새 관절 축이 필요하면 `SD_POSETEST`로 실측부터.
+
 ## 샘플 모델 기반 편집 (SdRef) — 사용자 지시: "샘플 모델링을 기반으로 조금씩 바꿔가자"
 - `Resources/Art/SDBase/base.fbx`(+ body/face/eyemouth/hair png) = 샘플 CH0184(유우카 체육복)을 그대로 베이스로. **git 제외**(우리 것이 아님). 뼈 Bip001, 서브메시 Body/Face/Hair/Eyebrow/EyeMouth. `isReadable: 1` 필수(빌드에서 메시 편집).
 - `World/SdRef`: 프리팹 Instantiate → 몸 렌더러만(서브메시가 가장 많은 것; 무기·가방 렌더러는 끔) → 바운드로 키 1.2에 발끝 y=0 → 서브메시별 재질 교체 → 본 바인딩(Pelvis/Head/UpperArm/Thigh + Spine/Forearm/Calf). 얼굴은 FBX +Z에 이미 있음(뒤집지 말 것).
