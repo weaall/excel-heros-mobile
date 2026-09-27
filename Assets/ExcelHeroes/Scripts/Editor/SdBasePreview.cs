@@ -209,12 +209,69 @@ namespace ExcelHeroes.EditorTools
                     rig.Pose(rig.CalfR, i >= 2 ? q : Quaternion.identity);
                     rig.Pose(rig.CalfL, i == 2 ? q : i == 3 ? qn : Quaternion.identity);
                 }
+                // SD_HANDDUMP=1: the right hand's frame, measured — each finger bone and its child in
+                // hand-local space (metres ÷ hand scale), open (fist 0) and closed (fist 1), and where
+                // the forearm and the palm's surface are, so a prop can be placed in the grip
+                if (System.Environment.GetEnvironmentVariable("SD_HANDDUMP") == "1" && i == 0 && rig.HandR != null)
+                {
+                    var hr = rig.HandR; var sb = new System.Text.StringBuilder();
+                    sb.AppendLine($"[HandDump] hand lossyScale {hr.lossyScale:F5} worldAxes x{hr.right:F2} y{hr.up:F2} z{hr.forward:F2} forearm@{hr.InverseTransformPoint(hr.parent.position):F5}");
+                    foreach (var fist in new[] { 0f, 1f })
+                    {
+                        var pz = ExcelHeroes.World.Pose.Rest; pz.FistR = fist; SdPose.Apply(rig, pz);
+                        foreach (var f in rig.FingersR)
+                        {
+                            if (f == null) continue;
+                            var tip = f.childCount > 0 ? f.GetChild(0).position : f.position;
+                            sb.AppendLine($"  fist{fist:0} {f.name}: root {hr.InverseTransformPoint(f.position):F5} child {hr.InverseTransformPoint(tip):F5} ({(f.childCount > 0 ? f.GetChild(0).name : "-")})");
+                        }
+                    }
+                    // the hand's own skin, in hand-local space through its bind pose: every vertex that
+                    // leans on the hand or a finger bone. The thinnest extent is the palm's normal.
+                    if (rig.FaceRenderer is SkinnedMeshRenderer bsm)
+                    {
+                        var mesh = bsm.sharedMesh; var bw = mesh.boneWeights; var vs = mesh.vertices; var bp = mesh.bindposes;
+                        var bi = System.Array.IndexOf(bsm.bones, hr);
+                        var fingerIdx = rig.FingersR.Where(f => f != null).Select(f => System.Array.IndexOf(bsm.bones, f)).ToHashSet();
+                        var mn = new Vector3(9, 9, 9); var mx = -mn; var n = 0; var palmMn = mn; var palmMx = mx;
+                        for (var v = 0; v < vs.Length; v++)
+                        {
+                            var w = bw[v];
+                            var onHand = (w.boneIndex0 == bi && w.weight0 > 0.5f);
+                            var onFinger = fingerIdx.Contains(w.boneIndex0) && w.weight0 > 0.5f;
+                            if (!onHand && !onFinger) continue;
+                            var lp = bp[bi].MultiplyPoint3x4(vs[v]);
+                            mn = Vector3.Min(mn, lp); mx = Vector3.Max(mx, lp); n++;
+                            if (onHand) { palmMn = Vector3.Min(palmMn, lp); palmMx = Vector3.Max(palmMx, lp); }
+                        }
+                        sb.AppendLine($"  hand+finger skin: {n} verts, hand-local box {mn:F5}..{mx:F5}");
+                        sb.AppendLine($"  palm-only skin box {palmMn:F5}..{palmMx:F5}");
+                    }
+                    // which finger-local axis curls: Finger1 posed 70 degrees about each, where its knuckle goes
+                    SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
+                    foreach (var (a, c) in new[] { (0, 1), (2, 3), (4, 5) })     // thumb, index, middle: the root bone and the joint after it
+                    {
+                        var f1 = rig.FingersR.Length > c ? rig.FingersR[a] : null; var f11 = rig.FingersR.Length > c ? rig.FingersR[c] : null;
+                        if (f1 == null || f11 == null) continue;
+                        var baseP = hr.InverseTransformPoint(f11.position);
+                        foreach (var (lbl, q) in new[] { ("+X", Quaternion.Euler(70, 0, 0)), ("-X", Quaternion.Euler(-70, 0, 0)), ("+Y", Quaternion.Euler(0, 70, 0)), ("-Y", Quaternion.Euler(0, -70, 0)), ("+Z", Quaternion.Euler(0, 0, 70)), ("-Z", Quaternion.Euler(0, 0, -70)) })
+                        {
+                            rig.Pose(f1, q);
+                            sb.AppendLine($"  {f1.name} bone-local {lbl}: next joint moves {(hr.InverseTransformPoint(f11.position) - baseP):F5}");
+                        }
+                        rig.Pose(f1, Quaternion.identity);
+                    }
+                    Debug.Log(sb.ToString());
+                    SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
+                }
                 if (System.Environment.GetEnvironmentVariable("SD_BONES") == "1" && i == 0)
                     foreach (var tr in rig.Root.GetComponentsInChildren<Transform>(true)) if (tr.name.StartsWith("Bip")) Debug.Log("[SdBones] " + tr.name);
                 var poseEnv = System.Environment.GetEnvironmentVariable("SD_POSE");
                 if (!string.IsNullOrEmpty(poseEnv) && rig.RefModel)
                 {
                     var pz = poseEnv == "win" ? SdPose.Victory(i, 0.55f) : poseEnv == "attack" ? SdPose.Attack(i % 3, 0.5f)
+                           : poseEnv == "ready" ? SdPose.Ready(SdPose.AttackOf(ids[i], SdRef.RoleOf(ids[i])), 0.2f, 0f)
+                           : poseEnv == "attackrole" ? SdPose.Attack(SdPose.AttackOf(ids[i], SdRef.RoleOf(ids[i])), 0.5f)
                            : poseEnv == "walk" ? SdPose.Walk(i * Mathf.PI / 3f)
                            : poseEnv.StartsWith("skill") ? SdPose.Skill(int.Parse(poseEnv.Substring(5)), (i + 0.5f) / ids.Length)
                            : SdPose.Idle(i, 0.4f, 0f);
@@ -371,7 +428,14 @@ namespace ExcelHeroes.EditorTools
                     Object.DestroyImmediate(img);
                 }
                 rig.Root.rotation = Quaternion.Euler(0f, 180f, 0f);
-                var head = Shoot(SdBase.Height, W, H, 0.22f, 0.8f);
+                // SD_HANDCAM=<yaw>: the bottom row is the right hand close up instead of the face (grip checks)
+                // SD_HANDSIDE=L: the left hand instead
+                var handEnv = System.Environment.GetEnvironmentVariable("SD_HANDCAM");
+                var camHand = System.Environment.GetEnvironmentVariable("SD_HANDSIDE") == "L" ? rig.HandL : rig.HandR;
+                if (!string.IsNullOrEmpty(handEnv) && camHand != null) rig.Root.rotation = Quaternion.Euler(0f, float.Parse(handEnv), 0f);
+                var head = !string.IsNullOrEmpty(handEnv) && camHand != null
+                    ? Shoot(SdBase.Height, W, H, 0.1f, camHand.position.y / SdBase.Height, camHand.position.x)
+                    : Shoot(SdBase.Height, W, H, 0.22f, 0.8f);
                 sheet.SetPixels(W * i, 0, W, H, head.GetPixels());
                 Object.DestroyImmediate(head);
                 Object.DestroyImmediate(holder.gameObject);
@@ -428,7 +492,7 @@ namespace ExcelHeroes.EditorTools
             return new ChibiRig { Root = holder, Height = SdRef.Height };
         }
 
-        static Texture2D Shoot(float h, int w, int hh, float size = 0.55f, float centre = 0.5f)
+        static Texture2D Shoot(float h, int w, int hh, float size = 0.55f, float centre = 0.5f, float x = 0f)
         {
             var go = new GameObject("cam");
             var cam = go.AddComponent<Camera>();
@@ -436,7 +500,7 @@ namespace ExcelHeroes.EditorTools
             cam.orthographicSize = h * size;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.42f, 0.62f, 0.85f);
-            cam.transform.position = new Vector3(0f, h * centre, -5f);
+            cam.transform.position = new Vector3(x, h * centre, -5f);
             var rt = new RenderTexture(w, hh, 24) { antiAliasing = 4 };
             cam.targetTexture = rt; cam.aspect = w / (float)hh;
             cam.Render();

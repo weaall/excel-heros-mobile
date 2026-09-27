@@ -534,20 +534,29 @@ namespace ExcelHeroes.World
             return p;
         }
 
-        /// <summary>Curls the three fingers: 0 spread open (+12), 1 a fist (-75 per joint); the thumb folds half as far.</summary>
-        static void Fingers(Transform[] f, float fist)
+        /// <summary>
+        /// Curls the fingers (thumb0, thumb1, index0, index1, middle0, middle1): 0 open, 1 a fist.
+        /// Measured (SD_HANDDUMP): on the hand bone the fingers run along −X and the palm faces +Y;
+        /// a finger joint curls towards the palm about its own −Z (index and middle alike). The
+        /// thumb opposes about −Z (across the palm) with a little +Y (into it). The old version
+        /// turned the fingers about the HAND's Y, which swept them sideways instead of closing them.
+        /// </summary>
+        static void Fingers(ChibiRig rig, Transform[] f, float fist)
         {
             if (f == null) return;
             for (var i = 0; i < f.Length; i++)
             {
                 if (f[i] == null) continue;
-                var thumb = i < 2;
-                var deg = Mathf.Lerp(12f, -75f, fist) * (thumb ? 0.5f : 1f);
-                f[i].localRotation = Quaternion.Euler(0f, deg, 0f) * (RestOf(f[i]));
+                var q = i switch
+                {
+                    0 => Quaternion.Euler(0f, 18f * fist, -38f * fist),                 // thumb base: across and in
+                    1 => Quaternion.Euler(0f, 0f, -30f * fist),                         // thumb tip
+                    2 or 4 => Quaternion.Euler(0f, 0f, Mathf.Lerp(8f, -80f, fist)),    // knuckles: a little back when open
+                    _ => Quaternion.Euler(0f, 0f, Mathf.Lerp(0f, -85f, fist)),          // middle joints
+                };
+                rig.Pose(f[i], q);
             }
         }
-        static readonly System.Collections.Generic.Dictionary<Transform, Quaternion> FingerRest = new();
-        static Quaternion RestOf(Transform t) { if (!FingerRest.TryGetValue(t, out var q)) FingerRest[t] = q = t.localRotation; return q; }
 
         /// <summary>Puts a pose on the sample rig (offsets on the rest rotations).</summary>
         public static void Apply(ChibiRig rig, in Pose p)
@@ -570,7 +579,8 @@ namespace ExcelHeroes.World
             rig.Pose(rig.CalfR, Quaternion.Euler(0f, 0f, p.KneeR));
             if (rig.HandR != null) rig.Pose(rig.HandR, Quaternion.Euler(0f, p.HandFlexR, p.HandDevR));
             if (rig.HandL != null) rig.Pose(rig.HandL, Quaternion.Euler(0f, p.HandFlexL, p.HandDevL));   // measured: the hands are NOT mirrored
-            Fingers(rig.FingersR, p.FistR); Fingers(rig.FingersL, p.FistL);
+            // a hand holding a prop keeps the prop's grip whatever the pose asks of it
+            Fingers(rig, rig.FingersR, rig.GripR >= 0f ? rig.GripR : p.FistR); Fingers(rig, rig.FingersL, p.FistL);
             if (rig.FootR != null) rig.Pose(rig.FootR, Quaternion.Euler(0f, 0f, p.ToeR));
             if (rig.FootL != null) rig.Pose(rig.FootL, Quaternion.Euler(0f, 0f, p.ToeL));
             // weight: the figure over its stance leg, and the hips rocking (roll about the pelvis's forward)

@@ -465,7 +465,21 @@ namespace ExcelHeroes.World
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
         }
 
-        /// <summary>The hand prop by role: melee a rolled document, ranged a tablet, healer a coffee cup, tank a clipboard.</summary>
+        // The right hand, measured on the base rig (SD_HANDDUMP), in the hand bone's own units:
+        // the fingers run along −X (the forearm is at +X), the palm faces +Y, the thumb and index
+        // are on +Z. The palm's skin reaches y ≈ 0.00023; the finger roots sit at x ≈ −0.0006.
+        const float PalmY = 0.00023f, FistX = -0.0006f, FlatX = -0.00045f, HandMidZ = 0.00006f;
+        // the grip frame the props are built in, in metres: +x to the fingertips, +y out of the
+        // palm, +z to the little finger (−z the thumb side). As a turn of the hand bone that is
+        // 180° about its Y (x → −X, z → −Z, y stays).
+        static readonly Quaternion GripFrame = Quaternion.Euler(0f, 180f, 0f);
+
+        /// <summary>
+        /// The hand prop by role — melee a rolled document, ranged a tablet, healer a coffee cup,
+        /// tank a clipboard — placed IN the grip and the hand closed on it (rig.GripR, which
+        /// SdPose.Apply holds whatever the pose). A rod or a cup lies across the palm at the finger
+        /// roots and the fist wraps it; a tablet or a board rests on the palm under a light grip.
+        /// </summary>
         public static void HandProp(ChibiRig rig, Transform root, string role, SdLook k, int layer)
         {
             if (rig.HandR == null) return;
@@ -473,45 +487,64 @@ namespace ExcelHeroes.World
             var paper = new Color(0.96f, 0.96f, 0.94f);
             var ink = new Color(0.2f, 0.22f, 0.3f);
             var accent = k.Accent; accent.a = 1f;
+            var across = Quaternion.Euler(-90f, 0f, 0f);    // a frustum's +Y → the grip's −z (out of the thumb side)
+            float lift, x;                                   // how far off the palm the prop's centre sits (m), and where along the hand
             switch (role)
             {
                 case "melee":
-                    // a rolled-up document along the fingers, a coloured band around it
-                    b.M = Matrix4x4.Rotate(Quaternion.Euler(0f, 0f, -90f));            // frustum builds along +Y → +X
-                    b.Frustum(new Vector3(0f, -0.06f, 0f), 0.026f, 0.2f, 0.026f, paper, 1f, 12);
-                    b.Frustum(new Vector3(0f, 0.02f, 0f), 0.028f, 0.03f, 0.028f, accent, 1f, 12, false);
+                {
+                    // a rolled-up document across the fist, the long end out past the thumb, a band near it
+                    const float r = 0.018f;
+                    b.M = Matrix4x4.Rotate(across);
+                    b.Frustum(new Vector3(0f, -0.045f, 0f), r, 0.2f, r, paper, 1f, 12);
+                    b.Frustum(new Vector3(0f, 0.09f, 0f), r + 0.002f, 0.025f, r + 0.002f, accent, 1f, 12, false);
                     b.M = Matrix4x4.identity;
+                    lift = r; x = FistX; rig.GripR = 0.75f;
                     break;
+                }
                 case "healer":
-                    // a coffee cup standing in the hand: cup, a dark top, a handle
-                    b.M = Matrix4x4.Translate(new Vector3(0.05f, 0f, 0f));
-                    b.Frustum(new Vector3(0f, -0.045f, 0f), 0.03f, 0.09f, 0.036f, paper, 1f, 12);
-                    b.Disc(new Vector3(0f, 0.046f, 0f), 0.034f, 0.034f, new Color(0.35f, 0.22f, 0.14f), true, 12);
-                    b.Frustum(new Vector3(0f, 0.005f, 0f), 0.036f, 0.012f, 0.036f, accent, 1f, 12, false);
-                    b.Box(new Vector3(0.045f, 0.005f, 0f), new Vector3(0.012f, 0.045f, 0.01f), paper);
-                    b.Box(new Vector3(0.03f, 0.025f, 0f), new Vector3(0.03f, 0.01f, 0.01f), paper);
-                    b.Box(new Vector3(0.03f, -0.015f, 0f), new Vector3(0.03f, 0.01f, 0.01f), paper);
+                {
+                    // a coffee cup held round its body, its mouth up past the thumb: cup, coffee, sleeve, handle
+                    const float r = 0.03f;
+                    b.M = Matrix4x4.Rotate(across);
+                    b.Frustum(new Vector3(0f, -0.04f, 0f), r * 0.85f, 0.085f, r, paper, 1f, 14);
+                    b.Disc(new Vector3(0f, 0.0455f, 0f), r * 0.94f, r * 0.94f, new Color(0.35f, 0.22f, 0.14f), true, 14);
+                    b.Frustum(new Vector3(0f, -0.005f, 0f), r * 0.97f, 0.022f, r * 1.0f, accent, 1f, 14, false);
+                    // the handle, off the fingertip side
+                    b.Box(new Vector3(r + 0.012f, 0.002f, 0f), new Vector3(0.008f, 0.04f, 0.008f), paper);
+                    b.Box(new Vector3(r + 0.005f, 0.018f, 0f), new Vector3(0.016f, 0.008f, 0.008f), paper);
+                    b.Box(new Vector3(r + 0.005f, -0.014f, 0f), new Vector3(0.016f, 0.008f, 0.008f), paper);
                     b.M = Matrix4x4.identity;
+                    lift = r; x = FistX; rig.GripR = 0.55f;
                     break;
+                }
                 case "tank":
-                    // a clipboard held flat against the forearm: board, clip, a sheet with lines
-                    b.Box(new Vector3(0.05f, 0f, 0.012f), new Vector3(0.13f, 0.17f, 0.012f), new Color(0.55f, 0.4f, 0.28f));
-                    b.Quad(new Vector3(0.05f, -0.008f, 0.019f), new Vector3(0.055f, 0f, 0f), new Vector3(0f, 0.07f, 0f), paper);
-                    for (var i = 0; i < 4; i++) b.Quad(new Vector3(0.05f, 0.025f - i * 0.02f, 0.0195f), new Vector3(0.04f, 0f, 0f), new Vector3(0f, 0.003f, 0f), ink);
-                    b.Box(new Vector3(0.05f, 0.075f, 0.02f), new Vector3(0.05f, 0.02f, 0.02f), new Color(0.6f, 0.62f, 0.66f));
+                {
+                    // a clipboard resting on the palm, its face out: board, the sheet with lines, the clip at the far end
+                    const float t = 0.01f;
+                    b.Box(new Vector3(0.03f, 0f, -0.01f), new Vector3(0.17f, t, 0.13f), new Color(0.55f, 0.4f, 0.28f));
+                    b.Quad(new Vector3(0.025f, t * 0.5f + 0.0008f, -0.01f), new Vector3(0.07f, 0f, 0f), new Vector3(0f, 0f, 0.055f), paper);
+                    for (var i = 0; i < 4; i++) b.Quad(new Vector3(0.05f - i * 0.02f, t * 0.5f + 0.0012f, -0.01f), new Vector3(0f, 0f, 0.04f), new Vector3(0.003f, 0f, 0f), ink);
+                    b.Box(new Vector3(0.105f, t * 0.5f + 0.006f, -0.01f), new Vector3(0.02f, 0.012f, 0.05f), new Color(0.6f, 0.62f, 0.66f));
+                    lift = t * 0.5f + 0.002f; x = FlatX; rig.GripR = 0.15f;
                     break;
+                }
                 default:
-                    // a tablet: a dark slab with a glowing sheet on its face, pointed along the fingers
-                    b.Box(new Vector3(0.09f, 0f, 0f), new Vector3(0.2f, 0.13f, 0.012f), ink);
-                    b.Quad(new Vector3(0.09f, 0f, 0.0065f), new Vector3(0.09f, 0f, 0f), new Vector3(0f, 0.055f, 0f), new Color(0.85f, 0.95f, 1f));
-                    for (var i = 0; i < 3; i++) b.Quad(new Vector3(0.09f, 0.03f - i * 0.025f, 0.007f), new Vector3(0.07f, 0f, 0f), new Vector3(0f, 0.004f, 0f), Color.Lerp(accent, Color.white, 0.3f));
+                {
+                    // a tablet resting on the palm, screen out: the slab, the glowing sheet, a few rows
+                    const float t = 0.01f;
+                    b.Box(new Vector3(0.025f, 0f, -0.005f), new Vector3(0.15f, t, 0.105f), ink);
+                    b.Quad(new Vector3(0.025f, t * 0.5f + 0.0008f, -0.005f), new Vector3(0.066f, 0f, 0f), new Vector3(0f, 0f, 0.045f), new Color(0.85f, 0.95f, 1f));
+                    for (var i = 0; i < 3; i++) b.Quad(new Vector3(0.05f - i * 0.025f, t * 0.5f + 0.0012f, -0.005f), new Vector3(0f, 0f, 0.035f), new Vector3(0.004f, 0f, 0f), Color.Lerp(accent, Color.white, 0.3f));
+                    lift = t * 0.5f + 0.002f; x = FlatX; rig.GripR = 0.15f;
                     break;
+                }
             }
             var mat = MeshKit.NewToon(0.003f);
             mat.SetFloat("_ShadeStrength", 0.18f);
-            // built along the wrapper's +X; the hand bone's +X runs along the fingers, so align the
-            // prop's frame to the bone's: world rotation = bone rotation
-            var go = Attach("prop:" + role, rig.HandR, b.Bake("prop"), mat, layer, rig.HandR.position, rig.HandR.rotation);
+            var hand = rig.HandR;
+            var at = hand.TransformPoint(new Vector3(x, PalmY + lift / hand.lossyScale.y, HandMidZ));
+            var go = Attach("prop:" + role, hand, b.Bake("prop"), mat, layer, at, hand.rotation * GripFrame);
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
         }
     }
