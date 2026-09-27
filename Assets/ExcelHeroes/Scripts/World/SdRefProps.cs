@@ -96,6 +96,96 @@ namespace ExcelHeroes.World
         }
 
         /// <summary>
+        /// A tube lofted along a closed or open path (a circle of <paramref name="r"/> around each
+        /// point, the ring's frame from the path tangent), for frames and temples.
+        /// </summary>
+        static void Tube(MeshKit.Builder b, Vector3[] path, bool closed, float r, Color col, int around = 8)
+        {
+            var n = path.Length;
+            var segs = closed ? n : n - 1;
+            b.Grid(segs, around, (s, t) =>
+            {
+                var fi = s * segs; var i0 = Mathf.Min((int)fi, n - 1) % n; var i1 = (i0 + 1) % n; var f = fi - Mathf.Floor(fi);
+                if (!closed && i0 == n - 1) { i1 = i0; f = 0f; }
+                var p = Vector3.Lerp(path[i0], path[i1], f);
+                var tan = (path[(i0 + 1) % n] - path[i0 == 0 && !closed ? 0 : (i0 - 1 + n) % n]).normalized;
+                if (tan.sqrMagnitude < 1e-8f) tan = Vector3.right;
+                var side = Vector3.Cross(tan, Vector3.forward).normalized; if (side.sqrMagnitude < 1e-6f) side = Vector3.Cross(tan, Vector3.up).normalized;
+                var upv = Vector3.Cross(side, tan).normalized;
+                var ang = t * Mathf.PI * 2f;
+                var nrm = side * Mathf.Cos(ang) + upv * Mathf.Sin(ang);
+                return (p + nrm * r, nrm, new Vector2(s, t));
+            }, col);
+        }
+
+        static Vector3[] RoundedRect(Vector3 c, float w, float h, float rad, int perCorner = 5)
+        {
+            var pts = new System.Collections.Generic.List<Vector3>();
+            var corners = new[] { new Vector3(w - rad, h - rad), new Vector3(-(w - rad), h - rad), new Vector3(-(w - rad), -(h - rad)), new Vector3(w - rad, -(h - rad)) };
+            for (var k = 0; k < 4; k++)
+                for (var i = 0; i < perCorner; i++)
+                {
+                    var a = (k * 90f + i * 90f / (perCorner - 1)) * Mathf.Deg2Rad;
+                    pts.Add(c + corners[k] + new Vector3(Mathf.Cos(a) * rad, Mathf.Sin(a) * rad, 0f));
+                }
+            return pts.ToArray();
+        }
+
+        /// <summary>
+        /// Glasses the way the samples sculpt them: thin rounded-rectangle frames sitting on the
+        /// eye line (eye centre mesh (0, −0.00135, 0.0075); the frame a hair in front of the eye
+        /// plates), a bridge, nose pads, temples that run back along the head to the ears with a
+        /// hook, and lenses on the Glass shader — faintly tinted for glasses, dark but see-through
+        /// for sunglasses — each with a slanted glint. On the head bone, counter-scaled.
+        /// </summary>
+        public static void Glasses(ChibiRig rig, SkinnedMeshRenderer body, Transform root, bool dark, int layer)
+        {
+            if (rig.Head == null) return;
+            var s = body.transform.lossyScale.x;
+            var centre = body.transform.TransformPoint(new Vector3(0f, -0.00128f, 0.00752f));
+            var frame = dark ? new Color(0.09f, 0.09f, 0.11f) : new Color(0.17f, 0.17f, 0.21f);
+            var b = new MeshKit.Builder();
+            float w = 0.00044f * s, h = 0.00031f * s, gap = 0.00007f * s, rad = 0.00012f * s, tube = (dark ? 0.000032f : 0.000024f) * s;
+            foreach (var sx in new[] { -1f, 1f })
+            {
+                var cx = sx * (w + gap);
+                Tube(b, RoundedRect(new Vector3(cx, 0f, 0f), w, h, rad), true, tube, frame);
+                // temple: from the outer top corner back along the side of the head, hooking down at the ear
+                var x0 = sx * (2f * w + gap);
+                var temple = new[]
+                {
+                    new Vector3(x0, h * 0.45f, 0f), new Vector3(x0 + sx * 0.00012f * s, h * 0.45f, -0.00018f * s),
+                    new Vector3(x0 + sx * 0.00020f * s, h * 0.4f, -0.0009f * s), new Vector3(x0 + sx * 0.00022f * s, h * 0.3f, -0.00135f * s),
+                    new Vector3(x0 + sx * 0.00022f * s, -h * 0.4f, -0.00150f * s),
+                };
+                Tube(b, temple, false, tube * 0.9f, frame, 6);
+                // nose pad: a tiny bead inside the frame, low
+                b.Ellipsoid(new Vector3(sx * gap * 1.2f, -h * 0.25f, -0.00004f * s), new Vector3(0.00003f, 0.00004f, 0.00003f) * s, frame, 6);
+            }
+            // the bridge: a short arch over the nose between the frames
+            Tube(b, new[] { new Vector3(-gap * 1.05f, h * 0.35f, 0f), new Vector3(0f, h * 0.48f, -0.00002f * s), new Vector3(gap * 1.05f, h * 0.35f, 0f) }, false, tube, frame, 6);
+            var mat = MeshKit.NewToon(0.0008f);
+            mat.SetFloat("_ShadeStrength", 0.12f);
+            var go = Attach(dark ? "sunglasses" : "glasses", rig.Head, b.Bake("glasses"), mat, layer, centre, root.rotation);
+            var ls = rig.Head.lossyScale;
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+            // lenses + glints, transparent, as a second part under the same anchor
+            var lb = new MeshKit.Builder();
+            var lensCol = dark ? new Color(0.10f, 0.09f, 0.16f, 0.74f) : new Color(0.78f, 0.9f, 1f, 0.16f);
+            var glint = new Color(1f, 1f, 1f, dark ? 0.35f : 0.5f);
+            foreach (var sx in new[] { -1f, 1f })
+            {
+                var cx = sx * (w + gap);
+                lb.Quad(new Vector3(cx, 0f, -0.00001f * s), new Vector3(w - tube, 0f, 0f), new Vector3(0f, h - tube, 0f), lensCol);
+                lb.Quad(new Vector3(cx - sx * w * 0.35f, h * 0.35f, 0.00001f * s), new Vector3(w * 0.22f, h * 0.18f, 0f), new Vector3(-w * 0.05f, h * 0.06f, 0f), glint);
+            }
+            var lens = MeshKit.NewGlass(null, Color.white);
+            var lgo = MeshKit.Part("lenses", go.transform, lb.Bake("lenses"), lens, layer);
+            lgo.transform.localPosition = Vector3.zero; lgo.transform.localRotation = Quaternion.identity; lgo.transform.localScale = Vector3.one;
+            rig.Renderers.Add(lgo.GetComponent<MeshRenderer>());
+        }
+
+        /// <summary>
         /// The collar that tells a suit from a tracksuit: on the chest bone, a V of two lapel
         /// strips in the jacket colour (a shade darker) opening from the collar (mesh z 0.0061)
         /// down to z 0.0049, with the shirt showing inside the V and a small shirt collar at the

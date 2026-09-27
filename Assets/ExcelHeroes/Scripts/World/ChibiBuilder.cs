@@ -15,7 +15,7 @@ namespace ExcelHeroes.World
         public bool Model3D;
         public Transform[] Base;            // the common SD base skeleton (SdBase.B order), when built on it
         public bool RefModel;               // built on the sample FBX (SdRef): Bip001 bones, extra joints below
-        public Transform Spine, ForearmL, ForearmR, CalfL, CalfR, HandL, HandR, FootL, FootR, Pelvis;
+        public Transform Spine, ForearmL, ForearmR, CalfL, CalfR, HandL, HandR, FootL, FootR, Pelvis, ClavL, ClavR, Neck;
         public Transform[] FingersL = System.Array.Empty<Transform>(), FingersR = System.Array.Empty<Transform>();   // thumb0, thumb1, index0, index1, middle0, middle1
         public Vector3 PelvisRest;          // the pelvis's rest local position (the sample rig): weight shifts are offsets on it
         public Renderer FaceRenderer;       // the renderer carrying the eye/mouth submesh (SdRef)

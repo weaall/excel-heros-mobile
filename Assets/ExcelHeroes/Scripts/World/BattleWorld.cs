@@ -363,6 +363,9 @@ namespace ExcelHeroes.World
             foreach (var c in _sim.Heroes) Ensure(c);
             foreach (var c in _sim.Monsters) Ensure(c);
 
+            // where the fight is, for the heads: the nearest living enemy / hero along the lane
+            var nearestEnemyX = _sim.Monsters.Where(m => m.Alive).Select(m => WX(m.x)).DefaultIfEmpty(WX(800f)).Min();
+            var nearestHeroX = _sim.Heroes.Where(h => h.Alive).Select(h => WX(h.x)).DefaultIfEmpty(WX(0f)).Max();
             foreach (var (c, a) in _actors.ToList())
             {
                 var gone = c.side == Side.Monster && !_sim.Monsters.Contains(c);
@@ -374,6 +377,7 @@ namespace ExcelHeroes.World
                 }
                 // The victory shot is the party's: whatever is left of the wave steps out of it.
                 if (c.side == Side.Monster) a.Rig.Root.gameObject.SetActive(_closeUp < 0.05f);
+                a._enemyX = nearestEnemyX; a._heroX = nearestHeroX;
                 a.Update(dt, _time, WX(drawX(c)), _cam.transform, _mpb, _closeUp);
             }
 
@@ -638,7 +642,8 @@ namespace ExcelHeroes.World
             /// bones — idle sway, a trot, an arm-thrown attack with anticipation, a flinch, a spin
             /// for EX, a hop and wave for the win.
             /// </summary>
-            Pose _pose, _shown; bool _shownInit; float _winT;
+            Pose _pose, _shown; bool _shownInit; float _winT; float[] _vel;
+            public float _enemyX, _heroX;         // world x of the nearest living enemy / hero, for the look
 
             void Update3D(float dt, float time, bool walking, MaterialPropertyBlock mpb, float closeUp)
             {
@@ -679,10 +684,17 @@ namespace ExcelHeroes.World
                     else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.heroId, C.role), 1f - Attack / 0.32f);
                     else if (walking) _pose = SdPose.Walk(_walk * 0.9f);
                     else _pose = SdPose.Ready(SdPose.AttackOf(C.heroId, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
-                    // ease between states so a pose change never pops (fast into an attack, softer otherwise)
-                    var ease = Attack > 0f || Hit > 0f ? 0.035f : 0.09f;
-                    _shown = _shownInit ? Pose.Lerp(_shown, _pose, 1f - Mathf.Exp(-dt / ease)) : _pose;
-                    _shownInit = true;
+                    // the head looks at the fight: heroes toward the enemy line, enemies toward the squad
+                    if (!cheering && (Attack <= 0f) && C.Alive)
+                    {
+                        var look = hero ? Mathf.Clamp((_enemyX - X) * 6f, -14f, 14f) : Mathf.Clamp((_heroX - X) * -6f, -14f, 14f);
+                        _pose.HeadYaw += look;
+                    }
+                    // a damped spring between states instead of a fade: a body overshoots a little
+                    // and settles; stiffer into an attack or a hit
+                    var omega = Attack > 0f || Hit > 0f ? 42f : 26f;
+                    if (!_shownInit) { _shown = _pose; _vel = new float[Pose.Count]; _shownInit = true; }
+                    else Pose.Spring(ref _shown, _vel, _pose, dt, omega, 0.78f);
                     y = _shown.Y; spin = _shown.Yaw;
                 }
                 // The reference's squads FACE the enemy (right), seen from behind-and-above; they only
@@ -697,9 +709,10 @@ namespace ExcelHeroes.World
                     lunge = (hero ? 1f : -1f) * a * 0.35f; y += a * 0.18f; lean += a * 12f;
                 }
                 if (Rig.ArmR == null && Hit > 0f) { var k = Hit / 0.16f; lunge = (hero ? -1f : 1f) * k * 0.12f; }
-                root.localPosition = new Vector3(X + lunge, y, Z);
                 // the mesh faces +z; the camera looks along +z, so 180 turns it to camera, yaw toward the fight
                 root.localRotation = Quaternion.Euler(0f, 180f + yaw + spin, 0f);
+                var facing = Rig.RefModel ? root.localRotation * Vector3.forward * _shown.Step : Vector3.zero;   // the pose's step along the facing
+                root.localPosition = new Vector3(X + lunge, y, Z) + facing;
                 // bones: offsets onto the rest pose (the sample rig's rest rotations are not identity)
                 if (Rig.RefModel)
                 {

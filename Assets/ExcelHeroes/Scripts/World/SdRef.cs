@@ -134,6 +134,7 @@ namespace ExcelHeroes.World
             rig.HandL = Find("Bip001 L Hand"); rig.HandR = Find("Bip001 R Hand");
             rig.FootL = Find("Bip001 L Foot"); rig.FootR = Find("Bip001 R Foot");
             rig.Pelvis = Find("Bip001 Pelvis");
+            rig.ClavL = Find("Bip001 L Clavicle"); rig.ClavR = Find("Bip001 R Clavicle"); rig.Neck = Find("Bip001 Neck");
             rig.FingersL = new[] { "Bip001 L Finger0", "Bip001 L Finger01", "Bip001 L Finger1", "Bip001 L Finger11", "Bip001 L Finger2", "Bip001 L Finger21" }.Select(Find).ToArray();
             rig.FingersR = new[] { "Bip001 R Finger0", "Bip001 R Finger01", "Bip001 R Finger1", "Bip001 R Finger11", "Bip001 R Finger2", "Bip001 R Finger21" }.Select(Find).ToArray();
             if (rig.Pelvis != null) rig.PelvisRest = rig.Pelvis.localPosition;
@@ -145,7 +146,7 @@ namespace ExcelHeroes.World
             var sh = new MeshKit.Builder();
             sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
-            if (look.Glasses || look.Sunglasses) Glasses(rig, body, root, look.Sunglasses, layer);
+            if (look.Glasses || look.Sunglasses) SdRefProps.Glasses(rig, body, root, look.Sunglasses, layer);
             var k = SdLook.For(heroId);
             if (k.Skirt || k.Dress) SdRefProps.Skirt(rig, root, k, layer);
             SdRefProps.HandProp(rig, root, RoleOf(heroId), k, layer);
@@ -168,41 +169,6 @@ namespace ExcelHeroes.World
                 return Data.GameData.Hero(id)?.role ?? "ranged";
             }
             catch (System.Exception) { return "ranged"; }
-        }
-
-        /// <summary>
-        /// Glasses on the head bone: two thin frames in front of the eyes (mesh z 0.0072–0.0078,
-        /// the face front at y −0.0011), a bridge and temples running back along the head; dark
-        /// lenses for sunglasses. Built in world units and counter-scaled under the bone, like the scalp.
-        /// </summary>
-        static void Glasses(ChibiRig rig, SkinnedMeshRenderer body, Transform root, bool dark, int layer)
-        {
-            var s = body.transform.lossyScale.x;
-            var centre = body.transform.TransformPoint(new Vector3(0f, -0.00135f, 0.0075f));
-            var frame = new Color(0.16f, 0.16f, 0.2f);
-            var lens = new Color(0.27f, 0.24f, 0.36f);      // dark but not black: the face stays readable
-            var sb = new MeshKit.Builder();
-            float w = 0.00046f * s, h = 0.00032f * s, t = 0.00005f * s, gap = 0.00006f * s;
-            foreach (var sx in new[] { -1f, 1f })
-            {
-                var cx = sx * (w + gap);
-                sb.Box(new Vector3(cx, h, 0f), new Vector3(w * 2f, t, t), frame);      // top
-                sb.Box(new Vector3(cx, -h, 0f), new Vector3(w * 2f, t, t), frame);     // bottom
-                sb.Box(new Vector3(cx - w, 0f, 0f), new Vector3(t, h * 2f, t), frame); // inner/outer
-                sb.Box(new Vector3(cx + w, 0f, 0f), new Vector3(t, h * 2f, t), frame);
-                if (dark) sb.Quad(new Vector3(cx, 0f, -t * 0.2f), new Vector3(w - t * 0.5f, 0f, 0f), new Vector3(0f, h - t * 0.5f, 0f), lens);
-                // the temple: back along the side of the head, then a little down
-                sb.Box(new Vector3(sx * (2f * w + gap + 0.0001f * s), h * 0.5f, -0.0006f * s), new Vector3(t, t, 0.0013f * s), frame);
-            }
-            sb.Box(new Vector3(0f, h * 0.3f, 0f), new Vector3(gap * 2f + t, t, t), frame);   // the bridge
-            var mat = MeshKit.NewToon(0.0015f);
-            mat.SetFloat("_ShadeStrength", 0.15f);
-            var go = MeshKit.Part("glasses", rig.Head, sb.Bake("glasses"), mat, layer);
-            var ls = rig.Head.lossyScale;
-            go.transform.localScale = new Vector3(1f / ls.x, 1f / ls.y, 1f / ls.z);
-            go.transform.position = centre;
-            go.transform.rotation = root.rotation;
-            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
         }
 
         static void SetLayer(Transform t, int layer)
@@ -233,8 +199,31 @@ namespace ExcelHeroes.World
             if (Cache.TryGetValue(src, out var m) && m != null) return m;
             m = Object.Instantiate(src);
             m.name = src.name + ":plain";
-            m.colors = null;
             var v = m.vertices; var uv = m.uv;
+            // vertex colours: white everywhere (alpha 1, so the cutout never sees the sample's
+            // face mask), and on the hair the anime highlight ring — a band round the crown at
+            // 0.90 of the height with a zigzag, lifted by lowering everything else — plus a
+            // darker underside on the hanging strands
+            var cols = new Color[v.Length];
+            for (var i = 0; i < cols.Length; i++) cols[i] = Color.white;
+            {
+                var zmn = float.MaxValue; var zmx = float.MinValue;
+                foreach (var pv in v) { zmn = Mathf.Min(zmn, pv.z); zmx = Mathf.Max(zmx, pv.z); }
+                var HH = zmx - zmn;
+                int hairSub = -1;
+                for (var si = 0; si < m.subMeshCount && hairSub < 0; si++) if (si == 2) hairSub = si;   // CH0184: sub 2 is the hair
+                if (hairSub >= 0)
+                    foreach (var i in m.GetTriangles(hairSub))
+                    {
+                        var hgt = (v[i].z - zmn) / HH;
+                        var az = Mathf.Atan2(v[i].y - 0.0006f, v[i].x);
+                        var ring = Mathf.Exp(-Mathf.Pow((hgt - (0.905f + Mathf.Sin(az * 7f) * 0.012f)) / 0.028f, 2f));
+                        var shade = hgt < 0.62f ? 0.9f : 1f;
+                        var k = (0.8f + 0.2f * ring) * shade;
+                        cols[i] = new Color(k, k, k, 1f);
+                    }
+            }
+            m.colors = cols;
             var zmin = float.MaxValue; var zmax = float.MinValue;
             foreach (var p in v) { zmin = Mathf.Min(zmin, p.z); zmax = Mathf.Max(zmax, p.z); }
             var H = zmax - zmin;
