@@ -47,7 +47,7 @@ namespace ExcelHeroes.UI
         /// Glow = the navy plate with the cyan core (START). Glass = the see-through one (the
         /// arrow row). Gold = the recruit call to action. Off = disabled.
         /// </summary>
-        public enum Kind { Light, Primary, Navy, Gold, Off, Glow, Glass }
+        public enum Kind { Light, Primary, Navy, Gold, Off, Glow, Glass, Ivory }
 
         public readonly struct Look
         {
@@ -82,6 +82,9 @@ namespace ExcelHeroes.UI
                                      Color.white, C(0, 0, 0, 0f), 0f, 0.07f),
             Kind.Gold    => new Look(C(255, 236, 112), C(255, 204, 48), C(214, 150, 16, 0.6f), C(255, 252, 230, 0.7f), 1.5f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0.22f),
+            // target_2's page buttons: white, a gold rim (강화 / 편성)
+            Kind.Ivory   => new Look(C(255, 255, 255), C(244, 246, 248), C(214, 166, 52, 0.95f), C(255, 255, 255, 0.95f), 3f,
+                                     C(240, 200, 110), C(0, 0, 0, 0f), 0f, 0.12f),
             Kind.Glass   => new Look(C(255, 255, 255, 0.74f), C(238, 246, 252, 0.62f), C(255, 255, 255, 0.85f), C(255, 255, 255, 0.6f), 1.5f,
                                      C(150, 210, 240), C(0, 0, 0, 0f), 0f, 0.18f),
             // off = an OUTLINE, not a grey lump: pale glass with a clear blue-grey border, so a
@@ -234,6 +237,7 @@ namespace ExcelHeroes.UI
             if (classes.Contains("btn--ghost") || classes.Contains("btn--navy")) return Kind.Navy;
             if (classes.Contains("btn--gold")) return Kind.Gold;
             if (classes.Contains("btn--glass")) return Kind.Glass;
+            if (classes.Contains("btn--ivory")) return Kind.Ivory;
             return Kind.Light;
         }
     }

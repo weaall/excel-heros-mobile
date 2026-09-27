@@ -5754,3 +5754,91 @@
 .home__campaign-sub { color: rgb(224, 246, 255); font-size: 20px; -unity-font-style: bold-and-italic; letter-spacing: 2px; padding: 0; margin: -4px 0 0 0; }
 /* round 7: the detail plate's stars in the reference's gold */
 .dplate__stars { color: rgb(255, 199, 0); font-size: 34px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(120, 76, 0); }
+
+/* ================================================================ battle vs target_3 (Gemini BA mock-up)
+   Damage numbers: bold italic, white with a navy edge; crits gold with CRITICAL over them; the
+   party's own hurt in a soft red. Combo: big italic on the right, the count under the word. */
+.floater { font-size: 56px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(20, 40, 80); -unity-text-align: middle-center; white-space: normal; transform-origin: center; }
+.floater--crit { font-size: 76px; color: rgb(255, 214, 60); -unity-text-outline-color: rgb(120, 60, 0); -unity-text-outline-width: 4px; }
+.floater--taken { font-size: 46px; color: rgb(255, 150, 150); -unity-text-outline-color: rgb(90, 10, 20); }
+.combo { left: auto; right: 70px; top: 230px; font-size: 80px; -unity-font-style: bold-and-italic; -unity-text-align: upper-right; color: rgb(255, 255, 255); -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(20, 40, 80); white-space: normal; }
+.combo--low { top: 230px; }
+.ex-button__cost { width: 66px; height: 70px; left: -16px; top: -18px; flex-direction: column; }
+.ex-button__costword { font-size: 13px; -unity-font-style: bold; color: rgb(120, 220, 255); padding: 0; margin: 4px 0 -4px 0; -unity-text-align: middle-center; }
+.ex-button__cost .ex-button__label { background-color: rgba(0, 0, 0, 0); color: rgb(255, 255, 255); font-size: 30px; -unity-font-style: bold-and-italic; padding: 0; margin: 0; }
+.ex-cost-words { position: absolute; right: 22px; top: 17px; font-size: 26px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(20, 40, 80); padding: 0; margin: 0; }
+/* boss bar vs target_3: the diamond at the left carries xN; the plate starts right of it */
+.bboss { left: 340px; width: 1180px; height: 132px; }
+.bboss__plate { left: 77px; padding-left: 70px; width: 640px; }
+.bboss__count { left: 0; right: auto; top: 4px; width: 124px; height: 124px; font-size: 40px; -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(10, 30, 70); }
+
+/* ================================================================ lobby vs target_1 (Gemini BA mock-up)
+   Glass tiles everywhere: the left menu is a column of tiles with the icon beside a bold word;
+   the bottom nav is a row of separate tiles standing on a navy band, the lit one cyan; the
+   player plate is glass with the lead's face in a disc; 모집 is one big gold slab. */
+.plate { height: 132px; padding-right: 70px; margin-left: 20px; margin-top: 14px; align-items: center; }
+.plate__avatar { width: 108px; height: 108px; border-radius: 54px; margin-left: 18px; background-color: rgb(255, 255, 255); padding: 5px; border-width: 2px; border-color: rgb(180, 214, 236); }
+.plate__face { flex-grow: 1; border-radius: 50px; overflow: hidden; }
+.plate__body { padding-left: 22px; }
+.plate__rank { flex-direction: row; align-items: flex-end; width: auto; height: auto; justify-content: flex-start; }
+.plate__rank-word { font-size: 28px; color: rgb(30, 46, 76); -unity-font-style: bold; padding: 0; margin: 0 6px 4px 0; }
+.plate__rank-num { font-size: 36px; color: rgb(30, 46, 76); -unity-font-style: bold; padding: 0; margin: 0; }
+.plate__name { font-size: 44px; color: rgb(22, 36, 64); padding: 0; margin: -4px 0 0 0; }
+.plate__sub { display: none; }
+
+.home__icons { left: 60px; top: 190px; width: 300px; flex-direction: column; flex-wrap: nowrap; }
+.home__icon { width: 280px; height: 104px; margin-bottom: 18px; flex-direction: row; justify-content: flex-start; padding-left: 26px; }
+.home__icon:hover { scale: 1.04 1.04; }
+.home__art-icon { width: 80px; height: 80px; }
+.home__icon-label { margin: 0 0 0 16px; padding: 0; font-size: 40px; color: rgb(22, 36, 64); -unity-text-outline-width: 0; }
+
+.navbar { height: 190px; background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 0; margin: 0; padding-left: 90px; padding-right: 50px; padding-bottom: 14px; align-items: flex-end; }
+.navtab { width: 180px; height: 164px; margin-right: 14px; border-radius: 0; justify-content: center; padding-top: 4px; }
+.navtab:hover { background-color: rgba(0, 0, 0, 0); scale: 1.04 1.04; }
+.navtab--active { background-color: rgba(0, 0, 0, 0); border-bottom-width: 0; }
+.navtab__icon.art-icon { width: 100px; height: 100px; margin-top: 0; }
+.navtab__label { font-size: 38px; color: rgb(22, 36, 64); -unity-text-outline-width: 0; margin-top: 0; padding: 0; }
+.navtab--active .navtab__label { color: rgb(255, 255, 255); -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgba(0, 90, 140, 0.6); }
+.navtab__badge { top: 6px; right: 18px; }
+.navcta { width: 400px; height: 176px; margin-bottom: 2px; }
+.navcta__icon.art-icon { width: 96px; height: 96px; margin-right: 6px; }
+.navcta__label { font-size: 78px; -unity-font-style: bold; color: rgb(92, 56, 0); padding: 0; margin: 0; }
+
+.shell--lobby .topbar__btn { width: 104px; height: 96px; margin-left: 14px; font-size: 56px; color: rgb(30, 46, 76); }
+.shell--lobby .topbar .chip { height: 80px; }
+.chip__rule { display: none; }
+.chip__plus { width: 54px; height: 54px; border-radius: 27px; background-color: rgb(46, 196, 240); color: rgb(255, 255, 255); font-size: 40px; margin-left: 6px; border-width: 2px; border-color: rgb(255, 255, 255); }
+.topbar__glyph { flex-grow: 1; -unity-text-align: middle-center; padding: 0; margin: 0; }
+
+/* ================================================================ detail vs target_2 (Gemini BA mock-up) */
+.bigstats { flex-direction: row; flex-wrap: wrap; padding: 6px 10px 14px 10px; margin-bottom: 8px; border-bottom-width: 2px; border-color: rgba(170, 196, 222, 0.5); }
+.bigstat { width: 50%; flex-direction: row; align-items: center; height: 104px; padding-left: 16px; }
+.bigstat__icon { font-size: 60px; width: 72px; height: 72px; color: rgb(30, 48, 86); -unity-text-align: middle-center; padding: 0; margin: 0 16px 0 0; }
+.bigstat__words { flex-direction: column; }
+.bigstat__key { font-size: 22px; color: rgb(70, 88, 118); -unity-font-style: bold; padding: 0; margin: 0; }
+.bigstat__val { font-size: 58px; -unity-font-style: bold; color: rgb(22, 36, 64); padding: 0; margin: -8px 0 0 0; }
+.minicard--icon { flex-direction: row; flex-wrap: wrap; align-content: center; padding-left: 116px; min-height: 112px; justify-content: center; }
+.minicard--icon > Label { width: 100%; }
+.minicard__icon { position: absolute; left: 12px; top: 12px; width: 88px; height: 88px; align-items: center; justify-content: center; }
+.minicard__glyph { font-size: 56px; color: rgb(120, 224, 255); -unity-text-align: middle-center; padding: 0; margin: 0; }
+.minicard__name { font-size: 30px; }
+.block--bare { background-color: rgba(0, 0, 0, 0); border-width: 0; }
+.kitstrip { justify-content: space-between; }
+.kittile { flex-direction: column; align-items: center; background-color: rgba(0, 0, 0, 0); border-width: 0; padding: 4px; width: 24%; }
+.kittile--empty { background-color: rgba(0, 0, 0, 0); }
+.kittile__sock { width: 132px; height: 132px; margin: 0 0 6px 0; background-color: rgba(0, 0, 0, 0); border-width: 0; }
+.kittile__pic { width: 100px; height: 100px; }
+.kittile__plus { right: 0; bottom: 0; }
+.kittile__words { align-items: center; flex-grow: 0; }
+.kittile__slot { font-size: 22px; -unity-font-style: bold; color: rgb(40, 58, 92); }
+.kittile--empty .kittile__name { display: none; }
+.detail__acts > .btn--ivory { height: 118px; }
+.btn--ivory .plate__label, .btn--ivory { font-size: 42px; -unity-font-style: bold; color: rgb(22, 36, 64); }
+.btn--primary-ink .plate__label, .btn--primary-ink { color: rgb(16, 120, 190); }
+.minicards { flex-shrink: 0; flex-grow: 0; }
+.minicard--icon { flex-direction: column; flex-wrap: nowrap; align-content: flex-start; justify-content: center; height: 120px; min-height: 120px; max-height: 120px; padding: 6px 10px 6px 116px; }
+.minicard--icon > Label { width: auto; padding: 0; margin: 0; }
+.minicard--icon .minicard__kind { font-size: 20px; }
+.minicard--icon .minicard__name { font-size: 30px; }
+.minicard--icon .minicard__lv { font-size: 22px; }
+.bigstats, .kitstrip, .block--bare { flex-shrink: 0; }

@@ -61,7 +61,63 @@ namespace ExcelHeroes.UI
             if (plate != null) ModalFrame.Painted(plate, DrawPlayerPlate);
 
             var nav = root.Q<VisualElement>("navbar");
-            if (nav != null) ModalFrame.Painted(nav, DrawBottomStrip);
+            if (nav != null)
+            {
+                ModalFrame.Painted(nav, DrawBottomStrip);
+                // every tab its own slanted glass tile, the lit one cyan (target_1)
+                foreach (var tab in nav.Query<Button>(className: "navtab").ToList())
+                {
+                    var t = tab;
+                    ModalFrame.Painted(t, (ctx, r) => DrawGlassTile(ctx, r, t.ClassListContains("navtab--active")));
+                }
+            }
+
+            // settings and home: square glass tiles on the lobby, bare glyphs inside a screen
+            // (the glyph moves to a child: a painter draws over its own element's text)
+            foreach (var b in root.Query<Button>(className: "topbar__btn").ToList())
+            {
+                var glyph = new Label(b.text) { pickingMode = PickingMode.Ignore };
+                glyph.AddToClassList("topbar__glyph");
+                b.text = ""; b.Add(glyph);
+                ModalFrame.Painted(b, (ctx, r) => { if (Lobby) DrawGlassTile(ctx, r, false, corner: false); });
+            }
+        }
+
+        /// <summary>
+        /// target_1's lobby tile: a slanted plate of frosted glass, white fading to translucent,
+        /// a white rim, a small cyan triangle in the top-right corner and three faint diagonal
+        /// stripes in the lower right. Lit, the same plate in cyan with white marks.
+        /// </summary>
+        public static void DrawGlassTile(MeshGenerationContext ctx, Rect r, bool active, bool corner = true)
+        {
+            var h = r.height; var w = r.width;
+            var slant = Mathf.Min(Mathf.Tan(10f * Mathf.Deg2Rad) * h, w * 0.14f);
+            var outer = UiPaint.SkewRect(r, slant, Mathf.Clamp(h * 0.08f, 4f, 9f));
+            UiPaint.Shadow(ctx, outer, new Vector2(0f, Mathf.Clamp(h * 0.05f, 2f, 6f)), C(16, 36, 72, 0.22f), Mathf.Clamp(h * 0.09f, 4f, 10f));
+            UiPaint.Fill(ctx, outer, active ? C(255, 255, 255, 0.95f) : C(255, 255, 255, 0.9f));
+            var inner = UiPaint.Offset(outer, -2.5f);
+            UiPaint.Fill(ctx, inner, active
+                ? UiPaint.Vertical(C(118, 226, 248), C(34, 176, 232), r.yMin, r.yMax)
+                : UiPaint.Vertical(C(250, 253, 255, 0.93f), C(214, 230, 242, 0.8f), r.yMin, r.yMax));
+            // the upper half a touch brighter: the glass catching the light
+            var gloss = new List<Vector2> { new(r.xMin - 4f, r.yMin), new(r.xMax + 4f, r.yMin), new(r.xMax + 4f, r.yMin + h * 0.42f), new(r.xMin - 4f, r.yMin + h * 0.5f) };
+            UiPaint.Fill(ctx, UiPaint.Clip(gloss, inner), C(255, 255, 255, active ? 0.16f : 0.34f), 1f);
+            // three stripes leaning with the slant, lower right
+            var mark = active ? C(255, 255, 255, 0.4f) : C(90, 190, 230, 0.32f);
+            for (var i = 0; i < 3; i++)
+            {
+                var x = r.xMax - w * 0.1f - i * Mathf.Max(7f, h * 0.075f);
+                var sw = Mathf.Max(2f, h * 0.028f);
+                var stripe = new List<Vector2> { new(x, r.yMax - h * 0.46f), new(x + sw, r.yMax - h * 0.46f), new(x + sw - h * 0.46f, r.yMax), new(x - h * 0.46f, r.yMax) };
+                UiPaint.Fill(ctx, UiPaint.Clip(stripe, inner), mark, 0.8f);
+            }
+            if (corner)
+            {
+                var s = Mathf.Clamp(h * 0.11f, 7f, 14f);
+                var cx = r.xMax - slant * 0.1f - s * 1.4f; var cy = r.yMin + s * 1.1f;
+                UiPaint.Fill(ctx, new List<Vector2> { new(cx, cy - s * 0.5f), new(cx + s * 0.55f, cy + s * 0.45f), new(cx - s * 0.55f, cy + s * 0.45f) },
+                             active ? C(255, 255, 255, 0.95f) : C(64, 200, 240, 0.9f), 0.8f);
+            }
         }
 
         /// <summary>
@@ -164,8 +220,10 @@ namespace ExcelHeroes.UI
             UiPaint.Fill(ctx, UiPaint.Offset(poly, -2f), UiPaint.Vertical(C(255, 255, 255, 0.94f), C(240, 247, 252, 0.9f), r.yMin, r.yMax));
         }
 
-        /// <summary>The lobby's player plate: a navy slanted block.</summary>
-        public static void DrawPlayerPlate(MeshGenerationContext ctx, Rect r)
+        /// <summary>The lobby's player plate: target_1's glass plate, the avatar at its left end.</summary>
+        public static void DrawPlayerPlate(MeshGenerationContext ctx, Rect r) => DrawGlassTile(ctx, r, false);
+
+        public static void DrawPlayerPlateNavy(MeshGenerationContext ctx, Rect r)
         {
             var poly = UiPaint.SkewRect(new Rect(r.xMin - 40f, r.yMin, r.width + 40f, r.height), SkewPlate.SlantFor(r.height) * 0.8f, 6f);
             UiPaint.Shadow(ctx, poly, new Vector2(0f, 3f), C(10, 20, 40, 0.3f), 8f);
@@ -177,8 +235,20 @@ namespace ExcelHeroes.UI
             }, poly), C(255, 255, 255, 0.08f), 0f);
         }
 
-        /// <summary>The bottom bar: one long translucent-white strip, slanted at its ends.</summary>
+        /// <summary>
+        /// Under the lobby's tiles, target_1's navy band along the bottom edge of the screen: the
+        /// tiles stand on it, their lower half over the band.
+        /// </summary>
         public static void DrawBottomStrip(MeshGenerationContext ctx, Rect r)
+        {
+            var band = Rect.MinMaxRect(r.xMin - 400f, r.yMin + r.height * 0.5f, r.xMax + 400f, r.yMax + 200f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(band.xMin, band.yMin - 14f, band.xMax, band.yMin), 0f),
+                         UiPaint.Vertical(C(18, 30, 58, 0f), C(18, 30, 58, 0.3f), band.yMin - 14f, band.yMin), 0f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(band, 0f), UiPaint.Vertical(C(26, 40, 74, 0.94f), C(14, 24, 48, 0.97f), band.yMin, band.yMax), 0f);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(band.xMin, band.yMin, band.xMax, band.yMin + 2f), 0f), C(90, 200, 240, 0.5f), 0f);
+        }
+
+        public static void DrawBottomStripWhite(MeshGenerationContext ctx, Rect r)
         {
             var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 10f);
             UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), C(30, 60, 100, 0.18f), 10f);

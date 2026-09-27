@@ -266,6 +266,9 @@ namespace ExcelHeroes.UI
                     var stripe = new System.Collections.Generic.List<Vector2> { new(x0 + 40f, band.yMin + 5f), new(x0 + 52f, band.yMin + 5f), new(x0 + 12f, band.yMax), new(x0, band.yMax) };
                     UiPaint.Fill(ctx, UiPaint.Clip(stripe, poly), UiPaint.C(255, 255, 255, 0.05f), 0.5f);
                 }
+                // target_2: a gold rim round the navy, and a hairline of gold inside it
+                UiPaint.Stroke(ctx, poly, UiPaint.C(226, 180, 72), 3.5f);
+                UiPaint.Stroke(ctx, UiPaint.Offset(poly, -7f), UiPaint.C(226, 180, 72, 0.35f), 1.2f);
                 var tag = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin + 10f, r.yMin, r.xMin + r.width * 0.62f, r.yMin + 42f), 8f, 3f, 2);
                 UiPaint.Fill(ctx, tag, UiPaint.C(255, 255, 255, 0.95f));
             });
@@ -283,7 +286,7 @@ namespace ExcelHeroes.UI
             {
                 UiKit.Text($"Lv.{owned.level}", "dplate__lv", metaRow);
                 var st = UiKit.Text(UiKit.Stars(owned.star), "dplate__stars", metaRow);
-                st.style.color = grade?.Color ?? Color.white;
+                st.style.color = UiPaint.C(255, 199, 0);   // gold, as target_2, whatever the grade
                 var b0 = GameData.Balance;
                 UiKit.Text($"호감도 {owned.affection}/{b0.affectionMax}", "dplate__bond", metaRow);
             }
@@ -460,7 +463,7 @@ namespace ExcelHeroes.UI
                 var acts = UiKit.Div("detail__acts", foot);
 
                 var fav = Game.Player.favorites.Contains(heroId);
-                UiKit.Btn(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기", "btn", () =>
+                UiKit.Btn(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기", "btn btn--ivory", () =>
                 {
                     if (fav) Game.Player.favorites.Remove(heroId);
                     else Game.Player.favorites.Add(heroId);
@@ -470,7 +473,7 @@ namespace ExcelHeroes.UI
 
                 var inParty = Game.Player.party.Contains(heroId);
                 UiKit.Btn(inParty ? "편성에서 빼기" : "편성에 넣기",
-                    inParty ? "btn" : "btn btn--primary", () =>
+                    inParty ? "btn btn--ivory" : "btn btn--ivory btn--primary-ink", () =>
                 {
                     if (inParty) Game.Player.RemoveFromParty(heroId);
                     else Game.Player.AddToParty(heroId);
@@ -1000,13 +1003,13 @@ namespace ExcelHeroes.UI
                        GradeDef grade, DivisionDef division)
         {
             // ---- 기본 능력치, two columns ------------------------------------------------
-            var statsBlock = UiKit.Div("block", body);
-            UiKit.Text("기본 능력치", "block__title", statsBlock);
-            var statGrid = UiKit.Div("statgrid", statsBlock);
-            UiKit.StatCell("공격력", StatMath.Atk(owned).ToString("N0"), statGrid);
-            UiKit.StatCell("체력", StatMath.Hp(owned).ToString("N0"), statGrid);
-            UiKit.StatCell("전투력", StatMath.Power(owned).ToString("N0"), statGrid);
-            UiKit.StatCell("레벨", $"{owned.level} / {StatMath.LevelCap(owned)}", statGrid);
+            // target_2: four stats in two columns, each a navy glyph beside a small caption and a
+            // BIG number, straight on the glass, no captioned box around them
+            var statGrid = UiKit.Div("bigstats", body);
+            BigStat(statGrid, "\uf889", "공격력", StatMath.Atk(owned).ToString("N0"));             // swords
+            BigStat(statGrid, "\ue87e", "체력", StatMath.Hp(owned).ToString("N0"));                // favorite
+            BigStat(statGrid, "\uef55", "전투력", StatMath.Power(owned).ToString("N0"));           // local_fire_department
+            BigStat(statGrid, "\ue8e5", "레벨", $"{owned.level}/{StatMath.LevelCap(owned)}");      // trending_up
 
             // ---- the categorical facts, as chips -----------------------------------------
             // 등급, 역할 and 부문 are back. They were dropped when this was a list because nine
@@ -1023,6 +1026,7 @@ namespace ExcelHeroes.UI
             var cards = UiKit.Div("minicards", body);
 
             var skillCard = UiKit.Div("minicard", cards);
+            MiniIcon(skillCard, Icons.Bolt);
             UiKit.Text("스킬", "minicard__kind", skillCard);
             UiKit.Text(def.skillName ?? "—", "minicard__name", skillCard);
             UiKit.Text(StatMath.SkillUnlocked(owned)
@@ -1031,6 +1035,7 @@ namespace ExcelHeroes.UI
 
             var trait = GameData.Trait(def.trait);
             var traitCard = UiKit.Div("minicard", cards);
+            MiniIcon(traitCard, "\ue7af");   // workspace_premium
             UiKit.Text("특성", "minicard__kind", traitCard);
             UiKit.Text(trait?.name ?? "—", "minicard__name", traitCard);
             UiKit.Text(owned.star > 0 ? $"★{owned.star}" : "", "minicard__lv", traitCard);
@@ -1038,8 +1043,7 @@ namespace ExcelHeroes.UI
             // ---- 비품, the four slots as tiles -------------------------------------------
             // The reference puts the equipment on the basic page too, not only on its own. Four
             // empty sockets are the clearest possible statement of what this hero is missing.
-            var kit = UiKit.Div("block", body);
-            UiKit.Text("비품", "block__title", kit);
+            var kit = UiKit.Div("block block--bare", body);
             var strip = UiKit.Div("kitstrip", kit);
             foreach (var slot in EquipService.Slots)
             {
@@ -1048,6 +1052,7 @@ namespace ExcelHeroes.UI
                 // (faint and with a + when empty), the slot name beside it (ui_critique round 3, 16-Detail #2)
                 var tile = UiKit.Div("kittile" + (worn == null ? " kittile--empty" : ""), strip);
                 var sock = UiKit.Div("kittile__sock", tile);
+                ModalFrame.Painted(sock, (ctx, r) => Chrome.DrawGlassTile(ctx, r, false, corner: false));   // target_2: square glass sockets
                 var pic = GameData.Icon("eq_" + slot.id);
                 if (pic != null) UiKit.SetArt(UiKit.Div("kittile__pic", sock), pic);
                 if (worn == null) UiKit.Text("+", "kittile__plus", sock);
@@ -1056,6 +1061,30 @@ namespace ExcelHeroes.UI
                 UiKit.Text(worn == null ? "비어 있음" : EquipService.Label(worn), "kittile__name", words);
                 if (worn != null) UiKit.Text($"+{EquipService.Pct(worn) * 100f:0}%", "kittile__val", words);
             }
+        }
+
+        static void BigStat(VisualElement parent, string glyph, string key, string value)
+        {
+            var cell = UiKit.Div("bigstat", parent);
+            UiKit.Text(glyph, "icon bigstat__icon", cell);
+            var words = UiKit.Div("bigstat__words", cell);
+            UiKit.Text(key, "bigstat__key", words);
+            UiKit.Text(value, "bigstat__val", words);
+        }
+
+        /// <summary>target_2's skill-card icon: a navy square, a cyan glyph, a thin cyan rim.</summary>
+        static void MiniIcon(VisualElement card, string glyph)
+        {
+            card.AddToClassList("minicard--icon");
+            var sq = UiKit.Div("minicard__icon", card);
+            ModalFrame.Painted(sq, (ctx, r) =>
+            {
+                var poly = UiPaint.RoundRect(r, 8f);
+                UiPaint.Fill(ctx, poly, UiPaint.C(120, 214, 250, 0.9f));
+                UiPaint.Fill(ctx, UiPaint.Offset(poly, -2f), UiPaint.Vertical(UiPaint.C(44, 66, 112), UiPaint.C(22, 36, 70), r.yMin, r.yMax));
+                UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2> { new(r.xMin, r.yMin), new(r.xMax, r.yMin), new(r.xMin, r.yMax) }, UiPaint.Offset(poly, -2f)), UiPaint.C(255, 255, 255, 0.08f), 0.8f);
+            });
+            UiKit.Text(glyph, "icon minicard__glyph", sq).pickingMode = PickingMode.Ignore;
         }
 
         void Tab(VisualElement parent, string id, string label, string heroId, System.Action onClose)

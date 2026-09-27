@@ -269,7 +269,9 @@ namespace ExcelHeroes.World
                 a.Scale = c.role == "tank" ? 1.08f : 1f;
                 a.Accent = spec.Accent;
             }
-            else if ((SdModel.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer) ?? SdSprite.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer)) is { } sdm)
+            // the drawn mascot first (enemies v2, tools/gen_monsters_v2.py): one clean BA hand reads better
+            // than the TripoSR meshes made from the first set, which stay as the fallback
+            else if ((SdSprite.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer) ?? SdModel.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer)) is { } sdm)
             {
                 a.Rig = sdm;
                 a.Rig.Root.name = c.name;
@@ -311,6 +313,12 @@ namespace ExcelHeroes.World
 
         // ------------------------------------------------------------------ events --
 
+        /// <summary>The attacker's swing, started as the sim resolves the hit; the hit itself is drawn on contact (BattleScreen.ImpactLag).</summary>
+        public void Swing(Combatant actor)
+        {
+            if (actor != null && _actors.TryGetValue(actor, out var a) && a.Attack <= 0f) a.Attack = 0.32f;
+        }
+
         public void OnEvent(BattleEvent e)
         {
             if (_sim == null) return;
@@ -323,11 +331,11 @@ namespace ExcelHeroes.World
                     if (e.target != null && _actors.TryGetValue(e.target, out var t))
                     {
                         t.Hit = 0.16f;
-                        t.Knock = e.target.side == Side.Hero ? -0.12f : 0.12f;
+                        // shoved back along the line: an enemy further than a hero, a crit twice as far
+                        t.Knock = e.target.side == Side.Hero ? (e.crit ? -0.16f : -0.08f) : (e.crit ? 0.34f : 0.2f);
                         Spark(t, e.crit ? new Color(1f, 0.85f, 0.3f) : Color.white, e.crit ? 0.7f : 0.45f);
                         HitRing(t, e.crit);
                     }
-                    if (e.actor != null && _actors.TryGetValue(e.actor, out var a) && a.Attack <= 0f) a.Attack = 0.3f;
                     break;
                 case EventKind.Heal:
                     if (e.target != null && _actors.TryGetValue(e.target, out var hl))
@@ -576,10 +584,25 @@ namespace ExcelHeroes.World
             var s = at.Scale * (crit ? 1.3f : 1f);
             var floor = MeshKit.Part("hitring", _root, FloorQuad, ring, Layer).transform;
             floor.position = at.Rig.Root.position + Vector3.up * 0.025f;
-            _fx.Add(new Fx { T = floor, Life = 0.3f, Max = 0.3f, Grow0 = 0.25f * s, Grow1 = 1.05f * s, Flat = true });
+            _fx.Add(new Fx { T = floor, Life = 0.3f, Max = 0.3f, Grow0 = 0.3f * s, Grow1 = 1.5f * s, Flat = true });
             var up = MeshKit.Part("hitring", _root, Quad, ring, Layer).transform;
-            up.position = at.Rig.Root.position + Vector3.up * at.Rig.Height * at.Scale * 0.55f + new Vector3(0f, 0f, -0.32f);
-            _fx.Add(new Fx { T = up, Life = 0.22f, Max = 0.22f, Grow0 = 0.15f * s, Grow1 = 0.75f * s, Face = true });
+            var hitAt = at.Rig.Root.position + Vector3.up * at.Rig.Height * at.Scale * 0.55f + new Vector3(0f, 0f, -0.32f);
+            up.position = hitAt;
+            _fx.Add(new Fx { T = up, Life = 0.22f, Max = 0.22f, Grow0 = 0.15f * s, Grow1 = 1.0f * s, Face = true });
+            // the burst the reference mock throws off every hit: thin light streaks flying out
+            // radially in the picture plane, yellow-white, gone in a fifth of a second
+            var streakCol = crit ? new Color(1f, 0.9f, 0.45f) : new Color(1f, 0.97f, 0.75f);
+            var n = crit ? 9 : 6;
+            var camRight = _cam.transform.right; var camUp = _cam.transform.up;
+            for (var i = 0; i < n; i++)
+            {
+                var ang = (i + Random.value * 0.6f) / n * 360f;
+                var dir = Quaternion.AngleAxis(ang, -_cam.transform.forward) * camUp;
+                var st = MeshKit.Part("streak", _root, Quad, GlowMat(streakCol), Layer).transform;
+                st.position = hitAt + dir * 0.08f * s;
+                var speed = (crit ? 5.5f : 4f) * s * (0.7f + Random.value * 0.6f);
+                _fx.Add(new Fx { T = st, Life = 0.18f, Max = 0.18f, Grow0 = 0.9f * s, Grow1 = 0.5f * s, Face = true, Roll = ang, Aspect = new Vector2(0.09f, 0.55f), Vel = dir * speed });
+            }
         }
 
         float _localShake;
@@ -591,6 +614,7 @@ namespace ExcelHeroes.World
             public float Life, Max, Grow0, Grow1;
             public Vector3 Vel;
             public bool Gravity, Flat, Face, Spin;
+            public float Roll; public Vector2 Aspect;   // a camera-facing streak: turned in the picture plane, stretched along its length
         }
 
         readonly List<Fx> _fx = new();
@@ -623,8 +647,14 @@ namespace ExcelHeroes.World
                 if (f.Gravity) f.Vel += Vector3.down * 9f * dt;
                 f.T.position += f.Vel * dt;
                 var sc = Mathf.Lerp(f.Grow0, f.Grow1, 1f - (1f - k) * (1f - k));
-                f.T.localScale = Vector3.one * sc;
-                if (f.Face) f.T.rotation = Quaternion.LookRotation(f.T.position - _cam.transform.position);
+                f.T.localScale = f.Aspect == Vector2.zero ? Vector3.one * sc : new Vector3(sc * f.Aspect.x, sc * f.Aspect.y, 1f);
+                if (f.Face) f.T.rotation = Quaternion.LookRotation(f.T.position - _cam.transform.position) * Quaternion.Euler(0f, 0f, f.Roll);
+                if (f.Aspect != Vector2.zero)
+                {
+                    // streaks thin out and fade as they fly
+                    var mr = f.T.GetComponent<MeshRenderer>();
+                    if (mr != null) { var mb = new MaterialPropertyBlock(); mr.GetPropertyBlock(mb); mb.SetFloat("_Glow", 1f - k); mr.SetPropertyBlock(mb); }
+                }
                 if (f.Spin) f.T.rotation = Quaternion.Euler(k * 720f, k * 540f, 0f);
                 _fx[i] = f;
             }
@@ -885,7 +915,7 @@ namespace ExcelHeroes.World
                 // the reference's squads run onto the field at the start of every battle
                 Enter = Mathf.MoveTowards(Enter, 0f, dt * 1.25f);
                 X = targetX + Knock - Mathf.SmoothStep(0f, 1f, Enter) * 4.5f;
-                Knock = Mathf.MoveTowards(Knock, 0f, dt * 1.2f);
+                Knock = Mathf.MoveTowards(Knock, 0f, dt * (0.4f + Mathf.Abs(Knock) * 6f));   // fast out of the shove, a soft settle
 
                 var speed = moved / Mathf.Max(0.0001f, dt);
                 var walking = speed > 0.4f && C.Alive;

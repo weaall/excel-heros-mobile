@@ -155,6 +155,7 @@ namespace ExcelHeroes.UI
         void LobbyIcon(VisualElement parent, string art, string glyph, string label, string tint, AppRoot.Sheet target)
         {
             var btn = UiKit.Div("home__icon", parent);
+            ModalFrame.Painted(btn, (ctx, r) => Chrome.DrawGlassTile(ctx, r, false));   // target_1: a glass tile, icon and word in a row
             var sprite = GameData.Icon(art);
             if (sprite != null) UiKit.SetArt(UiKit.Div("home__art-icon", btn), sprite);
             else UiKit.Text(glyph, "icon home__glyph " + tint, btn);
@@ -206,7 +207,9 @@ namespace ExcelHeroes.UI
             UiPaint.Fill(ctx, sheen, UiPaint.C(255, 255, 255, 0.22f), 0f);
         }
 
-        string GetLeadHeroId()
+        string GetLeadHeroId() => LeadHeroId();
+
+        public static string LeadHeroId()
         {
             var p = Game.Player;
             if (!string.IsNullOrEmpty(p.leadHeroId) && p.owned.Any(x => x.id == p.leadHeroId))

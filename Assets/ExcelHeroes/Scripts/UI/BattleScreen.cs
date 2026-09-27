@@ -84,7 +84,8 @@ namespace ExcelHeroes.UI
         /// Held until a run is live — a call that lands on a finished run would otherwise do nothing.
         public void DebugBoss(float hpFrac) { _pendingBoss = hpFrac; Debug.Log($"[shots] boss requested (sim {(_sim == null ? "none" : _sim.Finished ? "finished" : "live")})"); }
         float _pendingBoss;
-        VisualElement _resultPopup;     // the result overlay on screen, if any (NewRun takes it down)
+        VisualElement _resultPopup;
+        Label _costWords;     // the result overlay on screen, if any (NewRun takes it down)
         public string DebugState() => _sim == null ? "no sim" : $"P{_sim.Stage} wave {_sim.Wave}/{_sim.WaveCount} t {_sim.Elapsed:F1} finished {_sim.Finished} boss {(_sim.Monsters.FirstOrDefault(m => m.boss != null) is { } b ? $"{b.hp}/{b.maxHp}" : "-")} bar {(_bossBar == null ? "null" : _bossBar.ClassListContains("hidden") ? "hidden" : "shown")}";
 
         public void DebugCutIn()
@@ -205,6 +206,7 @@ namespace ExcelHeroes.UI
             var disc = UiKit.Div("ex-cost-disc", _costBar);
             UiKit.Text("COST", "ex-cost-disc__word", disc);
             _costLabel = UiKit.Text("0", "ex-cost-text", disc);
+            _costWords = UiKit.Text("", "ex-cost-words", _costBar);   // "코스트 07/10" at the gauge's end (target_3)
 
             _exBar = UiKit.Div("ex-bar", _root);
 
@@ -455,7 +457,7 @@ namespace ExcelHeroes.UI
             if (boss != _boss)
             {
                 _boss = boss;
-                _bossLevel.text = $"Lv.{_sim.Stage}";
+                _bossLevel.text = "보스";
                 _bossName.text = boss.name;
                 _bossFrac = _bossTrail = frac; _bossTrailHold = 0f;
             }
@@ -467,7 +469,7 @@ namespace ExcelHeroes.UI
             else _bossTrail = Mathf.MoveTowards(_bossTrail, frac, dt * Mathf.Max(0.05f, (_bossTrail - frac) * 3f));
             _bossTrail = Mathf.Max(_bossTrail, frac);
             var n = Mathf.Max(1, Mathf.CeilToInt(frac * BossBars - 1e-4f));
-            _bossCount.text = n > 1 ? $"x{n}" : "";
+            _bossCount.text = $"x{n}";
             _bossBar.MarkDirtyRepaint();
         }
 
@@ -478,13 +480,19 @@ namespace ExcelHeroes.UI
         /// </summary>
         void DrawBossBar(MeshGenerationContext ctx, Rect r)
         {
-            const float plateH = 48f, barH = 42f, badge = 92f;
-            var plate = new Rect(r.xMin, r.yMin, Mathf.Min(620f, r.width * 0.55f), plateH);
+            // target_3's layout: a big diamond at the left carrying xN, a navy name plate right of
+            // it, the bar under the plate — the layers in cyan (not the red it was: the reference
+            // mock reads cooler and the red fought the damage numbers)
+            const float plateH = 48f, barH = 40f, dia = 124f;
+            var x0 = r.xMin + dia * 0.62f;
+            var plate = Rect.MinMaxRect(x0, r.yMin, Mathf.Min(r.xMax, x0 + 640f), r.yMin + plateH);
             var ps = UiPaint.SkewRect(plate, SkewPlate.SlantFor(plateH), 4f, 3);
             UiPaint.Shadow(ctx, ps, new Vector2(0f, 3f), UiPaint.C(6, 12, 30, 0.3f), 6f);
             UiPaint.Fill(ctx, ps, UiPaint.Vertical(UiPaint.C(40, 60, 104), UiPaint.C(22, 36, 68), plate.yMin, plate.yMax));
+            var edge = UiPaint.Clip(ps, UiPaint.RoundRect(Rect.MinMaxRect(plate.xMin - 40f, plate.yMax - 4f, plate.xMax + 40f, plate.yMax), 0f));
+            UiPaint.Fill(ctx, edge, UiPaint.C(64, 214, 255), 0f);
 
-            var bar = new Rect(r.xMin + 6f, r.yMin + plateH + 6f, r.width - 6f - badge * 0.6f, barH);
+            var bar = Rect.MinMaxRect(x0 + 10f, r.yMin + plateH + 8f, r.xMax, r.yMin + plateH + 8f + barH);
             var outer = UiPaint.SkewRect(bar, SkewPlate.SlantFor(barH) * 0.8f, 4f, 3);
             UiPaint.Shadow(ctx, outer, new Vector2(0f, 3f), UiPaint.C(6, 12, 30, 0.35f), 8f);
             UiPaint.Fill(ctx, outer, UiPaint.C(255, 255, 255, 0.95f));
@@ -493,27 +501,30 @@ namespace ExcelHeroes.UI
             var n = Mathf.Max(1, Mathf.CeilToInt(left - 1e-4f));
             var inLayer = Mathf.Clamp01(left - (n - 1));
             var trail = Mathf.Clamp(_bossTrail * BossBars - (n - 1), inLayer, 1f);
-            UiPaint.Fill(ctx, well, n > 1 ? UiPaint.C(118, 22, 34) : UiPaint.C(26, 32, 52));
+            UiPaint.Fill(ctx, well, n > 1 ? UiPaint.C(18, 78, 120) : UiPaint.C(26, 32, 52));
             Rect Upto(float t) => Rect.MinMaxRect(bar.xMin - 20f, bar.yMin - 4f, Mathf.Lerp(bar.xMin + 3f, bar.xMax - 3f, t), bar.yMax + 4f);
-            if (trail > inLayer + 1e-4f) UiPaint.Fill(ctx, UiPaint.Clip(well, UiPaint.RoundRect(Upto(trail), 0f)), UiPaint.C(255, 214, 200));
+            if (trail > inLayer + 1e-4f) UiPaint.Fill(ctx, UiPaint.Clip(well, UiPaint.RoundRect(Upto(trail), 0f)), UiPaint.C(255, 228, 120));
             if (inLayer > 0f)
             {
                 var fill = UiPaint.Clip(well, UiPaint.RoundRect(Upto(inLayer), 0f));
-                UiPaint.Fill(ctx, fill, UiPaint.Vertical(UiPaint.C(255, 92, 88), UiPaint.C(214, 34, 46), bar.yMin, bar.yMax));
-                // the glossy upper third
+                UiPaint.Fill(ctx, fill, UiPaint.Vertical(UiPaint.C(120, 236, 255), UiPaint.C(26, 170, 236), bar.yMin, bar.yMax));
                 var gloss = UiPaint.Clip(fill, UiPaint.RoundRect(Rect.MinMaxRect(bar.xMin - 20f, bar.yMin, bar.xMax, bar.yMin + barH * 0.34f), 0f));
-                UiPaint.Fill(ctx, gloss, UiPaint.C(255, 255, 255, 0.22f));
+                UiPaint.Fill(ctx, gloss, UiPaint.C(255, 255, 255, 0.28f));
+            }
+            // the layer ticks: one hairline per remaining layer along the bar's foot
+            for (var i = 1; i < BossBars; i++)
+            {
+                var tx = Mathf.Lerp(bar.xMin + 3f, bar.xMax - 3f, i / (float)BossBars);
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(tx - 1f, bar.yMax - 9f, tx + 1f, bar.yMax - 3f), 0f), UiPaint.C(255, 255, 255, 0.55f));
             }
 
-            // the layer badge: a navy hexagon with a white rim, over the bar's right end
-            if (n > 1)
-            {
-                var c = new Vector2(r.xMax - badge * 0.5f, bar.center.y);
-                var hex = new List<Vector2>();
-                for (var i = 0; i < 6; i++) { var a = Mathf.PI / 6f + i * Mathf.PI / 3f; hex.Add(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * badge * 0.5f); }
-                UiPaint.Fill(ctx, hex, UiPaint.C(255, 255, 255));
-                UiPaint.Fill(ctx, UiPaint.Offset(hex, -4f), UiPaint.Vertical(UiPaint.C(46, 66, 112), UiPaint.C(22, 34, 66), c.y - badge * 0.5f, c.y + badge * 0.5f));
-            }
+            // the diamond: gold rim, cyan-to-navy face, over the left end
+            var c = new Vector2(r.xMin + dia * 0.5f, r.yMin + (plateH + 8f + barH) * 0.5f + 6f);
+            var d = new List<Vector2> { c + new Vector2(0f, -dia * 0.5f), c + new Vector2(dia * 0.5f, 0f), c + new Vector2(0f, dia * 0.5f), c + new Vector2(-dia * 0.5f, 0f) };
+            UiPaint.Shadow(ctx, d, new Vector2(0f, 4f), UiPaint.C(6, 12, 30, 0.4f), 8f);
+            UiPaint.Fill(ctx, d, UiPaint.Vertical(UiPaint.C(255, 232, 140), UiPaint.C(210, 150, 40), c.y - dia * 0.5f, c.y + dia * 0.5f));
+            UiPaint.Fill(ctx, UiPaint.Offset(d, -6f), UiPaint.Vertical(UiPaint.C(72, 214, 255), UiPaint.C(22, 60, 118), c.y - dia * 0.5f, c.y + dia * 0.5f));
+            UiPaint.Fill(ctx, UiPaint.Offset(d, -18f), UiPaint.C(255, 255, 255, 0.10f));
         }
 
         /// <summary>A clipboard with a tick: the office's word for "handled".</summary>
@@ -751,6 +762,7 @@ namespace ExcelHeroes.UI
                 // Off-screen the events still have to be consumed or the queue grows without bound,
                 // but nothing is drawn for them.
                 _sim.Events.Clear();
+                _lag.Clear();
                 _world?.SetVisible(false);
                 Finish(dt);
                 return;
@@ -810,11 +822,26 @@ namespace ExcelHeroes.UI
             if (_restartIn <= 0f) NewRun();
         }
 
+        // The sim resolves a hit the instant it is swung. Drawn that way the target flinches while
+        // the attacker is still winding up, so the swing starts now and everything else (the flinch,
+        // the ring, the number, a death) lands ImpactLag later, on the swing's contact frame.
+        // Every event waits the same time, so their order holds.
+        const float ImpactLag = 0.1f;
+        readonly Queue<(float due, BattleSim sim, BattleEvent e)> _lag = new();
+
         void DrainEvents()
         {
+            var now = Time.unscaledTime;
             while (_sim.Events.Count > 0)
             {
-                var e = _sim.Events.Dequeue();
+                var ev = _sim.Events.Dequeue();
+                if (ev.kind == EventKind.Damage) _world?.Swing(ev.actor);
+                _lag.Enqueue((now + ImpactLag, _sim, ev));
+            }
+            while (_lag.Count > 0 && _lag.Peek().due <= now)
+            {
+                var (_, sim, e) = _lag.Dequeue();
+                if (sim != _sim) continue;   // left over from the run before
                 _world?.OnEvent(e);
                 switch (e.kind)
                 {
@@ -825,7 +852,8 @@ namespace ExcelHeroes.UI
                         _fx?.Add(e.fx, e.x, e.y, e.color, e.radius);
                         break;
                     case EventKind.Damage:
-                        Float(e.target, e.amount.ToString("N0"), e.crit ? "floater floater--crit" : "floater");
+                        // the reference target (tools/out/design/target_3): a crit is gold and says so
+                        Float(e.target, e.crit ? "CRITICAL\n" + e.amount.ToString("N0") : e.amount.ToString("N0"), e.crit ? "floater floater--crit" : (e.target != null && e.target.side == Side.Hero ? "floater floater--taken" : "floater"));
                         // Only the party's own hits get a sound; every monster swing too would be mud.
                         if (e.actor != null && e.actor.side == Side.Hero) AudioService.Play("hit", 0.22f);
                         Pulse(e.actor, "fighter__body--swing", 110);
@@ -1248,8 +1276,8 @@ namespace ExcelHeroes.UI
         void UpdateCombo()
         {
             if (_comboLabel == null) return;
-            var on = _sim.Combo >= 5;
-            _comboLabel.text = on ? $"{_sim.Combo} COMBO" : "";
+            var on = _sim.Combo >= 5 && !_sim.Finished;
+            _comboLabel.text = on ? "COMBO\nx" + _sim.Combo : "";
             _comboLabel.EnableInClassList("combo--on", on);
         }
 
@@ -1376,10 +1404,21 @@ namespace ExcelHeroes.UI
             var el = UiKit.Text(text, classes, _stage);
             var top = anchor.resolvedStyle.top;
             if (float.IsNaN(top) || top <= 0f) top = _groundY - 90f;
-            el.style.left = anchor.style.left;
+            // numbers on one target within half a second step up and sideways instead of printing
+            // over each other (a burst of hits read as one smudge)
+            var now = Time.unscaledTime;
+            var n = _floatStack.TryGetValue(at, out var st) && now - st.t < 0.5f ? st.n + 1 : 0;
+            _floatStack[at] = (n, now);
+            var k = n % 4;
+            top -= k * 58f;
+            var left = anchor.style.left;
+            if (k > 0 && left.keyword == StyleKeyword.Undefined && left.value.unit == LengthUnit.Pixel)
+                el.style.left = left.value.value + (k % 2 == 1 ? 34f : -34f);
+            else el.style.left = left;
             el.style.top = top;
             _floaters.Add((el, 0.9f, top));
         }
+        readonly Dictionary<Combatant, (int n, float t)> _floatStack = new();
 
         /// <summary>
         /// 캐릭터 대사 — one party member says something when a Phase falls, ported from the web
@@ -1530,6 +1569,9 @@ namespace ExcelHeroes.UI
                 y -= 130f * dt * (1f - k * 0.7f);
                 el.style.top = y;
                 el.style.opacity = Mathf.Clamp01(life / 0.45f);
+                // the punch: lands big and snaps down to size in the first 0.12 s, with a small overshoot
+                var sc = k < 0.13f ? Mathf.Lerp(1.9f, 0.92f, k / 0.13f) : k < 0.22f ? Mathf.Lerp(0.92f, 1f, (k - 0.13f) / 0.09f) : 1f;
+                el.style.scale = new Scale(new Vector3(sc, sc, 1f));
                 _floaters[i] = (el, life, y);
             }
         }
@@ -1630,14 +1672,16 @@ namespace ExcelHeroes.UI
                 var def = GameData.Hero(combatant.heroId);
                 UiKit.CardFrame(GameData.Grade(def?.grade)?.Color ?? Color.white, btn, 12f);
                 var badge = UiKit.Div("ex-button__cost", btn);
+                // a hexagon with a gold rim, COST over the number (target_3)
                 ModalFrame.Painted(badge, (ctx, r) =>
                 {
-                    var d = UiPaint.Ellipse(r.center, r.width * 0.5f, r.height * 0.5f);
-                    UiPaint.Shadow(ctx, d, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.35f), 4f);
-                    UiPaint.Fill(ctx, d, Color.white);
-                    UiPaint.Fill(ctx, UiPaint.Ellipse(r.center, r.width * 0.5f - 3f, r.height * 0.5f - 3f),
-                                 UiPaint.Vertical(UiPaint.C(46, 70, 118), UiPaint.C(24, 38, 72), r.yMin, r.yMax));
+                    var hex = new List<Vector2>();
+                    for (var h = 0; h < 6; h++) { var an = Mathf.PI / 6f + h * Mathf.PI / 3f; hex.Add(r.center + new Vector2(Mathf.Cos(an) * r.width * 0.5f, Mathf.Sin(an) * r.height * 0.5f)); }
+                    UiPaint.Shadow(ctx, hex, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.35f), 4f);
+                    UiPaint.Fill(ctx, hex, UiPaint.Vertical(UiPaint.C(255, 230, 130), UiPaint.C(214, 160, 40), r.yMin, r.yMax));
+                    UiPaint.Fill(ctx, UiPaint.Offset(hex, -3.5f), UiPaint.Vertical(UiPaint.C(46, 70, 118), UiPaint.C(22, 36, 70), r.yMin, r.yMax));
                 });
+                UiKit.Text("COST", "ex-button__costword", badge).pickingMode = PickingMode.Ignore;
                 var label = UiKit.Text(cost.ToString(), "ex-button__label", badge);
                 Juice.Press(btn);
 
@@ -1694,6 +1738,7 @@ namespace ExcelHeroes.UI
             if (_costLabel != null)
             {
                 _costLabel.text = Mathf.FloorToInt(_sim.Cost).ToString();
+                if (_costWords != null) _costWords.text = $"코스트 {Mathf.FloorToInt(_sim.Cost):00}/{(int)BattleSim.MaxCost}";
             }
             _costBar?.MarkDirtyRepaint();
 

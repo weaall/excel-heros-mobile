@@ -269,6 +269,26 @@ namespace ExcelHeroes.UI
                 battle.Tick(Time.deltaTime);
         }
 
+        /// <summary>
+        /// target_1's player plate: the lead's face in a white-rimmed disc at its left end, the
+        /// level over the name. Rebuilt on every visit to the lobby, as the lead can change.
+        /// </summary>
+        void PlateAvatar()
+        {
+            if (_plate == null) return;
+            var body = _plate.Q<VisualElement>(className: "plate__body");
+            var rank = _plate.Q<VisualElement>(className: "plate__rank");
+            if (body != null && rank != null && rank.parent != body) body.Insert(0, rank);
+            _plate.Q<VisualElement>("plateAvatar")?.RemoveFromHierarchy();
+            var ring = new VisualElement { name = "plateAvatar", pickingMode = PickingMode.Ignore };
+            ring.AddToClassList("plate__avatar");
+            var face = new VisualElement { pickingMode = PickingMode.Ignore };
+            face.AddToClassList("plate__face");
+            ring.Add(face);
+            _plate.Insert(0, ring);
+            UiKit.SetPortrait(face, HomeScreen.LeadHeroId(), UiKit.Crop.Face, round: true);
+        }
+
         void OnGameChanged()
         {
             UpdateStatus();
@@ -314,13 +334,17 @@ namespace ExcelHeroes.UI
             UpdateStatus();
 
             foreach (var pair in _tabs)
+            {
                 pair.Value.EnableInClassList("navtab--active",
                     pair.Key == sheet && !pair.Value.ClassListContains("navcta"));
+                pair.Value.MarkDirtyRepaint();   // the glass tile is painted lit or not
+            }
 
             // The plate on 메인, the back arrow and the screen's name everywhere else — which is
             // the arrangement the reference uses between its lobby and everything inside it.
             var home = sheet == Sheet.Home;
             _plate?.EnableInClassList("hidden", !home);
+            if (home) PlateAvatar();
             _navBack?.EnableInClassList("hidden", home);
             Chrome.SetLobby(_doc.rootVisualElement, home);
             // The bottom bar belongs to the lobby only. Inside a screen the reference has none —
