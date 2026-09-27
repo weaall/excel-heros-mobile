@@ -861,6 +861,13 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - **등 뒤 시트 v3**(시안 `halo_*`): BA 헤일로처럼 채운 칸 없이 **캐릭터 색 네온 선의 4×3 격자**(A1:D3)를 원근으로 기울여 어깨 뒤·머리 옆에. ★+레벨 = 켜진 열(옅은 빛), 등급 장식 C 선택 괄호 / B 활성 셀 A1 + 채우기 핸들 / A 호 링 / S 링 + 안쪽 링 + 반짝이, 각성 = 금색. `BackSheet.Halo`가 형상 하나(단위 정사각의 선분·면) → UI `DrawHalo`(얇은 사각형 + 빛 링, 호는 빛 링 생략 — 짧은 조각마다 링이 겹쳐 톱니가 됨) / 3D `SheetTexture`(320² 거리장, 1.7배 굵게·빛은 1.15배 — 빛까지 키우면 S 링이 덩어리). 3D 사각형 0.5 m 정사각, `WearSheet` (side×0.27, 0.84, −0.16) + yaw side×16°.
 - **안경 v4**(시안 `glasses_*`): 못생긴 원인 = 가는 테, 눈을 탁하게 하는 청회색 렌즈, 치비 얼굴에 자리가 없는 부품(힌지·코받침·귀까지 다리). → 굵은 단색 테(튜브 0.00004), 눈에 맞춘 렌즈(사각 w .00033 h .00026, 둥근 .00031, 타원 .00037×.00024), 짧은 다리가 머리 속으로, **투명 렌즈 + 반짝임만**(선글라스는 어둡게 유지). 기본 테 색 해시 남색 35 / 검정 30 / 금 20 / 빨강 15 %(갈색·은색은 머리·피부에 묻혔다).
 
+## 일러스트 v2 — Unity 전용 (2026-09-27, 사용자 지시: 여캐 전원 + 주인공 재생성, BA 비율, 등급이 오를수록 약간 더 화려하게 — 성인 게임 느낌은 아님)
+- **"아트 생성 금지" 결정은 사용자가 뒤집었다.** 단 **웹 저장소(라이브)는 그대로**: 새 그림은 Unity에만. 웹 저장소는 `C:\Users\minds\excel-heros`에 clone해 **읽기만**(데이터·프롬프트 참고).
+- 두 경로를 비교(`ArtSource/Cards_v2_hf` vs `Cards_v2`, 6명): HF Animagine(웹 `prompt()` + v2 태그, `tools/gen_cards_v2.mjs`)은 성인 체형은 좋아졌지만 얼굴이 나이 들고 반실사로 흐르고 **정체성(머리·의상)이 바뀜** — 예전에 이 루트를 버린 이유 그대로. **Gemini 편집(`tools/gen_cards_gemini.py`)이 채택**: 지금 카드를 참조로 넣고 "같은 캐릭터를 BA 공식 일러 마감으로" → 머리·눈·안경·의상 색·소품이 유지되고, 헤일로 제거, 20대 성인 미인(주인공은 호감형 청년), 등급별 화려함(D 단정 → S 몸에 맞는 우아한 정장·자신감 있는 미소; 노출·속옷·비침 금지는 프롬프트에 명시).
+- 결과: `ArtSource/Cards_v2/<id>.png`(원본, **git 제외 — 드라이브 `generated/cards_v2`로**) → `python tools/cards_v2_import.py` → `Resources/Art/Cards/<id>.png` 512×748(자르기, 늘리지 않음; .meta 유지). 스킨(`__casual/__formal`)은 아직 예전 그림.
+- **Standing v2**: `tools/gen_standing_gemini.py`(v2 카드를 참조로 흰 배경 전신, BA 입상 ~6.5등신, 등급별 하의·스타킹·힐) → `ArtSource/Standing_v2/raw`. 남은 단계: 웹 저장소의 `tools/cutout_ai.py`(배경 제거, 두 모델 합의) → `tools/uniform.py std`(전원 같은 머리 크기·키, 6등신, 발 y 1318, 768×1344) → `Resources/Art/Standing/<id>.png`. **이 두 스크립트 실행은 자동 권한 검사에서 막혔다**(외부 저장소 코드 + HF 모델 다운로드) — 사용자 승인 후 진행. 예전 Standing에는 옛 등 뒤 시트가 그림에 박혀 있었다(새것은 없음 — 게임이 그림).
+- 일러가 바뀌면 3D SD 색도 따라가야 한다: `python tools/sd_review.py`(일러에서 색 샘플 → `sdspec.json`)를 다시 돌릴 것(수동 편집 필드는 보존됨).
+
 ## 새 PC에서 처음 열 때 (2026-09-27 두 번째 PC에서 실측)
 - clone → `restore.py` → Unity 한 번 열기. 첫 임포트에서 `com.unity.2d.pixel-perfect` 패키지 컴파일 오류가 한 번 나고 배치 모드가 멈출 수 있다 — 다시 돌리면 사라짐(임포트 순서 문제).
 - 첫 임포트가 아트 `.meta` 수백 개의 `userData`를 `excel-heroes-art-v9` → `v10`으로 다시 쓴다(`ArtImportSettings`의 Stamp는 이미 v10인데 커밋된 .meta가 v9). 커밋해 두면 다음 PC에선 안 생긴다.

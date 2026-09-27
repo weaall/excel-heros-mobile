@@ -59,3 +59,6 @@ Assets/_Ref.meta
 Assets/ExcelHeroes/Resources/Art/SDBase/
 Assets/ExcelHeroes/Resources/Art/SDBase.meta
 __pycache__/
+
+# v2 card originals (tools/gen_cards_v2.mjs), 832x1216 — the game ships the 512x748 copies; mirrored to Drive generated/cards_v2
+ArtSource/Cards_v2/
