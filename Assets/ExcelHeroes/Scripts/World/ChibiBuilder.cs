@@ -18,6 +18,7 @@ namespace ExcelHeroes.World
         public Transform Spine, ForearmL, ForearmR, CalfL, CalfR, HandL, HandR, FootL, FootR, Pelvis, ClavL, ClavR, Neck;
         public Transform[] FingersL = System.Array.Empty<Transform>(), FingersR = System.Array.Empty<Transform>();   // thumb0, thumb1, index0, index1, middle0, middle1
         public Vector3 PelvisRest;          // the pelvis's rest local position (the sample rig): weight shifts are offsets on it
+        public Transform Model; public Vector3 ModelScale = Vector3.one, ModelPos;   // the sample model under Root at rest (SdPose squash & stretch scales it)
         public float GripR = -1f;           // the right hand's closure while it holds a prop (SdRefProps.HandProp); -1 = none, the pose decides
         public Renderer FaceRenderer;       // the renderer carrying the eye/mouth submesh (SdRef)
         public int EyeSub = -1;             // its submesh index; -1 = no expression swaps

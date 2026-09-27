@@ -31,6 +31,9 @@ namespace ExcelHeroes.World
         public float FistL, FistR;
         // weight: the whole figure shifted sideways (metres, +x = the figure's right) and a hip tilt
         public float Sway, HipRoll;
+        // squash & stretch: the whole figure scaled, volume kept — + stretches tall and thin, − squashes
+        // short and wide (a crouch before a jump, a landing, a hit); feet stay on the floor
+        public float Squash;
         public string Expr;
 
         /// <summary>Every numeric field in a fixed order, for blends and springs.</summary>
@@ -41,7 +44,7 @@ namespace ExcelHeroes.World
             o[8] = KneeL; o[9] = KneeR; o[10] = ThighL; o[11] = ThighR; o[12] = Lean; o[13] = Twist; o[14] = SpineBend; o[15] = SpineTwist;
             o[16] = SpineSide; o[17] = HeadPitch; o[18] = HeadYaw; o[19] = HeadTilt; o[20] = Y; o[21] = HandFlexL; o[22] = HandFlexR;
             o[23] = HandDevL; o[24] = HandDevR; o[25] = ToeL; o[26] = ToeR; o[27] = FistL; o[28] = FistR; o[29] = Sway; o[30] = HipRoll;
-            o[31] = ShrugL; o[32] = ShrugR; o[33] = ReachL; o[34] = ReachR; o[35] = Step; o[36] = 0f; o[37] = 0f; o[38] = 0f; o[39] = 0f;
+            o[31] = ShrugL; o[32] = ShrugR; o[33] = ReachL; o[34] = ReachR; o[35] = Step; o[36] = Squash; o[37] = 0f; o[38] = 0f; o[39] = 0f;
         }
         public void FromArray(float[] o)
         {
@@ -49,7 +52,7 @@ namespace ExcelHeroes.World
             KneeL = o[8]; KneeR = o[9]; ThighL = o[10]; ThighR = o[11]; Lean = o[12]; Twist = o[13]; SpineBend = o[14]; SpineTwist = o[15];
             SpineSide = o[16]; HeadPitch = o[17]; HeadYaw = o[18]; HeadTilt = o[19]; Y = o[20]; HandFlexL = o[21]; HandFlexR = o[22];
             HandDevL = o[23]; HandDevR = o[24]; ToeL = o[25]; ToeR = o[26]; FistL = o[27]; FistR = o[28]; Sway = o[29]; HipRoll = o[30];
-            ShrugL = o[31]; ShrugR = o[32]; ReachL = o[33]; ReachR = o[34]; Step = o[35];
+            ShrugL = o[31]; ShrugR = o[32]; ReachL = o[33]; ReachR = o[34]; Step = o[35]; Squash = o[36];
         }
 
         /// <summary>
@@ -106,7 +109,7 @@ namespace ExcelHeroes.World
                 HeadPitch = Mathf.Lerp(a.HeadPitch, b.HeadPitch, t), HeadTilt = Mathf.Lerp(a.HeadTilt, b.HeadTilt, t), HeadYaw = Mathf.Lerp(a.HeadYaw, b.HeadYaw, t),
                 SpineBend = Mathf.Lerp(a.SpineBend, b.SpineBend, t), SpineTwist = Mathf.Lerp(a.SpineTwist, b.SpineTwist, t), SpineSide = Mathf.Lerp(a.SpineSide, b.SpineSide, t),
                 ShrugL = Mathf.Lerp(a.ShrugL, b.ShrugL, t), ShrugR = Mathf.Lerp(a.ShrugR, b.ShrugR, t), ReachL = Mathf.Lerp(a.ReachL, b.ReachL, t), ReachR = Mathf.Lerp(a.ReachR, b.ReachR, t),
-                Step = Mathf.Lerp(a.Step, b.Step, t),
+                Step = Mathf.Lerp(a.Step, b.Step, t), Squash = Mathf.Lerp(a.Squash, b.Squash, t),
                 Y = Mathf.Lerp(a.Y, b.Y, t), Yaw = b.Yaw, Expr = b.Expr,
                 HandFlexL = Mathf.Lerp(a.HandFlexL, b.HandFlexL, t), HandFlexR = Mathf.Lerp(a.HandFlexR, b.HandFlexR, t),
                 HandDevL = Mathf.Lerp(a.HandDevL, b.HandDevL, t), HandDevR = Mathf.Lerp(a.HandDevR, b.HandDevR, t),
@@ -274,13 +277,13 @@ namespace ExcelHeroes.World
                 default:
                     p.RaiseL = -12f; p.SwingL = 40f; p.ElbowL = 95f; p.InL = 30f; p.FistL = 1f; p.HandFlexL = 45f;
                     p.RaiseR = -8f; p.SwingR = 30f; p.ElbowR = 105f; p.InR = 20f; p.FistR = 1f; p.HandFlexR = 45f;
-                    p.KneeL = 14f + Mathf.Abs(br) * 4f; p.KneeR = 14f + Mathf.Abs(br) * 4f; p.Lean = 6f; p.Twist = 10f; p.SpineTwist = 6f; p.Y = Mathf.Abs(br) * 0.012f;
+                    p.KneeL = 24f + Mathf.Abs(br) * 5f; p.KneeR = 20f + Mathf.Abs(br) * 5f; p.Lean = 8f; p.Twist = 14f; p.SpineTwist = 8f; p.Y = -0.02f + Mathf.Abs(br) * 0.012f; p.Squash = -0.03f + Mathf.Abs(br) * 0.02f;
                     p.HeadPitch = 2f; p.Sway = 0.008f; p.ReachL = 8f; p.ReachR = 8f; p.ShrugL = 4f; p.ShrugR = 4f;
                     break;
                 case 1:
                     p.RaiseR = -6f; p.SwingR = 62f; p.ElbowR = 55f; p.InR = 35f; p.HandFlexR = 10f; p.FistR = 0.6f;
                     p.RaiseL = -10f; p.SwingL = 55f; p.ElbowL = 70f; p.InL = 45f; p.HandFlexL = 20f; p.FistL = 0.6f;
-                    p.KneeL = 8f; p.Lean = 4f; p.Twist = 12f + br * 1f; p.SpineTwist = 5f; p.HeadPitch = 3f; p.Sway = 0.01f; p.ReachR = 6f;
+                    p.KneeL = 16f; p.KneeR = 8f; p.Y = -0.012f; p.Lean = 5f; p.Twist = 16f + br * 1.5f; p.SpineTwist = 8f; p.HeadPitch = 3f; p.Sway = 0.012f; p.ReachR = 8f; p.Squash = -0.02f + Mathf.Abs(br) * 0.015f;
                     break;
                 case 2:
                     p.RaiseR = -14f; p.SwingR = 45f; p.ElbowR = 100f; p.InR = 15f; p.HandFlexR = 0f; p.FistR = 0.7f;
@@ -307,7 +310,7 @@ namespace ExcelHeroes.World
                 case 0:
                     p.RaiseL = p.RaiseR = 100f; p.SwingL = p.SwingR = -40f; p.ElbowL = p.ElbowR = 10f;
                     p.HandFlexL = p.HandFlexR = -20f; p.HandDevL = p.HandDevR = 25f; p.FistL = p.FistR = 0f;   // palms open, fingers spread up
-                    p.Y = hop * 0.14f; p.KneeL = p.KneeR = (1f - hop) * 22f; p.ToeL = p.ToeR = hop * 20f; p.HeadPitch = -6f; p.ShrugL = p.ShrugR = 10f; p.SpineBend = -4f; break;
+                    p.Y = hop * 0.14f; p.Squash = (hop - 0.45f) * 0.18f; p.KneeL = p.KneeR = (1f - hop) * 22f; p.ToeL = p.ToeR = hop * 20f; p.HeadPitch = -6f; p.ShrugL = p.ShrugR = 10f; p.SpineBend = -4f; break;
                 case 1:
                     var pump = Mathf.Abs(Mathf.Sin(t * 9f));
                     p.RaiseR = 70f + pump * 25f; p.SwingR = -20f; p.ElbowR = 70f - pump * 40f; p.HandFlexR = 50f; p.FistR = 1f;   // a fist
@@ -328,7 +331,7 @@ namespace ExcelHeroes.World
                     p.RaiseR = 100f; p.SwingR = -40f + Mathf.Sin(t * 12f) * 12f; p.ElbowR = 8f + Mathf.Abs(Mathf.Sin(t * 12f)) * 15f;
                     p.HandFlexR = -15f; p.HandDevR = Mathf.Sin(t * 12f) * 25f; p.FistR = 0f;   // the hand itself waves, open
                     p.RaiseL = -22f; p.SwingL = -12f; p.ElbowL = 22f; p.InL = 52f; p.HandFlexL = 45f; p.HandDevL = -15f;
-                    p.Y = hop * 0.1f; p.KneeL = p.KneeR = (1f - hop) * 20f; p.ShrugR = 8f; break;
+                    p.Y = hop * 0.1f; p.Squash = (hop - 0.45f) * 0.12f; p.KneeL = p.KneeR = (1f - hop) * 20f; p.ShrugR = 8f; break;
                 case 5:
                     p.RaiseL = p.RaiseR = 12f; p.SwingL = p.SwingR = 18f; p.ElbowL = p.ElbowR = 30f;
                     p.Yaw = Mathf.Min(t * 240f, 720f); p.Y = Mathf.Sin(Mathf.Min(t * 3.5f, Mathf.PI)) * 0.25f; break;
@@ -393,13 +396,19 @@ namespace ExcelHeroes.World
                     {
                         // arm out straight at the target, a recoil kick at the shot, then lowered
                         // raise (ease-out), a recoil kick at the shot (sharp in, soft out), lower (ease-in-out)
-                        var up = a < 0.25f ? EaseOut(a / 0.25f) : a < 0.75f ? 1f : 1f - EaseInOut((a - 0.75f) / 0.25f);
+                        // anticipation (the arm drawn back, the body leaning away) -> a snap up in a few
+                        // frames -> the recoil -> a forward overshoot -> lowered
+                        var anti = a < 0.16f ? EaseInOut(a / 0.16f) : a < 0.24f ? 1f - EaseOut((a - 0.16f) / 0.08f) : 0f;
+                        var up = a < 0.16f ? 0f : a < 0.26f ? EaseOutBack((a - 0.16f) / 0.1f, 1.2f) : a < 0.75f ? 1f : 1f - EaseInOut((a - 0.75f) / 0.25f);
                         var kick = a > 0.3f && a < 0.55f ? Impulse((a - 0.3f) / 0.25f, 0.2f) : 0f;
+                        var over = a > 0.5f && a < 0.8f ? Impulse((a - 0.5f) / 0.3f, 0.3f) : 0f;
                         p.RaiseR = Mathf.Lerp(-36f, -2f, up); p.SwingR = Mathf.Lerp(3f, 92f, up) - kick * 22f; p.ElbowR = Mathf.Lerp(14f, 4f, up) + kick * 34f;
                         p.RaiseL = -25f; p.SwingL = 20f; p.ElbowL = 60f; p.InL = 50f;
                         p.Lean = -2f * up + kick * 7f; p.SpineBend = -3f * up + kick * 5f; p.Twist = 14f * up; p.SpineTwist = 8f * up; p.HeadTilt = 3f * up;
                         p.ReachR = 10f * up - kick * 8f; p.ShrugR = 4f * up + kick * 6f; p.HeadPitch = kick * 3f;
                         p.HandFlexR = 10f; p.HandFlexL = 40f; p.FistR = 0.7f; p.FistL = 1f; p.Sway = 0.012f * up - kick * 0.02f; p.KneeL = 10f * up + kick * 6f;
+                        p.SwingR -= anti * 30f; p.ElbowR += anti * 40f; p.Lean += -8f * anti + over * 6f; p.SpineBend += -6f * anti + over * 4f;
+                        p.SpineTwist -= anti * 10f; p.HeadPitch += over * 3f; p.Squash = -0.04f * anti - 0.03f * kick + 0.02f * over;
                         break;
                     }
                 case 2:
@@ -438,8 +447,9 @@ namespace ExcelHeroes.World
             p.ElbowL = 20f + Mathf.Max(0f, -sw) * 18f; p.ElbowR = 20f + Mathf.Max(0f, sw) * 18f;
             p.RaiseL = p.RaiseR = -34f;
             p.HandFlexL = p.HandFlexR = 22f;
-            p.Lean = -3f;
-            p.Y = 0.012f + Mathf.Abs(pass) * 0.03f;             // up at mid-stance, down at double support
+            p.Lean = 9f;                                        // into the walk (upright, it slid)
+            p.Y = 0.008f + Mathf.Abs(pass) * 0.045f;            // up at mid-stance, down at double support
+            p.Squash = (Mathf.Abs(pass) - 0.5f) * 0.05f;        // a little squash at each contact
             p.Sway = -pass * 0.012f;                            // over the stance leg (the right when the left swings)
             p.HipRoll = pass * 4f; p.Twist = sw * 5f;           // pelvis with the legs, shoulders against
             p.SpineTwist = -sw * 7f; p.SpineSide = pass * 2f;   // the waist counters the hips; the trunk over the stance leg
@@ -452,11 +462,15 @@ namespace ExcelHeroes.World
         public static Pose Hit(float k)
         {
             var p = Pose.Rest; p.Expr = "hurt";
-            var f = Impulse(1f - k, 0.25f);
-            p.RaiseL = p.RaiseR = -36f + 40f * f; p.SwingL = p.SwingR = -15f * f; p.ElbowL = p.ElbowR = 14f + 50f * f;
-            p.ShrugL = p.ShrugR = 14f * f; p.ReachL = p.ReachR = -6f * f;
-            p.Lean = -6f * f; p.SpineBend = -10f * f; p.HeadPitch = -10f * f; p.HeadTilt = 5f * f;     // knocked back, chin up
-            p.KneeL = p.KneeR = 12f * f; p.Step = -0.05f * f;
+            // the impact snaps in (peak at 12 %), HOLDS as a readable key pose, then eases back slowly;
+            // the old flinch peaked and left at once and read as a nod (Gemini's read of the strip)
+            var t = 1f - k;
+            var f = t < 0.12f ? EaseOut(t / 0.12f) : t < 0.4f ? 1f : 1f - EaseInOut((t - 0.4f) / 0.6f);
+            p.RaiseL = p.RaiseR = -36f + 44f * f; p.SwingL = p.SwingR = -18f * f; p.ElbowL = p.ElbowR = 14f + 60f * f;
+            p.ShrugL = p.ShrugR = 16f * f; p.ReachL = p.ReachR = -8f * f;
+            p.Lean = -10f * f; p.SpineBend = -18f * f; p.HeadPitch = -14f * f; p.HeadTilt = 7f * f;     // bent back in a C, chin up
+            p.KneeL = p.KneeR = 16f * f; p.Step = -0.09f * f; p.Y = -0.01f * f;
+            p.Squash = -0.1f * f + 0.04f * Mathf.Sin(Mathf.Clamp01((t - 0.12f) / 0.3f) * Mathf.PI);
             return p;
         }
 
@@ -472,11 +486,13 @@ namespace ExcelHeroes.World
             {
                 default:
                     {
-                        if (k < 0.2f) { var c = k / 0.2f; p.KneeL = p.KneeR = 45f * c; p.Lean = 12f * c; p.RaiseR = -36f + 10f * c; p.SwingR = -30f * c; p.ElbowR = 14f + 80f * c; p.FistR = 1f; p.FistL = 1f; p.SwingL = 20f * c; p.ElbowL = 60f * c; }
+                        if (k < 0.2f) { var c = k / 0.2f; p.Squash = -0.16f * EaseOut(c); p.KneeL = p.KneeR = 45f * c; p.Lean = 12f * c; p.RaiseR = -36f + 10f * c; p.SwingR = -30f * c; p.ElbowR = 14f + 80f * c; p.FistR = 1f; p.FistL = 1f; p.SwingL = 20f * c; p.ElbowL = 60f * c; }
                         else if (k < 0.55f)
                         {
                             var c = (k - 0.2f) / 0.35f; var arc = Mathf.Sin(c * Mathf.PI);
-                            p.Y = arc * 0.55f; p.KneeL = p.KneeR = 45f * (1f - c) + 30f * arc; p.Lean = Mathf.Lerp(12f, -15f, c);
+                            // stretched on the way up, a beat of hang time at the apex, tucking to fall
+                            p.Squash = c < 0.35f ? 0.14f * (1f - c / 0.35f) : c < 0.6f ? 0f : -0.04f * (c - 0.6f) / 0.4f;
+                            p.Y = (c < 0.5f ? EaseOut(c / 0.5f) : c < 0.62f ? 1f : 1f - EaseIn((c - 0.62f) / 0.38f)) * 0.55f; p.KneeL = p.KneeR = 45f * (1f - c) + 30f * arc; p.Lean = Mathf.Lerp(12f, -15f, c);
                             p.RaiseR = Mathf.Lerp(-26f, 110f, c); p.SwingR = Mathf.Lerp(-30f, -30f, c); p.ElbowR = Mathf.Lerp(94f, 100f, c); p.FistR = p.FistL = 1f;
                             p.RaiseL = Mathf.Lerp(-36f, 95f, c); p.SwingL = -25f; p.ElbowL = 95f; p.HeadPitch = -8f;
                         }
@@ -485,13 +501,15 @@ namespace ExcelHeroes.World
                             // the smash: both fists driven down, the body folding forward
                             var c = (k - 0.55f) / 0.15f;
                             p.RaiseL = p.RaiseR = Mathf.Lerp(105f, -10f, c); p.SwingL = p.SwingR = Mathf.Lerp(-30f, 70f, c); p.ElbowL = p.ElbowR = Mathf.Lerp(100f, 20f, c);
-                            p.FistL = p.FistR = 1f; p.Lean = Mathf.Lerp(-15f, 28f, c); p.KneeL = p.KneeR = 50f; p.Y = Mathf.Lerp(0.15f, 0f, c); p.HeadPitch = 10f * c;
+                            p.FistL = p.FistR = 1f; p.Lean = Mathf.Lerp(-15f, 28f, c); p.KneeL = p.KneeR = 50f + 18f * c; p.Y = Mathf.Lerp(0.15f, -0.05f, c); p.HeadPitch = 10f * c;
+                            p.Squash = -0.2f * EaseOut(c);   // the landing: knees all the way, the body squashed
                         }
                         else
                         {
                             var c = (k - 0.7f) / 0.3f;
                             p.RaiseL = p.RaiseR = Mathf.Lerp(-10f, -36f, c); p.SwingL = p.SwingR = Mathf.Lerp(70f, 3f, c); p.ElbowL = p.ElbowR = Mathf.Lerp(20f, 14f, c);
-                            p.FistL = p.FistR = Mathf.Lerp(1f, 0.25f, c); p.Lean = 28f * (1f - c); p.KneeL = p.KneeR = 50f * (1f - c); p.HeadPitch = 10f * (1f - c);
+                            p.FistL = p.FistR = Mathf.Lerp(1f, 0.25f, c); p.Lean = 28f * (1f - c); p.KneeL = p.KneeR = 68f * (1f - EaseOut(c)); p.HeadPitch = 10f * (1f - c);
+                            p.Y = -0.05f * (1f - EaseOut(c)); p.Squash = -0.2f * (1f - EaseOut(c)) + 0.05f * Mathf.Sin(c * Mathf.PI);
                         }
                         break;
                     }
@@ -513,7 +531,7 @@ namespace ExcelHeroes.World
                         var hop = k > 0.3f && k < 0.8f ? Mathf.Sin((k - 0.3f) / 0.5f * Mathf.PI) : 0f;
                         p.RaiseR = Mathf.Lerp(-36f, 100f, up); p.SwingR = Mathf.Lerp(3f, -40f, up); p.ElbowR = 12f; p.HandFlexR = -10f; p.FistR = 0.7f;
                         p.RaiseL = Mathf.Lerp(-36f, 40f, up); p.SwingL = Mathf.Lerp(3f, -20f, up); p.ElbowL = 20f; p.HandFlexL = -20f; p.HandDevL = 20f; p.FistL = 0f;
-                        p.Y = hop * 0.35f; p.KneeL = p.KneeR = hop * 45f; p.ToeL = p.ToeR = hop * 25f; p.HeadPitch = -10f * up; p.HeadRoll = 8f * up;
+                        p.Y = hop * 0.35f; p.Squash = hop > 0f ? (0.5f - Mathf.Abs(hop - 0.5f)) * 0.2f - 0.02f : 0f; p.KneeL = p.KneeR = hop * 45f; p.ToeL = p.ToeR = hop * 25f; p.HeadPitch = -10f * up; p.HeadRoll = 8f * up;
                         break;
                     }
             }
@@ -523,7 +541,7 @@ namespace ExcelHeroes.World
         /// <summary>k 0 → 1: the knees buckle, the body folds and falls forward, bounces once and lies.</summary>
         public static Pose Dead(float k)
         {
-            var p = Pose.Rest; p.Expr = "hurt";
+            var p = Pose.Rest; p.Expr = k > 0.3f ? "dizzy" : "hurt";      // spiral eyes once down, the knocked-out face
             var buckle = EaseOut(k / 0.3f);
             var fall = k < 0.3f ? 0f : EaseIn((k - 0.3f) / 0.5f);
             var bounce = k > 0.8f ? Mathf.Sin(Mathf.Clamp01((k - 0.8f) / 0.2f) * Mathf.PI) * (1f - (k - 0.8f) / 0.2f) : 0f;
@@ -583,6 +601,14 @@ namespace ExcelHeroes.World
             if (rig.HandL != null) rig.Pose(rig.HandL, Quaternion.Euler(0f, p.HandFlexL, p.HandDevL));   // measured: the hands are NOT mirrored
             // a hand holding a prop keeps the prop's grip whatever the pose asks of it
             Fingers(rig, rig.FingersR, rig.GripR >= 0f ? rig.GripR : p.FistR); Fingers(rig, rig.FingersL, p.FistL);
+            // squash & stretch on the whole model, volume kept, feet on the floor (its local position
+            // scales with it: the model was placed so the feet land at 0 at its rest scale)
+            if (rig.Model != null)
+            {
+                var k = 1f + Mathf.Clamp(p.Squash, -0.35f, 0.35f); var side = 1f / Mathf.Sqrt(k);
+                rig.Model.localScale = new Vector3(rig.ModelScale.x * side, rig.ModelScale.y * k, rig.ModelScale.z * side);
+                rig.Model.localPosition = new Vector3(rig.ModelPos.x * side, rig.ModelPos.y * k, rig.ModelPos.z * side);
+            }
             if (rig.FootR != null) rig.Pose(rig.FootR, Quaternion.Euler(0f, 0f, p.ToeR));
             if (rig.FootL != null) rig.Pose(rig.FootL, Quaternion.Euler(0f, 0f, p.ToeL));
             // weight: the figure over its stance leg, and the hips rocking (roll about the pelvis's forward)

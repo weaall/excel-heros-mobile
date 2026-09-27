@@ -108,7 +108,7 @@ namespace ExcelHeroes.World
                 r.updateWhenOffscreen = true;
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
-            var rig = new ChibiRig { Root = root, Height = Height, Model3D = true, RefModel = true };
+            var rig = new ChibiRig { Root = root, Height = Height, Model3D = true, RefModel = true, Model = go.transform, ModelScale = go.transform.localScale, ModelPos = go.transform.localPosition };
             var all = go.GetComponentsInChildren<Transform>(true);
             Transform Find(string n) => all.FirstOrDefault(t => t.name == n);
             rig.Body = Find("Bip001 Pelvis") ?? root;

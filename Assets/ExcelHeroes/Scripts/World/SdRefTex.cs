@@ -185,7 +185,7 @@ namespace ExcelHeroes.World
         {
             var id = k.Id + ":" + expr + ":" + k.Eyes;
             if (Eyes.TryGetValue(id, out var t) && t != null) return t;
-            var shut = expr is "happy" or "hurt" or "blink";
+            var shut = expr is "happy" or "hurt" or "blink" or "dizzy";
             var es = StyleOf(k.Eyes);
             const int N = 128;
             var px = new Color[N * N];
@@ -232,6 +232,14 @@ namespace ExcelHeroes.World
                 {
                     // eyes shut: a line drawn on the plug — an arch (happy) or a > chevron (hurt)
                     var e = (lu - 0.5f) * 2f;
+                    if (expr == "dizzy")
+                    {
+                        // a spiral: the reference's knocked-out eyes
+                        var dx = (lu - 0.5f) / 0.42f; var dy = (lv - 0.5f) / 0.46f; var r = Mathf.Sqrt(dx * dx + dy * dy);
+                        if (r > 1f) return skinO;
+                        var turn = Mathf.Repeat(r * 2.6f - Mathf.Atan2(dy, dx) / (2f * Mathf.PI), 1f);
+                        return turn < 0.28f ? lashC : skinO;
+                    }
                     var line = expr == "happy" ? 0.62f - e * e * 0.3f : expr == "blink" ? 0.56f - e * e * 0.06f : 0.55f - Mathf.Abs(e) * 0.28f;
                     return Mathf.Abs(lv - line) < (expr == "blink" ? 0.075f : 0.1f) && Mathf.Abs(e) < 0.8f ? lashC : skinO;
                 }
