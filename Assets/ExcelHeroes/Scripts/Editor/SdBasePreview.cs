@@ -73,58 +73,99 @@ namespace ExcelHeroes.EditorTools
         }
 
         /// <summary>
-        /// Filmstrips (SD_STRIP=1): for SD_IDS[0], one row per action in SD_ACTIONS (default: every
-        /// action), 8 frames across the action's time, three-quarter view showing the right arm,
-        /// the root's hop and spin applied — the way to judge an arc, not a single frame.
-        /// → SD_PREVIEW_OUT/strip.png
+        /// Filmstrips: for each id in SD_IDS, one row per action in SD_ACTIONS, frames across the
+        /// action's time, three-quarter view showing the right arm, the root's hop and spin applied
+        /// — the way to judge an arc, not a single frame. "seq" rows simulate the RUNTIME blend:
+        /// ready → attack → ready → hit → ready through Pose.Spring at 60 Hz with the hair springs
+        /// stepping, sampled every 0.07 s (24 frames), so joint pops and settling show as they
+        /// would in the fight. → SD_PREVIEW_OUT/strip_&lt;id&gt;.png
         /// </summary>
         public static void Strip()
         {
             var outDir = System.Environment.GetEnvironmentVariable("SD_PREVIEW_OUT") ?? Path.Combine(Application.dataPath, "..", "tools", "out", "sd3d");
             Directory.CreateDirectory(outDir);
-            var id = (System.Environment.GetEnvironmentVariable("SD_IDS") ?? "intern").Split(',')[0];
+            var ids = (System.Environment.GetEnvironmentVariable("SD_IDS") ?? "intern").Split(',');
             var actions = (System.Environment.GetEnvironmentVariable("SD_ACTIONS") ?? "idle0,idle1,ready0,attack0,attack1,attack2,hit,walk,win0,win1,win3,skill0,skill1,skill2,dead").Split(',');
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
             if (!ExcelHeroes.Data.GameData.Loaded) ExcelHeroes.Data.GameData.Load();
-            const int W = 150, H = 220, N = 8;
-            var holder = new GameObject("preview").transform;
-            var rig = SdRef.Build(id, holder, 0);
-            if (rig == null) { Debug.LogWarning("[SdBasePreview] no figure for " + id); return; }
-            if (rig.FaceRenderer is SkinnedMeshRenderer smr) smr.forceMatrixRecalculationPerRender = true;
-            var sec = rig.Root.GetComponent<SdSecondary>();
-            var sheet = new Texture2D(W * N, H * actions.Length, TextureFormat.RGB24, false);
-            for (var r = 0; r < actions.Length; r++)
+            const int W = 150, H = 220;
+            foreach (var id in ids)
             {
-                var act = actions[r];
-                sec?.Settle();
-                for (var f = 0; f < N; f++)
+                var holder = new GameObject("preview").transform;
+                var rig = SdRef.Build(id, holder, 0);
+                if (rig == null) { Debug.LogWarning("[SdBasePreview] no figure for " + id); Object.DestroyImmediate(holder.gameObject); continue; }
+                if (rig.FaceRenderer is SkinnedMeshRenderer smr) smr.forceMatrixRecalculationPerRender = true;
+                var sec = rig.Root.GetComponent<SdSecondary>();
+                var kind = SdPose.AttackOf(id, SdRef.RoleOf(id));
+                // frames per row: a plain action gets 8 across its time; a seq gets 24 at 0.07 s
+                var rows = new System.Collections.Generic.List<(string name, System.Collections.Generic.List<(ExcelHeroes.World.Pose p, float dt)>)>();
+                foreach (var act in actions)
                 {
-                    var u = f / (float)(N - 1);
-                    ExcelHeroes.World.Pose p;
-                    if (act.StartsWith("idle")) p = SdPose.Idle(int.Parse(act.Substring(4)), u * 6f, 0f);
-                    else if (act.StartsWith("ready")) p = SdPose.Ready(int.Parse(act.Substring(5)), u * 4f, 0f);
-                    else if (act.StartsWith("attack")) p = SdPose.Attack(int.Parse(act.Substring(6)), u);
-                    else if (act == "hit") p = SdPose.Hit(1f - u);
-                    else if (act == "walk") p = SdPose.Walk(f / (float)N * Mathf.PI * 2f);
-                    else if (act.StartsWith("win")) p = SdPose.Victory(int.Parse(act.Substring(3)), u * 1.4f);
-                    else if (act.StartsWith("skill")) p = SdPose.Skill(int.Parse(act.Substring(5)), u);
-                    else if (act == "dead") p = SdPose.Dead(u);
-                    else p = ExcelHeroes.World.Pose.Rest;
-                    SdPose.Apply(rig, p);
-                    rig.Root.localPosition = new Vector3(0f, p.Y, 0f);
-                    rig.Root.rotation = Quaternion.Euler(0f, 215f + p.Yaw, 0f);
-                    if (rig.EyeSub >= 0) { var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(id).EyeSheet(p.Expr ?? "")); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub); }
-                    // let the chains catch up a little between frames (1/12 s of the action per frame)
-                    for (var k = 0; k < 5; k++) sec?.Step(1f / 60f);
-                    var img = Shoot(SdBase.Height, W, H, 0.72f, 0.58f);      // room for arms straight up
-                    sheet.SetPixels(W * f, H * (actions.Length - 1 - r), W, H, img.GetPixels());
-                    Object.DestroyImmediate(img);
+                    var frames = new System.Collections.Generic.List<(ExcelHeroes.World.Pose, float)>();
+                    if (act == "seq")
+                    {
+                        // the runtime blend: targets by time, springs at 60 Hz, a frame kept every 0.07 s
+                        var shown = SdPose.Ready(kind, 0f, 0f); var vel = new float[ExcelHeroes.World.Pose.Count];
+                        var next = 0f;
+                        for (var t = 0f; t < 1.68f; t += 1f / 60f)
+                        {
+                            ExcelHeroes.World.Pose target; float omega;
+                            if (t < 0.3f) { target = SdPose.Ready(kind, t, 0f); omega = 26f; }
+                            else if (t < 0.62f) { target = SdPose.Attack(kind, (t - 0.3f) / 0.32f); omega = 42f; }
+                            else if (t < 1.0f) { target = SdPose.Ready(kind, t, 0f); omega = 26f; }
+                            else if (t < 1.16f) { target = SdPose.Hit(1f - (t - 1.0f) / 0.16f); omega = 42f; }
+                            else { target = SdPose.Ready(kind, t, 0f); omega = 26f; }
+                            ExcelHeroes.World.Pose.Spring(ref shown, vel, target, 1f / 60f, omega, 0.78f);
+                            if (t >= next) { frames.Add((shown, 1f / 60f)); next += 0.07f; }
+                            else frames.Add((shown, -1f));          // simulated but not shown
+                        }
+                    }
+                    else
+                        for (var f = 0; f < 8; f++)
+                        {
+                            var u = f / 7f;
+                            ExcelHeroes.World.Pose p;
+                            if (act.StartsWith("idle")) p = SdPose.Idle(int.Parse(act.Substring(4)), u * 6f, 0f);
+                            else if (act.StartsWith("ready")) p = SdPose.Ready(int.Parse(act.Substring(5)), u * 4f, 0f);
+                            else if (act.StartsWith("attack")) p = SdPose.Attack(int.Parse(act.Substring(6)), u);
+                            else if (act == "hit") p = SdPose.Hit(1f - u);
+                            else if (act == "walk") p = SdPose.Walk(f / 8f * Mathf.PI * 2f);
+                            else if (act.StartsWith("win")) p = SdPose.Victory(int.Parse(act.Substring(3)), u * 1.4f);
+                            else if (act.StartsWith("skill")) p = SdPose.Skill(int.Parse(act.Substring(5)), u);
+                            else if (act == "dead") p = SdPose.Dead(u);
+                            else p = ExcelHeroes.World.Pose.Rest;
+                            frames.Add((p, 1f / 12f));
+                        }
+                    rows.Add((act, frames));
                 }
+                var cols = rows.Max(r => r.Item2.Count(fr => fr.dt >= 0f));
+                var sheet = new Texture2D(W * cols, H * rows.Count, TextureFormat.RGB24, false);
+                var grey = Enumerable.Repeat(new Color(0.25f, 0.25f, 0.28f), W * cols * H * rows.Count).ToArray();
+                sheet.SetPixels(grey);
+                for (var r = 0; r < rows.Count; r++)
+                {
+                    sec?.Settle();
+                    var col = 0;
+                    foreach (var (p, dt) in rows[r].Item2)
+                    {
+                        SdPose.Apply(rig, p);
+                        rig.Root.localPosition = new Vector3(p.Step, p.Y, 0f);
+                        rig.Root.rotation = Quaternion.Euler(0f, 215f + p.Yaw, 0f);
+                        if (dt < 0f) { sec?.Step(1f / 60f); continue; }
+                        if (rig.EyeSub >= 0) { var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(id).EyeSheet(p.Expr ?? "")); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub); }
+                        var steps = Mathf.Max(1, Mathf.RoundToInt(dt * 60f));
+                        for (var k = 0; k < steps; k++) sec?.Step(1f / 60f);
+                        var img = Shoot(SdBase.Height, W, H, 0.72f, 0.58f);
+                        sheet.SetPixels(W * col, H * (rows.Count - 1 - r), W, H, img.GetPixels());
+                        Object.DestroyImmediate(img);
+                        col++;
+                    }
+                }
+                sheet.Apply();
+                File.WriteAllBytes(Path.Combine(outDir, "strip_" + id + ".png"), sheet.EncodeToPNG());
+                Object.DestroyImmediate(holder.gameObject);
+                Debug.Log("[SdBasePreview] strip " + id);
             }
-            sheet.Apply();
-            File.WriteAllBytes(Path.Combine(outDir, "strip.png"), sheet.EncodeToPNG());
-            Object.DestroyImmediate(holder.gameObject);
-            Debug.Log("[SdBasePreview] strip " + id);
         }
 
         public static void Run()
