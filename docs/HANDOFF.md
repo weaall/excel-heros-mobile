@@ -759,3 +759,12 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 남은 영웅 SD 9명(guard, pivot, audit_han, reception_go, trainer_seok, translator_ji, ir_lead, bd_lead, pm_lead)은 비율 탈락 → HF 쿼터가 차면 `SD=1 FORCE=1 SEED_BASE=31 bash tools/art_pipeline.sh <ids>`. vlookup(흰 천을 끄는 그림)도 재생성 후보. 없는 동안은 절차적 3D 모델로 대체.
 - 컷아웃 `LENIENT=0.9`: HF Space가 응답 없을 때 두 모델 IoU ≥ 0.9면 isnet 마스크 채택.
 - 빌드 크기가 245 → 544MB로 늘었음(resources.assets.resS). 스탬프 v10 재적용 영향으로 보임 — 모바일 전에 텍스처 크기/포맷 점검 필요.
+
+## 한 캐릭터 = 풀 일러 + 2D SD + 3D SD, 전원 "한 몸" 비율
+- 참고 SD(FBX) 실측: `Assets/_Ref`(git 제외, 참고용만), `Assets/_Ref/Editor/RefAnalyze.cs`로 계층·본 높이·메시·UV·재질 덤프 + 4면 렌더. 비율 머리 본 0.62·목 0.59·어깨 0.545·골반 0.336·무릎 0.18·발목 0.044.
+- **머리 기준 정규화**(웹 `tools/uniform.py`, `cutout_ai.py`에서 자동): SD 2.4등신 / 풀 일러 6.0등신, 머리 크기·키 전원 동일(몸만 세로로 ±28% 보정, 넘으면 재생성). Standing·SD 전부 재적용, `faces.json` 재계산.
+- **3D SD**(`World/SdModel`, `tools/sd3d.py`): 2D SD → TripoSR(MIT, 로컬 RTX 4050) → Taubin 평활 → 36k 삼각형 → 앞면에 2D 그림 재투영, 뒷머리=머리색, 등=앞 옷 흐림 → `Resources/Art/SD3D/<id>.bytes`. 유니티에서 실측 비율 본 8개(body·spine·chest·head·armL/R·legL/R) 자동 리깅, 얇은 외곽선 0.0035. 전투·편성 모두 3D 우선 → 없으면 2D SD → 절차 인형.
+- 모션(`Actor.Update3D`): 숨쉬기, 걷기(다리·팔 스윙), 공격(예비동작 → 팔 휘두르기 + 몸 비틀기), 피격 젖힘 + 번쩍, EX = 점프 + 한 바퀴, 승리 = 점프 + 손 흔들기.
+- 미리보기: `Unity -batchmode -quit -executeMethod ExcelHeroes.EditorTools.SdPreview.Run`(‑nographics 빼고) → `tools/out/sd3d/<id>_unity.png` (2D SD + 4면).
+- TripoSR 설치: `C:\Users\user\TripoSR`(isosurface를 skimage로, transformers 5 키 이름 매핑 패치). Hunyuan3D는 라이선스가 한국 제외 → 사용 금지.
+- 다음: 3D 입력 전용 정면 A포즈 SD(`SD_A=1`, HF 쿼터 필요) → 옆·뒤로 돌아간 몇 명과 팔 리깅 개선. 가능하면 TRELLIS(MIT, HF Space)로 형상 품질 상향.

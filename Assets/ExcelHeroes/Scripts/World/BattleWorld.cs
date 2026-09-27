@@ -227,7 +227,8 @@ namespace ExcelHeroes.World
         {
             if (_actors.TryGetValue(c, out var a)) return a;
             a = new Actor { C = c };
-            if (c.side == Side.Hero && SdSprite.Build(c.heroId, _root, Layer) is { } sd)
+            // 3D SD first (made from the 2D SD, World/SdModel), then the 2D SD sprite, then the built doll
+            if (c.side == Side.Hero && (SdModel.Build(c.heroId, _root, Layer) ?? SdSprite.Build(c.heroId, _root, Layer)) is { } sd)
             {
                 a.Rig = sd;
                 a.Rig.Root.name = c.name;
@@ -622,6 +623,61 @@ namespace ExcelHeroes.World
             /// timed the way SD figures move: a small crouch before every action (anticipation),
             /// the action overshooting, then settling.
             /// </summary>
+            /// <summary>
+            /// The 3D SD: turned three-quarters to camera like the reference's squads, posed on its
+            /// bones — idle sway, a trot, an arm-thrown attack with anticipation, a flinch, a spin
+            /// for EX, a hop and wave for the win.
+            /// </summary>
+            void Update3D(float dt, float time, bool walking, MaterialPropertyBlock mpb, float closeUp)
+            {
+                var hero = C.side == Side.Hero;
+                var root = Rig.Root;
+                var y = 0f; var lean = 0f; var twist = 0f;
+                var br = Mathf.Sin(time * 2.6f + Z * 2f);
+                var armL = 8f + br * 3f; var armR = -8f - br * 3f; var fwdR = 0f; var fwdL = 0f;
+                var legSwing = 0f;
+                if (walking) { var ph = _walk * 0.9f; y += Mathf.Abs(Mathf.Sin(ph)) * 0.06f; legSwing = Mathf.Sin(ph) * 30f; fwdL = -legSwing * 0.8f; fwdR = legSwing * 0.8f; lean -= 6f; }
+                if (Attack > 0f)
+                {
+                    var a = 1f - Attack / 0.32f;
+                    if (a < 0.3f) { var k = a / 0.3f; fwdR = -40f * k; lean += 5f * k; twist = -12f * k; }
+                    else if (a < 0.6f) { var k = (a - 0.3f) / 0.3f; fwdR = Mathf.Lerp(-40f, 95f, k); lean -= 10f * k; twist = Mathf.Lerp(-12f, 16f, k); }
+                    else { var k = (a - 0.6f) / 0.4f; fwdR = Mathf.Lerp(95f, 0f, k); lean -= 10f * (1f - k); twist = 16f * (1f - k); }
+                }
+                if (Hit > 0f) { var k = Hit / 0.16f; lean += 14f * k; armL += 20f * k; armR -= 20f * k; }
+                var spin = 0f;
+                if (Skill > 0f) { var k = 1f - Skill / 0.75f; y += Mathf.Sin(k * Mathf.PI) * 0.45f; spin = k * 360f; fwdL = fwdR = -150f * Mathf.Sin(k * Mathf.PI); }
+                if ((Cheer > 0f || closeUp > 0.5f) && C.Alive) { var h = Mathf.Abs(Mathf.Sin(time * 7f)); y += h * 0.12f; fwdR = -160f; armR = -20f + Mathf.Sin(time * 12f) * 15f; }
+                if (Dying > 0f || !C.Alive)
+                {
+                    if (Dying > 0f) Dying += dt;
+                    var k = Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f;
+                    lean = 80f * Mathf.SmoothStep(0f, 1f, k);
+                }
+                var yaw = hero ? Mathf.Lerp(-35f, -8f, closeUp) : 35f;   // model faces +z (camera); turn toward the enemy
+                root.localPosition = new Vector3(X, y, Z);
+                // the mesh faces +z; the camera looks along +z, so 180 turns it to camera, yaw toward the fight
+                root.localRotation = Quaternion.Euler(0f, 180f + yaw + spin, 0f);
+                // bones
+                if (Rig.Body != null) Rig.Body.localRotation = Quaternion.Euler(lean, twist, 0f);
+                if (Rig.Head != null) Rig.Head.localRotation = Quaternion.Euler(br * 2f, 0f, Hit > 0f ? 6f : 0f);
+                if (Rig.ArmL != null) Rig.ArmL.localRotation = Quaternion.Euler(fwdL, 0f, armL);
+                if (Rig.ArmR != null) Rig.ArmR.localRotation = Quaternion.Euler(fwdR, 0f, armR);
+                if (Rig.LegL != null) Rig.LegL.localRotation = Quaternion.Euler(legSwing, 0f, 0f);
+                if (Rig.LegR != null) Rig.LegR.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
+                var flash = Hit > 0.08f ? 0.8f : 0f;
+                foreach (var r in Rig.Renderers)
+                {
+                    if (r == null || r == Rig.SheetRenderer) continue;
+                    r.GetPropertyBlock(mpb); mpb.SetFloat("_Flash", flash); r.SetPropertyBlock(mpb);
+                }
+                if (Rig.Sheet != null)
+                {
+                    Rig.Sheet.localPosition = new Vector3(Rig.SheetSide * 0.12f, Rig.Height * 0.62f + Mathf.Sin(time * 1.7f) * 0.015f, -0.14f);
+                    Rig.Sheet.localRotation = Quaternion.Euler(0f, 180f, Rig.SheetSide * 12f);
+                }
+            }
+
             void UpdateSprite(float dt, float time, bool walking, Transform cam, MaterialPropertyBlock mpb, float closeUp)
             {
                 var root = Rig.Root;
@@ -741,6 +797,7 @@ namespace ExcelHeroes.World
                 Cheer = Mathf.Max(0f, Cheer - dt);
 
                 if (Rig.Sprite) { UpdateSprite(dt, time, walking, cam, mpb, closeUp); return; }
+                if (Rig.Model3D) { Update3D(dt, time, walking, mpb, closeUp); return; }
 
                 // Facing: the party looks right, the errors left, both turned a little to camera.
                 var yaw = hero ? Mathf.Lerp(48f, 82f, closeUp) : 132f;
