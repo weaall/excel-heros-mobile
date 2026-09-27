@@ -106,7 +106,7 @@ namespace ExcelHeroes.UI
         public VisualElement Build()
         {
             _root = UiKit.Div("gacha gacha--ba");
-            ModalFrame.Painted(_root, Chrome.DrawBackdrop);
+            // no painted sky of its own: the shell's illustrated scene is the room the pick-up stands in
 
             _pickup = UiKit.Div("gstage", _root);
             // a soft spotlight behind the students

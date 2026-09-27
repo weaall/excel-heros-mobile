@@ -26,7 +26,7 @@
     background-color: var(--ex-surface);
 
     --ex-surface: rgb(238, 242, 246);
-    --ex-surface-raised: rgb(255, 255, 255);
+    --ex-surface-raised: rgba(255, 255, 255, 0.84);   /* frosted glass over the scene (Chrome.SetScene) */
     --ex-surface-sunken: rgb(222, 228, 234);
 
     --ex-ink: rgb(26, 46, 78);
@@ -338,8 +338,8 @@
 }
 
 .navtab {
-    width: 168px;
-    height: 132px;
+    width: 196px;
+    height: 140px;
     margin-right: 6px;
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
@@ -418,6 +418,16 @@
 
 .screen-body { flex-grow: 1; min-height: 0; }
 
+/* The illustrated scene behind every screen (Chrome.SetScene). Cover-fit, anchored low so the
+   floor and furniture stay in view under the top bar. */
+.shell-scene {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    -unity-background-scale-mode: scale-and-crop;
+    background-position-y: bottom;
+}
+.shell-scene--page { -unity-background-scale-mode: scale-and-crop; background-position-y: bottom; }
+
 /* A thin line along the bottom for whatever just happened — a reward collected, a run finished. */
 /* The status line only exists when it has something to say.
    It used to hold a 44px band of --ex-surface-sunken under the tab bar at all times, so every
@@ -474,8 +484,8 @@
 .panel {
     flex-shrink: 0;
     background-color: var(--ex-surface-raised);
-    border-width: 3px;
-    border-color: rgb(186, 214, 240);
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.95);
     border-radius: var(--ex-rad-md);
     padding: var(--ex-space-4);
     margin-bottom: var(--ex-space-3);
@@ -2836,7 +2846,7 @@
    one skewed tag breaks the spreadsheet grid, and an oversized low-opacity word fills the space
    the splash art leaves empty. */
 
-.gacha { flex-grow: 1; background-color: rgb(243, 245, 247); }
+.gacha { flex-grow: 1; background-color: rgba(0, 0, 0, 0); }
 .gacha__scroll { flex-grow: 1; }
 
 .banner {
@@ -4232,15 +4242,15 @@
 .home__icons {
     position: absolute;
     left: 40px;
-    top: 30px;
-    width: 300px;
+    top: 150px;
+    width: 370px;
     flex-direction: row;
     flex-wrap: wrap;
 }
 
 .home__icon {
-    width: 140px;
-    height: 150px;
+    width: 176px;
+    height: 196px;
     margin-bottom: 10px;
     align-items: center;
     justify-content: center;
@@ -4262,7 +4272,7 @@
 /* Dark type with a white edge, legible on any backdrop — how the reference labels its desk. */
 .home__icon-label {
     margin-top: -4px;
-    font-size: 26px;
+    font-size: 32px;
     -unity-font-style: bold;
     color: rgb(30, 44, 70);
     -unity-text-outline-width: 1.5px;
@@ -4658,12 +4668,14 @@
 /* The bottom bar: big drawn icons that rise above the strip, labels in dark ink with a white
    edge (BA_REFERENCE.md §3). */
 .navtab__icon.art-icon {
-    width: 96px;
-    height: 96px;
-    margin-top: -34px;
+    width: 124px;
+    height: 124px;
+    margin-top: -46px;
 }
 
+/* Read at arm's length on a phone held sideways: the labels were 24px (8dp) and vanished. */
 .navtab__label {
+    font-size: 32px;
     -unity-font-style: bold;
     color: rgb(30, 44, 70);
     -unity-text-outline-width: 1.5px;
@@ -4678,8 +4690,8 @@
 .chip__icon.art-icon { width: 52px; height: 52px; margin-right: 10px; }
 
 .home__art-icon {
-    width: 116px;
-    height: 116px;
+    width: 150px;
+    height: 150px;
     -unity-background-scale-mode: scale-to-fit;
 }
 
@@ -4688,7 +4700,7 @@
 .topbar { align-items: flex-start; padding-top: 0; }
 .topbar .chip { height: 66px; margin-left: 6px; padding-left: 24px; }
 .shell--lobby .topbar { align-items: center; padding-top: 8px; }
-.shell--lobby .topbar .chip { height: 56px; margin-left: 18px; }
+.shell--lobby .topbar .chip { height: 64px; margin-left: 18px; }   /* 56 left the number 2px short of its line */
 .topbar__btn { height: 66px; }
 .shell--lobby .topbar__btn { height: 82px; }
 .navback { align-items: flex-start; margin-top: 8px; }

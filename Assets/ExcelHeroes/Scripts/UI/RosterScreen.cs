@@ -225,7 +225,9 @@ namespace ExcelHeroes.UI
             // A page, as the reference's 학생 screen is, not a modal over the roster: the shell's
             // own backdrop behind it, the top bar still above it, the back arrow closing it.
             var view = UiKit.Div("detail");
-            ModalFrame.Painted(view, Chrome.DrawBackdrop);
+            // the shell's illustrated scene, repeated here because the page sits over the roster
+            // grid and must hide it (Chrome.SetScene; the painted sky was the fallback)
+            Chrome.PaintScene(view);
 
             // The whole illustration, not a crop of it. The card is the thing the player pulled;
             // showing them the middle third of it in a box of a fixed height is the one place in

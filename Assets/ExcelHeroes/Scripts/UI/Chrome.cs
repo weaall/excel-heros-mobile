@@ -39,6 +39,7 @@ namespace ExcelHeroes.UI
         {
             Lobby = lobby;
             root?.Q<VisualElement>("root")?.EnableInClassList("shell--lobby", lobby);
+            SetScene(root?.Q<VisualElement>("root") ?? root, lobby);
             root?.Q<VisualElement>("topbar")?.MarkDirtyRepaint();
             root?.Query<VisualElement>(className: "chip").ForEach(c => c.MarkDirtyRepaint());
         }
@@ -48,6 +49,7 @@ namespace ExcelHeroes.UI
             if (root == null) return;
 
             ModalFrame.Painted(root, DrawBackdrop);
+            SetScene(root, Lobby);
 
             var top = root.Q<VisualElement>("topbar");
             if (top != null) ModalFrame.Painted(top, DrawTopStrip);
@@ -60,6 +62,37 @@ namespace ExcelHeroes.UI
 
             var nav = root.Q<VisualElement>("navbar");
             if (nav != null) ModalFrame.Painted(nav, DrawBottomStrip);
+        }
+
+        /// <summary>
+        /// The illustrated scene behind every screen (Blue Archive never shows a flat colour behind
+        /// its menus): a bright office, softly blurred and hazed so the UI reads (Art/Backdrop/menu),
+        /// and on the lobby a sharper office lounge for the character to stand in (…/lobby). Both
+        /// from tools/gemini_edit.py, processed by tools/backdrops.py. The first child of the shell
+        /// root, so it draws over the root's own painted sky and under everything else; the painted
+        /// sky stays as the fallback when the picture is missing.
+        /// </summary>
+        static void SetScene(VisualElement root, bool lobby)
+        {
+            if (root == null) return;
+            var scene = root.Q<VisualElement>("shellScene");
+            if (scene == null)
+            {
+                scene = new VisualElement { name = "shellScene", pickingMode = PickingMode.Ignore };
+                scene.AddToClassList("shell-scene");
+                root.Insert(0, scene);
+            }
+            var tex = Resources.Load<Texture2D>(lobby ? "Art/Backdrop/lobby" : "Art/Backdrop/menu");
+            scene.style.backgroundImage = tex != null ? new StyleBackground(tex) : new StyleBackground(StyleKeyword.None);
+        }
+
+        /// <summary>A full page that must cover what is under it gets the same scene as its background (else the painted sky).</summary>
+        public static void PaintScene(VisualElement el)
+        {
+            var tex = Resources.Load<Texture2D>("Art/Backdrop/menu");
+            if (tex == null) { ModalFrame.Painted(el, DrawBackdrop); return; }
+            el.style.backgroundImage = new StyleBackground(tex);
+            el.AddToClassList("shell-scene--page");
         }
 
         /// <summary>

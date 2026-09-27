@@ -62,9 +62,10 @@ namespace ExcelHeroes.UI
             var outer = UiPaint.RoundRect(r, radius, 6);
             UiPaint.Ring(ctx, outer, C(80, 215, 255, 0.40f), C(80, 215, 255, 0f), 18f);
             UiPaint.Shadow(ctx, outer, new Vector2(0f, 8f), C(6, 16, 36, 0.35f), 22f);
-            UiPaint.Fill(ctx, outer, C(255, 255, 255, 0.98f), 1.2f);
+            // frosted glass, not paper: the scene behind every screen shows faintly through
+            UiPaint.Fill(ctx, outer, C(255, 255, 255, 0.92f), 1.2f);
             var body = UiPaint.Offset(outer, -3f);
-            UiPaint.Fill(ctx, body, UiPaint.Vertical(C(240, 246, 251, 0.97f), C(222, 232, 243, 0.97f), r.yMin, r.yMax));
+            UiPaint.Fill(ctx, body, UiPaint.Vertical(C(246, 250, 254, 0.86f), C(228, 238, 248, 0.84f), r.yMin, r.yMax));
 
             // L-brackets, 10px outside each corner.
             const float len = 46f, t = 6f, gap = 10f;
