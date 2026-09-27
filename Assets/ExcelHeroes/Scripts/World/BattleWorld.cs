@@ -705,7 +705,7 @@ namespace ExcelHeroes.World
                     else if (Skill > 0f) _pose = SdPose.Skill(SdPose.AttackOf(C.heroId, C.role), 1f - Skill / 0.75f);
                     else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
                     else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.heroId, C.role), 1f - Attack / 0.32f);
-                    else if (walking) _pose = SdPose.Walk(_walk * 0.9f);
+                    else if (walking) _pose = SdPose.Walk(_walk);
                     else _pose = SdPose.Ready(SdPose.AttackOf(C.heroId, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
                     // the head looks at the fight: heroes toward the enemy line, enemies toward the squad
                     if (!cheering && (Attack <= 0f) && C.Alive)
@@ -735,12 +735,12 @@ namespace ExcelHeroes.World
                 // the mesh faces +z; the camera looks along +z, so 180 turns it to camera, yaw toward the fight
                 root.localRotation = Quaternion.Euler(0f, 180f + yaw + spin, 0f);
                 var facing = Rig.RefModel ? root.localRotation * Vector3.forward * _shown.Step : Vector3.zero;   // the pose's step along the facing
-                root.localPosition = new Vector3(X + lunge, y, Z) + facing;
-                // bones: offsets onto the rest pose (the sample rig's rest rotations are not identity)
+                // bones first (offsets onto the rest pose), then the root: planting the feet needs the pose
                 if (Rig.RefModel)
                 {
                     SdPose.Apply(Rig, _shown);
                     SdExpr.Tick(Rig, C.heroId, _shown.Expr, time);
+                    y += Rig.FootDrop * root.localScale.y;
                 }
                 else
                 {
@@ -751,6 +751,7 @@ namespace ExcelHeroes.World
                     if (Rig.LegL != null) Rig.LegL.localRotation = Quaternion.Euler(legSwing, 0f, 0f);
                     if (Rig.LegR != null) Rig.LegR.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
                 }
+                root.localPosition = new Vector3(X + lunge, y, Z) + facing;
                 var flash = Hit > 0.08f ? 0.8f : 0f;
                 foreach (var r in Rig.Renderers)
                 {
@@ -888,7 +889,10 @@ namespace ExcelHeroes.World
 
                 var speed = moved / Mathf.Max(0.0001f, dt);
                 var walking = speed > 0.4f && C.Alive;
-                _walk += dt * (walking ? 11f : 0f);
+                // the walk turns with DISTANCE, 2π per stride cycle at this figure's size, so the
+                // planted foot stays put however fast the body moves (a fixed 11 rad/s skated at every
+                // speed but one). The sprite and doll rigs keep the old rate.
+                _walk += walking ? (Rig.RefModel ? moved / Mathf.Max(0.05f, SdPose.WalkCycle * Rig.Root.localScale.x) * Mathf.PI * 2f : dt * 11f) : 0f;
 
                 Attack = Mathf.Max(0f, Attack - dt);
                 Hit = Mathf.Max(0f, Hit - dt);

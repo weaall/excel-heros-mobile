@@ -4862,9 +4862,10 @@
    Behind the portrait, leaning out past one shoulder; top edge below the head. */
 .backsheet { position: absolute; }
 
-.home__sheet { top: 16%; width: 30%; height: 56%; }
-.home__sheet.backsheet--left { left: 10%; }
-.home__sheet.backsheet--right { left: 46%; }
+/* the halo sheet is square (BackSheet.Halo): beside the head, out past one shoulder */
+.home__sheet { top: 4%; width: 22%; height: 46%; }
+.home__sheet.backsheet--left { left: 18%; }
+.home__sheet.backsheet--right { left: 44%; }
 
 .kit__sheets { flex-direction: row; justify-content: space-between; margin-top: 30px; }
 .kit__sheet-cell { width: 420px; height: 600px; align-items: center; }
@@ -5037,9 +5038,9 @@
     background-position-y: bottom;
 }
 
-.detail__sheet { top: 8%; width: 46%; height: 50%; }
-.detail__sheet.backsheet--left { left: 8%; }
-.detail__sheet.backsheet--right { left: 46%; }
+.detail__sheet { top: 2%; width: 42%; height: 44%; }
+.detail__sheet.backsheet--left { left: 6%; }
+.detail__sheet.backsheet--right { left: 50%; }
 
 .overlay--page .dplate {
     left: 36px;
@@ -5751,3 +5752,5 @@
 .home__campaign-plate { width: 360px; height: 118px; }
 .home__campaign-label { color: rgb(255, 255, 255); font-size: 54px; -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgba(10, 60, 110, 0.6); padding: 0; margin: 0; }
 .home__campaign-sub { color: rgb(224, 246, 255); font-size: 20px; -unity-font-style: bold-and-italic; letter-spacing: 2px; padding: 0; margin: -4px 0 0 0; }
+/* round 7: the detail plate's stars in the reference's gold */
+.dplate__stars { color: rgb(255, 199, 0); font-size: 34px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(120, 76, 0); }

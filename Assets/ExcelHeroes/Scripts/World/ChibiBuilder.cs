@@ -19,7 +19,9 @@ namespace ExcelHeroes.World
         public Transform[] FingersL = System.Array.Empty<Transform>(), FingersR = System.Array.Empty<Transform>();   // thumb0, thumb1, index0, index1, middle0, middle1
         public Vector3 PelvisRest;          // the pelvis's rest local position (the sample rig): weight shifts are offsets on it
         public Transform Model; public Vector3 ModelScale = Vector3.one, ModelPos;   // the sample model under Root at rest (SdPose squash & stretch scales it)
-        public float GripR = -1f;           // the right hand's closure while it holds a prop (SdRefProps.HandProp); -1 = none, the pose decides
+        public float GripR = -1f;
+        public float RestFootY = float.NaN, FootDrop;
+        public Vector3 Home;                // where a line-up stood the root; the planted feet are added to it each frame   // SdPose.Apply's foot planting: the feet's rest height in root space, and this frame's correction           // the right hand's closure while it holds a prop (SdRefProps.HandProp); -1 = none, the pose decides
         public Renderer FaceRenderer;       // the renderer carrying the eye/mouth submesh (SdRef)
         public int EyeSub = -1;             // its submesh index; -1 = no expression swaps
         public string Expression = "";       // the sheet currently shown

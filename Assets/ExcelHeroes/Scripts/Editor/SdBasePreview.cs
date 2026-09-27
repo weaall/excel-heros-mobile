@@ -61,7 +61,7 @@ namespace ExcelHeroes.EditorTools
                 var poses = new[] { idle, SdPose.Ready(kind, 0.3f, 0f), SdPose.Attack(kind, 0.5f), SdPose.Victory(SdPose.WinOf(id), 0.55f), SdPose.Walk(Mathf.PI / 3f) };
                 for (var p = 0; p < COLS; p++)
                 {
-                    SdPose.Apply(rig, poses[p]); rig.Root.localPosition = new Vector3(0f, poses[p].Y, 0f);
+                    SdPose.Apply(rig, poses[p]); rig.Root.localPosition = new Vector3(0f, poses[p].Y + rig.FootDrop, 0f);
                     Expr(poses[p].Expr ?? "");
                     Put(p, 2, Shoot(SdBase.Height, W, H));
                 }
@@ -149,7 +149,7 @@ namespace ExcelHeroes.EditorTools
                     foreach (var (p, dt) in rows[r].Item2)
                     {
                         SdPose.Apply(rig, p);
-                        rig.Root.localPosition = new Vector3(p.Step, p.Y, 0f);
+                        rig.Root.localPosition = new Vector3(p.Step, p.Y + rig.FootDrop, 0f);
                         rig.Root.rotation = Quaternion.Euler(0f, 215f + p.Yaw, 0f);
                         if (dt < 0f) { sec?.Step(1f / 60f); continue; }
                         if (rig.EyeSub >= 0) { var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(id).EyeSheet(p.Expr ?? "")); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub); }
@@ -279,7 +279,7 @@ namespace ExcelHeroes.EditorTools
                            : poseEnv.StartsWith("skill") ? SdPose.Skill(int.Parse(poseEnv.Substring(5)), (i + 0.5f) / ids.Length)
                            : SdPose.Idle(i, 0.4f, 0f);
                     SdPose.Apply(rig, pz);
-                    rig.Root.localPosition = new Vector3(0f, pz.Y, 0f);
+                    rig.Root.localPosition = new Vector3(0f, pz.Y + rig.FootDrop, 0f);
                     if (rig.EyeSub >= 0 && !string.IsNullOrEmpty(pz.Expr))
                     {
                         var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(ids[i]).EyeSheet(pz.Expr)); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub);
@@ -364,7 +364,7 @@ namespace ExcelHeroes.EditorTools
                         var ph = (f + i * 7) * (1f / 60f) * 9f;
                         var wp = SdPose.Walk(ph);
                         SdPose.Apply(rig, wp);
-                        rig.Root.localPosition = new Vector3(f * 0.9f / 60f, wp.Y, 0f);
+                        rig.Root.localPosition = new Vector3(f * 0.9f / 60f, wp.Y + rig.FootDrop, 0f);
                         sec?.Step(1f / 60f);
                     }
                     rig.Root.localPosition = new Vector3(0f, rig.Root.localPosition.y, 0f);

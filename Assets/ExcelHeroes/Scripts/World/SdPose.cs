@@ -34,6 +34,8 @@ namespace ExcelHeroes.World
         // squash & stretch: the whole figure scaled, volume kept — + stretches tall and thin, − squashes
         // short and wide (a crouch before a jump, a landing, a hit); feet stay on the floor
         public float Squash;
+        // Free: off the ground on purpose (lying down, spinning) — SdPose.Apply does not plant the feet
+        public bool Free;
         public string Expr;
 
         /// <summary>Every numeric field in a fixed order, for blends and springs.</summary>
@@ -91,7 +93,7 @@ namespace ExcelHeroes.World
                     c[i] += vel[i] * h;
                 }
             cur.FromArray(c);
-            cur.Yaw = target.Yaw; cur.Expr = target.Expr;
+            cur.Yaw = target.Yaw; cur.Expr = target.Expr; cur.Free = target.Free;
         }
 
         /// <summary>Blend of two poses (the joint angles; the expression and the spin come from b).</summary>
@@ -110,7 +112,7 @@ namespace ExcelHeroes.World
                 SpineBend = Mathf.Lerp(a.SpineBend, b.SpineBend, t), SpineTwist = Mathf.Lerp(a.SpineTwist, b.SpineTwist, t), SpineSide = Mathf.Lerp(a.SpineSide, b.SpineSide, t),
                 ShrugL = Mathf.Lerp(a.ShrugL, b.ShrugL, t), ShrugR = Mathf.Lerp(a.ShrugR, b.ShrugR, t), ReachL = Mathf.Lerp(a.ReachL, b.ReachL, t), ReachR = Mathf.Lerp(a.ReachR, b.ReachR, t),
                 Step = Mathf.Lerp(a.Step, b.Step, t), Squash = Mathf.Lerp(a.Squash, b.Squash, t),
-                Y = Mathf.Lerp(a.Y, b.Y, t), Yaw = b.Yaw, Expr = b.Expr,
+                Y = Mathf.Lerp(a.Y, b.Y, t), Yaw = b.Yaw, Expr = b.Expr, Free = b.Free,
                 HandFlexL = Mathf.Lerp(a.HandFlexL, b.HandFlexL, t), HandFlexR = Mathf.Lerp(a.HandFlexR, b.HandFlexR, t),
                 HandDevL = Mathf.Lerp(a.HandDevL, b.HandDevL, t), HandDevR = Mathf.Lerp(a.HandDevR, b.HandDevR, t),
                 ToeL = Mathf.Lerp(a.ToeL, b.ToeL, t), ToeR = Mathf.Lerp(a.ToeR, b.ToeR, t),
@@ -157,6 +159,8 @@ namespace ExcelHeroes.World
     public static class SdPose
     {
         public const int IdleCount = 8, WinCount = 8;
+        /// <summary>Metres of travel per walk cycle (2π) at root scale 1 — BattleWorld drives the phase by distance with it, so the planted foot stays put. Calibrated by SdMotionTest.Calibrate.</summary>
+        public const float WalkCycle = 0.85f;   // SdMotionTest.Calibrate: slip 0.26 of the travel (was ~1.0 at the fixed 11 rad/s)
 
         // easing: a body accelerates into a move and settles out of it
         static float EaseOut(float t) { t = Mathf.Clamp01(t); return 1f - (1f - t) * (1f - t) * (1f - t); }
@@ -201,7 +205,7 @@ namespace ExcelHeroes.World
             // chest, shoulders and head move about twice that, and the whole figure bobs a little
             p.Lean = br * 2.4f; p.SpineBend = br * 2f; p.HeadPitch = -br * 2.6f;
             p.HeadYaw = glance * 10f; p.HeadTilt = glance * 3f;
-            p.ShrugL = br * 4f; p.ShrugR = br * 4f; p.Y = (br * 0.5f + 0.5f) * 0.006f;
+            p.ShrugL = br * 4f; p.ShrugR = br * 4f; p.Squash = br * 0.008f;   // the chest rises by stretching, not by lifting the feet (MotionTest: floats)
             p.Sway = side * 0.012f; p.HipRoll = side * 4f; p.SpineSide = -side * 2.5f;
             p.KneeL = Mathf.Max(0f, side) * 12f; p.KneeR = Mathf.Max(0f, -side) * 12f;
             switch (variant % IdleCount)
@@ -277,13 +281,13 @@ namespace ExcelHeroes.World
                 default:
                     p.RaiseL = -12f; p.SwingL = 40f; p.ElbowL = 95f; p.InL = 30f; p.FistL = 1f; p.HandFlexL = 45f;
                     p.RaiseR = -8f; p.SwingR = 30f; p.ElbowR = 105f; p.InR = 20f; p.FistR = 1f; p.HandFlexR = 45f;
-                    p.KneeL = 24f + Mathf.Abs(br) * 5f; p.KneeR = 20f + Mathf.Abs(br) * 5f; p.Lean = 8f; p.Twist = 14f; p.SpineTwist = 8f; p.Y = -0.02f + Mathf.Abs(br) * 0.012f; p.Squash = -0.03f + Mathf.Abs(br) * 0.02f;
+                    p.KneeL = 24f + Mathf.Abs(br) * 5f; p.KneeR = 20f + Mathf.Abs(br) * 5f; p.Lean = 8f; p.Twist = 14f; p.SpineTwist = 8f; p.Y = 0f; p.Squash = -0.03f + Mathf.Abs(br) * 0.02f;
                     p.HeadPitch = 2f; p.Sway = 0.008f; p.ReachL = 8f; p.ReachR = 8f; p.ShrugL = 4f; p.ShrugR = 4f;
                     break;
                 case 1:
                     p.RaiseR = -6f; p.SwingR = 62f; p.ElbowR = 55f; p.InR = 35f; p.HandFlexR = 10f; p.FistR = 0.6f;
                     p.RaiseL = -10f; p.SwingL = 55f; p.ElbowL = 70f; p.InL = 45f; p.HandFlexL = 20f; p.FistL = 0.6f;
-                    p.KneeL = 16f; p.KneeR = 8f; p.Y = -0.012f; p.Lean = 5f; p.Twist = 16f + br * 1.5f; p.SpineTwist = 8f; p.HeadPitch = 3f; p.Sway = 0.012f; p.ReachR = 8f; p.Squash = -0.02f + Mathf.Abs(br) * 0.015f;
+                    p.KneeL = 16f; p.KneeR = 8f; p.Lean = 5f; p.Twist = 16f + br * 1.5f; p.SpineTwist = 8f; p.HeadPitch = 3f; p.Sway = 0.012f; p.ReachR = 8f; p.Squash = -0.02f + Mathf.Abs(br) * 0.015f;
                     break;
                 case 2:
                     p.RaiseR = -14f; p.SwingR = 45f; p.ElbowR = 100f; p.InR = 15f; p.HandFlexR = 0f; p.FistR = 0.7f;
@@ -448,7 +452,7 @@ namespace ExcelHeroes.World
             p.RaiseL = p.RaiseR = -34f;
             p.HandFlexL = p.HandFlexR = 22f;
             p.Lean = 9f;                                        // into the walk (upright, it slid)
-            p.Y = 0.008f + Mathf.Abs(pass) * 0.045f;            // up at mid-stance, down at double support
+            p.Y = 0f;                                           // the rise and fall comes from planting the feet (SdPose.Apply) — a hand-made bob floated the walk 5–9 cm
             p.Squash = (Mathf.Abs(pass) - 0.5f) * 0.05f;        // a little squash at each contact
             p.Sway = -pass * 0.012f;                            // over the stance leg (the right when the left swings)
             p.HipRoll = pass * 4f; p.Twist = sw * 5f;           // pelvis with the legs, shoulders against
@@ -469,7 +473,7 @@ namespace ExcelHeroes.World
             p.RaiseL = p.RaiseR = -36f + 44f * f; p.SwingL = p.SwingR = -18f * f; p.ElbowL = p.ElbowR = 14f + 60f * f;
             p.ShrugL = p.ShrugR = 16f * f; p.ReachL = p.ReachR = -8f * f;
             p.Lean = -10f * f; p.SpineBend = -18f * f; p.HeadPitch = -14f * f; p.HeadTilt = 7f * f;     // bent back in a C, chin up
-            p.KneeL = p.KneeR = 16f * f; p.Step = -0.09f * f; p.Y = -0.01f * f;
+            p.KneeL = p.KneeR = 16f * f; p.Step = -0.09f * f;
             p.Squash = -0.1f * f + 0.04f * Mathf.Sin(Mathf.Clamp01((t - 0.12f) / 0.3f) * Mathf.PI);
             return p;
         }
@@ -501,7 +505,7 @@ namespace ExcelHeroes.World
                             // the smash: both fists driven down, the body folding forward
                             var c = (k - 0.55f) / 0.15f;
                             p.RaiseL = p.RaiseR = Mathf.Lerp(105f, -10f, c); p.SwingL = p.SwingR = Mathf.Lerp(-30f, 70f, c); p.ElbowL = p.ElbowR = Mathf.Lerp(100f, 20f, c);
-                            p.FistL = p.FistR = 1f; p.Lean = Mathf.Lerp(-15f, 28f, c); p.KneeL = p.KneeR = 50f + 18f * c; p.Y = Mathf.Lerp(0.15f, -0.05f, c); p.HeadPitch = 10f * c;
+                            p.FistL = p.FistR = 1f; p.Lean = Mathf.Lerp(-15f, 28f, c); p.KneeL = p.KneeR = 50f + 18f * c; p.Y = Mathf.Lerp(0.15f, 0f, c); p.HeadPitch = 10f * c;
                             p.Squash = -0.2f * EaseOut(c);   // the landing: knees all the way, the body squashed
                         }
                         else
@@ -509,7 +513,7 @@ namespace ExcelHeroes.World
                             var c = (k - 0.7f) / 0.3f;
                             p.RaiseL = p.RaiseR = Mathf.Lerp(-10f, -36f, c); p.SwingL = p.SwingR = Mathf.Lerp(70f, 3f, c); p.ElbowL = p.ElbowR = Mathf.Lerp(20f, 14f, c);
                             p.FistL = p.FistR = Mathf.Lerp(1f, 0.25f, c); p.Lean = 28f * (1f - c); p.KneeL = p.KneeR = 68f * (1f - EaseOut(c)); p.HeadPitch = 10f * (1f - c);
-                            p.Y = -0.05f * (1f - EaseOut(c)); p.Squash = -0.2f * (1f - EaseOut(c)) + 0.05f * Mathf.Sin(c * Mathf.PI);
+                            p.Squash = -0.2f * (1f - EaseOut(c)) + 0.05f * Mathf.Sin(c * Mathf.PI);
                         }
                         break;
                     }
@@ -541,7 +545,7 @@ namespace ExcelHeroes.World
         /// <summary>k 0 → 1: the knees buckle, the body folds and falls forward, bounces once and lies.</summary>
         public static Pose Dead(float k)
         {
-            var p = Pose.Rest; p.Expr = k > 0.3f ? "dizzy" : "hurt";      // spiral eyes once down, the knocked-out face
+            var p = Pose.Rest; p.Expr = k > 0.3f ? "dizzy" : "hurt";   // the feet stay planted: the body folds forward over them (MotionTest: a hand-set drop sank them 4 cm)      // spiral eyes once down, the knocked-out face
             var buckle = EaseOut(k / 0.3f);
             var fall = k < 0.3f ? 0f : EaseIn((k - 0.3f) / 0.5f);
             var bounce = k > 0.8f ? Mathf.Sin(Mathf.Clamp01((k - 0.8f) / 0.2f) * Mathf.PI) * (1f - (k - 0.8f) / 0.2f) : 0f;
@@ -550,7 +554,7 @@ namespace ExcelHeroes.World
             p.SwingL = 10f * buckle + fall * 30f; p.SwingR = 8f * buckle + fall * 34f; p.ElbowL = 14f + 40f * buckle; p.ElbowR = 14f + 30f * buckle;
             p.Lean = 10f * buckle + 74f * fall + bounce * 6f; p.SpineBend = 6f * buckle + 10f * fall;
             p.HeadPitch = -8f * buckle + 14f * fall; p.HeadTilt = 6f * fall; p.ShrugL = p.ShrugR = 8f * buckle;
-            p.Y = -0.06f * buckle - 0.04f * fall; p.Step = 0.05f * fall;
+            p.Step = 0.05f * fall;
             return p;
         }
 
@@ -594,13 +598,24 @@ namespace ExcelHeroes.World
             rig.Pose(rig.ForearmR, Quaternion.Euler(0f, p.InR, p.ElbowR));
             rig.Pose(rig.ForearmL, Quaternion.Euler(0f, -p.InL, p.ElbowL));
             rig.Pose(rig.LegL, Quaternion.Euler(0f, 0f, -p.ThighL));
-            rig.Pose(rig.LegR, Quaternion.Euler(0f, 0f, p.ThighR));
+            // NOT mirrored, like the knees (SdMotionTest.DumpWalk): with +ThighR here the right foot
+            // swung back while lifted and slid forward while planted — every walk was half a moonwalk
+            rig.Pose(rig.LegR, Quaternion.Euler(0f, 0f, -p.ThighR));
             rig.Pose(rig.CalfL, Quaternion.Euler(0f, 0f, p.KneeL));
             rig.Pose(rig.CalfR, Quaternion.Euler(0f, 0f, p.KneeR));
             if (rig.HandR != null) rig.Pose(rig.HandR, Quaternion.Euler(0f, p.HandFlexR, p.HandDevR));
             if (rig.HandL != null) rig.Pose(rig.HandL, Quaternion.Euler(0f, p.HandFlexL, p.HandDevL));   // measured: the hands are NOT mirrored
             // a hand holding a prop keeps the prop's grip whatever the pose asks of it
             Fingers(rig, rig.FingersR, rig.GripR >= 0f ? rig.GripR : p.FistR); Fingers(rig, rig.FingersL, p.FistL);
+            // plant the feet: the lowest foot on the floor (unless the pose is Free); p.Y then means
+            // "how far the feet are off the floor", so a jump is still a jump and a crouch is just
+            // bent knees. Read by the caller as rig.FootDrop, in root units.
+            if (rig.FootL != null && rig.FootR != null)
+            {
+                if (float.IsNaN(rig.RestFootY)) rig.RestFootY = float.MinValue;   // set by SdRef.Build; unknown = no planting
+                var low = Mathf.Min(rig.Root.InverseTransformPoint(rig.FootL.position).y, rig.Root.InverseTransformPoint(rig.FootR.position).y);
+                rig.FootDrop = p.Free || rig.RestFootY == float.MinValue ? 0f : rig.RestFootY - low;
+            }
             // squash & stretch on the whole model, volume kept, feet on the floor (its local position
             // scales with it: the model was placed so the feet land at 0 at its rest scale)
             if (rig.Model != null)

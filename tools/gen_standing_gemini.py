@@ -70,6 +70,12 @@ if __name__ == "__main__":
         if not os.path.exists(ref): ref = os.path.join(g.CARDS, i + ".png")
         grade, sex = cast.get(i, ("D", "F"))
         text = (PROMPT_F.format(grade=grade, glamour=g.GLAMOUR.get(grade, g.GLAMOUR["D"]), legs=LEGS.get(grade, LEGS["D"])) if sex == "F" else PROMPT_M)
+        # --tall: for the ones the cut-out's proportion check rejected (under 5.3 heads): the
+        # model drew a big head on a short body; say so, with numbers
+        if "--tall" in args:
+            text += ("\nIMPORTANT: the previous attempt drew the head too big and the body too short. Draw her with a SMALL head "
+                     "and long legs: exactly six and a half heads tall from the top of the hair to the soles; the legs alone "
+                     "about half of the whole height.")
         # 9:16 — the standing canvas is 768x1344 (4:7); uniform.py rescales and places the figure
         m = None
         body = None

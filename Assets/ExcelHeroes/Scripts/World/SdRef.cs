@@ -162,6 +162,9 @@ namespace ExcelHeroes.World
             if (k.Pants && k.Outfit is not "hoodie" and not "apron") SdRefProps.Belt(rig, root, k, layer);
             if (k.Cap.a > 0f) SdRefProps.Cap(rig, body, root, k.Cap, DollData.For(heroId == Data.GameData.MainId ? "intern" : heroId).Has("hardhat"), layer);
             if (k.Headset) SdRefProps.Headset(rig, body, root, k.Accent, layer);
+            // the feet's rest height, for SdPose.Apply's planting (measured in the rest pose, at build)
+            SdPose.Apply(rig, Pose.Rest);
+            if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
             // hair, tag and hem chains trail the motion (the sample's own secondary bones)
             root.gameObject.AddComponent<SdSecondary>().Init(go.transform, look.Style);
             return rig;

@@ -119,7 +119,7 @@ namespace ExcelHeroes.World
                 if (!rig.Sprite) ChibiBuilder.AddSheet(rig, SheetTexture.For(spec, id), spec.Left ? 1 : -1, Layer);
                 if (rig.RefModel) SdRef.WearSheet(rig, 1f);
                 SetLayer(rig.Root, Layer);
-                rig.Root.localPosition = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
+                rig.Root.localPosition = rig.Home = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
                 var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 1.02f / rig.Height, slotW * worldW * 1.6f) : scale;
                 rig.Root.localScale = Vector3.one * s;
                 rig.Root.localRotation = rig.Sprite ? Quaternion.identity : rig.Model3D ? Quaternion.Euler(0f, 180f + 20f, 0f) : Quaternion.Euler(0f, 68f, 0f);
@@ -165,7 +165,9 @@ namespace ExcelHeroes.World
                     {
                         // the character's own idle from the pose library (root name = "sdref:<id>")
                         var id = rig.Root.name.Contains(":") ? rig.Root.name.Substring(rig.Root.name.IndexOf(':') + 1) : rig.Root.name;
-                        SdPose.Apply(rig, SdPose.Idle(SdPose.IdleOf(id), _t, phase));
+                        var ip = SdPose.Idle(SdPose.IdleOf(id), _t, phase);
+                        SdPose.Apply(rig, ip);
+                        rig.Root.localPosition = rig.Home + Vector3.up * ((ip.Y + rig.FootDrop) * rig.Root.localScale.y);
                         SdExpr.Tick(rig, id, "", _t);
                     }
                     else

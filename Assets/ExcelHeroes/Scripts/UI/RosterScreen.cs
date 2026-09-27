@@ -234,7 +234,10 @@ namespace ExcelHeroes.UI
             // the game where cropping is simply wrong. The plate takes its height from the
             // picture's own aspect ratio, so nothing is cut and there are no bars either.
             var art = UiKit.Div("detail__art", view);
-            // the sheet is painted into the standing art (tools/bake_sheet.py); no overlay
+            // the halo sheet behind the figure, beside the head (BackSheet.Halo). The old standing
+            // art had the sheet painted into the picture (tools/bake_sheet.py); v2 is clean, so
+            // the game draws it — and draws it the same as everywhere else
+            BackSheet.Add(art, def, owned, "backsheet detail__sheet");
             var figure = UiKit.Div("detail__figure", art);
             var standing = GameData.StandingArt(heroId);
             UiKit.SetArt(figure, standing ?? GameData.WornCardArt(heroId));
@@ -253,6 +256,16 @@ namespace ExcelHeroes.UI
                 var poly = UiPaint.SkewRect(band, SkewPlate.SlantFor(band.height) * 0.5f, 6f);
                 UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), UiPaint.C(0, 0, 0, 0.3f), 10f);
                 UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(40, 62, 108), UiPaint.C(22, 36, 70), band.yMin, band.yMax));
+                // a cyan edge along the top and faint diagonal stripes on the right: the layered
+                // plate the reference names its students on (ui_critique round 3, 16-Detail #1)
+                var edge = UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(band.xMin - 40f, band.yMin, band.xMax + 40f, band.yMin + 5f), 0f));
+                UiPaint.Fill(ctx, edge, UiPaint.C(40, 160, 246), 0f);
+                for (var k = 0; k < 6; k++)
+                {
+                    var x0 = band.xMax - band.width * 0.34f + k * 26f;
+                    var stripe = new System.Collections.Generic.List<Vector2> { new(x0 + 40f, band.yMin + 5f), new(x0 + 52f, band.yMin + 5f), new(x0 + 12f, band.yMax), new(x0, band.yMax) };
+                    UiPaint.Fill(ctx, UiPaint.Clip(stripe, poly), UiPaint.C(255, 255, 255, 0.05f), 0.5f);
+                }
                 var tag = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin + 10f, r.yMin, r.xMin + r.width * 0.62f, r.yMin + 42f), 8f, 3f, 2);
                 UiPaint.Fill(ctx, tag, UiPaint.C(255, 255, 255, 0.95f));
             });

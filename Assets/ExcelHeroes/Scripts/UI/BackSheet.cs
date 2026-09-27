@@ -200,7 +200,9 @@ namespace ExcelHeroes.UI
         {
             var side = Mathf.Min(r.width, r.height);
             var box = new Rect(r.center.x - side * 0.5f, r.center.y - side * 0.5f, side, side);
-            var k = side / 320f;
+            // on the light UI backdrops the neon needs more body than on the 3D stage: heavier lines,
+            // a stronger glow, and a core that stays in the colour rather than going to white
+            var k = side / 320f * 1.35f;
             var strokes = new List<Stroke>(); var washes = new List<(List<Vector2>, Color)>();
             Halo(s, strokes, washes);
             Vector2 M(Vector2 p) => new(box.xMin + p.x * side, box.yMin + p.y * side);
@@ -213,14 +215,14 @@ namespace ExcelHeroes.UI
                 var n = new Vector2(-(b - a).y, (b - a).x).normalized * Mathf.Max(0.6f, st.Width * k * 0.5f);
                 var along = (b - a).normalized * n.magnitude;
                 var q = new List<Vector2> { a - along + n, b + along + n, b + along - n, a - along - n };
-                UiPaint.Ring(ctx, q, WithA(st.C, 0.5f * st.C.a), WithA(st.C, 0f), st.Glow * k);
+                UiPaint.Ring(ctx, q, WithA(st.C, 0.62f * st.C.a), WithA(st.C, 0f), st.Glow * k);
             }
             foreach (var st in strokes)
             {
                 var a = M(st.A); var b = M(st.B);
                 var n = new Vector2(-(b - a).y, (b - a).x).normalized * Mathf.Max(0.6f, st.Width * k * 0.5f);
                 var along = (b - a).normalized * n.magnitude;
-                UiPaint.Fill(ctx, new List<Vector2> { a - along + n, b + along + n, b + along - n, a - along - n }, Color.Lerp(st.C, Color.white, 0.25f), 0.6f);
+                UiPaint.Fill(ctx, new List<Vector2> { a - along + n, b + along + n, b + along - n, a - along - n }, Color.Lerp(st.C, new Color(0.1f, 0.2f, 0.4f), 0.12f), 0.6f);
             }
         }
 
