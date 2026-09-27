@@ -24,6 +24,7 @@ namespace ExcelHeroes.World
         public Color Cap = new(0, 0, 0, 0);     // alpha 0 = no cap
         public bool Headset;
         public string Outfit = "suit";          // suit | shirt | vest | cardigan | hoodie | coat | labcoat | apron | dress
+        public string Legwear = "";             // skirts: bare (short socks) | socks (knee-high) | tights; "" = trousers
 
         [Serializable] class Row { public string id, hair, top, shirt, bottom, legs, shoes, eye, skin; }
         [Serializable] class File { public List<Row> items = new(); }
@@ -89,6 +90,7 @@ namespace ExcelHeroes.World
                 k.Tie = sp.tie != "" ? H(sp.tie, Color.blue) : new Color(0, 0, 0, 0);
                 k.Cap = sp.cap != "" ? H(sp.cap, Color.blue) : new Color(0, 0, 0, 0);
                 k.Headset = sp.headset;
+                k.Legwear = sp.legwear ?? "";
                 // the spec row is the source of truth for whatever it carries; colours re-derived
                 // from it so the shirt / legs / shoes follow a hand edit
                 if (sp.hair != "") k.Hair = H(sp.hair, k.Hair);

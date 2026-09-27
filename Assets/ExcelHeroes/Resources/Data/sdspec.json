@@ -23,6 +23,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "bare",
    "manual": []
   },
   {
@@ -48,6 +49,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -73,6 +75,7 @@
    "tie": "",
    "cap": "#f1c40f",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -98,6 +101,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -123,6 +127,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -148,6 +153,7 @@
    "tie": "#f5c542",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -173,6 +179,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -198,6 +205,7 @@
    "tie": "#ffe0b2",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -223,6 +231,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -248,6 +257,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -273,6 +283,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -298,6 +309,7 @@
    "tie": "#d4a017",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -323,6 +335,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -348,6 +361,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -373,6 +387,7 @@
    "tie": "#151515",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -398,6 +413,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -423,6 +439,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -448,6 +465,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -473,6 +491,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -498,6 +517,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -523,6 +543,7 @@
    "tie": "",
    "cap": "#3b5bd6",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -548,6 +569,7 @@
    "tie": "",
    "cap": "",
    "headset": true,
+   "legwear": "",
    "manual": []
   },
   {
@@ -573,6 +595,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -598,6 +621,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -623,6 +647,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -648,6 +673,7 @@
    "tie": "",
    "cap": "#5b9bd5",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -673,6 +699,7 @@
    "tie": "",
    "cap": "",
    "headset": true,
+   "legwear": "",
    "manual": []
   },
   {
@@ -698,6 +725,7 @@
    "tie": "#d4a017",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -723,6 +751,7 @@
    "tie": "#1f2a44",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -748,6 +777,7 @@
    "tie": "#16a085",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -773,6 +803,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -798,6 +829,7 @@
    "tie": "#c0392b",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -823,6 +855,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -848,6 +881,7 @@
    "tie": "",
    "cap": "",
    "headset": true,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -873,6 +907,7 @@
    "tie": "",
    "cap": "",
    "headset": true,
+   "legwear": "bare",
    "manual": []
   },
   {
@@ -898,6 +933,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -923,6 +959,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -948,6 +985,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "bare",
    "manual": []
   },
   {
@@ -973,6 +1011,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "bare",
    "manual": []
   },
   {
@@ -998,6 +1037,7 @@
    "tie": "#e1bee7",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1023,6 +1063,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -1048,6 +1089,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -1073,6 +1115,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -1098,6 +1141,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1123,6 +1167,7 @@
    "tie": "",
    "cap": "",
    "headset": true,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1148,6 +1193,7 @@
    "tie": "",
    "cap": "#2c3345",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1173,6 +1219,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1198,6 +1245,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -1223,6 +1271,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "bare",
    "manual": []
   },
   {
@@ -1248,6 +1297,7 @@
    "tie": "#111111",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1273,6 +1323,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -1298,6 +1349,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "bare",
    "manual": []
   },
   {
@@ -1323,6 +1375,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1348,6 +1401,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -1373,6 +1427,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1398,6 +1453,7 @@
    "tie": "#c0392b",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1423,6 +1479,7 @@
    "tie": "#c0392b",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1448,6 +1505,7 @@
    "tie": "#c0392b",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1473,6 +1531,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -1498,6 +1557,7 @@
    "tie": "",
    "cap": "",
    "headset": true,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1523,6 +1583,7 @@
    "tie": "#1f2a44",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1548,6 +1609,7 @@
    "tie": "#2f3d5c",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1573,6 +1635,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1598,6 +1661,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   },
   {
@@ -1623,6 +1687,7 @@
    "tie": "#f5f6fa",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1648,6 +1713,7 @@
    "tie": "",
    "cap": "",
    "headset": false,
+   "legwear": "",
    "manual": []
   },
   {
@@ -1673,6 +1739,7 @@
    "tie": "#ffb7a1",
    "cap": "",
    "headset": false,
+   "legwear": "socks",
    "manual": []
   }
  ]

@@ -25,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "..", "Assets", "ExcelHeroes", "Resources", "Data")
 SPEC = os.path.join(DATA, "sdspec.json")
 FIELDS = ["style", "fringe", "ahoge", "glasses", "sunglasses", "hair", "eye", "skin", "top", "shirt",
-          "bottom", "legs", "shoes", "outfit", "bottomType", "idle", "win", "attack", "tie", "cap", "headset"]
+          "bottom", "legs", "shoes", "outfit", "bottomType", "idle", "win", "attack", "tie", "cap", "headset", "legwear"]
 
 
 def load(name):
@@ -46,7 +46,7 @@ def build_row(cid, doll, look, old):
     r = {"id": cid, "style": "short", "fringe": -1, "ahoge": False, "glasses": False, "sunglasses": False,
          "hair": "", "eye": "", "skin": "", "top": "", "shirt": "", "bottom": "", "legs": "", "shoes": "",
          "outfit": "suit", "bottomType": "pants", "idle": -1, "win": -1, "attack": "",
-         "tie": "", "cap": "", "headset": False, "manual": []}
+         "tie": "", "cap": "", "headset": False, "legwear": "", "manual": []}
     if doll:
         acc = [a.split(":")[0] for a in doll.get("acc", [])]
         r.update(style=doll.get("hair", "short"), outfit=doll.get("outfit", "suit"), bottomType=doll.get("bottom", "pants"),
@@ -66,6 +66,17 @@ def build_row(cid, doll, look, old):
         for k in ("hair", "eye", "skin", "top", "bottom", "legs", "shoes"):
             if look.get(k): r[k] = look[k]
     if cid == "intern": r["hair"] = "#1d1f2a"          # 김인턴: black hair, always (CLAUDE.md)
+    # legwear for skirts: a shin sample that is skin-like (warm hue, low saturation, light)
+    # means bare legs with short socks; anything else is knee socks; "tights" only by hand
+    if r["bottomType"] == "skirt":
+        import colorsys
+        h = (r.get("legs") or "").lstrip("#")
+        if len(h) == 6:
+            rr, gg, bb = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+            hue, sat, val = colorsys.rgb_to_hsv(rr, gg, bb)
+            r["legwear"] = "bare" if (hue < 0.13 or hue > 0.95) and sat < 0.45 and val > 0.55 else "socks"
+        else:
+            r["legwear"] = "socks"
     if old:
         r["manual"] = list(old.get("manual", []))
         for k in r["manual"]:

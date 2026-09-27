@@ -15,7 +15,7 @@ namespace ExcelHeroes.World
     public class SdSpecRow
     {
         public string id = "", style = "", hair = "", eye = "", skin = "", top = "", shirt = "", bottom = "", legs = "", shoes = "";
-        public string outfit = "", bottomType = "", attack = "", tie = "", cap = "";
+        public string outfit = "", bottomType = "", attack = "", tie = "", cap = "", legwear = "";
         public int fringe = -1, idle = -1, win = -1;
         public bool ahoge, glasses, sunglasses, headset;
         public string[] manual = Array.Empty<string>();

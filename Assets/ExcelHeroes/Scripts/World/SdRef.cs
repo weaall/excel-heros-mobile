@@ -153,6 +153,8 @@ namespace ExcelHeroes.World
             if (k.Outfit is "suit" or "coat" or "labcoat" or "dress" or "shirt" or "vest") SdRefProps.Collar(rig, body, root, k, layer);
             if (k.Outfit is "coat" or "labcoat") SdRefProps.CoatTail(rig, root, k, layer);
             if (k.Tie.a > 0f) SdRefProps.Tie(rig, body, root, k.Tie, layer);
+            else if (!k.Male && (k.Skirt || k.Dress) && k.Outfit is "shirt" or "vest" or "cardigan" or "suit") SdRefProps.Ribbon(rig, body, root, k.Accent, layer);
+            if (k.Pants && k.Outfit is not "hoodie" and not "apron") SdRefProps.Belt(rig, root, k, layer);
             if (k.Cap.a > 0f) SdRefProps.Cap(rig, body, root, k.Cap, DollData.For(heroId == Data.GameData.MainId ? "intern" : heroId).Has("hardhat"), layer);
             if (k.Headset) SdRefProps.Headset(rig, body, root, k.Accent, layer);
             // hair, tag and hem chains trail the motion (the sample's own secondary bones)
@@ -192,7 +194,8 @@ namespace ExcelHeroes.World
     public static class SdRefMesh
     {
         static readonly Dictionary<Mesh, Mesh> Cache = new();
-        public static readonly Vector2 LegsUV = new(0.62f, 0.24f);
+        public static readonly Vector2 LegsUV = new(0.62f, 0.24f);     // the thighs (knee 0.19 H and up)
+        public static readonly Vector2 SockUV = new(0.62f, 0.30f);     // the shins (below the knee)
 
         public static Mesh Plain(Mesh src)
         {
@@ -232,7 +235,7 @@ namespace ExcelHeroes.World
             {
                 var h = (v[i].z - zmin) / H;
                 if (uv[i].x > 0.265f && uv[i].x < 0.29f && uv[i].y < 0.05f && h > 0.05f && h < 0.39f && Mathf.Abs(v[i].x) < 0.002f)
-                { uv[i] = LegsUV; moved++; }
+                { uv[i] = h < 0.205f ? SockUV : LegsUV; moved++; }
             }
             m.uv = uv;
             Debug.Log($"[SdRefMesh] legs remapped: {moved} vertex refs");

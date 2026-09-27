@@ -106,7 +106,14 @@ namespace ExcelHeroes.World
             // trousers: the shorts cell and the legs share the sampled LEG colour (the "bottom" sample
             // is unreliable on waist-up art); a skirt keeps its own colour over stockings/skin
             var bottom = k.Pants ? k.Socks : k.Bottom; bottom.a = 1f;
-            var legs = k.Socks; legs.a = 1f;
+            // thighs and shins: trousers run down both; a skirt shows skin on the thigh with knee
+            // socks below (bare = short socks, so skin on both; tights = the sock colour on both)
+            var sock = k.Socks; sock.a = 1f;
+            var skinC = k.Skin; skinC.a = 1f;
+            var thigh = k.Pants ? k.Socks : k.Legwear == "tights" ? sock : skinC; thigh.a = 1f;
+            var shin = k.Pants ? k.Socks : k.Legwear == "bare" ? skinC : sock; shin.a = 1f;
+            Fill(px, n, new Rect(0.60f, 0.28f, 0.04f, 0.04f), (u, v) => shin);
+            var legs = thigh;
             Fill(px, n, new Rect(0.235f, 0f, 0.022f, 0.03f), (u, v) => shirt);
             // the sample wears its jacket off the shoulders, so the shoulder/neck pieces sample the
             // shirt swatches (u .125–.19): on a tailored outfit the jacket covers the shoulders

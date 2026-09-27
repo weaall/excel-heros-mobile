@@ -351,6 +351,49 @@ namespace ExcelHeroes.World
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
         }
 
+        /// <summary>A belt on trousers: a dark band round the hips (pelvis bone) with a small buckle at the front.</summary>
+        public static void Belt(ChibiRig rig, Transform root, SdLook k, int layer)
+        {
+            if (rig.Pelvis == null) return;
+            var b = new MeshKit.Builder();
+            var leather = new Color(0.16f, 0.14f, 0.15f);
+            b.Frustum(new Vector3(0f, 0.448f, 0f), 0.142f, 0.018f, 0.142f, leather, 0.86f, 20, false);
+            b.Box(new Vector3(0f, 0.457f, 0.124f), new Vector3(0.028f, 0.02f, 0.008f), new Color(0.75f, 0.68f, 0.4f));
+            var mat = MeshKit.NewToon(0.003f);
+            mat.SetFloat("_ShadeStrength", 0.2f);
+            var go = Attach("belt", rig.Pelvis, b.Bake("belt"), mat, layer, root.position, root.rotation);
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+        }
+
+        /// <summary>
+        /// A ribbon bow at the collar (the school-uniform touch the samples wear): two loops, two
+        /// tails and a knot in the accent colour, on the chest bone in front of the collar.
+        /// </summary>
+        public static void Ribbon(ChibiRig rig, SkinnedMeshRenderer body, Transform root, Color col, int layer)
+        {
+            if (rig.Spine == null) return;
+            var s = body.transform.lossyScale.x;
+            col.a = 1f;
+            var dark = MeshKit.Shade(col, 0.8f);
+            var anchor = body.transform.TransformPoint(new Vector3(0f, -0.00132f, 0.00598f));
+            var b = new MeshKit.Builder();
+            foreach (var sx in new[] { -1f, 1f })
+            {
+                // a loop: a flattened ellipsoid out to the side, tilted up a little
+                b.M = Matrix4x4.TRS(new Vector3(sx * 0.00026f, 0.00004f, 0f) * s, Quaternion.Euler(0f, 0f, sx * 12f), Vector3.one);
+                b.Ellipsoid(Vector3.zero, new Vector3(0.00024f, 0.00011f, 0.00005f) * s, col, 12);
+                // a tail: a thin slab hanging down and out
+                b.M = Matrix4x4.TRS(new Vector3(sx * 0.00012f, -0.00028f, 0.00001f) * s, Quaternion.Euler(0f, 0f, sx * -18f), Vector3.one);
+                b.Box(Vector3.zero, new Vector3(0.00011f, 0.0004f, 0.00003f) * s, dark);
+            }
+            b.M = Matrix4x4.identity;
+            b.Ellipsoid(Vector3.zero, new Vector3(0.00007f, 0.00007f, 0.00006f) * s, dark, 8);   // the knot
+            var mat = MeshKit.NewToon(0.0025f);
+            mat.SetFloat("_ShadeStrength", 0.2f);
+            var go = Attach("ribbon", rig.Spine, b.Bake("ribbon"), mat, layer, anchor, root.rotation);
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+        }
+
         /// <summary>The hand prop by role: melee a rolled document, ranged a tablet, healer a coffee cup, tank a clipboard.</summary>
         public static void HandProp(ChibiRig rig, Transform root, string role, SdLook k, int layer)
         {
