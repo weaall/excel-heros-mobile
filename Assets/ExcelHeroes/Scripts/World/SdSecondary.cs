@@ -31,7 +31,11 @@ namespace ExcelHeroes.World
         {
             _nodes.Clear();
             var all = model.GetComponentsInChildren<Transform>(true);
-            bool Dyn(Transform t) => t.name.StartsWith("bone_hair_") || t.name.StartsWith("bone_skirt_") || t.name.StartsWith("bone_Nameplate_");
+            // a library hair (SdRefHairLib) brings its own chain, tagged; the base cap is hidden then,
+            // so its hair bones swing nothing and are left out
+            var lib = all.Any(t => t.name.EndsWith(SdRefHairLib.Tag));
+            bool Dyn(Transform t) => t.name.EndsWith(SdRefHairLib.Tag)
+                || (!lib && t.name.StartsWith("bone_hair_")) || t.name.StartsWith("bone_skirt_") || t.name.StartsWith("bone_Nameplate_");
             // depth order so parents are stepped before children
             foreach (var t in all.Where(Dyn).OrderBy(Depth))
             {
@@ -46,15 +50,38 @@ namespace ExcelHeroes.World
                 var w = t.name.StartsWith("bone_hair_f") ? 0.35f : t.name.StartsWith("bone_hair_m") ? 0.6f : t.name.StartsWith("bone_skirt_") ? 0.5f : t.name.StartsWith("bone_Nameplate_") ? 0.7f : 1f;
                 // the ponytail chain: its bones sit at the crown, so a twin-tail copy hanging out to the
                 // side swings on a long lever — keep that chain stiff for twins, moderate otherwise
-                if (t.name.StartsWith("bone_hair_Bt")) w = style == "twin" ? 0.25f : 0.6f;
+                // a library hair's tails are real chains hanging where they belong, not copies on a
+                // borrowed lever, so they keep the plain weights
+                var own = t.name.EndsWith(SdRefHairLib.Tag);
+                if (own) w = LibWeight(t.name);
+                else if (t.name.StartsWith("bone_hair_Bt")) w = style == "twin" ? 0.25f : 0.6f;
                 // the twin copies hang off the back-hair chains too, out to the sides: the same long lever
-                if (style == "twin" && t.name.StartsWith("bone_hair_b_")) w = 0.3f;
+                if (style == "twin" && !own && t.name.StartsWith("bone_hair_b_")) w = 0.3f;
                 _nodes.Add(new Node { T = t, RestLocal = t.localRotation, RestTipLocal = t.InverseTransformPoint(tipWorld), Len = len, Tip = tipWorld, Weight = w });
             }
             _ready = _nodes.Count > 0;
         }
 
         static int Depth(Transform t) { var d = 0; while (t.parent != null) { d++; t = t.parent; } return d; }
+
+        /// <summary>
+        /// How freely a library hair bone swings, from its name. The samples do not agree on names
+        /// (bone_hair_F_01, Bone_hair_BR_03, bone_CH0242_hair_bl_04, bone_hair_F_R_00 …), so the
+        /// name is reduced to its part letters first: f = fringe, m / l / r = side locks, t = the
+        /// crown, b… = back hair and tails, dango = a bun (a lump on the head, barely moves).
+        /// </summary>
+        static float LibWeight(string name)
+        {
+            var s = name.ToLowerInvariant().Replace(SdRefHairLib.Tag, "");
+            if (!s.Contains("hair")) return s.Contains("ribbon") || s.Contains("ribborn") ? 0.7f : 0.3f;   // ribbons, a shawl root
+            s = s.Substring(s.IndexOf("hair") + 4).Trim('_');
+            if (s.StartsWith("dango")) return 0.25f;
+            if (s.StartsWith("fb")) return 0.6f;                       // a long lock that starts at the front
+            if (s.StartsWith("f") || s.StartsWith("t")) return 0.35f;
+            if (s.StartsWith("b")) return 1f;
+            if (s.StartsWith("m") || s.StartsWith("l") || s.StartsWith("r")) return 0.65f;
+            return 0.6f;
+        }
 
         void LateUpdate()
         {
