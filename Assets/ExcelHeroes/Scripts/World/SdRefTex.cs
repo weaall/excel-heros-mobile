@@ -145,6 +145,23 @@ namespace ExcelHeroes.World
             // shirt swatches (u .125–.19): on a tailored outfit the jacket covers the shoulders
             if (tailored) { var topS = MeshKit.Shade(k.Top, 0.97f); topS.a = 1f; Fill(px, n, new Rect(0.125f, 0f, 0.065f, 0.03f), (u, v) => topS); }
             Fill(px, n, new Rect(0.185f, 0f, 0.03f, 0.03f), (u, v) => bottom);
+            // the sleeves: the big jacket region (u .02–.96, v .34–.98) is the sample's sleeves unwrapped
+            // (measured with SD_UVDEBUG), and it carries the gym jacket's white stripes and navy cuffs —
+            // the single thing that made the whole cast read as wearing one tracksuit. On everything
+            // but sportswear it becomes the outfit's sleeve colour: the jacket's on a suit, coat, lab
+            // coat, cardigan or hoodie, the shirt's on a shirt or vest; the old texel's light and dark
+            // survive only as a faint fold shading
+            if (k.Outfit is not ("" or "sport" or "track"))
+            {
+                var sleeve = k.Outfit is "shirt" or "vest" ? k.Shirt : k.Top; sleeve.a = 1f;
+                Fill(px, n, new Rect(0.02f, 0.34f, 0.94f, 0.64f), (u, v) =>
+                {
+                    var src = _bodySrc[Mathf.Clamp((int)(v * n), 0, n - 1) * n + Mathf.Clamp((int)(u * n), 0, n - 1)];
+                    var fold = Mathf.Clamp(Lum(src) / 0.62f, 0.75f, 1.12f);
+                    var c = sleeve * Mathf.Lerp(1f, fold, 0.35f); c.a = 1f;
+                    return c;
+                });
+            }
             Fill(px, n, new Rect(0.60f, 0.22f, 0.04f, 0.04f), (u, v) => legs);
             // the name tag on the chest (u .72–.98, v .03–.35 on the sheet): the sample's school
             // badge becomes the character's own — white card, an accent band, the 4-cell sheet
@@ -163,6 +180,20 @@ namespace ExcelHeroes.World
                     var c = sp[sv * sw + su];
                     return c.a < 0.5f ? card : new Color(c.r, c.g, c.b, 1f);
                 });
+            }
+            // SD_UVDEBUG=u|v (preview diagnostics): the sheet in ten colour bands along u or v, to read
+            // off which region a part of the mesh samples — red orange yellow green cyan blue purple
+            // pink white black = 0.0 … 0.9
+            var uvDebug = System.Environment.GetEnvironmentVariable("SD_UVDEBUG");
+            if (uvDebug is "u" or "v")
+            {
+                Color[] bands = { Color.red, new(1f, 0.55f, 0f), Color.yellow, Color.green, Color.cyan, Color.blue, new(0.6f, 0.1f, 0.9f), new(1f, 0.5f, 0.8f), Color.white, Color.black };
+                for (var y = 0; y < n; y++)
+                    for (var x = 0; x < n; x++)
+                    {
+                        var f = uvDebug == "u" ? (x + 0.5f) / n : (y + 0.5f) / n;
+                        px[y * n + x] = bands[Mathf.Clamp((int)(f * 10f), 0, 9)];
+                    }
             }
             t = new Texture2D(n, n, TextureFormat.RGBA32, true) { name = "body:" + id, wrapMode = TextureWrapMode.Clamp };
             t.SetPixels(px); t.Apply(true);

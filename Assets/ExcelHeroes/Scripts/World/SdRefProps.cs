@@ -35,6 +35,26 @@ namespace ExcelHeroes.World
             var col = k.Bottom; col.a = 1f;
             var dark = MeshKit.Shade(col, 0.86f);
             const int seg = 20;
+            // Office wear gets a PENCIL skirt: straight from the hips to just above the knee, a
+            // touch narrower at the hem, no pleats — flared and pleated read as a school uniform
+            // (the Gemini outfit mock-ups), which these adults are not. Casual outfits keep the pleats.
+            if (k.Outfit is "suit" or "shirt" or "vest" or "coat" or "labcoat" or "dress")
+            {
+                const float pb = 0.25f, hip = 0.138f, hem = 0.128f;
+                b.Grid(seg, 4, (s, t) =>
+                {
+                    var a = s * Mathf.PI * 2f;
+                    // hips round out a little below the waist, then the line runs straight and tapers
+                    var r = t < 0.25f ? Mathf.Lerp(r0, hip, Mathf.SmoothStep(0f, 1f, t / 0.25f)) : Mathf.Lerp(hip, hem, (t - 0.25f) / 0.75f);
+                    var p = new Vector3(Mathf.Cos(a) * r, Mathf.Lerp(top, pb, t), Mathf.Sin(a) * r * 0.85f);
+                    return (p, new Vector3(Mathf.Cos(a), 0.05f, Mathf.Sin(a)).normalized, new Vector2(s, t));
+                }, col);
+                b.Frustum(new Vector3(0f, top - 0.022f, 0f), r0 * 1.02f, 0.022f, r0 * 1.02f, dark, 0.85f, seg, false);   // the waistband
+                if (k.SkirtHem.a > 0f) b.Frustum(new Vector3(0f, pb - 0.002f, 0f), hem * 1.01f, 0.01f, hem * 1.01f, k.SkirtHem, 0.85f, seg, false);
+                b.Disc(new Vector3(0f, pb, 0f), hem, hem * 0.85f, dark, false, seg);
+                bottom = pb; r1 = hem;
+                goto skinned;
+            }
             // pleats: a lofted band whose colour alternates per segment
             b.Grid(seg, 1, (s, t) =>
             {
@@ -61,6 +81,7 @@ namespace ExcelHeroes.World
             }
             if (k.SkirtHem.a > 0f) b.Frustum(new Vector3(0f, bottom - 0.004f, 0f), r1 * 1.01f, 0.012f, r1 * 0.99f, k.SkirtHem, 0.85f, seg, false);
             b.Disc(new Vector3(0f, bottom, 0f), r1, r1 * 0.85f, dark, false, seg);       // the underside, so it is never hollow from below
+            skinned:
             var mat = MeshKit.NewToon(0.007f);
             mat.SetFloat("_ShadeStrength", 0.3f);
             // skinned, not rigid: the hem follows the thighs (85 % at the bottom, by side), so a
