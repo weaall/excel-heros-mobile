@@ -294,6 +294,45 @@ namespace ExcelHeroes.UI
             var rt = World.Lineup3D.Instance.Show(slots, ids, centres, slotW,
                                                  Mathf.RoundToInt(box.width * px), Mathf.RoundToInt(box.height * px), floor);
             slots.style.backgroundImage = Background.FromRenderTexture(rt);
+            Floor(slots, ids, centres, slotW, floor);
+        }
+
+        /// <summary>
+        /// A glowing floor disc under each member — the reference's formation stands its students
+        /// on lit circles; ours floated over the backdrop (ui_critique round 3, 08-Party #2). The
+        /// 3D camera is level, so the disc cannot be geometry: it is painted on a sibling laid
+        /// exactly under the lineup's RenderTexture, which draws over it.
+        /// </summary>
+        static void Floor(VisualElement slots, System.Collections.Generic.List<string> ids, System.Collections.Generic.List<float> centres, float slotW, float floor)
+        {
+            var parent = slots.parent;
+            if (parent == null) return;
+            var el = parent.Q<VisualElement>("pslotsFloor");
+            if (el == null)
+            {
+                el = new VisualElement { name = "pslotsFloor", pickingMode = PickingMode.Ignore };
+                el.style.position = Position.Absolute;
+                parent.Insert(parent.IndexOf(slots), el);
+                ModalFrame.Painted(el, (ctx, r) =>
+                {
+                    if (el.userData is not (System.Collections.Generic.List<float> cs, System.Collections.Generic.List<string> who, float sw, float fl)) return;
+                    for (var i = 0; i < cs.Count; i++)
+                    {
+                        if (string.IsNullOrEmpty(who[i])) continue;
+                        var rx = sw * r.width * 0.42f; var ry = rx * 0.22f;
+                        // the feet stand on the plate's top edge: the disc sits just above it so
+                        // the plate does not cover its near half
+                        var c = new Vector2(r.xMin + cs[i] * r.width, r.yMin + fl * r.height - ry * 0.9f);
+                        UiPaint.Fill(ctx, UiPaint.Ellipse(c, rx * 1.18f, ry * 1.25f), UiPaint.C(0, 200, 255, 0.16f), 10f);
+                        UiPaint.Fill(ctx, UiPaint.Ellipse(c, rx, ry), UiPaint.C(20, 50, 90, 0.28f), 6f);
+                        UiPaint.Ring(ctx, UiPaint.Ellipse(c, rx, ry, 40), UiPaint.C(90, 225, 255, 0.85f), UiPaint.C(90, 225, 255, 0f), 5f);
+                    }
+                });
+            }
+            var l = slots.layout;
+            el.style.left = l.xMin; el.style.top = l.yMin; el.style.width = l.width; el.style.height = l.height;
+            el.userData = (centres, ids, slotW, floor);
+            el.MarkDirtyRepaint();
         }
 
         void OpenPicker()
