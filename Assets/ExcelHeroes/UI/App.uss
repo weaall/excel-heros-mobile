@@ -5741,3 +5741,9 @@
 .rchip__icon { width: 38px; height: 38px; -unity-background-scale-mode: scale-to-fit; margin-right: 6px; }
 .rchip__amount { font-size: 24px; -unity-font-style: bold; color: rgb(30, 46, 76); padding: 0; margin: 0; }
 .qrow__meta { font-size: 22px; -unity-font-style: bold; color: rgb(90, 110, 140); }
+/* ten-pull result (round 4): New in yellow italic; 확인 and "10회 더" side by side */
+.reveal-grid__new.reveal-grid__new--on { display: flex; top: -40px; left: 6px; font-size: 38px; padding: 0; margin: 0; }
+.reveal-foot { flex-direction: row; justify-content: center; }
+.reveal-foot__ok { min-width: 420px; height: 110px; font-size: 38px; }
+.reveal-foot__again { min-width: 420px; height: 110px; margin-left: 30px; flex-direction: column; justify-content: center; align-items: center; }
+.reveal-foot__again .plate__label { font-size: 34px; -unity-font-style: bold; }

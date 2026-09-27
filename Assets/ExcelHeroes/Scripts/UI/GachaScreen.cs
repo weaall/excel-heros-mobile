@@ -295,6 +295,7 @@ namespace ExcelHeroes.UI
 
         IEnumerator RevealSequence(List<PullResult> results)
         {
+            var again = false;
             var overlay = _app.Overlay;
             overlay.Clear();
             overlay.RemoveFromClassList("hidden");
@@ -331,7 +332,7 @@ namespace ExcelHeroes.UI
             {
                 var done = false;
                 overlay.Clear();
-                overlay.Add(BuildSummary(results, () => done = true));
+                overlay.Add(BuildSummary(results, () => done = true, () => { again = true; done = true; }));
                 while (!done) yield return null;
             }
 
@@ -339,6 +340,7 @@ namespace ExcelHeroes.UI
             overlay.AddToClassList("hidden");
             _app.SetNavEnabled(true);
             Refresh();
+            if (again && GachaService.CanAfford(Game.Player, results.Count)) Pull(results.Count);
         }
 
         /// <summary>
@@ -465,7 +467,7 @@ namespace ExcelHeroes.UI
             return BuildSummary(results, onClose);
         }
 
-        VisualElement BuildSummary(List<PullResult> results, System.Action onClose)
+        VisualElement BuildSummary(List<PullResult> results, System.Action onClose, System.Action again = null)
         {
             // Laid out the way the reference lays a ten-pull out: five across and two down on a
             // pale field, each card a portrait over a dark plate of stars, NEW called out in the
@@ -494,7 +496,15 @@ namespace ExcelHeroes.UI
                     var outer = UiPaint.SkewRect(rect, slant, 6f);
                     if (glow.HasValue) UiPaint.Ring(ctx, outer, glow.Value, UiPaint.WithAlpha(glow.Value, 0f), 22f);
                     UiPaint.Shadow(ctx, outer, new Vector2(0f, 5f), UiPaint.C(20, 40, 80, 0.28f), 10f);
-                    UiPaint.Fill(ctx, outer, UiPaint.C(250, 252, 255));
+                    // S: a holographic rim — gold into pink across the top half, pink into cyan below
+                    // (ui_critique round 3, 21-Pull10 #1; the plain pink glow read as a hover state)
+                    if (isS)
+                    {
+                        UiPaint.Fill(ctx, outer, UiPaint.Horizontal(UiPaint.C(255, 234, 122), UiPaint.C(255, 126, 219), rect.xMin, rect.xMax));
+                        var lower = UiPaint.Clip(outer, UiPaint.RoundRect(Rect.MinMaxRect(rect.xMin - 60f, rect.center.y, rect.xMax + 60f, rect.yMax + 60f), 0f));
+                        UiPaint.Fill(ctx, lower, UiPaint.Horizontal(UiPaint.C(255, 126, 219), UiPaint.C(92, 240, 255), rect.xMin, rect.xMax), 0f);
+                    }
+                    else UiPaint.Fill(ctx, outer, UiPaint.C(250, 252, 255));
                     var inner = UiPaint.Offset(outer, -5f);
                     var bandTop = rect.yMax - rect.height * 0.2f;
                     var artPoly = UiPaint.Clip(inner, new List<Vector2>
@@ -556,24 +566,26 @@ namespace ExcelHeroes.UI
                     fx.schedule.Execute(() => fx.MarkDirtyRepaint()).Every(33);
                 }
 
-                if (r.isNew)
-                {
-                    // a cute sticker instead of the word: a pink heart with a white sparkle
-                    var sticker = UiKit.Div("reveal-grid__heart", cell);
-                    sticker.pickingMode = PickingMode.Ignore;
-                    ModalFrame.Painted(sticker, (ctx, rr) =>
-                    {
-                        var h = Heart(rr.center + new Vector2(0f, 2f), rr.width * 0.46f);
-                        UiPaint.Fill(ctx, UiPaint.Offset(h, 3f), Color.white);
-                        UiPaint.Fill(ctx, h, UiPaint.Vertical(UiPaint.C(255, 140, 180), UiPaint.C(245, 80, 140), rr.yMin, rr.yMax));
-                        UiPaint.Fill(ctx, Star4(rr.center + new Vector2(-rr.width * 0.14f, -rr.height * 0.1f), rr.width * 0.14f), Color.white);
-                    });
-                }
+                // "New", yellow italic over the card's corner — the reference's word for a first pull
+                if (r.isNew) UiKit.Text("New", "reveal-grid__new reveal-grid__new--on", cell).pickingMode = PickingMode.Ignore;
                 UiKit.Text(r.hero.name, "reveal-grid__name", cell).pickingMode = PickingMode.Ignore;
             }
 
             var foot = UiKit.Div("reveal-foot", view);
-            UiKit.Btn("확인", "btn btn--primary reveal-foot__ok", onClose, foot);
+            // 확인, and beside it the same pull again — the reference's result screen offers both
+            // (ui_critique round 3, 21-Pull10 #3)
+            var ok = UiKit.Btn("확인", "btn reveal-foot__ok", onClose, foot);
+            SkewPlate.Apply(ok, SkewPlate.Kind.Light);
+            if (again != null && Game.Player != null)
+            {
+                var n = results.Count;
+                var more = UiKit.Btn($"{n}회 더 모집", "btn reveal-foot__again", again, foot);
+                SkewPlate.Apply(more, SkewPlate.Kind.Gold);
+                var cost = UiKit.Div("pull-btn__cost", more); cost.pickingMode = PickingMode.Ignore;
+                var gem = GameData.Icon("gem"); if (gem != null) UiKit.SetArt(UiKit.Div("pull-btn__gem", cost), gem);
+                UiKit.Text(GachaService.CostFor(n).ToString("N0"), "pull-btn__price", cost);
+                more.SetEnabled(GachaService.CanAfford(Game.Player, n));
+            }
 
             var points = UiKit.Div("reveal-points", view);
             UiKit.Text("모집 포인트", "reveal-points__label", points);
