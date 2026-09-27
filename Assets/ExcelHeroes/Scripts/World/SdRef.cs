@@ -74,13 +74,15 @@ namespace ExcelHeroes.World
             go.transform.localPosition = new Vector3(-(lo.x + hi.x) * 0.5f * s, -lo.y * s, -(lo.z + hi.z) * 0.5f * s);
             // the face is on +Z of the FBX already (RefAnalyze: EyeMouth at z > 0) — our forward
             rends = new[] { body };
-
             var look = SdRefLook.For(heroId);
             // the hair submesh, found by the SAMPLE's material names before they are replaced
             var hairSub = -1;
             for (var i = 0; i < body.sharedMaterials.Length; i++)
                 if (body.sharedMaterials[i] && body.sharedMaterials[i].name.ToLowerInvariant().Contains("hair")) hairSub = i;
+            body.sharedMesh = SdRefMesh.Plain(body.sharedMesh);
             SdRefHair.Apply(body, look.Style, hairSub);
+
+
             foreach (var r in rends)
             {
                 var mesh = r.sharedMesh;
@@ -99,6 +101,23 @@ namespace ExcelHeroes.World
             Transform Find(string n) => all.FirstOrDefault(t => t.name == n);
             rig.Body = Find("Bip001 Pelvis") ?? root;
             rig.Head = Find("Bip001 Head") ?? rig.Body;
+            // the sample's skull is open behind the face (the ponytail covered it); trimmed styles
+            // get a scalp in the hair colour, a ball just inside the hair cap, riding the head bone
+            if (look.Style != "long" && look.Style != "ponytail")
+            {
+                var c = body.transform.TransformPoint(SdRefHair.HeadCentre);
+                // mesh z is up and -y is forward; the ball is built in the wrapper's frame (y up, +z forward)
+                var rr = SdRefHair.HeadRadii * body.transform.lossyScale.x;
+                var sb = new MeshKit.Builder();
+                sb.Ellipsoid(Vector3.zero, new Vector3(rr.x, rr.z, rr.y), Color.white, 16);
+                var scalp = MeshKit.Part("scalp", rig.Head, sb.Bake("scalp"), look.MaterialFor("hair"), layer);
+                // the ball is built in world units; the head bone carries the wrapper's scale
+                var ls = rig.Head.lossyScale;
+                scalp.transform.localScale = new Vector3(1f / ls.x, 1f / ls.y, 1f / ls.z);
+                scalp.transform.position = c;
+                scalp.transform.rotation = root.rotation;
+                rig.Renderers.Add(scalp.GetComponent<MeshRenderer>());
+            }
             rig.ArmL = Find("Bip001 L UpperArm"); rig.ArmR = Find("Bip001 R UpperArm");
             rig.LegL = Find("Bip001 L Thigh"); rig.LegR = Find("Bip001 R Thigh");
             rig.Spine = Find("Bip001 Spine1") ?? Find("Bip001 Spine");
@@ -116,6 +135,25 @@ namespace ExcelHeroes.World
         {
             t.gameObject.layer = layer;
             foreach (Transform c in t) SetLayer(c, layer);
+        }
+    }
+
+    /// <summary>
+    /// The sample mesh carries vertex colours whose alpha is a face-shading mask for the
+    /// reference's own shader; on ours that alpha reaches the cutout and punched a band out of
+    /// the face (the eye line). The figure is built on a copy with the colour stream removed.
+    /// </summary>
+    public static class SdRefMesh
+    {
+        static readonly Dictionary<Mesh, Mesh> Cache = new();
+
+        public static Mesh Plain(Mesh src)
+        {
+            if (Cache.TryGetValue(src, out var m) && m != null) return m;
+            m = Object.Instantiate(src);
+            m.name = src.name + ":plain";
+            m.colors = null;
+            return Cache[src] = m;
         }
     }
 
@@ -147,6 +185,7 @@ namespace ExcelHeroes.World
         {
             var key = matName.Contains("eyemouth") ? "eyemouth" : matName.Contains("eyebrow") ? "eyebrow"
                     : matName.Contains("hair") ? "hair" : matName.Contains("face") ? "face" : "body";
+            // the brow quads sample the FACE texture's brow strip (Uv.cs), not the eye sheet
             if (_mats.TryGetValue(key, out var m)) return m;
             switch (key)
             {
@@ -154,27 +193,43 @@ namespace ExcelHeroes.World
                     // the sample's hair texture is a flat colour + highlight: recolour to ours
                     m = MeshKit.NewToon(0.004f, Tex("base_hair"));
                     m.SetColor("_Color", MeshKit.Lin(_k.Hair));
+                    m.SetFloat("_ShadeStrength", 0.22f);
+                    break;
+                case "eyebrow":
+                    // the brow strips sample the FACE sheet's brow bars
+                    m = MeshKit.NewToon(0f, SdRefTex.Face(_k));
+                    m.SetFloat("_Cutoff", 0.5f);
+                    m.SetFloat("_OutlineWidth", 0f);
+                    m.SetFloat("_ShadeStrength", 0.0f);
                     break;
                 case "eyemouth":
-                case "eyebrow":
-                    // the sample's eye quads UV onto iris / white / mouth pieces on a black ground;
-                    // our own painting of that layout (SdRefTex), no hull
+                    // shaped eye / mouth plates; our sheet's alpha cuts the eye white, iris and mouth line
                     m = MeshKit.NewToon(0f, SdRefTex.EyeMouth(_k));
-                    m.SetFloat("_Cutoff", 0.0f);
+                    m.SetFloat("_Cutoff", 0.5f);
                     m.SetFloat("_OutlineWidth", 0f);
-                    m.SetFloat("_ShadeStrength", 0.05f);
-                    m.SetFloat("_Rim", 0f);
+                    m.SetFloat("_ShadeStrength", 0.0f);
                     break;
                 case "face":
+                    // flat-lit like the reference's face shading; the lash plates cut by alpha
                     m = MeshKit.NewToon(0.004f, SdRefTex.Face(_k));
+                    m.SetFloat("_Cutoff", 0.5f);
+                    m.SetFloat("_ShadeStrength", 0.06f);
                     break;
                 default:
-                    m = MeshKit.NewToon(0.004f, Tex("base_body"));
-                    m.SetColor("_Color", MeshKit.Lin(Color.Lerp(Color.white, _k.Top, 0.6f)));
+                    m = MeshKit.NewToon(0.004f, SdRefTex.Body(_k));
+                    m.SetFloat("_ShadeStrength", 0.22f);
                     break;
             }
-            m.SetFloat("_ShadeStrength", 0.22f);
-            m.SetFloat("_Rim", 0.1f);
+            m.SetFloat("_Rim", key is "eyemouth" or "eyebrow" ? 0f : 0.1f);
+            // SD_HIDE=key[,key]: clip that part entirely (preview diagnostics)
+            var hide = System.Environment.GetEnvironmentVariable("SD_HIDE");
+            if (!string.IsNullOrEmpty(hide) && hide.Split(',').Contains(key)) m.SetFloat("_Cutoff", 2f);
+            var tint = System.Environment.GetEnvironmentVariable("SD_TINT");
+            if (!string.IsNullOrEmpty(tint) && tint.Split(',').Contains(key)) m.SetColor("_Color", Color.magenta);
+            var noCut = System.Environment.GetEnvironmentVariable("SD_NOCUT");
+            if (!string.IsNullOrEmpty(noCut) && noCut.Split(',').Contains(key)) m.SetFloat("_Cutoff", 0f);
+            var noOutline = System.Environment.GetEnvironmentVariable("SD_NOOUTLINE");
+            if (!string.IsNullOrEmpty(noOutline) && noOutline.Split(',').Contains(key)) m.SetFloat("_OutlineWidth", 0f);
             return _mats[key] = m;
         }
     }

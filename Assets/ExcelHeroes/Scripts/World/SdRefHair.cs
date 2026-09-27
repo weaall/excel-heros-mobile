@@ -15,21 +15,29 @@ namespace ExcelHeroes.World
     public static class SdRefHair
     {
         static readonly Dictionary<(Mesh, string), Mesh> Cache = new();
+        /// <summary>
+        /// The skull under the hair, in the sample's mesh space (z up, face at -y): sized from the
+        /// face front (x ±0.0011, y -0.0011..-0.0002, z 0.0072..0.0090), the chin (z 0.0065) and
+        /// the cap (z to 0.0100) — an ellipsoid set back so it stays behind the face front and only
+        /// grazes the temples, which the side locks cover.
+        /// </summary>
+        public static readonly Vector3 HeadCentre = new(0f, 0.0006f, 0.0081f);
+        public static readonly Vector3 HeadRadii = new(0.0015f, 0.0011f, 0.0017f);
 
-        public static void Apply(SkinnedMeshRenderer body, string style, int hairSub)
+        public static void Apply(SkinnedMeshRenderer body, string style, int hairSub, int bodySub = 0)
         {
             if (hairSub < 0) return;
             var src = body.sharedMesh;
             var key = (src, style ?? "short");
             if (!Cache.TryGetValue(key, out var mesh))
             {
-                mesh = Edit(src, hairSub, style ?? "short");
+                mesh = Edit(src, hairSub, bodySub, style ?? "short");
                 Cache[key] = mesh;
             }
             body.sharedMesh = mesh;
         }
 
-        static Mesh Edit(Mesh src, int hairSub, string style)
+        static Mesh Edit(Mesh src, int hairSub, int bodySub, string style)
         {
             var keepBelow = style switch
             {
@@ -39,6 +47,7 @@ namespace ExcelHeroes.World
                 _ => 0.66f,
             };
             if (keepBelow <= 0f) return src;
+            var keepTie = style is "ponytail" or "twin";
 
             // The mesh is in the FBX's native frame: bone_root is rotated 270° about X, so mesh
             // +Z is world UP and mesh +Y is world BACK (the face looks along mesh -Y). Height and
@@ -53,8 +62,14 @@ namespace ExcelHeroes.World
                 var lo = c.Min(i => (v[i].z - zmin) / H);
                 var hi = c.Max(i => (v[i].z - zmin) / H);
                 var frontMost = c.Min(i => v[i].y / H);          // most negative y = furthest forward
-                // hanging hair: reaches below the style's line AND stays behind the face
-                if (lo < keepBelow && frontMost > -0.03f && hi < 0.97f) foreach (var i in c) drop.Add(i);
+                var behind = frontMost > -0.03f;                  // the cap and fringe reach the forehead; the tail does not
+                // hanging hair: reaches below the style's line AND stays behind the face. The
+                // tail's top bunch reaches the crown (hi = 1), so no ceiling test; the ribbon at
+                // the crown (lo > 0.9, fully behind) goes with the tail unless the style ties hair.
+                var tie = lo > 0.9f && frontMost > 0.1f;
+                // the ribbon's loose tails: tiny pieces well behind the head
+                var tail = c.Count < 12 && frontMost > 0.1f;
+                if (behind && (lo < keepBelow || ((tie || tail) && !keepTie))) foreach (var i in c) drop.Add(i);
             }
             var kept = new List<int>(tris.Length);
             for (var t = 0; t < tris.Length; t += 3)
@@ -65,6 +80,22 @@ namespace ExcelHeroes.World
             var m = Object.Instantiate(src);
             m.name = src.name + ":" + style;
             m.SetTriangles(kept.ToArray(), hairSub);
+            // the scrunchie on the crown is part of the body submesh: the only body piece that high
+            if (!keepTie && bodySub >= 0)
+            {
+                var bt = src.GetTriangles(bodySub);
+                var bdrop = new HashSet<int>();
+                foreach (var c in Components(bt))
+                    if (c.Min(i => (v[i].z - zmin) / H) > 0.9f) foreach (var i in c) bdrop.Add(i);
+                var bkept = new List<int>(bt.Length);
+                for (var t = 0; t < bt.Length; t += 3)
+                {
+                    if (bdrop.Contains(bt[t]) || bdrop.Contains(bt[t + 1]) || bdrop.Contains(bt[t + 2])) continue;
+                    bkept.Add(bt[t]); bkept.Add(bt[t + 1]); bkept.Add(bt[t + 2]);
+                }
+                m.SetTriangles(bkept.ToArray(), bodySub);
+            }
+            Debug.Log($"[SdRefHair] {style}: H {H:F4} keepBelow {keepBelow} pieces {comps.Count} dropped verts {drop.Count} tris {tris.Length / 3} -> {kept.Count / 3}");
             return m;
         }
 
