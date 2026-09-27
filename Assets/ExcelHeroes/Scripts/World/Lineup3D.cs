@@ -116,7 +116,7 @@ namespace ExcelHeroes.World
                 var def = GameData.Hero(id);
                 var owned = Game.Player?.Find(id);
                 var spec = BackSheet.For(def, owned);
-                ChibiBuilder.AddSheet(rig, SheetTexture.For(spec, id), spec.Left ? 1 : -1, Layer);
+                if (!rig.Sprite) ChibiBuilder.AddSheet(rig, SheetTexture.For(spec, id), spec.Left ? 1 : -1, Layer);
                 SetLayer(rig.Root, Layer);
                 rig.Root.localPosition = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
                 var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 1.02f / rig.Height, slotW * worldW * 1.6f) : scale;

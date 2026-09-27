@@ -43,7 +43,7 @@ namespace ExcelHeroes.UI
 
             // ---- Left: Character Visual Element -------------------------------------------
             // The hero's sheet, behind the portrait and leaning out past one shoulder.
-            BackSheet.Add(_root, def, owned, "backsheet home__sheet");
+            // the sheet is painted into the standing art (tools/bake_sheet.py); no overlay
             _charContainer = UiKit.Div("home__char-container", _root);
             if (def != null)
             {

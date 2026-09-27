@@ -235,7 +235,8 @@ namespace ExcelHeroes.World
                 var def = GameData.Hero(c.heroId);
                 var owned = Game.Player?.Find(c.heroId);
                 var spec = BackSheet.For(def, owned);
-                ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
+                // a 2D SD already has its sheet painted in; the 3D one carries it on the back
+                if (!a.Rig.Sprite) ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
                 a.Scale = c.role == "tank" ? 1.06f : 1f;
                 a.Accent = spec.Accent;
             }

@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SD = os.path.join(HERE, "..", "Assets", "ExcelHeroes", "Resources", "Art", "SD")
+SD = os.path.join(HERE, "..", "Assets", "ExcelHeroes", "ArtSource", "SD")   # clean (no sheet): the reconstruction input
 OUT = os.path.join(HERE, "..", "Assets", "ExcelHeroes", "Resources", "Art", "SD3D")
 PREVIEW = os.path.join(HERE, "out", "sd3d")
 TRIPOSR = os.environ.get("TRIPOSR", r"C:\Users\user\TripoSR")

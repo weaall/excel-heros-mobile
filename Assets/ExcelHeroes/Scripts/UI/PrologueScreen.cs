@@ -40,7 +40,10 @@ namespace ExcelHeroes.UI
         public static bool Needed(PlayerState p) => p != null && !p.prologueSeen && GameData.Prologue.Count > 0;
 
         /// <summary>Where the game draws the back sheet on each scene (fractions of the screen), or null.</summary>
-        static Rect? SheetSpot(string id) => id switch
+        // The sheet is painted into the scene art now (tools/bake_story.py); the game no longer
+        // floats one over it.
+        static Rect? SheetSpot(string id) => null;
+        static Rect? SheetSpotOld(string id) => id switch
         {
             // beside the head, over the shoulder — never across the face
             "sheet" => new Rect(0.67f, 0.12f, 0.22f, 0.29f),

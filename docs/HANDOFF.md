@@ -768,3 +768,9 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 미리보기: `Unity -batchmode -quit -executeMethod ExcelHeroes.EditorTools.SdPreview.Run`(‑nographics 빼고) → `tools/out/sd3d/<id>_unity.png` (2D SD + 4면).
 - TripoSR 설치: `C:\Users\user\TripoSR`(isosurface를 skimage로, transformers 5 키 이름 매핑 패치). Hunyuan3D는 라이선스가 한국 제외 → 사용 금지.
 - 다음: 3D 입력 전용 정면 A포즈 SD(`SD_A=1`, HF 쿼터 필요) → 옆·뒤로 돌아간 몇 명과 팔 리깅 개선. 가능하면 TRELLIS(MIT, HF Space)로 형상 품질 상향.
+
+## 엑셀 시트는 그림의 일부 (풀 일러 · SD 일러 · 프롤로그)
+- `tools/bake_sheet.py`: 캐릭터마다 자기 시트(4칸, 액센트 색 · 무늬 · 등급 테두리, 전 칸 점등 = 고유 문장)를 **몸 뒤에** 그려 넣음(원근 + 글로우 + 빛 번짐, 머리·어깨가 일부를 가림). `ArtSource/{Standing,SD}`(깨끗한 원본, 빌드 제외) → `Resources/Art/{Standing,SD}`.
+- `tools/bake_story.py`: 프롤로그 sheet·awaken·roster 장면에 김인턴의 시트를 인물 컷아웃 뒤로 합성(웹 `assets/story/*.webp`도 갱신). 게임이 띄우던 시트 오버레이는 제거.
+- 깨끗한 원본이 3D 복원(`sd3d.py`)과 얼굴 상자(`face_boxes.py`)의 입력. 로비·학생 상세의 UI 시트 오버레이, 2D SD 스프라이트의 시트 쿼드는 중복이라 제거 — 3D SD만 등 뒤 쿼드를 씀.
+- 남은 일: 프롤로그 장면의 인턴 얼굴이 장면마다 다름 → HF 쿼터가 차면 인턴 디자인 고정 태그로 재생성 후 다시 합성.

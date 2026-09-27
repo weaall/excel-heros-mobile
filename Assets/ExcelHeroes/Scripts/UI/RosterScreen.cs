@@ -232,7 +232,7 @@ namespace ExcelHeroes.UI
             // the game where cropping is simply wrong. The plate takes its height from the
             // picture's own aspect ratio, so nothing is cut and there are no bars either.
             var art = UiKit.Div("detail__art", view);
-            BackSheet.Add(art, def, owned, "backsheet detail__sheet");
+            // the sheet is painted into the standing art (tools/bake_sheet.py); no overlay
             var figure = UiKit.Div("detail__figure", art);
             var standing = GameData.StandingArt(heroId);
             UiKit.SetArt(figure, standing ?? GameData.WornCardArt(heroId));
