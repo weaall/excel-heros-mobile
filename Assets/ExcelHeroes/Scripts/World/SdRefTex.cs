@@ -214,7 +214,7 @@ namespace ExcelHeroes.World
         /// </summary>
         public static Texture2D EyeMouth(SdLook k, string expr = "")
         {
-            var id = k.Id + ":" + expr + ":" + k.Eyes;
+            var id = k.Id + ":" + expr + ":" + k.Eyes + ":" + IrisOf(k);
             if (Eyes.TryGetValue(id, out var t) && t != null) return t;
             var shut = expr is "happy" or "hurt" or "blink" or "dizzy";
             var es = StyleOf(k.Eyes);
@@ -230,6 +230,10 @@ namespace ExcelHeroes.World
             var light = Color.Lerp(vivid, Color.white, 0.22f);
             // iris: ellipse in its box, dark rim, gradient dark(top) → light(bottom), slit pupil, lower crescent light, glint
             Rect box = new(0.251f, 0.011f, 0.718f, 0.973f);
+            // …or a SAMPLE's own painted iris, gradient-mapped to this character's colour (IrisOf)
+            var lib = IrisSheet(IrisOf(k));
+            var darkI = Color.Lerp(vivid, new Color(0.06f, 0.05f, 0.1f), 0.72f);
+            var lightI = Color.Lerp(vivid, Color.white, 0.5f);
             var cx = box.center.x; var cy = box.center.y; var rx = box.width * 0.5f * es.Iris; var ry = box.height * 0.5f * es.Iris;
             for (var y = 0; y < N; y++)
                 for (var x = 0; x < N; x++)
@@ -238,6 +242,19 @@ namespace ExcelHeroes.World
                     var d = Mathf.Sqrt(((u - cx) / rx) * ((u - cx) / rx) + ((v - cy) / ry) * ((v - cy) / ry));
                     if (d >= 1f || shut) continue;                                   // shut: the iris plate is clipped away
                     if (expr == "angry" && v > cy + ry * 0.55f) continue;            // narrowed: the top of the iris hidden
+                    if (lib.px != null)
+                    {
+                        // the sample's painting: its light and dark kept, its hue replaced; the white
+                        // glints (low saturation, very light) stay white
+                        var sc = SampleBilinear(lib, u, v);
+                        var L = Mathf.InverseLerp(lib.lo, lib.hi, Lum(sc));
+                        Color.RGBToHSV(sc, out _, out var ss, out var sv);
+                        var ci = ss < 0.2f && sv > 0.86f ? Color.white
+                               : L < 0.5f ? Color.Lerp(darkI, vivid, L * 2f) : Color.Lerp(vivid, lightI, (L - 0.5f) * 2f);
+                        ci.a = 1f;
+                        px[y * N + x] = ci;
+                        continue;
+                    }
                     var g = Mathf.InverseLerp(cy + ry, cy - ry, v);            // 0 top .. 1 bottom
                     var c = Color.Lerp(dark, light, Mathf.SmoothStep(0f, 1f, g * 1.15f));
                     if (d > 0.78f) c = Color.Lerp(c, dark, Mathf.InverseLerp(0.78f, 1f, d));
@@ -322,6 +339,53 @@ namespace ExcelHeroes.World
             t = new Texture2D(N, N, TextureFormat.RGBA32, false) { name = "eyemouth:" + id, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             t.SetPixels(px); t.Apply();
             return Eyes[id] = t;
+        }
+
+        // ---------------------------------------------------------------- iris library
+        static readonly Dictionary<string, (Color[] px, int w, int h, float lo, float hi)> Irises = new();
+
+        /// <summary>
+        /// Which sample's iris a character wears: the spec's (SdLook.Iris) if set, else one matched
+        /// to the eye shape — round eyes take the round, glossy ones (miku, hikari), sharp eyes the
+        /// narrow dark ones (kayoko, natsu), droopy eyes the soft ones (reisa, mika), the rest the
+        /// base family (yuuka, base) — picked within the pair by the id's hash.
+        /// </summary>
+        public static string IrisOf(SdLook k)
+        {
+            if (!string.IsNullOrEmpty(k.Iris)) return k.Iris == "none" ? null : k.Iris;
+            var pair = k.Eyes switch { "round" => new[] { "miku", "hikari" }, "sharp" => new[] { "kayoko", "natsu" }, "droop" => new[] { "reisa", "mika" }, _ => new[] { "yuuka", "base" } };
+            return pair[SdPose.Hash(k.Id) % 2];
+        }
+
+        static (Color[] px, int w, int h, float lo, float hi) IrisSheet(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return default;
+            if (Irises.TryGetValue(name, out var c)) return c;
+            var t = Resources.Load<Texture2D>("Art/SDBase/irislib/" + name);
+            if (t == null || !t.isReadable) { Irises[name] = default; return default; }
+            var px = t.GetPixels();
+            // the luminance range INSIDE the iris ellipse, so the map spans the painting's own contrast
+            float lo = 1f, hi = 0f;
+            for (var y = 0; y < t.height; y++)
+                for (var x = 0; x < t.width; x++)
+                {
+                    float u = (x + 0.5f) / t.width, v = (y + 0.5f) / t.height;
+                    float du = (u - 0.61f) / 0.33f, dv = (v - 0.5f) / 0.44f;
+                    if (du * du + dv * dv > 1f) continue;
+                    var l = Lum(px[y * t.width + x]); if (l < lo) lo = l; if (l > hi) hi = l;
+                }
+            if (hi - lo < 0.05f) { lo = 0f; hi = 1f; }
+            return Irises[name] = (px, t.width, t.height, lo, hi);
+        }
+
+        static Color SampleBilinear((Color[] px, int w, int h, float lo, float hi) s, float u, float v)
+        {
+            var fx = Mathf.Clamp(u * s.w - 0.5f, 0f, s.w - 1f); var fy = Mathf.Clamp(v * s.h - 0.5f, 0f, s.h - 1f);
+            int x0 = (int)fx, y0 = (int)fy, x1 = Mathf.Min(x0 + 1, s.w - 1), y1 = Mathf.Min(y0 + 1, s.h - 1);
+            float tx = fx - x0, ty = fy - y0;
+            var a = Color.Lerp(s.px[y0 * s.w + x0], s.px[y0 * s.w + x1], tx);
+            var b = Color.Lerp(s.px[y1 * s.w + x0], s.px[y1 * s.w + x1], tx);
+            return Color.Lerp(a, b, ty);
         }
 
         public static Texture2D Face(SdLook k)

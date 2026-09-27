@@ -27,6 +27,7 @@ namespace ExcelHeroes.World
         public string Legwear = "";             // skirts: bare (short socks) | socks (knee-high) | tights; "" = trousers
         public string Eyes = "almond";          // round | almond | sharp | droop
         public string GlassesStyle = "square";  // square | round | oval | half | cat | rimless
+        public string Iris = "";                // a sample's painted iris (SdRefTex.IrisOf); "" = by eye shape, "none" = our own painted one
         public string HairLib = "";             // a sample's hair mounted on the head (SdRefHairLib); "" = by style, "base" = the base cap only
         public Color GlassesColor = new(0.17f, 0.17f, 0.21f);
 
