@@ -185,6 +185,8 @@ namespace ExcelHeroes.EditorTools
                 // SD_RAW=1: the untouched sample (its own materials), the reference for every edit
                 // SD_MON=1: the ids are monster type ids, built as 3D mascots (SdModel.BuildMonster)
                 // SD_GLASSES=square,round,…: force a glasses style per column (the look is mutable and read at build)
+                var hlEnv = System.Environment.GetEnvironmentVariable("SD_HAIRLIB");
+                if (!string.IsNullOrEmpty(hlEnv)) { var hs = hlEnv.Split(','); SdLook.For(ids[i]).HairLib = hs[i % hs.Length]; }
                 var glEnv = System.Environment.GetEnvironmentVariable("SD_GLASSES");
                 if (!string.IsNullOrEmpty(glEnv))
                 {

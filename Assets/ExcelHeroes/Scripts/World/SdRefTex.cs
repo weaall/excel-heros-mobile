@@ -55,17 +55,22 @@ namespace ExcelHeroes.World
         /// sheet's mean is applied to the character's hair colour, and the brightest streaks
         /// blend toward the tip colour so even black hair keeps its shine.
         /// </summary>
-        public static Texture2D Hair(SdLook k)
+        static readonly Dictionary<string, (Color[] px, int n, float mean)> HairSrcs = new();
+
+        public static Texture2D Hair(SdLook k, Texture2D source = null)
         {
-            var id = ColorUtility.ToHtmlStringRGB(k.Hair);
+            var srcName = source != null ? source.name : "base_hair";
+            var id = ColorUtility.ToHtmlStringRGB(k.Hair) + ":" + srcName;
             if (Hairs.TryGetValue(id, out var t) && t != null) return t;
-            if (_hairSrc == null)
+            if (!HairSrcs.TryGetValue(srcName, out var src))
             {
-                var src = Resources.Load<Texture2D>("Art/SDBase/base_hair");
-                _hairN = src.width; _hairSrc = src.GetPixels();
-                var sum = 0f; foreach (var c in _hairSrc) sum += Lum(c);
-                _hairMeanLum = Mathf.Max(0.02f, sum / _hairSrc.Length);
+                var tex = source != null ? source : Resources.Load<Texture2D>("Art/SDBase/base_hair");
+                var pxs = tex.GetPixels();
+                var sum = 0f; foreach (var c in pxs) sum += Lum(c);
+                src = (pxs, tex.width, Mathf.Max(0.02f, sum / pxs.Length));
+                HairSrcs[srcName] = src;
             }
+            _hairSrc = src.px; _hairN = src.n; _hairMeanLum = src.mean;
             var px = new Color[_hairSrc.Length];
             var hair = k.Hair; hair.a = 1f;
             var tip = Color.Lerp(k.Hair, Color.white, 0.45f); tip.a = 1f;
@@ -81,7 +86,7 @@ namespace ExcelHeroes.World
                 var shine = u * u * (3f - 2f * u);
                 px[i] = Color.Lerp(c, tip, shine * 0.6f);
             }
-            t = new Texture2D(_hairN, _hairN, TextureFormat.RGBA32, true) { name = "hair:" + id, wrapMode = TextureWrapMode.Clamp };
+            t = new Texture2D(_hairN, src.px.Length / _hairN, TextureFormat.RGBA32, true) { name = "hair:" + id, wrapMode = TextureWrapMode.Clamp };
             t.SetPixels(px); t.Apply(true);
             return Hairs[id] = t;
         }

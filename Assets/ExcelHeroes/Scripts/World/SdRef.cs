@@ -88,7 +88,11 @@ namespace ExcelHeroes.World
             for (var i = 0; i < body.sharedMaterials.Length; i++)
                 if (body.sharedMaterials[i] && body.sharedMaterials[i].name.ToLowerInvariant().Contains("hair")) hairSub = i;
             body.sharedMesh = SdRefMesh.Plain(body.sharedMesh);
-            SdRefHair.Apply(body, look.Style, hairSub, 0, look.Fringe, look.Ahoge);
+            // a sample's hair for the style (or the spec's choice) replaces the base cap when the library has it
+            var lk0 = SdLook.For(heroId);
+            var libHair = lk0.HairLib != "" ? (lk0.HairLib == "base" ? null : lk0.HairLib) : SdRefHairLib.Pick(look.Style, heroId);
+            var useLib = libHair != null && SdRefHairLib.Has(libHair);
+            SdRefHair.Apply(body, useLib ? "none" : look.Style, hairSub, 0, useLib ? 0 : look.Fringe, useLib || look.Ahoge);
 
 
             foreach (var r in rends)
@@ -111,7 +115,8 @@ namespace ExcelHeroes.World
             rig.Head = Find("Bip001 Head") ?? rig.Body;
             // the sample's skull is open behind the face (the ponytail covered it); trimmed styles
             // get a scalp in the hair colour, a ball just inside the hair cap, riding the head bone
-            if (look.Style != "long" && look.Style != "ponytail")
+            if (useLib) SdRefHairLib.Mount(rig, libHair, lk0, layer);
+            if (!useLib && look.Style != "long" && look.Style != "ponytail")
             {
                 var c = body.transform.TransformPoint(SdRefHair.HeadCentre);
                 // mesh z is up and -y is forward; the ball is built in the wrapper's frame (y up, +z forward)

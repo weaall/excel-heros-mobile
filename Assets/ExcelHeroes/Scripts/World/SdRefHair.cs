@@ -51,6 +51,22 @@ namespace ExcelHeroes.World
                 "side" => 0.5f, "curly" => 0.52f, "bob" => 0.62f,
                 _ => 0.66f,
             };
+            if (style == "none")
+            {
+                // a library hair replaces the base cap entirely: no hair triangles, no scrunchie
+                var m0 = Object.Instantiate(src); m0.name = src.name + ":none";
+                m0.SetTriangles(new int[0], hairSub);
+                if (bodySub >= 0)
+                {
+                    var vv = src.vertices; var zmn = vv.Min(p => p.z); var HH = vv.Max(p => p.z) - zmn;
+                    var bt = src.GetTriangles(bodySub); var keep = new List<int>(bt.Length);
+                    var bdrop = new HashSet<int>();
+                    foreach (var c in Components(bt)) if (c.Min(i => (vv[i].z - zmn) / HH) > 0.9f) foreach (var i in c) bdrop.Add(i);
+                    for (var t = 0; t < bt.Length; t += 3) { if (bdrop.Contains(bt[t]) || bdrop.Contains(bt[t + 1]) || bdrop.Contains(bt[t + 2])) continue; keep.Add(bt[t]); keep.Add(bt[t + 1]); keep.Add(bt[t + 2]); }
+                    m0.SetTriangles(keep.ToArray(), bodySub);
+                }
+                return m0;
+            }
             if (keepBelow <= 0f && fringe == 0 && ahoge) return src;
             var twin = style == "twin";                          // the tail is moved to both sides instead of dropped
             var cropSides = style is "short" or "spiky";         // no chin-length side locks on short hair

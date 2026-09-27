@@ -27,6 +27,7 @@ namespace ExcelHeroes.World
         public string Legwear = "";             // skirts: bare (short socks) | socks (knee-high) | tights; "" = trousers
         public string Eyes = "almond";          // round | almond | sharp | droop
         public string GlassesStyle = "square";  // square | round | oval | half | cat | rimless
+        public string HairLib = "";             // a sample's hair mounted on the head (SdRefHairLib); "" = by style, "base" = the base cap only
         public Color GlassesColor = new(0.17f, 0.17f, 0.21f);
 
         [Serializable] class Row { public string id, hair, top, shirt, bottom, legs, shoes, eye, skin; }
@@ -105,6 +106,7 @@ namespace ExcelHeroes.World
                 k.Legwear = sp.legwear ?? "";
                 if (!string.IsNullOrEmpty(sp.eyes)) k.Eyes = sp.eyes;
                 if (!string.IsNullOrEmpty(sp.glassesStyle)) k.GlassesStyle = sp.glassesStyle;
+                if (!string.IsNullOrEmpty(sp.hairLib)) k.HairLib = sp.hairLib;
                 if (!string.IsNullOrEmpty(sp.glassesColor)) k.GlassesColor = H(sp.glassesColor, k.GlassesColor);
                 // the spec row is the source of truth for whatever it carries; colours re-derived
                 // from it so the shirt / legs / shoes follow a hand edit
