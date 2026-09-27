@@ -276,6 +276,7 @@ namespace ExcelHeroes.World
             {
                 if (_k.Fringe >= 0) return _k.Fringe;
                 if (_k.Style == "spiky") return 4;
+                if (_k.Style == "side") return 2;
                 var h = 0; foreach (var ch in _k.Id) h = h * 31 + ch;
                 return Mathf.Abs(h) % 5;
             }

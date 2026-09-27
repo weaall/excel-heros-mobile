@@ -704,7 +704,7 @@ namespace ExcelHeroes.World
                 if (Rig.RefModel)
                 {
                     SdPose.Apply(Rig, _shown);
-                    SetExpression(_shown.Expr ?? "");
+                    SdExpr.Tick(Rig, C.heroId, _shown.Expr, time);
                 }
                 else
                 {

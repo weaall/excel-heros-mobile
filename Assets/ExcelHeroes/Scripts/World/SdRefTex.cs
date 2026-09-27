@@ -152,7 +152,7 @@ namespace ExcelHeroes.World
         {
             var id = k.Id + ":" + expr;
             if (Eyes.TryGetValue(id, out var t) && t != null) return t;
-            var shut = expr is "happy" or "hurt";
+            var shut = expr is "happy" or "hurt" or "blink";
             const int N = 128;
             var px = new Color[N * N];
             var clear = new Color(0f, 0f, 0f, 0f);
@@ -192,8 +192,8 @@ namespace ExcelHeroes.World
                 {
                     // eyes shut: a line drawn on the plug — an arch (happy) or a > chevron (hurt)
                     var e = (lu - 0.5f) * 2f;
-                    var line = expr == "happy" ? 0.62f - e * e * 0.3f : 0.55f - Mathf.Abs(e) * 0.28f;
-                    return Mathf.Abs(lv - line) < 0.1f && Mathf.Abs(e) < 0.8f ? lashC : skinO;
+                    var line = expr == "happy" ? 0.62f - e * e * 0.3f : expr == "blink" ? 0.56f - e * e * 0.06f : 0.55f - Mathf.Abs(e) * 0.28f;
+                    return Mathf.Abs(lv - line) < (expr == "blink" ? 0.075f : 0.1f) && Mathf.Abs(e) < 0.8f ? lashC : skinO;
                 }
                 // the white sits a little high and narrow, so the iris (its own mesh) fills most of it
                 var d = new Vector2((lu - 0.5f) / 0.4f, (lv - 0.54f) / 0.45f).magnitude;

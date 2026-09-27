@@ -165,6 +165,7 @@ namespace ExcelHeroes.World
                         // the character's own idle from the pose library (root name = "sdref:<id>")
                         var id = rig.Root.name.Contains(":") ? rig.Root.name.Substring(rig.Root.name.IndexOf(':') + 1) : rig.Root.name;
                         SdPose.Apply(rig, SdPose.Idle(SdPose.IdleOf(id), _t, phase));
+                        SdExpr.Tick(rig, id, "", _t);
                     }
                     else
                     {

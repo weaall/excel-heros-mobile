@@ -54,6 +54,7 @@ namespace ExcelHeroes.World
             if (keepBelow <= 0f && fringe == 0 && ahoge) return src;
             var twin = style == "twin";                          // the tail is moved to both sides instead of dropped
             var cropSides = style is "short" or "spiky";         // no chin-length side locks on short hair
+            var oneSide = style == "side";                       // asymmetric: the side lock on one side only
             var keepTie = style is "ponytail" or "twin" or "bun";
             var keepBunch = style == "bun";                     // the tail's top bunch reads as a bun once the tail is gone
 
@@ -83,6 +84,7 @@ namespace ExcelHeroes.World
                 if (!ahoge && c.Count < 30 && lo > 0.9f && frontMost < -0.1f) { foreach (var i in c) drop.Add(i); continue; }
                 if (keepBelow <= 0f) continue;
                 if (cropSides && !behind && lo < 0.70f && hi < 0.95f) { foreach (var i in c) drop.Add(i); continue; }
+                if (oneSide && !behind && lo < 0.70f && hi < 0.95f && c.Average(i => v[i].x) > 0f) { foreach (var i in c) drop.Add(i); continue; }
                 if (behind && (lo < keepBelow || ((tie || tail) && !keepTie)))
                 {
                     foreach (var i in c) drop.Add(i);
@@ -100,6 +102,7 @@ namespace ExcelHeroes.World
             if (twin && tailVerts.Count > 0) kept.AddRange(Twin(m, tris, tailVerts, v, H));
             m.SetTriangles(kept.ToArray(), hairSub);
             if (fringe != 0) Fringe(m, kept, fringe, zmin, H);
+            if (style == "curly") Curl(m, kept, zmin, H);
             // the scrunchie on the crown is part of the body submesh: the only body piece that high
             if (!keepTie && bodySub >= 0)
             {
@@ -117,6 +120,32 @@ namespace ExcelHeroes.World
             }
             Debug.Log($"[SdRefHair] {style}: H {H:F4} keepBelow {keepBelow} pieces {comps.Count} dropped verts {drop.Count} tris {tris.Length / 3} -> {kept.Count / 3}");
             return m;
+        }
+
+        /// <summary>
+        /// Curly hair: everything below the crown (z &lt; 0.9 H) gets a wave — a sideways and
+        /// front-back ripple whose phase runs down the strand — and a little more volume; the
+        /// hanging pieces (below 0.66 H) ripple twice as much so they read as curls, not fuzz.
+        /// </summary>
+        static void Curl(Mesh m, List<int> hairTris, float zmin, float H)
+        {
+            var v = m.vertices; var n = m.normals;
+            var idx = new HashSet<int>(hairTris);
+            foreach (var i in idx)
+            {
+                var h = (v[i].z - zmin) / H;
+                if (h > 0.9f) continue;
+                var amp = (h < 0.66f ? 0.03f : 0.014f) * H;
+                var ph = h / H * 0.9f;                                      // phase down the strand
+                var p = v[i];
+                var side = Mathf.Sign(p.x == 0f ? 1f : p.x);
+                p.x += Mathf.Sin(ph * Mathf.PI * 2f * 5.5f + p.y / H * 3f) * amp * side;
+                p.y += Mathf.Cos(ph * Mathf.PI * 2f * 5.5f + p.x / H * 3f) * amp * 0.6f;
+                p += n[i] * 0.006f * H;                                     // volume
+                v[i] = p;
+            }
+            m.vertices = v;
+            m.RecalculateNormals();
         }
 
         /// <summary>

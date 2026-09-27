@@ -51,6 +51,37 @@ namespace ExcelHeroes.World
         public static Pose Rest => new() { RaiseL = -36f, RaiseR = -36f, SwingL = 3f, SwingR = 3f, ElbowL = 14f, ElbowR = 14f, HandFlexL = 18f, HandFlexR = 18f, FistL = 0.25f, FistR = 0.25f, Expr = "" };
     }
 
+    /// <summary>
+    /// The expression on a sample-rig figure: swaps the eye/mouth sheet on the face renderer's
+    /// eye submesh, and blinks — a 0.13 s shut sheet every 3.2–5.5 s (period and phase from the
+    /// id, so a line-up never blinks in unison) whenever the state's own expression is neutral.
+    /// </summary>
+    public static class SdExpr
+    {
+        public static void Tick(ChibiRig rig, string heroId, string expr, float time)
+        {
+            var e = expr ?? "";
+            if (e == "")
+            {
+                var h = SdPose.Hash(heroId);
+                var period = 3.2f + (h % 100) / 100f * 2.3f;
+                var phase = (h / 100 % 100) / 100f * period;
+                if ((time + phase) % period < 0.13f) e = "blink";
+            }
+            Set(rig, heroId, e);
+        }
+
+        public static void Set(ChibiRig rig, string heroId, string expr)
+        {
+            if (rig == null || rig.EyeSub < 0 || rig.FaceRenderer == null || rig.Expression == expr) return;
+            rig.Expression = expr;
+            var b = new MaterialPropertyBlock();
+            rig.FaceRenderer.GetPropertyBlock(b, rig.EyeSub);
+            b.SetTexture("_MainTex", SdRefLook.For(heroId).EyeSheet(expr));
+            rig.FaceRenderer.SetPropertyBlock(b, rig.EyeSub);
+        }
+    }
+
     public static class SdPose
     {
         public const int IdleCount = 6, WinCount = 6;
