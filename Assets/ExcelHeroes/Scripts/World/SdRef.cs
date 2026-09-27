@@ -126,6 +126,8 @@ namespace ExcelHeroes.World
             rig.HandL = Find("Bip001 L Hand"); rig.HandR = Find("Bip001 R Hand");
             rig.FootL = Find("Bip001 L Foot"); rig.FootR = Find("Bip001 R Foot");
             rig.Pelvis = Find("Bip001 Pelvis");
+            rig.FingersL = new[] { "Bip001 L Finger0", "Bip001 L Finger01", "Bip001 L Finger1", "Bip001 L Finger11", "Bip001 L Finger2", "Bip001 L Finger21" }.Select(Find).ToArray();
+            rig.FingersR = new[] { "Bip001 R Finger0", "Bip001 R Finger01", "Bip001 R Finger1", "Bip001 R Finger11", "Bip001 R Finger2", "Bip001 R Finger21" }.Select(Find).ToArray();
             if (rig.Pelvis != null) rig.PelvisRest = rig.Pelvis.localPosition;
             foreach (var r in rends) if (r.gameObject.activeSelf) rig.Renderers.Add(r);
             rig.FaceRenderer = body;

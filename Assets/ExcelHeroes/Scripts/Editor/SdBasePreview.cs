@@ -43,6 +43,8 @@ namespace ExcelHeroes.EditorTools
                     rig.Pose(rig.CalfR, i >= 2 ? q : Quaternion.identity);
                     rig.Pose(rig.CalfL, i == 2 ? q : i == 3 ? qn : Quaternion.identity);
                 }
+                if (System.Environment.GetEnvironmentVariable("SD_BONES") == "1" && i == 0)
+                    foreach (var tr in rig.Root.GetComponentsInChildren<Transform>(true)) if (tr.name.StartsWith("Bip")) Debug.Log("[SdBones] " + tr.name);
                 var poseEnv = System.Environment.GetEnvironmentVariable("SD_POSE");
                 if (!string.IsNullOrEmpty(poseEnv) && rig.RefModel)
                 {
@@ -90,6 +92,15 @@ namespace ExcelHeroes.EditorTools
                     SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
                     rig.Pose(rig.HandL, i == 0 ? Quaternion.Euler(0f, 60f, 0f) : i == 1 ? Quaternion.Euler(0f, -60f, 0f) : i == 2 ? Quaternion.Euler(0f, 0f, 60f) : Quaternion.Euler(0f, 0f, -60f));
                     rig.Pose(rig.HandR, Quaternion.identity);
+                }
+                // SD_POSETEST=10: the RIGHT fingers (index+middle) curled about +X/-X/+Y/-Y/+Z/-Z 70 (columns), arm raised so the hand shows
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "10" && rig.RefModel)
+                {
+                    var pz = ExcelHeroes.World.Pose.Rest; pz.RaiseR = 10f; pz.SwingR = 60f; pz.ElbowR = 90f; pz.InR = 0f; pz.HandFlexR = 0f;
+                    SdPose.Apply(rig, pz);
+                    var d = i % 2 == 0 ? 70f : -70f; var ax = i / 2;
+                    var q = ax == 0 ? Quaternion.Euler(d, 0f, 0f) : ax == 1 ? Quaternion.Euler(0f, d, 0f) : Quaternion.Euler(0f, 0f, d);
+                    foreach (var f in rig.FingersR) if (f != null && !f.name.EndsWith("Finger0") && !f.name.EndsWith("Finger01")) rig.Pose(f, q);
                 }
                 // SD_POSETEST=8: the RIGHT foot likewise
                 if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "8" && rig.RefModel)
