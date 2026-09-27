@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using ExcelHeroes.Core;
 using ExcelHeroes.Data;
@@ -234,7 +235,20 @@ namespace ExcelHeroes.UI
 
             // A card you do not own is DARKENED by a scrim over the art. Opacity composites
             // against the white card behind and bleaches towards white instead.
-            if (owned == null) Div("card__scrim", art);
+            if (owned == null)
+            {
+                // cold and dark, with a lock: the reference's not-yet-recruited entry. At .58 the
+                // art still read as owned at a glance (ui_critique round 1, 07-Roster #1)
+                // on the CARD, not inside the art: the portrait arrives as a child of the art after
+                // this runs, and a scrim inside it ended up under the picture
+                var scrim = Div("card__scrim", card);
+                scrim.pickingMode = PickingMode.Ignore;
+                // .92 on paper: this project is in Linear colour space and UI Toolkit composites a
+                // background alpha far weaker than the number says (HANDOFF, "an unowned card
+                // bleached"); at .74 the art still read at a glance as owned
+                scrim.style.backgroundColor = new Color(0.06f, 0.1f, 0.19f, 0.93f);
+                ModalFrame.Painted(Div("card__lock", card), DrawLock);
+            }
 
             GradeBadge(def.grade, gradeColor, "card__grade", card);
             RoleBadge(def.role, "card__role", card);
@@ -267,6 +281,28 @@ namespace ExcelHeroes.UI
 
             if (onClick != null) card.RegisterCallback<ClickEvent>(_ => onClick());
             return card;
+        }
+
+        /// <summary>A padlock: a rounded body and a shackle, pale on the dark scrim.</summary>
+        public static void DrawLock(MeshGenerationContext ctx, Rect r)
+        {
+            var c = r.center; var w = Mathf.Min(r.width, r.height) * 0.62f;
+            var ink = UiPaint.C(206, 220, 236, 0.9f);
+            var body = new Rect(c.x - w * 0.5f, c.y - w * 0.05f, w, w * 0.62f);
+            // the shackle: an arch of thick strokes above the body
+            const int n = 14; var rad = w * 0.3f; var t = w * 0.11f;
+            for (var i = 0; i < n; i++)
+            {
+                float a0 = Mathf.PI * i / n, a1 = Mathf.PI * (i + 1) / n;
+                var p0 = new Vector2(c.x + Mathf.Cos(a0) * rad, body.yMin - Mathf.Sin(a0) * rad);
+                var p1 = new Vector2(c.x + Mathf.Cos(a1) * rad, body.yMin - Mathf.Sin(a1) * rad);
+                var nrm = new Vector2(-(p1 - p0).y, (p1 - p0).x).normalized * t * 0.5f;
+                UiPaint.Fill(ctx, new List<Vector2> { p0 + nrm, p1 + nrm, p1 - nrm, p0 - nrm }, ink, 0.6f);
+            }
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(c.x - rad - t * 0.5f, body.yMin - 2f, c.x - rad + t * 0.5f, body.yMin + 6f), 1f), ink);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(c.x + rad - t * 0.5f, body.yMin - 2f, c.x + rad + t * 0.5f, body.yMin + 6f), 1f), ink);
+            UiPaint.Fill(ctx, UiPaint.RoundRect(body, w * 0.1f), ink);
+            UiPaint.Fill(ctx, UiPaint.Ellipse(new Vector2(c.x, body.center.y - w * 0.04f), w * 0.07f, w * 0.07f), UiPaint.C(30, 44, 70, 0.9f));
         }
 
         /// <summary>The grade as a small slanted plate in the grade's colour.</summary>

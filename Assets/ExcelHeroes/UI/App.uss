@@ -5669,3 +5669,26 @@
 }
 /* the pager sits on the bottom edge: its 84px plates hung 8px off a 70px row */
 .pager__btn, .pager__btn:hover, .pager__btn:disabled { height: 70px; }
+
+/* ================================================================ UI round 1 (tools/ui_critique.py vs BA)
+   Section headers: Blue Archive heads a block with a short accent bar and dark bold type on the
+   glass, not a solid navy strip — the strips made every panel heavy (critique: 16-Detail #2,
+   08-Party #1). The navy plate is still the look of titles OUTSIDE panels (modal heads). */
+.section-title, .block__title {
+    background-image: none;
+    background-color: rgba(0, 0, 0, 0);
+    color: rgb(27, 47, 72);
+    -unity-font-style: bold;
+    border-left-width: 8px;
+    border-left-color: rgb(40, 160, 246);
+    padding-left: 18px;
+    -unity-text-outline-width: 0;
+}
+.panel > .section-title { margin-left: -12px; margin-right: 0; margin-top: -8px; }
+.block__title { height: 44px; font-size: 28px; margin-bottom: 4px; }
+.section-title { height: 56px; font-size: 34px; }
+.shell--battle #goldChip, .shell--battle #gemChip { display: none; }
+.card__lock { position: absolute; left: 50%; width: 64px; margin-left: -32px; bottom: 98px; height: 64px; }   /* above the name band, clear of the face */
+.block__title { height: 48px; }
+/* the name band lets the art through a little (critique: an opaque block covered a third of it) */
+.card__plate { background-color: rgba(20, 34, 62, 0.8); border-top-width: 0; }

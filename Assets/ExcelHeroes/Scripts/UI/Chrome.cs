@@ -154,20 +154,10 @@ namespace ExcelHeroes.UI
         /// <summary>A currency pill: slanted, translucent white, a thin blue-grey edge.</summary>
         public static void DrawPill(MeshGenerationContext ctx, Rect r)
         {
-            if (!Lobby)
-            {
-                // No pill inside a screen: a faint slash on the left divides this number from the
-                // one before it.
-                var h = r.height * 0.5f;
-                var y0 = r.center.y - h * 0.5f;
-                var slash = new List<Vector2>
-                {
-                    new Vector2(r.xMin + 8f, y0), new Vector2(r.xMin + 11f, y0),
-                    new Vector2(r.xMin + 5f, y0 + h), new Vector2(r.xMin + 2f, y0 + h),
-                };
-                UiPaint.Fill(ctx, slash, C(160, 176, 196, 0.8f));
-                return;
-            }
+            // A pill on every screen: inside a screen it used to be bare numbers divided by a slash,
+            // which read as a web toolbar (ui_critique round 1, 07-Roster #2 / 10-Quests #3).
+            // Inside, it is inset a little so it sits within the 66px band.
+            if (!Lobby) r = Rect.MinMaxRect(r.xMin, r.yMin + 7f, r.xMax, r.yMax - 7f);
             var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 6f);
             UiPaint.Shadow(ctx, poly, new Vector2(0f, 2f), C(30, 60, 100, 0.16f), 6f);
             UiPaint.Fill(ctx, poly, C(186, 208, 228, 0.9f));

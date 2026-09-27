@@ -327,6 +327,10 @@ namespace ExcelHeroes.UI
             // the top edge's home button is the way out — and the screen gets the height back,
             // which is most of what "made for a phone" means on a 1080-tall landscape display.
             _navbar?.EnableInClassList("hidden", !home);
+            // In a fight the reference shows no currencies: the band is the back arrow and the
+            // title only, so the field reads (ui_critique round 1, 07-BattleHud #2)
+            var battle = sheet == Sheet.Battle;
+            _doc.rootVisualElement.Q<VisualElement>("root")?.EnableInClassList("shell--battle", battle);
             if (_screenTitle != null) _screenTitle.text = TitleOf(sheet);
         }
 
