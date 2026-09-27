@@ -108,8 +108,14 @@ namespace ExcelHeroes.UI
             var open = GameData.Episodes.FirstOrDefault(e => e.id == _open);
             if (open == null)
             {
+                // not a bare line of grey on an empty field: the app's own mark, large and faint,
+                // over a two-line prompt (ui_critique round 1, 12-Story #2)
                 var empty = UiKit.Div("mt__empty", chat);
-                UiKit.Text("대화방을 선택하세요", "mt__empty-text", empty);
+                var mark = UiKit.Div("mt__empty-mark", empty);
+                var icon = GameData.Icon("messenger");
+                if (icon != null) UiKit.SetArt(mark, icon);
+                UiKit.Text("대화방을 선택해 주세요", "mt__empty-text", empty);
+                UiKit.Text("왼쪽 목록에서 읽지 않은 대화에는 빨간 표시가 붙어 있어요", "mt__empty-sub", empty);
                 return;
             }
             BuildChat(chat, open);

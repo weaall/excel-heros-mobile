@@ -84,8 +84,10 @@ namespace ExcelHeroes.UI
                                      Color.white, C(0, 0, 0, 0f), 0f, 0.22f),
             Kind.Glass   => new Look(C(255, 255, 255, 0.74f), C(238, 246, 252, 0.62f), C(255, 255, 255, 0.85f), C(255, 255, 255, 0.6f), 1.5f,
                                      C(150, 210, 240), C(0, 0, 0, 0f), 0f, 0.18f),
-            Kind.Off     => new Look(C(222, 227, 234), C(206, 213, 223), C(178, 188, 202, 0.7f), C(255, 255, 255, 0.4f), 1.5f,
-                                     Color.white, C(0, 0, 0, 0f), 0f, 0.1f),
+            // off = an OUTLINE, not a grey lump: pale glass with a clear blue-grey border, so a
+            // not-yet-claimable button reads as "later", not as broken (ui_critique round 1)
+            Kind.Off     => new Look(C(244, 247, 250, 0.82f), C(232, 238, 244, 0.78f), C(170, 186, 206, 0.95f), C(255, 255, 255, 0.5f), 2.2f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0f),
             _            => new Look(C(255, 255, 255), C(233, 241, 248), C(168, 190, 214, 0.85f), C(255, 255, 255, 0.9f), 1.5f,
                                      C(150, 205, 238), C(0, 0, 0, 0f), 0f, 0.2f),
         };

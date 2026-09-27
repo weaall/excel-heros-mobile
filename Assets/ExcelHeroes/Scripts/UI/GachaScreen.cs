@@ -148,12 +148,28 @@ namespace ExcelHeroes.UI
             _ten = UiKit.Btn("10회 모집", "pull-btn pull-btn--primary", () => Pull(10), actions);
             SkewPlate.Apply(_one, SkewPlate.Kind.Light);
             SkewPlate.Apply(_ten, SkewPlate.Kind.Gold);
+            // the price under the title with the drawn gem, not "· ◈900" run into the label
+            // (ui_critique round 1, 09-Gacha #2)
+            _oneCost = CostRow(_one); _tenCost = CostRow(_ten);
+            // over the 10-pull: how far the S floor is — a real number, where the reference puts
+            // its guarantee ribbon (this build guarantees nothing per ten, so it says nothing it can't keep)
+            _pityRibbon = UiKit.Text("", "gpulls__ribbon", _ten);
 
             Refresh();
             return _root;
         }
 
         VisualElement _pityAFill, _pitySFill;
+        Label _oneCost, _tenCost, _pityRibbon;
+
+        static Label CostRow(Button b)
+        {
+            var row = UiKit.Div("pull-btn__cost", b);
+            row.pickingMode = PickingMode.Ignore;
+            var gem = GameData.Icon("gem");
+            if (gem != null) UiKit.SetArt(UiKit.Div("pull-btn__gem", row), gem);
+            return UiKit.Text("", "pull-btn__price", row);
+        }
 
         static (Label, VisualElement) PityRow(VisualElement parent, string grade, Color colour)
         {
@@ -259,8 +275,11 @@ namespace ExcelHeroes.UI
             if (_pickup != null) BuildPickup();
             if (_cards != null && _cards.panel != null) BuildExchange();
 
-            UiKit.SetBtnText(_one, $"1회 모집 · ◈{GachaService.CostFor(1)}");
-            UiKit.SetBtnText(_ten, $"10회 모집 · ◈{GachaService.CostFor(10)}");
+            UiKit.SetBtnText(_one, "1회 모집");
+            UiKit.SetBtnText(_ten, "10회 모집");
+            if (_oneCost != null) _oneCost.text = GachaService.CostFor(1).ToString("N0");
+            if (_tenCost != null) _tenCost.text = GachaService.CostFor(10).ToString("N0");
+            if (_pityRibbon != null) _pityRibbon.text = $"S 천장까지 {toS}회";
             _one.SetEnabled(GachaService.CanAfford(p, 1));
             _ten.SetEnabled(GachaService.CanAfford(p, 10));
         }

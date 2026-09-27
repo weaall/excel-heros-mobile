@@ -5692,3 +5692,38 @@
 .block__title { height: 48px; }
 /* the name band lets the art through a little (critique: an opaque block covered a third of it) */
 .card__plate { background-color: rgba(20, 34, 62, 0.8); border-top-width: 0; }
+
+/* ================================================================ UI round 2
+   The page count as a navy capsule between the arrows (critique: 13-Album #3, 07-Roster #3) —
+   the bare "1 / 6" sat on the backdrop and did not read as part of a control. */
+.pager__label {
+    min-width: 170px;
+    height: 56px;
+    margin: 0 18px;
+    border-radius: 28px;
+    background-color: rgb(27, 41, 64);
+    color: rgb(255, 255, 255);
+    font-size: 30px;
+}
+.mt__empty-mark { width: 220px; height: 220px; opacity: 0.35; -unity-background-scale-mode: scale-to-fit; margin-bottom: 24px; }
+.mt__empty-text { font-size: 34px; -unity-font-style: bold; color: rgb(110, 128, 152); }
+.mt__empty-sub { font-size: 24px; color: rgb(140, 156, 178); margin-top: 8px; }
+/* the album as cards (critique: 13-Album #1): a white-rimmed card, the name on a navy band inside it */
+.album__cell { border-radius: 12px; overflow: hidden; border-width: 3px; border-color: rgb(255, 255, 255); background-color: rgb(30, 44, 70); }
+.album__art { border-width: 0; background-color: rgb(226, 236, 246); background-position-y: top 8%; }
+.album__name { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; background-color: rgb(24, 38, 66); color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 26px; }
+.album__cell--locked .album__art { opacity: 1; }
+.album__cell--locked .album__name { color: rgb(150, 166, 190); }
+.album__scrim { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.album__lock { position: absolute; left: 50%; width: 72px; margin-left: -36px; top: 38%; height: 72px; }
+/* pull buttons: the title on top, the price with the drawn gem under it */
+.gpulls .pull-btn { flex-direction: column; justify-content: center; align-items: center; height: 140px; padding-top: 6px; }
+.gpulls .pull-btn .plate__label { font-size: 40px; -unity-font-style: bold; }
+.pull-btn__cost { flex-direction: row; align-items: center; margin-top: 2px; }
+.pull-btn__gem { width: 42px; height: 42px; margin-right: 8px; -unity-background-scale-mode: scale-to-fit; }
+.pull-btn__price { font-size: 32px; -unity-font-style: bold; color: rgb(43, 67, 92); padding: 0; margin: 0; }
+.gpulls__ribbon {
+    position: absolute; top: -26px; right: 40px; height: 40px; padding: 0 20px;
+    background-color: rgb(21, 42, 66); color: rgb(0, 222, 255); font-size: 22px; -unity-font-style: bold;
+    border-radius: 6px; -unity-text-align: middle-center;
+}

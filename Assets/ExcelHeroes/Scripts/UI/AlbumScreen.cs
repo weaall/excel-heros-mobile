@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using ExcelHeroes.Core;
@@ -61,6 +62,13 @@ namespace ExcelHeroes.UI
                 var cell = UiKit.Div(owned ? "album__cell" : "album__cell album__cell--locked", grid);
                 var art = UiKit.Div("album__art", cell);
                 UiKit.SetArt(art, GameData.CardArt(def.id));
+                if (!owned)
+                {
+                    // the roster's locked look, so a missing picture reads the same everywhere
+                    var scrim = UiKit.Div("album__scrim", cell);
+                    scrim.style.backgroundColor = new Color(0.06f, 0.1f, 0.19f, 0.93f);   // Linear-space alpha, see UiKit.Card
+                    ModalFrame.Painted(UiKit.Div("album__lock", cell), UiKit.DrawLock);
+                }
                 UiKit.Text(owned ? def.name : "미보유", "album__name", cell);
                 if (!owned) return;
                 var id = def.id;
