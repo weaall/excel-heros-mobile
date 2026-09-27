@@ -177,8 +177,10 @@ namespace ExcelHeroes.World
         {
             if (rig.Sheet == null || rig.Spine == null) return;
             var root = rig.Root;
-            var pos = root.TransformPoint(new Vector3(rig.SheetSide * 0.12f, 0.744f, -0.14f));
-            var rot = root.rotation * Quaternion.Euler(0f, 180f, rig.SheetSide * 12f);
+            // behind the head and out past one shoulder, turned a little towards that side so the
+            // flat plane reads in perspective, as a halo does (the lean itself is in the texture)
+            var pos = root.TransformPoint(new Vector3(rig.SheetSide * 0.27f, 0.84f, -0.16f));
+            var rot = root.rotation * Quaternion.Euler(0f, 180f + rig.SheetSide * 16f, rig.SheetSide * 4f);
             rig.Sheet.SetParent(rig.Spine, true);
             var ls = rig.Spine.lossyScale;
             rig.Sheet.localScale = new Vector3(scale / ls.x, scale / ls.y, scale / ls.z);

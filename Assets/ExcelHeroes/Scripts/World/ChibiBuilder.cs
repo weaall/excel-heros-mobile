@@ -269,8 +269,9 @@ namespace ExcelHeroes.World
             if (_sheetQuad == null)
             {
                 var sb = new MeshKit.Builder();
-                // the four-cell strip (SheetTexture.Aspect ≈ 4.5 : 1)
-                sb.Quad(Vector3.zero, new Vector3(0.27f, 0f, 0f), new Vector3(0f, 0.27f / SheetTexture.Aspect, 0f), Color.white);
+                // the halo sheet: square (SheetTexture.Aspect = 1), the grid in its middle 64 %, the
+                // rank rings round it — head-and-shoulders sized on a 1.2 figure
+                sb.Quad(Vector3.zero, new Vector3(0.25f, 0f, 0f), new Vector3(0f, 0.25f / SheetTexture.Aspect, 0f), Color.white);
                 _sheetQuad = sb.Bake("sheet");
             }
             var go = MeshKit.Part("sheetQuad", pivot, _sheetQuad, MeshKit.NewGlass(tex), layer);

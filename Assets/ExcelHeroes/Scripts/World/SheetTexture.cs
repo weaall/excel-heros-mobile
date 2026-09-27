@@ -5,19 +5,20 @@ using UnityEngine;
 namespace ExcelHeroes.World
 {
     /// <summary>
-    /// The back sheet (BackSheet.Spec) as a texture for the 3D figure: the same four-cell strip the
-    /// UI draws — frame by grade, filled cells in the character's colour with their solid pattern,
-    /// empty cells translucent white.
+    /// The back sheet as a texture for the 3D figure: BackSheet.Halo's strokes and washes (the
+    /// same geometry the UI paints) rasterised as distance fields — a crisp core going towards
+    /// white, then an exponential glow in the stroke's colour, crossings screened so light adds
+    /// to light. Square, with the grid in the middle and room around it for the rank rings.
     /// </summary>
     public static class SheetTexture
     {
-        const int W = 288, H = 64;
-        public const float Aspect = W / (float)H;
+        const int N = 320;
+        public const float Aspect = 1f;
         static readonly Dictionary<string, Texture2D> Cache = new();
 
         public static Texture2D For(BackSheet.Spec s, string key)
         {
-            key = $"{key}:{s.Filled}:{s.Gold}:{s.Pattern}";
+            key = $"{key}:{s.Filled}:{s.Gold}:{s.Frame}:{s.Left}";
             if (Cache.TryGetValue(key, out var t) && t != null) return t;
             t = Paint(s);
             Cache[key] = t;
@@ -26,49 +27,70 @@ namespace ExcelHeroes.World
 
         static Texture2D Paint(BackSheet.Spec s)
         {
-            var px = new Color[W * H];
-            void Put(int x, int y, Color c)
+            var strokes = new List<BackSheet.Stroke>(); var washes = new List<(List<Vector2> poly, Color c)>();
+            BackSheet.Halo(s, strokes, washes);
+            // to pixels, and a bounding box per stroke so each pixel only visits the strokes near it
+            var segs = new List<(Vector2 a, Vector2 b, Color c, float w, float g, Rect box)>(strokes.Count);
+            // the figure shows this at ~70 px, so every stroke is drawn 1.7x as heavy as the UI draws it
+            const float Heavy = 1.7f, HeavyGlow = 1.15f;     // the glow grows less, or a ring turns into a blob
+            foreach (var st in strokes)
             {
-                if (x < 0 || y < 0 || x >= W || y >= H) return;
-                var i = (H - 1 - y) * W + x;   // y from the top
-                px[i] = Over(px[i], c);
+                var a = st.A * N; var b = st.B * N; var reach = st.Glow * HeavyGlow * 3.5f + st.Width * Heavy;
+                segs.Add((a, b, st.C, st.Width * Heavy, st.Glow * HeavyGlow, Rect.MinMaxRect(Mathf.Min(a.x, b.x) - reach, Mathf.Min(a.y, b.y) - reach, Mathf.Max(a.x, b.x) + reach, Mathf.Max(a.y, b.y) + reach)));
             }
-            void Rect(float x0, float y0, float x1, float y1, Color c)
-            {
-                for (var y = Mathf.RoundToInt(y0); y < Mathf.RoundToInt(y1); y++)
-                    for (var x = Mathf.RoundToInt(x0); x < Mathf.RoundToInt(x1); x++) Put(x, y, c);
-            }
+            var polys = washes.ConvertAll(w => (w.poly.ConvertAll(p => p * N), w.c));
 
-            // body and frame
-            Rect(0, 0, W, H, new Color(1f, 1f, 1f, 0.55f));
-            var f = s.Frame; f.a = 0.95f;
-            Rect(0, 0, W, 3, f); Rect(0, H - 3, W, H, f); Rect(0, 0, 3, H, f); Rect(W - 3, 0, W, H, f);
-
-            const float pad = 7f, gap = 5f;
-            var cw = (W - pad * 2f - gap * (BackSheet.CellCount - 1)) / BackSheet.CellCount;
-            var ch = H - pad * 2f;
-            for (var i = 0; i < BackSheet.CellCount; i++)
-            {
-                var x0 = pad + i * (cw + gap);
-                if (i >= s.Filled)
+            var px = new Color[N * N];
+            for (var y = 0; y < N; y++)
+                for (var x = 0; x < N; x++)
                 {
-                    Rect(x0, pad, x0 + cw, pad + ch, new Color(0.86f, 0.9f, 0.96f, 0.7f));
-                    continue;
-                }
-                var col = BackSheet.CellColor(s, i); col.a = 1f;
-                var ink = Color.Lerp(col, Color.white, 0.38f); ink.a = 0.92f;
-                for (var y = 0; y < Mathf.RoundToInt(ch); y++)
-                    for (var x = 0; x < Mathf.RoundToInt(cw); x++)
+                    var p = new Vector2(x + 0.5f, y + 0.5f);
+                    var c = new Color(0, 0, 0, 0);
+                    foreach (var (poly, wc) in polys) if (Inside(poly, p)) c = Over(c, wc);
+                    foreach (var sg in segs)
                     {
-                        var u = x / cw; var v = y / ch;
-                        Put(Mathf.RoundToInt(x0) + x, Mathf.RoundToInt(pad) + y, BackSheet.Ink(s.Pattern, u, v) ? ink : col);
+                        if (!sg.box.Contains(p)) continue;
+                        var d = Dist(p, sg.a, sg.b);
+                        var core = Mathf.Clamp01(sg.w * 0.5f + 0.5f - d);          // the line, ~1 px antialiased
+                        var glow = Mathf.Exp(-d / sg.g) * 0.7f;                       // the light around it
+                        var a = Mathf.Max(core, glow) * sg.c.a;
+                        if (a < 0.003f) continue;
+                        var rgb = Color.Lerp(sg.c, Color.white, core * 0.45f);
+                        c = Screen(c, new Color(rgb.r, rgb.g, rgb.b, a));
                     }
-            }
-
-            var tex = new Texture2D(W, H, TextureFormat.RGBA32, true) { wrapMode = TextureWrapMode.Clamp, name = "sheet", anisoLevel = 4 };
+                    px[(N - 1 - y) * N + x] = c;
+                }
+            var tex = new Texture2D(N, N, TextureFormat.RGBA32, true) { wrapMode = TextureWrapMode.Clamp, name = "sheet", anisoLevel = 4 };
             tex.SetPixels(px);
             tex.Apply(true);
             return tex;
+        }
+
+        static float Dist(Vector2 p, Vector2 a, Vector2 b)
+        {
+            var ab = b - a; var t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / Mathf.Max(1e-5f, ab.sqrMagnitude));
+            return (p - (a + ab * t)).magnitude;
+        }
+
+        static bool Inside(IList<Vector2> poly, Vector2 p)
+        {
+            var inside = false;
+            for (int i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
+                if ((poly[i].y > p.y) != (poly[j].y > p.y) && p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
+                    inside = !inside;
+            return inside;
+        }
+
+        /// <summary>Light adding onto light: alpha as "over", colour pulled towards screen, so crossings brighten rather than muddy.</summary>
+        static Color Screen(Color dst, Color src)
+        {
+            var a = src.a + dst.a * (1f - src.a);
+            if (a <= 0.0001f) return new Color(0, 0, 0, 0);
+            var s = new Vector3(src.r, src.g, src.b); var d = new Vector3(dst.r, dst.g, dst.b);
+            var scr = Vector3.one - Vector3.Scale(Vector3.one - s, Vector3.one - d);
+            var rgb = (s * src.a + d * dst.a * (1f - src.a)) / a;
+            rgb = Vector3.Lerp(rgb, scr, Mathf.Min(src.a, dst.a));
+            return new Color(rgb.x, rgb.y, rgb.z, a);
         }
 
         static Color Over(Color dst, Color src)

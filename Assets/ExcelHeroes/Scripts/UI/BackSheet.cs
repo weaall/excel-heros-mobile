@@ -7,18 +7,18 @@ using UnityEngine.UIElements;
 namespace ExcelHeroes.UI
 {
     /// <summary>
-    /// 등 뒤의 시트 — the game's own device where the reference has a halo: one row of four
-    /// cells (A1:D1) floating behind the hero's shoulder, drawn by the game, never by the art.
+    /// 등 뒤의 시트 — the game's own device where the reference has a halo: a small spreadsheet
+    /// grid (A1:D3) drawn in light behind the hero's shoulder, by the game, never by the art.
+    /// See Halo() for the geometry; both painters (DrawHalo for the UI, SheetTexture for 3D) use it.
     ///
-    ///   ★ + level   → how many of the four cells are filled (at least one once owned)
-    ///   accent      → the filled cells' colour, shifted a little from cell to cell
-    ///   id          → the solid pattern inside every filled cell (stripes, dots, check, …)
-    ///   grade       → the frame (D grey, C green, B blue, A purple, S gold)
-    ///   awakened    → the filled cells turn gold
+    ///   ★ + level   → how many of the four columns are lit (at least one once owned)
+    ///   accent      → the neon colour of the grid
+    ///   grade       → the ornament: C brackets, B the active cell, A an arc ring, S ring + sparkles
+    ///   awakened    → everything turns gold
     ///   side        → left or right shoulder, fixed per id by the same hash the web uses
     ///
-    /// It used to be a whole spreadsheet (header rows, formula bar, chart); at the size it is seen
-    /// it read as noise. Four cells read at a glance.
+    /// Before this it was four filled, patterned cells, and before that a whole spreadsheet; both
+    /// read as noise. A halo is lines of light, not boxes.
     /// </summary>
     public static class BackSheet
     {
@@ -75,33 +75,6 @@ namespace ExcelHeroes.UI
             return new Spec(filled, accent, FrameFor(grade), pattern, owned?.awakened ?? false, LeftSide(def?.id));
         }
 
-        /// <summary>The colour of cell i: the accent, walked a few degrees round the hue wheel.</summary>
-        public static Color CellColor(Spec s, int i)
-        {
-            if (s.Gold) return Color.Lerp(C(255, 214, 70), C(255, 180, 30), i / 3f);
-            Color.RGBToHSV(s.Accent, out var h, out var sat, out var v);
-            return Color.HSVToRGB(Mathf.Repeat(h + (i - 1.5f) * 0.045f, 1f), Mathf.Clamp01(sat * 0.95f + 0.05f), Mathf.Clamp01(v * (1.02f - i * 0.04f)));
-        }
-
-        /// <summary>Is point (u, v) — 0..1 inside a cell — on the pattern's ink?</summary>
-        public static bool Ink(Pattern p, float u, float v)
-        {
-            const float k = 5f;
-            switch (p)
-            {
-                case Pattern.Stripes: return Mathf.Repeat(v * k, 1f) < 0.38f;
-                case Pattern.Dots:
-                {
-                    var du = Mathf.Repeat(u * k, 1f) - 0.5f; var dv = Mathf.Repeat(v * k, 1f) - 0.5f;
-                    return du * du + dv * dv < 0.07f;
-                }
-                case Pattern.Check: return (Mathf.FloorToInt(u * 4f) + Mathf.FloorToInt(v * 4f)) % 2 == 0;
-                case Pattern.Diagonal: return Mathf.Repeat((u + v) * k * 0.8f, 1f) < 0.35f;
-                case Pattern.Grid: return Mathf.Repeat(u * k, 1f) < 0.16f || Mathf.Repeat(v * k, 1f) < 0.16f;
-                default: return Mathf.Repeat(v * k + Mathf.Sin(u * Mathf.PI * 4f) * 0.25f, 1f) < 0.36f;
-            }
-        }
-
         /// <summary>
         /// Adds a painted sheet layer to `parent`. Add it BEFORE the portrait: UI Toolkit has no
         /// z-index, so build order puts it behind.
@@ -111,64 +84,145 @@ namespace ExcelHeroes.UI
             var spec = For(def, owned);
             var el = UiKit.Div(classes + (spec.Left ? " backsheet--left" : " backsheet--right"), parent);
             el.pickingMode = PickingMode.Ignore;
-            ModalFrame.Painted(el, (ctx, r) => Draw(ctx, r, spec));
+            ModalFrame.Painted(el, (ctx, r) => DrawHalo(ctx, r, spec));
             return el;
         }
 
-        /// <summary>The strip, fitted into r at its own aspect (about 4.5 : 1) and centred.</summary>
-        public static void Draw(MeshGenerationContext ctx, Rect r, Spec s)
+        // ------------------------------------------------------------ the halo sheet (v3)
+        //
+        // Designed against Gemini mock-ups of our own party screen (tools/gemini_edit.py, halo_*):
+        // what read as a halo there was a small spreadsheet GRID drawn in saturated neon line — the
+        // character's colour, a soft glow of it, white only at the core — leaning in perspective
+        // behind one shoulder, head-and-shoulders sized; rank as the rings and sparkles a halo
+        // carries. One geometry, in a unit square (y down), drawn by both painters: SheetTexture for
+        // the 3D figure (distance-field raster) and DrawHalo for the UI (strokes + glow rings).
+
+        public struct Stroke { public Vector2 A, B; public Color C; public float Width, Glow; public bool Arc; }
+
+        /// <summary>
+        /// The sheet as strokes and washes in the unit square:
+        ///   a 4×3 grid (A1:D3) leaning in perspective — frame, then fainter inner lines;
+        ///   ★ + level lights columns left to right (a faint wash);
+        ///   C+ corner brackets (Excel's selection), B+ the active cell A1 and its fill handle,
+        ///   A an arc ring in the grade colour, S the full ring, an inner ring and sparkles.
+        /// Awakened turns everything gold.
+        /// </summary>
+        public static void Halo(Spec s, List<Stroke> strokes, List<(List<Vector2> poly, Color c)> washes)
         {
-            const float aspect = 4.5f;
-            var w = Mathf.Min(r.width, r.height * aspect);
-            var h = w / aspect;
-            var box = new Rect(r.center.x - w * 0.5f, r.center.y - h * 0.5f, w, h);
-            var slant = h * 0.18f * (s.Left ? -1f : 1f);
+            var dir = s.Left ? -1f : 1f;
+            var gold = C(255, 204, 64);
+            var ink = Neon(s.Gold ? gold : s.Accent);
+            var ring = Neon(s.Gold ? gold : s.Frame);
+            var grade = s.Frame == FrameFor("S") ? 4 : s.Frame == FrameFor("A") ? 3 : s.Frame == FrameFor("B") ? 2 : s.Frame == FrameFor("C") ? 1 : 0;
 
-            var outer = UiPaint.SkewRect(box, slant, Mathf.Min(8f, h * 0.12f));
-            UiPaint.Ring(ctx, outer, UiPaint.WithAlpha(s.Frame, 0.4f), UiPaint.WithAlpha(s.Frame, 0f), Mathf.Min(14f, h * 0.2f));
-            UiPaint.Fill(ctx, outer, C(255, 255, 255, 0.42f));
-            UiPaint.Stroke(ctx, outer, UiPaint.WithAlpha(s.Frame, 0.95f), Mathf.Clamp(h * 0.05f, 2f, 4f));
+            var centre = new Vector2(0.5f, 0.5f);
+            const float gw = 0.64f, gh = 0.42f;
+            var U = new Vector2(gw, -0.1f * gw * dir);       // along the columns, rising to the outer side
+            var V = new Vector2(0.16f * gh * dir, gh);        // down the rows, leaning
+            var O = centre - U * 0.5f - V * 0.5f;
+            Vector2 G(float u, float v) => O + U * u + V * v;
+            void Line(Vector2 a, Vector2 b, Color c, float w, float glow) => strokes.Add(new Stroke { A = a, B = b, C = c, Width = w, Glow = glow });
+            List<Vector2> Cell(float u0, float v0, float u1, float v1) => new() { G(u0, v0), G(u1, v0), G(u1, v1), G(u0, v1) };
 
-            var pad = h * 0.1f;
-            var gap = h * 0.07f;
-            var cw = (w - pad * 2f - gap * (CellCount - 1)) / CellCount;
-            var ch = h - pad * 2f;
-            for (var i = 0; i < CellCount; i++)
+            // lit columns
+            for (var c = 0; c < Mathf.Min(s.Filled, CellCount); c++)
+                washes.Add((Cell(c / 4f, 0f, (c + 1) / 4f, 1f), WithA(ink, 0.2f)));
+            // the grid
+            Line(G(0, 0), G(1, 0), ink, 4f, 10f); Line(G(1, 0), G(1, 1), ink, 4f, 10f);
+            Line(G(1, 1), G(0, 1), ink, 4f, 10f); Line(G(0, 1), G(0, 0), ink, 4f, 10f);
+            for (var c = 1; c < 4; c++) Line(G(c / 4f, 0), G(c / 4f, 1), WithA(ink, 0.75f), 2.2f, 6f);
+            for (var r = 1; r < 3; r++) Line(G(0, r / 3f), G(1, r / 3f), WithA(ink, 0.75f), 2.2f, 6f);
+
+            if (grade >= 1)
             {
-                var cell = new Rect(box.xMin + pad + i * (cw + gap), box.yMin + pad, cw, ch);
-                var poly = Skew(cell, box, slant);
-                if (i >= s.Filled)
+                // Excel's selection brackets, just outside the four corners
+                const float e = 0.035f, l = 0.1f;
+                foreach (var (u, v) in new[] { (0f, 0f), (1f, 0f), (1f, 1f), (0f, 1f) })
                 {
-                    UiPaint.Fill(ctx, poly, C(255, 255, 255, 0.5f), 0.8f);
-                    UiPaint.Stroke(ctx, poly, C(150, 170, 196, 0.5f), 1.2f);
-                    continue;
+                    var su = u < 0.5f ? -1f : 1f; var sv = v < 0.5f ? -1f : 1f;
+                    var p = G(u + su * e, v + sv * e * 1.4f);
+                    Line(p, p - U.normalized * (su * l * gw), ink, 3.2f, 7f);
+                    Line(p, p - V.normalized * (sv * l * gh * 1.2f), ink, 3.2f, 7f);
                 }
-                var col = CellColor(s, i);
-                UiPaint.Fill(ctx, poly, UiPaint.WithAlpha(col, 0.92f), 0.8f);
-                // the pattern: the same hue, a step lighter, as small quads clipped to the cell
-                var ink = UiPaint.WithAlpha(Color.Lerp(col, Color.white, 0.38f), 0.9f);
-                const int n = 10;
-                for (var yy = 0; yy < n; yy++)
-                    for (var xx = 0; xx < n; xx++)
+            }
+            if (grade >= 2)
+            {
+                // the active cell A1, heavier, and its fill handle
+                var a1 = Cell(0f, 0f, 0.25f, 1f / 3f);
+                for (var i = 0; i < 4; i++) Line(a1[i], a1[(i + 1) % 4], Color.Lerp(ink, Color.white, 0.3f), 5f, 10f);
+                var h = G(0.25f, 1f / 3f); const float hs = 0.022f;
+                washes.Add((new List<Vector2> { h + new Vector2(-hs, -hs), h + new Vector2(hs, -hs), h + new Vector2(hs, hs), h + new Vector2(-hs, hs) }, Color.Lerp(ink, Color.white, 0.4f)));
+            }
+            if (grade >= 3)
+            {
+                // the ring behind: an arc for A, the whole ring (and an inner one) for S
+                var rx = 0.47f; var ry = 0.4f;
+                var from = grade >= 4 ? 0f : 35f; var to = grade >= 4 ? 360f : 325f;
+                Ellipse(strokes, centre, rx, ry, from, to, ring, 3.2f, 7f);
+                if (grade >= 4)
+                {
+                    Ellipse(strokes, centre, rx * 0.9f, ry * 0.9f, 0f, 360f, WithA(ring, 0.6f), 1.8f, 4f);
+                    foreach (var (a, size) in new[] { (-50f, 0.055f), (140f, 0.04f), (230f, 0.05f) })
                     {
-                        var u = (xx + 0.5f) / n; var v = (yy + 0.5f) / n;
-                        if (!Ink(s.Pattern, u, v)) continue;
-                        var q = new Rect(cell.xMin + xx * cell.width / n, cell.yMin + yy * cell.height / n, cell.width / n + 0.3f, cell.height / n + 0.3f);
-                        UiPaint.Fill(ctx, UiPaint.Clip(Skew(q, box, slant), poly), ink, 0f);
+                        var p = centre + new Vector2(Mathf.Cos(a * Mathf.Deg2Rad) * rx, Mathf.Sin(a * Mathf.Deg2Rad) * ry);
+                        Line(p + new Vector2(-size, 0f), p + new Vector2(size, 0f), Color.Lerp(ring, Color.white, 0.5f), 3f, 9f);
+                        Line(p + new Vector2(0f, -size * 1.3f), p + new Vector2(0f, size * 1.3f), Color.Lerp(ring, Color.white, 0.5f), 3f, 9f);
                     }
-                UiPaint.Stroke(ctx, poly, UiPaint.WithAlpha(Color.Lerp(col, Color.black, 0.25f), 0.8f), 1.2f);
+                }
             }
         }
 
-        /// <summary>A rect inside the strip, sheared with it (x moves with height).</summary>
-        static List<Vector2> Skew(Rect q, Rect box, float slant)
+        static void Ellipse(List<Stroke> o, Vector2 c, float rx, float ry, float fromDeg, float toDeg, Color col, float w, float glow)
         {
-            float Sx(float x, float y) => x + slant * (1f - (y - box.yMin) / box.height) - slant * 0.5f;
-            return new List<Vector2>
+            const int n = 48;
+            for (var i = 0; i < n; i++)
             {
-                new(Sx(q.xMin, q.yMin), q.yMin), new(Sx(q.xMax, q.yMin), q.yMin),
-                new(Sx(q.xMax, q.yMax), q.yMax), new(Sx(q.xMin, q.yMax), q.yMax),
-            };
+                var a0 = Mathf.Lerp(fromDeg, toDeg, i / (float)n) * Mathf.Deg2Rad; var a1 = Mathf.Lerp(fromDeg, toDeg, (i + 1) / (float)n) * Mathf.Deg2Rad;
+                o.Add(new Stroke { A = c + new Vector2(Mathf.Cos(a0) * rx, Mathf.Sin(a0) * ry), B = c + new Vector2(Mathf.Cos(a1) * rx, Mathf.Sin(a1) * ry), C = col, Width = w, Glow = glow, Arc = true });
+            }
         }
+
+        /// <summary>A colour made to read as neon on a light scene: saturated, bright, opaque.</summary>
+        static Color Neon(Color c)
+        {
+            Color.RGBToHSV(c, out var h, out var sat, out var v);
+            var n = Color.HSVToRGB(h, Mathf.Clamp(sat * 1.25f, 0.72f, 1f), Mathf.Clamp(v * 1.15f, 0.88f, 1f));
+            n.a = 1f;
+            return n;
+        }
+        static Color WithA(Color c, float a) { c.a *= a; return c; }
+
+        /// <summary>
+        /// The UI painter for the halo sheet: fitted as a square into r. Stroke widths are in
+        /// pixels of a 320-px sheet and scale with it; each stroke is a thin quad with a glow ring.
+        /// </summary>
+        public static void DrawHalo(MeshGenerationContext ctx, Rect r, Spec s)
+        {
+            var side = Mathf.Min(r.width, r.height);
+            var box = new Rect(r.center.x - side * 0.5f, r.center.y - side * 0.5f, side, side);
+            var k = side / 320f;
+            var strokes = new List<Stroke>(); var washes = new List<(List<Vector2>, Color)>();
+            Halo(s, strokes, washes);
+            Vector2 M(Vector2 p) => new(box.xMin + p.x * side, box.yMin + p.y * side);
+            foreach (var (poly, c) in washes) UiPaint.Fill(ctx, poly.ConvertAll(M), c, 0.8f);
+            // glow per stroke; not on arcs, whose many short segments would each ring and saw the curve
+            foreach (var st in strokes)
+            {
+                if (st.Arc) continue;
+                var a = M(st.A); var b = M(st.B);
+                var n = new Vector2(-(b - a).y, (b - a).x).normalized * Mathf.Max(0.6f, st.Width * k * 0.5f);
+                var along = (b - a).normalized * n.magnitude;
+                var q = new List<Vector2> { a - along + n, b + along + n, b + along - n, a - along - n };
+                UiPaint.Ring(ctx, q, WithA(st.C, 0.5f * st.C.a), WithA(st.C, 0f), st.Glow * k);
+            }
+            foreach (var st in strokes)
+            {
+                var a = M(st.A); var b = M(st.B);
+                var n = new Vector2(-(b - a).y, (b - a).x).normalized * Mathf.Max(0.6f, st.Width * k * 0.5f);
+                var along = (b - a).normalized * n.magnitude;
+                UiPaint.Fill(ctx, new List<Vector2> { a - along + n, b + along + n, b + along - n, a - along - n }, Color.Lerp(st.C, Color.white, 0.25f), 0.6f);
+            }
+        }
+
     }
 }

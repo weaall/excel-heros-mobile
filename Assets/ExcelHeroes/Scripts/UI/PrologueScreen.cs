@@ -68,7 +68,7 @@ namespace ExcelHeroes.UI
                 if (_sheetAlpha <= 0.01f) return;
                 var spec = new BackSheet.Spec(Mathf.RoundToInt(_sheetFill * BackSheet.CellCount), UiPaint.C(90, 200, 255),
                                               BackSheet.FrameFor("B"), BackSheet.Pattern.Diagonal, false, true);
-                BackSheet.Draw(ctx, r, spec);
+                BackSheet.DrawHalo(ctx, r, spec);
             });
 
             // the text box
