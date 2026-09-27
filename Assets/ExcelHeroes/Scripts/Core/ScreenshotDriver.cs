@@ -171,6 +171,10 @@ namespace ExcelHeroes.Core
                         if (docRoot != null)
                             UnityEngine.UIElements.UQueryExtensions.Query<UnityEngine.UIElements.VisualElement>(docRoot, null, "bresult")
                                 .ForEach(e => e.RemoveFromHierarchy());
+                        // the result state also hides the HUD by class; lift it so the HUD shows
+                        if (docRoot != null)
+                            UnityEngine.UIElements.UQueryExtensions.Query<UnityEngine.UIElements.VisualElement>(docRoot, null, "battle--result")
+                                .ForEach(e => e.RemoveFromClassList("battle--result"));
                         yield return new WaitForSeconds(0.3f);
                         yield return Shoot($"{n:00}-BattleHud");
                         BattleScreen.Current?.DebugCutIn();
