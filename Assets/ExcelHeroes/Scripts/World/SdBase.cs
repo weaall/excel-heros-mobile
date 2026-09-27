@@ -35,11 +35,11 @@ namespace ExcelHeroes.World
         static readonly Dictionary<B, Vector3> Joint = new()
         {
             [B.Hips] = new(0f, 0.356f, 0f), [B.Spine] = new(0f, 0.446f, 0f), [B.Chest] = new(0f, 0.513f, 0f),
-            [B.Neck] = new(0f, 0.585f, 0f), [B.Head] = new(0f, 0.62f, 0f),
-            [B.UpperArmL] = new(0.074f, 0.572f, 0f), [B.ForearmL] = new(0.156f, 0.51f, 0f), [B.HandL] = new(0.247f, 0.439f, 0.009f),
-            [B.UpperArmR] = new(-0.074f, 0.572f, 0f), [B.ForearmR] = new(-0.156f, 0.51f, 0f), [B.HandR] = new(-0.247f, 0.439f, 0.009f),
-            [B.ThighL] = new(0.052f, 0.345f, 0f), [B.CalfL] = new(0.062f, 0.193f, 0.004f), [B.FootL] = new(0.068f, 0.047f, 0f),
-            [B.ThighR] = new(-0.052f, 0.345f, 0f), [B.CalfR] = new(-0.062f, 0.193f, 0.004f), [B.FootR] = new(-0.068f, 0.047f, 0f),
+            [B.Neck] = new(0f, 0.616f, 0f), [B.Head] = new(0f, 0.647f, 0.005f),
+            [B.UpperArmL] = new(-0.074f, 0.572f, 0f), [B.ForearmL] = new(-0.156f, 0.51f, 0f), [B.HandL] = new(-0.247f, 0.439f, 0.009f),
+            [B.UpperArmR] = new(0.074f, 0.572f, 0f), [B.ForearmR] = new(0.156f, 0.51f, 0f), [B.HandR] = new(0.247f, 0.439f, 0.009f),
+            [B.ThighL] = new(-0.071f, 0.356f, 0f), [B.CalfL] = new(-0.08f, 0.193f, 0.004f), [B.FootL] = new(-0.09f, 0.047f, 0f),
+            [B.ThighR] = new(0.071f, 0.356f, 0f), [B.CalfR] = new(0.08f, 0.193f, 0.004f), [B.FootR] = new(0.09f, 0.047f, 0f),
             [B.HairBack] = new(0f, 0.80f, -0.12f),
         };
         static readonly Dictionary<B, B> Parent = new()
@@ -52,8 +52,9 @@ namespace ExcelHeroes.World
         };
 
         // head shape
-        static readonly Vector3 HeadC = new(0f, 0.765f, -0.03f);
-        static readonly Vector3 HeadR = new(0.158f, 0.17f, 0.152f);
+        // measured: face ±0.131 wide, front at z 0.115, chin ≈0.61, skull top ≈0.93
+        static readonly Vector3 HeadC = new(0f, 0.77f, -0.015f);
+        static readonly Vector3 HeadR = new(0.14f, 0.16f, 0.14f);
 
         // ---------------------------------------------------------------- builder --
         class SB
@@ -71,6 +72,30 @@ namespace ExcelHeroes.World
 
             public void Quad(int a, int b, int c, int d) { T.Add(a); T.Add(b); T.Add(c); T.Add(a); T.Add(c); T.Add(d); }
         }
+
+        /// <summary>
+        /// Shelf packer for the texture atlas: every surface gets its own rectangle, sized to its
+        /// extent so texel density is even. 2048 square, 4 px gutters.
+        /// </summary>
+        class Packer
+        {
+            public const int Size = 2048;
+            const int Gutter = 4;
+            const float TexelsPerUnit = 800f;           // px per unit of character height
+            int _x, _y, _rowH;
+            public Rect Take(float wUnits, float hUnits)
+            {
+                var w = Mathf.Clamp(Mathf.CeilToInt(wUnits * TexelsPerUnit), 8, Size - Gutter * 2);
+                var h = Mathf.Clamp(Mathf.CeilToInt(hUnits * TexelsPerUnit), 8, Size - Gutter * 2);
+                if (_x + w + Gutter > Size) { _x = 0; _y += _rowH + Gutter; _rowH = 0; }
+                if (_y + h + Gutter > Size) { Debug.LogWarning("[SdBase] atlas full"); _y = 0; }
+                var r = new Rect((_x + Gutter) / (float)Size, (_y + Gutter) / (float)Size, (w - Gutter) / (float)Size, (h - Gutter) / (float)Size);
+                _x += w + Gutter; _rowH = Mathf.Max(_rowH, h);
+                return r;
+            }
+        }
+
+        [ThreadStatic] static Packer _pack;
 
         struct Ring
         {
@@ -93,6 +118,25 @@ namespace ExcelHeroes.World
         static void Loft(SB sb, IList<Ring> rings, int seg, Func<int, float, BoneWeight> weight, Func<float, float, Color> color,
                          Rect uvRect, bool capStart = false, bool capEnd = false, float openFrom = -1f, float openTo = -1f)
         {
+            if (uvRect == Rect.zero && _pack != null)
+            {
+                // extent: mean perimeter across, path length down
+                var per = 0f; var path = 0f;
+                for (var i = 0; i < rings.Count; i++)
+                {
+                    var r = rings[i]; var p = 0f; Vector3 prev = default;
+                    for (var j = 0; j <= 12; j++)
+                    {
+                        var a = j / 12f * Mathf.PI * 2f; var k = r.Shape?.Invoke(a) ?? 1f;
+                        var q = r.C + r.R * (Mathf.Cos(a) * r.Rx * k) + r.F * (Mathf.Sin(a) * r.Rz * k);
+                        if (j > 0) p += Vector3.Distance(q, prev);
+                        prev = q;
+                    }
+                    per += p / rings.Count;
+                    if (i > 0) path += Vector3.Distance(rings[i].C, rings[i - 1].C);
+                }
+                uvRect = _pack.Take(per, Mathf.Max(path, 0.01f));
+            }
             var start = sb.V.Count;
             for (var i = 0; i < rings.Count; i++)
             {
@@ -131,7 +175,8 @@ namespace ExcelHeroes.World
             for (var j = 0; j <= seg; j++)
             {
                 var a = j / (float)seg * Mathf.PI * 2f;
-                sb.Add(r.C + r.R * (Mathf.Cos(a) * r.Rx) + r.F * (Mathf.Sin(a) * r.Rz), axis, uvRect.center, c, w);
+                var k = r.Shape?.Invoke(a) ?? 1f;
+                sb.Add(r.C + r.R * (Mathf.Cos(a) * r.Rx * k) + r.F * (Mathf.Sin(a) * r.Rz * k), axis, uvRect.center, c, w);
             }
             for (var j = 0; j < seg; j++)
             {
@@ -156,9 +201,9 @@ namespace ExcelHeroes.World
 
         // ---------------------------------------------------------------- atlas --
         // Texture regions (u, v in 0..1): face 0..0.5 x 0.5..1, plain white elsewhere.
-        static readonly Rect FaceUV = new(0f, 0.5f, 0.5f, 0.5f);
-        static readonly Rect WhiteUV = new(0.76f, 0.76f, 0.001f, 0.001f);
-        static readonly Rect TorsoUV = new(0.5f, 0.5f, 0.25f, 0.5f);
+        // Rect.zero = "take a rect from the packer". The head and hair grids take theirs directly.
+        static readonly Rect WhiteUV = Rect.zero;
+        static Rect _headRect;
 
         // ---------------------------------------------------------------- build --
         public static ChibiRig Build(string heroId, Transform parent, int layer)
@@ -183,6 +228,8 @@ namespace ExcelHeroes.World
             for (var i = 0; i < BoneCount; i++) bones[i].position = root.TransformPoint(Joint[(B)i] * Height);
 
             var sb = new SB();
+            _pack = new Packer();
+            _headRect = _pack.Take(HeadR.x * 2f * Mathf.PI, HeadR.y * Mathf.PI);
             BuildBody(sb, look);
             BuildHead(sb, look);
             BuildHair(sb, look);
@@ -194,13 +241,16 @@ namespace ExcelHeroes.World
             foreach (var v in sb.V) verts.Add(v * Height);
             var lin = new List<Color>(sb.C.Count);
             var linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
-            foreach (var c in sb.C) lin.Add(linear ? new Color(c.linear.r, c.linear.g, c.linear.b, 1f) : c);
+            var hasBaked = Baked(look.Id) != null;
+            foreach (var c in sb.C) lin.Add(hasBaked ? Color.white : linear ? new Color(c.linear.r, c.linear.g, c.linear.b, 1f) : c);
             mesh.SetVertices(verts); mesh.SetNormals(sb.N); mesh.SetUVs(0, sb.UV); mesh.SetColors(lin); mesh.SetTriangles(sb.T, 0);
             mesh.boneWeights = sb.W.ToArray();
             var bind = new Matrix4x4[BoneCount];
             for (var i = 0; i < BoneCount; i++) bind[i] = bones[i].worldToLocalMatrix * root.localToWorldMatrix;
             mesh.bindposes = bind;
             mesh.RecalculateBounds();
+            var bad = 0; foreach (var v in verts) if (float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z) || v.magnitude > 10f) bad++;
+            if (bad > 0 || mesh.bounds.size.magnitude > 5f) Debug.LogWarning($"[SdBase] {heroId}: bounds {mesh.bounds} bad verts {bad}/{verts.Count}");
 
             var go = new GameObject("mesh") { layer = layer };
             go.transform.SetParent(root, false);
@@ -211,8 +261,9 @@ namespace ExcelHeroes.World
             smr.updateWhenOffscreen = true;
             smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var mat = MeshKit.NewToon(0.0045f, Atlas(look));
-            mat.SetFloat("_ShadeStrength", 0.28f);
-            mat.SetFloat("_Rim", 0.14f);
+            // a baked (painted) atlas already carries its own shading; the toon light stays soft
+            mat.SetFloat("_ShadeStrength", hasBaked ? 0.12f : 0.28f);
+            mat.SetFloat("_Rim", hasBaked ? 0.06f : 0.14f);
             smr.sharedMaterial = mat;
 
             var sh = new MeshKit.Builder();
@@ -249,82 +300,72 @@ namespace ExcelHeroes.World
         // ---------------------------------------------------------------- body --
         static Color Solid(Color c) => c;
 
+        /// <summary>
+        /// One body segment lofted from a measured cross-section table: rings along p0→p1, each
+        /// point at the table's radius for its angle. Ring angle a runs from -x (the character's
+        /// left) through +z (front); the table's angle 0 is the back and 0.5 the front, so the
+        /// table is read at 0.25 + a.
+        /// </summary>
+        static void Seg(SB sb, float[,] table, Vector3 p0, Vector3 p1, Func<float, BoneWeight> weight, Func<float, float, Color> color,
+                        Rect uv, float t0 = -0.1f, float t1 = 1.05f, int n = 10, int seg = 18, bool capStart = false, bool capEnd = false,
+                        float scale = 1f, float minR = 0f)
+        {
+            var rings = new List<Ring>();
+            var dir = (p1 - p0).normalized;
+            for (var q = 0; q <= n; q++)
+            {
+                var t = Mathf.Lerp(t0, t1, q / (float)n);
+                var ring = Along(p0 + (p1 - p0) * t, dir, 1f, 1f);
+                var tt = t;
+                ring.Shape = a => Mathf.Max(minR, SdProfile.R(table, tt, 0.25f + a / (Mathf.PI * 2f)) * scale);
+                rings.Add(ring);
+            }
+            Loft(sb, rings, seg, (qi, tv) => weight(Mathf.Lerp(t0, t1, tv)), (u, tv) => color(u, Mathf.Lerp(t0, t1, tv)), uv, capStart, capEnd);
+        }
+
         static void BuildBody(SB sb, SdLook k)
         {
             var skin = k.Skin;
-            // legs: thigh → knee → calf → ankle, both sides; legwear colour by height
-            for (var s = -1; s <= 1; s += 2)
+            Vector3 J(B b) => Joint[b];
+
+            // legs
+            for (var side = 0; side < 2; side++)
             {
-                var side = s > 0;
-                var rings = new List<Ring>();
-                float[] ys = { 0.36f, 0.31f, 0.26f, 0.215f, 0.193f, 0.16f, 0.11f, 0.07f, 0.05f };
-                float[] rs = { 0.05f, 0.046f, 0.04f, 0.034f, 0.032f, 0.033f, 0.028f, 0.022f, 0.021f };
-                for (var i = 0; i < ys.Length; i++)
-                {
-                    var x = ys[i] > 0.193f ? Mathf.Lerp(0.062f, 0.05f, Mathf.InverseLerp(0.193f, 0.36f, ys[i])) : Mathf.Lerp(0.068f, 0.062f, Mathf.InverseLerp(0.047f, 0.193f, ys[i]));
-                    rings.Add(Flat(new Vector3(x * s, ys[i], ys[i] < 0.21f ? 0.004f : 0f), rs[i], rs[i] * 0.95f));
-                }
-                B thigh = side ? B.ThighL : B.ThighR, calf = side ? B.CalfL : B.CalfR, foot = side ? B.FootL : B.FootR;
-                Loft(sb, rings, 14,
-                    (i, t) => ys[i] > 0.2f ? W2(thigh, calf, Mathf.InverseLerp(0.23f, 0.17f, ys[i])) : W2(calf, foot, Mathf.InverseLerp(0.07f, 0.045f, ys[i])),
-                    (u, t) => LegColor(k, Mathf.Lerp(ys[0], ys[ys.Length - 1], t)), WhiteUV);
-                // shoe: a rounded toe box
-                var shoe = new List<Ring>();
-                for (var i = 0; i <= 6; i++)
-                {
-                    var t = i / 6f;
-                    var z = Mathf.Lerp(-0.022f, 0.05f, t);
-                    var w = 0.022f * Mathf.Sin(Mathf.Lerp(0.35f, 3.0f, t)) + 0.004f;
-                    var h = 0.022f * Mathf.Sin(Mathf.Lerp(0.3f, 2.9f, t)) + 0.004f;
-                    shoe.Add(new Ring { C = new Vector3(0.068f * s, 0.024f, z), R = Vector3.right, F = Vector3.up, Rx = w * 1.15f, Rz = h * 1.05f });
-                }
-                Loft(sb, shoe, 14, (i, t) => W1(foot), (u, t) => k.Shoes, WhiteUV, true, true);
+                var l = side == 0;
+                B thigh = l ? B.ThighL : B.ThighR, calf = l ? B.CalfL : B.CalfR, foot = l ? B.FootL : B.FootR;
+                var hip = J(thigh); var knee = J(calf); var ankle = J(foot);
+                Seg(sb, SdProfile.Thigh, hip, knee, t => W2(thigh, calf, Mathf.InverseLerp(0.8f, 1.05f, t)),
+                    (u, t) => LegColor(k, Mathf.Lerp(hip.y, knee.y, t)), Rect.zero, -0.15f, 1.05f, 8, 16, true, false);
+                Seg(sb, SdProfile.Calf, knee, ankle, t => t < 0.2f ? W2(thigh, calf, Mathf.InverseLerp(-0.1f, 0.2f, t)) : W2(calf, foot, Mathf.InverseLerp(0.85f, 1.05f, t)),
+                    (u, t) => LegColor(k, Mathf.Lerp(knee.y, ankle.y, t)), Rect.zero, -0.1f, 1.02f, 8, 16, false, false);
+                // foot: ankle down and forward to the toe
+                var toe = ankle + new Vector3(0f, -0.03f, 0.07f);
+                Seg(sb, SdProfile.Foot, ankle + new Vector3(0f, 0f, -0.012f), toe, t => W1(foot), (u, t) => k.Shoes, Rect.zero, -0.2f, 1.0f, 8, 14, true, true, 1f, 0.01f);
             }
 
-            // torso: hips → waist → chest → shoulders, a little flat front to back
-            var tr = new List<Ring>();
-            float[] ty = { 0.32f, 0.356f, 0.40f, 0.44f, 0.48f, 0.52f, 0.55f, 0.575f, 0.59f };
-            float[] tx = { 0.082f, 0.088f, 0.078f, 0.07f, 0.074f, 0.08f, 0.082f, 0.07f, 0.034f };
-            float[] tz = { 0.062f, 0.064f, 0.058f, 0.054f, 0.058f, 0.062f, 0.058f, 0.05f, 0.03f };
-            for (var i = 0; i < ty.Length; i++) tr.Add(Flat(new Vector3(0f, ty[i], 0f), tx[i], tz[i]));
-            Loft(sb, tr, 20,
-                (i, t) => ty[i] < 0.42f ? W2(B.Hips, B.Spine, Mathf.InverseLerp(0.36f, 0.42f, ty[i]))
-                        : ty[i] < 0.51f ? W2(B.Spine, B.Chest, Mathf.InverseLerp(0.45f, 0.51f, ty[i]))
-                        : W2(B.Chest, B.Neck, Mathf.InverseLerp(0.57f, 0.6f, ty[i])),
-                (u, t) => TorsoColor(k, u, Mathf.Lerp(ty[0], ty[ty.Length - 1], t)), TorsoUV, true, false);
+            // torso: pelvis → spine → chest, one colour function by height
+            Seg(sb, SdProfile.Pelvis, J(B.Hips), J(B.Spine), t => W2(B.Hips, B.Spine, Mathf.InverseLerp(0.5f, 1.0f, t)),
+                (u, t) => TorsoColor(k, u, Mathf.Lerp(J(B.Hips).y, J(B.Spine).y, t)), Rect.zero, -0.25f, 1.0f, 8, 24, true, false);
+            Seg(sb, SdProfile.Spine, J(B.Spine), J(B.Chest), t => W2(B.Spine, B.Chest, Mathf.InverseLerp(0.4f, 1.0f, t)),
+                (u, t) => TorsoColor(k, u, Mathf.Lerp(J(B.Spine).y, J(B.Chest).y, t)), Rect.zero, -0.05f, 1.0f, 6, 24);
+            Seg(sb, SdProfile.Spine1, J(B.Chest), J(B.Neck), t => W2(B.Chest, B.Neck, Mathf.InverseLerp(0.7f, 1.0f, t)),
+                (u, t) => TorsoColor(k, u, Mathf.Lerp(J(B.Chest).y, J(B.Neck).y, t)), Rect.zero, -0.05f, 1.0f, 8, 24, false, true);
             // neck
-            var nk = new List<Ring> { Flat(new Vector3(0f, 0.57f, 0f), 0.032f, 0.03f), Flat(new Vector3(0f, 0.65f, -0.01f), 0.03f, 0.028f) };
-            Loft(sb, nk, 12, (i, t) => W2(B.Neck, B.Head, t), (u, t) => skin, WhiteUV);
+            Seg(sb, SdProfile.Neck, J(B.Neck), J(B.Head) + new Vector3(0f, 0.03f, 0f), t => W2(B.Neck, B.Head, Mathf.InverseLerp(0.3f, 1.0f, t)),
+                (u, t) => skin, Rect.zero, 0f, 1.0f, 4, 12);
 
-            // arms, A-pose
-            for (var s = -1; s <= 1; s += 2)
+            // arms, A-pose, from the shoulder joint
+            for (var side = 0; side < 2; side++)
             {
-                var side = s > 0;
-                var sh = new Vector3(0.07f * s, 0.568f, 0f);
-                var el = new Vector3(0.156f * s, 0.51f, 0f);
-                var wr = new Vector3(0.24f * s, 0.444f, 0.009f);
-                var up = new List<Ring>();
-                for (var i = 0; i <= 6; i++)
-                {
-                    var t = i / 6f;
-                    var p = t < 0.5f ? Vector3.Lerp(sh, el, t * 2f) : Vector3.Lerp(el, wr, (t - 0.5f) * 2f);
-                    var dir = t < 0.5f ? el - sh : wr - el;
-                    var r = Mathf.Lerp(0.034f, 0.024f, t);
-                    up.Add(Along(p, dir, r, r * 0.95f));
-                }
-                B ua = side ? B.UpperArmL : B.UpperArmR, fa = side ? B.ForearmL : B.ForearmR, hd = side ? B.HandL : B.HandR;
-                Loft(sb, up, 12, (i, t) => t < 0.5f ? W2(ua, fa, Mathf.InverseLerp(0.35f, 0.6f, t)) : W2(fa, hd, Mathf.InverseLerp(0.9f, 1f, t)),
-                     (u, t) => t > (k.ShortSleeve ? 0.35f : 0.93f) ? skin : (t > 0.86f && k.Cuff.a > 0 ? k.Cuff : k.Sleeve), WhiteUV, true, false);
-                // hand: a soft mitten
-                var dirH = (wr - el).normalized;
-                var hr = new List<Ring>();
-                for (var i = 0; i <= 5; i++)
-                {
-                    var t = i / 5f;
-                    var r = 0.026f * Mathf.Sin(Mathf.Lerp(0.5f, 3.0f, t)) + 0.004f;
-                    hr.Add(Along(wr + dirH * (t * 0.055f), dirH, r * 1.1f, r * 0.72f));
-                }
-                Loft(sb, hr, 10, (i, t) => W1(hd), (u, t) => skin, WhiteUV, true, true);
+                var l = side == 0;
+                B ua = l ? B.UpperArmL : B.UpperArmR, fa = l ? B.ForearmL : B.ForearmR, hd = l ? B.HandL : B.HandR;
+                var sh = J(ua); var el = J(fa); var wr = J(hd);
+                Seg(sb, SdProfile.UpperArm, sh, el, t => W2(ua, fa, Mathf.InverseLerp(0.8f, 1.05f, t)),
+                    (u, t) => k.ShortSleeve && t > 0.45f ? skin : k.Sleeve, Rect.zero, -0.15f, 1.05f, 6, 14, true, false);
+                Seg(sb, SdProfile.Forearm, el, wr, t => t < 0.2f ? W2(ua, fa, Mathf.InverseLerp(-0.1f, 0.2f, t)) : W2(fa, hd, Mathf.InverseLerp(0.9f, 1.05f, t)),
+                    (u, t) => k.ShortSleeve ? skin : (t > 0.86f && k.Cuff.a > 0f ? k.Cuff : t > 0.95f ? skin : k.Sleeve), Rect.zero, -0.1f, 1.0f, 6, 14);
+                var tip = wr + (wr - el).normalized * 0.06f;
+                Seg(sb, SdProfile.Hand, wr, tip, t => W1(hd), (u, t) => skin, Rect.zero, -0.1f, 1.0f, 6, 12, false, true, 1f, 0.006f);
             }
         }
 
@@ -337,10 +378,11 @@ namespace ExcelHeroes.World
 
         static Color TorsoColor(SdLook k, float u, float y)
         {
-            if (y < 0.405f) return k.Pants || k.Skirt ? k.Bottom : k.Top;
+            if (y < 0.4f) return k.Pants || k.Skirt ? k.Bottom : k.Top;
             // the front strip (u ≈ 0.25) shows the shirt under an open jacket; the V at the neck
             var front = Mathf.Abs(u - 0.25f);
-            if (k.Jacket && front < Mathf.Lerp(0.02f, 0.065f, Mathf.InverseLerp(0.47f, 0.575f, y)) && y > 0.43f) return k.Shirt;
+            // ring u: 0 = the character's left, 0.25 = front
+            if (k.Jacket && front < Mathf.Lerp(0.02f, 0.07f, Mathf.InverseLerp(0.47f, 0.6f, y)) && y > 0.43f) return k.Shirt;
             return k.Top;
         }
 
@@ -367,10 +409,8 @@ namespace ExcelHeroes.World
                     if (unit.z < 0f) p.z *= 1f + 0.08f * (-unit.z);
                     var pos = HeadC + p;
                     var n = new Vector3(unit.x / HeadR.x, unit.y / HeadR.y, unit.z / HeadR.z);
-                    // face uv: planar from the front, only meaningful where z > 0
-                    var fu = 0.5f + p.x / (HeadR.x * 2.1f);
-                    var fv = 0.5f + (p.y + 0.02f) / (HeadR.y * 2.1f);
-                    var uv = unit.z > -0.1f ? new Vector2(FaceUV.xMin + Mathf.Clamp01(fu) * FaceUV.width, FaceUV.yMin + Mathf.Clamp01(fv) * FaceUV.height) : WhiteUV.center;
+                    // uv: (phi, theta) across the head's own atlas rect; the face is painted into it
+                    var uv = new Vector2(_headRect.xMin + (i / (float)NS) * _headRect.width, _headRect.yMin + (1f - j / (float)NT) * _headRect.height);
                     sb.Add(pos, n, uv, k.Skin, W1(B.Head));
                 }
             }
@@ -387,7 +427,7 @@ namespace ExcelHeroes.World
             {
                 var c = HeadC + new Vector3(HeadR.x * 0.96f * s, -0.035f, -0.01f);
                 var ring = new List<Ring> { Along(c - new Vector3(0.01f * s, 0, 0), Vector3.right * s, 0.012f, 0.02f), Along(c + new Vector3(0.012f * s, 0, 0), Vector3.right * s, 0.008f, 0.016f) };
-                Loft(sb, ring, 10, (i, t) => W1(B.Head), (u, t) => k.Skin, WhiteUV, false, true);
+                Loft(sb, ring, 10, (i, t) => W1(B.Head), (u, t) => k.Skin, Rect.zero, false, true);
             }
         }
 
@@ -406,12 +446,13 @@ namespace ExcelHeroes.World
                 "long" => 0.36f, "bob" => 0.6f, "curly" => 0.52f, "side" => 0.5f,
                 "ponytail" or "bun" or "twin" => 0.66f, "spiky" => 0.68f, _ => k.Male ? 0.66f : 0.6f,
             };
-            float sideY = k.Style switch { "long" => 0.42f, "bob" => 0.6f, "curly" => 0.55f, "side" => 0.52f, _ => k.Male ? 0.7f : 0.62f };
-            const float browY = 0.785f;
-            // the fringe sits at the brows, a little higher at the parting, longer at the temples
-            var fringe = browY + 0.02f * Mathf.Pow(front, 8f);
-            var y = fringe * Mathf.Pow(front, 1.5f) + sideY * side + backY * Mathf.Pow(back, 0.9f);
-            var wsum = Mathf.Pow(front, 1.5f) + side + Mathf.Pow(back, 0.9f);
+            float sideY = k.Style switch { "long" => 0.5f, "bob" => 0.64f, "curly" => 0.6f, "side" => 0.58f, _ => k.Male ? 0.72f : 0.66f };
+            const float browY = 0.79f;
+            // measured: the brows sit at 0.77-0.79 and the eyes 0.63-0.75. The fringe ends at the
+            // brows, the temples at the eye line, the sides at the ear, the back by style.
+            var wf = Mathf.Pow(front, 2.5f); var ws = Mathf.Pow(side, 1.2f) * (1f - wf); var wb = Mathf.Pow(back, 1.2f);
+            var y = browY * wf + sideY * ws + backY * wb;
+            var wsum = wf + ws + wb;
             return y / Mathf.Max(1e-3f, wsum);
         }
 
@@ -420,14 +461,14 @@ namespace ExcelHeroes.World
         {
             var n = k.Style == "spiky" ? 12f : 18f;
             var saw = Mathf.Abs(Mathf.Repeat(phi / (Mathf.PI * 2f) * n, 1f) - 0.5f) * 2f;   // 1 at a tip, 0 between
-            var amp = Mathf.Sin(phi) > 0.2f ? 0.03f : 0.05f;                                   // shorter spikes in the fringe
+            var amp = Mathf.Sin(phi) > 0.2f ? 0.012f : 0.045f;                                 // barely in the fringe
             return Mathf.Pow(saw, 1.8f) * amp;
         }
 
         static void BuildHair(SB sb, SdLook k)
         {
             const int NP = 72, NS = 22;      // around, down
-            const float lift = 1.13f, thick = 0.024f;
+            const float lift = 1.16f, thick = 0.03f;
             var outer = new Vector3[NP + 1, NS + 1];
             var tvals = new float[NP + 1, NS + 1];
             for (var i = 0; i <= NP; i++)
@@ -446,7 +487,7 @@ namespace ExcelHeroes.World
                 var last = path[path.Count - 1];
                 var outward = new Vector3(Mathf.Cos(phi), 0f, Mathf.Sin(phi));
                 var front = Mathf.Max(0f, Mathf.Sin(phi));
-                while (last.y > end + 0.004f && front < 0.85f)
+                while (last.y > end + 0.004f && front < 0.45f)
                 {
                     // falling hair flares out a touch and swings a little behind
                     last += Vector3.down * 0.02f + outward * 0.0045f + Vector3.back * 0.001f;
@@ -467,6 +508,8 @@ namespace ExcelHeroes.World
             }
             B Bone(float t, float phi) => Mathf.Sin(phi) < -0.2f && t > 0.55f ? B.HairBack : B.Head;
             // outer layer
+            var hairRect = _pack.Take(HeadR.x * 2.2f * Mathf.PI, 0.55f);
+            var hairInRect = _pack.Take(HeadR.x * 2.2f * Mathf.PI, 0.55f);
             var o0 = sb.V.Count;
             for (var i = 0; i <= NP; i++)
                 for (var j = 0; j <= NS; j++)
@@ -476,7 +519,7 @@ namespace ExcelHeroes.World
                     var n = (p - (HeadC + Vector3.down * 0.05f)); n.y *= 0.6f;
                     var t = tvals[i, j];
                     var col = Color.Lerp(k.Hair, k.HairTip, t * t);
-                    sb.Add(p, n, WhiteUV.center, col, W2(B.Head, Bone(t, phi), Mathf.Clamp01((t - 0.5f) * 2f)));
+                    sb.Add(p, n, new Vector2(hairRect.xMin + i / (float)NP * hairRect.width, hairRect.yMin + (1f - t) * hairRect.height), col, W2(B.Head, Bone(t, phi), Mathf.Clamp01((t - 0.5f) * 2f)));
                 }
             // inner layer, pulled in towards the head axis, facing inward
             var i0 = sb.V.Count;
@@ -487,9 +530,9 @@ namespace ExcelHeroes.World
                     var p = outer[i, j];
                     var towards = new Vector3(HeadC.x - p.x, 0f, HeadC.z - p.z).normalized;
                     var t = tvals[i, j];
-                    var q = p + towards * thick * (0.6f + 0.4f * (1f - t)) + Vector3.down * 0.002f;
+                    var q = p + towards * thick * (0.55f + 0.45f * (1f - t)) + Vector3.down * 0.002f;
                     var n = -(p - (HeadC + Vector3.down * 0.05f));
-                    sb.Add(q, n, WhiteUV.center, MeshKit.Shade(k.Hair, 0.72f), W2(B.Head, Bone(t, phi), Mathf.Clamp01((t - 0.5f) * 2f)));
+                    sb.Add(q, n, new Vector2(hairInRect.xMin + i / (float)NP * hairInRect.width, hairInRect.yMin + (1f - t) * hairInRect.height), MeshKit.Shade(k.Hair, 0.72f), W2(B.Head, Bone(t, phi), Mathf.Clamp01((t - 0.5f) * 2f)));
                 }
             var stride = NS + 1;
             for (var i = 0; i < NP; i++)
@@ -519,7 +562,7 @@ namespace ExcelHeroes.World
                 var c = HeadC + new Vector3(0f, 0.16f, -0.1f);
                 var rs = new List<Ring>();
                 for (var q = 0; q <= 8; q++) { var a = q / 8f * Mathf.PI; rs.Add(Flat(c + Vector3.up * (-Mathf.Cos(a) * 0.06f), Mathf.Sin(a) * 0.066f + 0.002f, Mathf.Sin(a) * 0.066f + 0.002f)); }
-                Loft(sb, rs, 16, (q, t) => W1(B.Head), (u, t) => k.Hair, WhiteUV);
+                Loft(sb, rs, 16, (q, t) => W1(B.Head), (u, t) => k.Hair, Rect.zero);
             }
             if (k.Ahoge)
             {
@@ -533,7 +576,7 @@ namespace ExcelHeroes.World
                     d = Vector3.Slerp(d, new Vector3(0f, -0.6f, 1f).normalized, 0.25f).normalized;
                     p += d * 0.014f;
                 }
-                Loft(sb, rings, 6, (q, t) => W1(B.Head), (u, t) => k.Hair, WhiteUV, false, true);
+                Loft(sb, rings, 6, (q, t) => W1(B.Head), (u, t) => k.Hair, Rect.zero, false, true);
             }
         }
 
@@ -551,10 +594,10 @@ namespace ExcelHeroes.World
                 d = Vector3.Slerp(d, Vector3.down, 0.15f).normalized;
                 p += d * (len / 10f);
             }
-            Loft(sb, rings, 12, (i, t) => W2(B.Head, B.HairBack, Mathf.Clamp01(t * 1.5f)), (u, t) => Color.Lerp(k.Hair, k.HairTip, t), WhiteUV, true, true);
+            Loft(sb, rings, 12, (i, t) => W2(B.Head, B.HairBack, Mathf.Clamp01(t * 1.5f)), (u, t) => Color.Lerp(k.Hair, k.HairTip, t), Rect.zero, true, true);
             // the hair tie
             var tie = new List<Ring> { Along(anchor - dir.normalized * 0.01f, dir, r0 * 0.8f, r0 * 0.7f), Along(anchor + dir.normalized * 0.015f, dir, r0 * 0.8f, r0 * 0.7f) };
-            Loft(sb, tie, 10, (i, t) => W1(B.Head), (u, t) => k.Accent, WhiteUV, true, true);
+            Loft(sb, tie, 10, (i, t) => W1(B.Head), (u, t) => k.Accent, Rect.zero, true, true);
         }
 
         // ---------------------------------------------------------------- outfit --
@@ -568,30 +611,30 @@ namespace ExcelHeroes.World
                 for (var i = 0; i <= 6; i++)
                 {
                     var t = i / 6f;
-                    var y = Mathf.Lerp(0.42f, 0.42f - len, t);
-                    var rx = Mathf.Lerp(0.082f, 0.15f + len * 0.2f, Mathf.Pow(t, 0.8f));
-                    var rz = Mathf.Lerp(0.062f, 0.115f + len * 0.2f, Mathf.Pow(t, 0.8f));
+                    var y = Mathf.Lerp(0.43f, 0.43f - len, t);
+                    var rx = Mathf.Lerp(0.09f, 0.155f + len * 0.2f, Mathf.Pow(t, 0.8f));
+                    var rz = Mathf.Lerp(0.07f, 0.12f + len * 0.2f, Mathf.Pow(t, 0.8f));
                     var pleat = 0.05f * t;
                     rings.Add(Flat(new Vector3(0f, y, 0.004f), rx, rz, a => 1f + pleat * Mathf.Sin(a * 14f)));
                 }
-                Loft(sb, rings, 42, (i, t) => W2(B.Hips, B.Spine, 0.2f), (u, t) => Color.Lerp(k.Bottom, k.Bottom * 0.86f, t * 0.6f), WhiteUV);
+                Loft(sb, rings, 42, (i, t) => W2(B.Hips, B.Spine, 0.2f), (u, t) => Color.Lerp(k.Bottom, k.Bottom * 0.86f, t * 0.6f), Rect.zero);
                 if (k.SkirtHem.a > 0f)
                 {
                     var hem = new List<Ring> { rings[5], rings[6] };
-                    Loft(sb, hem, 42, (i, t) => W1(B.Hips), (u, t) => k.SkirtHem, WhiteUV);
+                    Loft(sb, hem, 42, (i, t) => W1(B.Hips), (u, t) => k.SkirtHem, Rect.zero);
                 }
             }
             // jacket / coat: a shell over the torso, open at the front, with a hem
             if (k.Jacket)
             {
                 var rings = new List<Ring>();
-                float[] ys = { k.Coat ? 0.24f : 0.35f, 0.40f, 0.45f, 0.5f, 0.55f, 0.578f };
-                float[] rx = { k.Coat ? 0.125f : 0.095f, 0.085f, 0.077f, 0.083f, 0.088f, 0.076f };
-                float[] rz = { k.Coat ? 0.095f : 0.072f, 0.064f, 0.06f, 0.066f, 0.066f, 0.056f };
+                float[] ys = { k.Coat ? 0.24f : 0.35f, 0.40f, 0.45f, 0.5f, 0.55f, 0.6f };
+                float[] rx = { k.Coat ? 0.125f : 0.1f, 0.09f, 0.082f, 0.086f, 0.094f, 0.08f };
+                float[] rz = { k.Coat ? 0.095f : 0.076f, 0.068f, 0.064f, 0.068f, 0.07f, 0.058f };
                 for (var i = 0; i < ys.Length; i++) rings.Add(Flat(new Vector3(0f, ys[i], 0f), rx[i], rz[i]));
                 Loft(sb, rings, 24,
                      (i, t) => ys[i] < 0.42f ? W2(B.Hips, B.Spine, 0.4f) : W2(B.Spine, B.Chest, Mathf.InverseLerp(0.45f, 0.51f, ys[i])),
-                     (u, t) => k.Top, WhiteUV, false, false, 0.21f, 0.29f);
+                     (u, t) => k.Top, Rect.zero, false, false, 0.21f, 0.29f);
                 // lapels: two thin dark strips either side of the opening
                 for (var s = -1; s <= 1; s += 2)
                 {
@@ -601,7 +644,7 @@ namespace ExcelHeroes.World
                         var y = Mathf.Lerp(0.46f, 0.575f, i / 4f);
                         lap.Add(Along(new Vector3(0.02f * s * (1f + i * 0.15f), y, 0.066f), Vector3.up, 0.009f, 0.004f));
                     }
-                    Loft(sb, lap, 6, (i, t) => W1(B.Chest), (u, t) => k.Lapel, WhiteUV, true, true);
+                    Loft(sb, lap, 6, (i, t) => W1(B.Chest), (u, t) => k.Lapel, Rect.zero, true, true);
                 }
             }
             // collar: two flaps at the throat
@@ -610,46 +653,54 @@ namespace ExcelHeroes.World
                 {
                     var c = new Vector3(0.024f * s, 0.588f, 0.03f);
                     var fl = new List<Ring> { Along(c, new Vector3(0.6f * s, -0.4f, 0.5f), 0.018f, 0.004f), Along(c + new Vector3(0.022f * s, -0.018f, 0.012f), new Vector3(0.6f * s, -0.4f, 0.5f), 0.012f, 0.003f) };
-                    Loft(sb, fl, 8, (i, t) => W1(B.Chest), (u, t) => k.CollarColor, WhiteUV, true, true);
+                    Loft(sb, fl, 8, (i, t) => W1(B.Chest), (u, t) => k.CollarColor, Rect.zero, true, true);
                 }
             // tie / ribbon
             if (k.Tie.a > 0f)
             {
                 var r = new List<Ring>();
                 for (var i = 0; i <= 5; i++) { var t = i / 5f; r.Add(Flat(new Vector3(0f, Mathf.Lerp(0.578f, 0.47f, t), 0.064f + t * 0.004f), Mathf.Lerp(0.009f, 0.016f, t) * (t > 0.85f ? 0.5f : 1f), 0.004f)); }
-                Loft(sb, r, 8, (i, t) => W1(B.Chest), (u, t) => k.Tie, WhiteUV, true, true);
+                Loft(sb, r, 8, (i, t) => W1(B.Chest), (u, t) => k.Tie, Rect.zero, true, true);
             }
         }
 
         // ---------------------------------------------------------------- texture --
         static readonly Dictionary<string, Texture2D> Atlases = new();
 
+        /// <summary>A baked texture (Resources/Art/SDTex/&lt;id&gt;, from tools/gen_sdtex_gemini.py + SdTexBake), if any.</summary>
+        public static Texture2D Baked(string id) => Resources.Load<Texture2D>("Art/SDTex/" + id);
+
         static Texture2D Atlas(SdLook k)
         {
+            var baked = Baked(k.Id);
+            if (baked != null) return baked;
             if (Atlases.TryGetValue(k.Id, out var t) && t != null) return t;
-            const int N = 512;
+            const int N = 1024;
             var px = new Color[N * N];
             for (var i = 0; i < px.Length; i++) px[i] = Color.white;
-            // the face: skin under FaceTexture's eyes/brows/mouth, composited into the atlas
+            // the procedural face, into the head rect: texel → (phi, theta) → point on the head →
+            // front-planar face coordinates → FaceTexture, divided out of the skin tint
             var face = FaceTexture.For(new FaceTexture.Look { Eye = k.Eye, Hair = k.Hair, Male = k.Male, Glasses = k.Glasses, Sunglasses = k.Sunglasses });
             var fp = face.GetPixels();
             var fs = face.width;
-            for (var y = 0; y < N / 2; y++)
-                for (var x = 0; x < N / 2; x++)
+            var r = _headRect;
+            int x0 = (int)(r.xMin * N), x1 = (int)(r.xMax * N), y0 = (int)(r.yMin * N), y1 = (int)(r.yMax * N);
+            for (var y = y0; y < y1; y++)
+                for (var x = x0; x < x1; x++)
                 {
-                    // head uv: fu, fv in 0..1 across the front; the face texture covers the middle
-                    var fu = x / (float)(N / 2); var fv = y / (float)(N / 2);
+                    var phi = (x - x0) / (float)(x1 - x0) * Mathf.PI * 2f;
+                    var th = (1f - (y - y0) / (float)(y1 - y0)) * Mathf.PI;
+                    var unit = new Vector3(Mathf.Sin(th) * Mathf.Cos(phi), Mathf.Cos(th), Mathf.Sin(th) * Mathf.Sin(phi));
+                    if (unit.z < -0.1f) continue;
+                    var p = Vector3.Scale(unit, HeadR);
+                    var fu = 0.5f + p.x / (HeadR.x * 2.1f);
+                    var fv = 0.5f + (p.y + 0.02f) / (HeadR.y * 2.1f);
                     var su = (fu - 0.5f) * 1.02f + 0.5f; var sv = (fv - 0.5f) * 1.02f + 0.5f;
-                    var c = Color.white;       // skin is the vertex colour; white keeps it
-                    if (su >= 0f && su < 1f && sv >= 0f && sv < 1f)
-                    {
-                        var f = fp[Mathf.Clamp((int)(sv * fs), 0, fs - 1) * fs + Mathf.Clamp((int)(su * fs), 0, fs - 1)];
-                        // over the skin: the face texture's colour where it has alpha, divided out of the skin tint
-                        var s = k.Skin;
-                        var tint = new Color(f.r / Mathf.Max(0.05f, s.r), f.g / Mathf.Max(0.05f, s.g), f.b / Mathf.Max(0.05f, s.b));
-                        c = Color.Lerp(Color.white, new Color(Mathf.Min(1, tint.r), Mathf.Min(1, tint.g), Mathf.Min(1, tint.b)), f.a);
-                    }
-                    px[(y + N / 2) * N + x] = c;
+                    if (su < 0f || su >= 1f || sv < 0f || sv >= 1f) continue;
+                    var f = fp[Mathf.Clamp((int)(sv * fs), 0, fs - 1) * fs + Mathf.Clamp((int)(su * fs), 0, fs - 1)];
+                    var sk = k.Skin;
+                    var tint = new Color(Mathf.Min(1f, f.r / Mathf.Max(0.05f, sk.r)), Mathf.Min(1f, f.g / Mathf.Max(0.05f, sk.g)), Mathf.Min(1f, f.b / Mathf.Max(0.05f, sk.b)));
+                    px[y * N + x] = Color.Lerp(Color.white, tint, f.a);
                 }
             t = new Texture2D(N, N, TextureFormat.RGBA32, true) { name = "sdb:" + k.Id, wrapMode = TextureWrapMode.Clamp };
             t.SetPixels(px);
