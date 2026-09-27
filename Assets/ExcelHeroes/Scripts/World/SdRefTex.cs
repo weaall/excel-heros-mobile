@@ -33,9 +33,10 @@ namespace ExcelHeroes.World
         /// jacket → Top, shorts → Bottom, cuffs → dark Top, warm swatches → Skin, dark → Shoes;
         /// white stripes and the tag stay. Each texel keeps its own shading relative to its class.
         /// </summary>
-        public static Texture2D Body(SdLook k)
+        public static Texture2D Body(SdLook k, Texture2D sheet = null)
         {
-            if (Bodies.TryGetValue(k.Id, out var t) && t != null) return t;
+            var id = k.Id + ":" + (sheet != null ? sheet.name : "-");
+            if (Bodies.TryGetValue(id, out var t) && t != null) return t;
             if (_bodySrc == null)
             {
                 var src = Resources.Load<Texture2D>("Art/SDBase/base_body");
@@ -68,9 +69,27 @@ namespace ExcelHeroes.World
             Fill(px, n, new Rect(0.235f, 0f, 0.022f, 0.03f), (u, v) => shirt);
             Fill(px, n, new Rect(0.185f, 0f, 0.03f, 0.03f), (u, v) => bottom);
             Fill(px, n, new Rect(0.60f, 0.22f, 0.04f, 0.04f), (u, v) => legs);
-            t = new Texture2D(n, n, TextureFormat.RGBA32, true) { name = "body:" + k.Id, wrapMode = TextureWrapMode.Clamp };
+            // the name tag on the chest (u .72–.98, v .03–.35 on the sheet): the sample's school
+            // badge becomes the character's own — white card, an accent band, the 4-cell sheet
+            var card = new Color(0.97f, 0.97f, 0.98f, 1f);
+            var band = k.Top; band.a = 1f;
+            Fill(px, n, new Rect(0.72f, 0.03f, 0.26f, 0.32f), (u, v) => card);
+            Fill(px, n, new Rect(0.72f, 0.31f, 0.26f, 0.04f), (u, v) => band);
+            Fill(px, n, new Rect(0.745f, 0.06f, 0.21f, 0.012f), (u, v) => new Color(0.75f, 0.76f, 0.8f, 1f));
+            if (sheet != null)
+            {
+                var sp = sheet.GetPixels(); var sw = sheet.width; var sh = sheet.height;
+                Fill(px, n, new Rect(0.745f, 0.17f, 0.21f, 0.047f), (u, v) =>
+                {
+                    var su = Mathf.Clamp((int)((u - 0.745f) / 0.21f * sw), 0, sw - 1);
+                    var sv = Mathf.Clamp((int)((v - 0.17f) / 0.047f * sh), 0, sh - 1);
+                    var c = sp[sv * sw + su];
+                    return c.a < 0.5f ? card : new Color(c.r, c.g, c.b, 1f);
+                });
+            }
+            t = new Texture2D(n, n, TextureFormat.RGBA32, true) { name = "body:" + id, wrapMode = TextureWrapMode.Clamp };
             t.SetPixels(px); t.Apply(true);
-            return Bodies[k.Id] = t;
+            return Bodies[id] = t;
         }
 
         /// <summary>Target colour carrying the texel's shading: luminance relative to the class's own level.</summary>

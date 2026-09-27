@@ -204,6 +204,20 @@ namespace ExcelHeroes.World
             return Cache[heroId] = new SdRefLook(SdLook.For(heroId));
         }
 
+        /// <summary>The character's 4-cell sheet as painted on the back (BackSheet/SheetTexture), for the name tag.</summary>
+        static Texture2D SheetFor(string heroId)
+        {
+            try
+            {
+                var id = heroId == "intern" ? Data.GameData.MainId : heroId;
+                var def = Data.GameData.Hero(id);
+                if (def == null) return null;
+                var owned = Core.Game.Player?.Find(id);
+                return SheetTexture.For(UI.BackSheet.For(def, owned), id);
+            }
+            catch (System.Exception) { return null; }       // the editor preview has no game data loaded
+        }
+
         static Texture2D Tex(string n) => Resources.Load<Texture2D>("Art/SDBase/" + n);
 
         public Material MaterialFor(string matName)
@@ -241,7 +255,7 @@ namespace ExcelHeroes.World
                     m.SetFloat("_ShadeStrength", 0.06f);
                     break;
                 default:
-                    m = MeshKit.NewToon(0.004f, SdRefTex.Body(_k));
+                    m = MeshKit.NewToon(0.004f, SdRefTex.Body(_k, SheetFor(_k.Id)));
                     m.SetFloat("_ShadeStrength", 0.22f);
                     break;
             }

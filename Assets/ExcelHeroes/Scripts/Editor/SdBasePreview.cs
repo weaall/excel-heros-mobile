@@ -19,6 +19,7 @@ namespace ExcelHeroes.EditorTools
             Directory.CreateDirectory(outDir);
             var ids = (System.Environment.GetEnvironmentVariable("SD_IDS") ?? "intern,cfo,ceo,vlookup,hr_jung,guard,barista,cto,macro,welfare").Split(',');
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
+            if (!ExcelHeroes.Data.GameData.Loaded) ExcelHeroes.Data.GameData.Load();     // the name tag's sheet needs the hero defs
             const int W = 220, H = 300;
             float[] yaws = { 180f, 145f, 90f, 0f };
             // rows: front / three-quarter / side / back, then a head close-up (front)

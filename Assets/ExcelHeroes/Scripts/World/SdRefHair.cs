@@ -47,7 +47,8 @@ namespace ExcelHeroes.World
                 _ => 0.66f,
             };
             if (keepBelow <= 0f) return src;
-            var keepTie = style is "ponytail" or "twin";
+            var keepTie = style is "ponytail" or "twin" or "bun";
+            var keepBunch = style == "bun";                     // the tail's top bunch reads as a bun once the tail is gone
 
             // The mesh is in the FBX's native frame: bone_root is rotated 270° about X, so mesh
             // +Z is world UP and mesh +Y is world BACK (the face looks along mesh -Y). Height and
@@ -69,6 +70,7 @@ namespace ExcelHeroes.World
                 var tie = lo > 0.9f && frontMost > 0.1f;
                 // the ribbon's loose tails: tiny pieces well behind the head
                 var tail = c.Count < 12 && frontMost > 0.1f;
+                if (keepBunch && hi > 0.97f) continue;
                 if (behind && (lo < keepBelow || ((tie || tail) && !keepTie))) foreach (var i in c) drop.Add(i);
             }
             var kept = new List<int>(tris.Length);
