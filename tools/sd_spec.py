@@ -18,6 +18,7 @@ So the pipeline can be re-run any time without losing a fringe or an idle someon
 
 fringe: 0 sample · 1 longer · 2 swept left · 3 swept right · 4 short, parted (-1 = by hash)
 eyes: round | almond | sharp | droop ("" = by hash; the intern is sharp)
+glassesStyle: square | round | oval | half | cat | rimless ("" = by hash)   glassesColor: #hex ("" = by hash: black / brown / silver / gold)
 idle / win: 0..5 (-1 = by hash) — World/SdPose lists them.   attack: melee | ranged | caster | "" (= by role)
 """
 import json, os, sys
@@ -26,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "..", "Assets", "ExcelHeroes", "Resources", "Data")
 SPEC = os.path.join(DATA, "sdspec.json")
 FIELDS = ["style", "fringe", "ahoge", "glasses", "sunglasses", "hair", "eye", "skin", "top", "shirt",
-          "bottom", "legs", "shoes", "outfit", "bottomType", "idle", "win", "attack", "tie", "cap", "headset", "legwear", "eyes"]
+          "bottom", "legs", "shoes", "outfit", "bottomType", "idle", "win", "attack", "tie", "cap", "headset", "legwear", "eyes", "glassesStyle", "glassesColor"]
 
 
 def load(name):
@@ -47,7 +48,7 @@ def build_row(cid, doll, look, old):
     r = {"id": cid, "style": "short", "fringe": -1, "ahoge": False, "glasses": False, "sunglasses": False,
          "hair": "", "eye": "", "skin": "", "top": "", "shirt": "", "bottom": "", "legs": "", "shoes": "",
          "outfit": "suit", "bottomType": "pants", "idle": -1, "win": -1, "attack": "",
-         "tie": "", "cap": "", "headset": False, "legwear": "", "eyes": "", "manual": []}
+         "tie": "", "cap": "", "headset": False, "legwear": "", "eyes": "", "glassesStyle": "", "glassesColor": "", "manual": []}
     if doll:
         acc = [a.split(":")[0] for a in doll.get("acc", [])]
         r.update(style=doll.get("hair", "short"), outfit=doll.get("outfit", "suit"), bottomType=doll.get("bottom", "pants"),

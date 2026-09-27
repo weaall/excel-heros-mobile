@@ -21,6 +21,7 @@ namespace ExcelHeroes.World
         public Renderer FaceRenderer;       // the renderer carrying the eye/mouth submesh (SdRef)
         public int EyeSub = -1;             // its submesh index; -1 = no expression swaps
         public string Expression = "";       // the sheet currently shown
+        public bool SheetWorn;               // the back sheet rides the chest bone (SdRef.WearSheet): no per-frame placement
         /// <summary>Rest local rotations of the posed bones (the sample's Bip001 rest pose is not
         /// identity): animation offsets are multiplied ONTO these, never assigned over them.</summary>
         public readonly Dictionary<Transform, Quaternion> Rest = new();

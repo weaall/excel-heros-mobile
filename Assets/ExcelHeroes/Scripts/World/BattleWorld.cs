@@ -246,6 +246,7 @@ namespace ExcelHeroes.World
                 // a 2D SD already has its sheet painted in; the 3D one carries it on the back
                 if (!a.Rig.Sprite) ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
                 if (a.Rig.Model3D) a.Rig.Sheet.localScale = Vector3.one * 0.9f;
+                if (a.Rig.RefModel) SdRef.WearSheet(a.Rig, 0.9f);
                 a.Scale = c.role == "tank" ? 1.06f : 1f;
                 a.Accent = spec.Accent;
             }
@@ -734,7 +735,7 @@ namespace ExcelHeroes.World
                     if (r == null || r == Rig.SheetRenderer) continue;
                     r.GetPropertyBlock(mpb); mpb.SetFloat("_Flash", flash); r.SetPropertyBlock(mpb);
                 }
-                if (Rig.Sheet != null)
+                if (Rig.Sheet != null && !Rig.SheetWorn)
                 {
                     Rig.Sheet.localPosition = new Vector3(Rig.SheetSide * 0.12f, Rig.Height * 0.62f + Mathf.Sin(time * 1.7f) * 0.015f, -0.14f);
                     Rig.Sheet.localRotation = Quaternion.Euler(0f, 180f, Rig.SheetSide * 12f);

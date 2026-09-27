@@ -116,7 +116,7 @@ namespace ExcelHeroes.EditorTools
                     if (rig.EyeSub >= 0) { var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(id).EyeSheet(p.Expr ?? "")); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub); }
                     // let the chains catch up a little between frames (1/12 s of the action per frame)
                     for (var k = 0; k < 5; k++) sec?.Step(1f / 60f);
-                    var img = Shoot(SdBase.Height, W, H, 0.6f, 0.5f);
+                    var img = Shoot(SdBase.Height, W, H, 0.72f, 0.58f);      // room for arms straight up
                     sheet.SetPixels(W * f, H * (actions.Length - 1 - r), W, H, img.GetPixels());
                     Object.DestroyImmediate(img);
                 }
@@ -143,6 +143,15 @@ namespace ExcelHeroes.EditorTools
                 var holder = new GameObject("preview").transform;
                 // SD_RAW=1: the untouched sample (its own materials), the reference for every edit
                 // SD_MON=1: the ids are monster type ids, built as 3D mascots (SdModel.BuildMonster)
+                // SD_GLASSES=square,round,…: force a glasses style per column (the look is mutable and read at build)
+                var glEnv = System.Environment.GetEnvironmentVariable("SD_GLASSES");
+                if (!string.IsNullOrEmpty(glEnv))
+                {
+                    var gs = glEnv.Split(','); var lk = SdLook.For(ids[i]);
+                    lk.Glasses = true; lk.Sunglasses = false; lk.GlassesStyle = gs[i % gs.Length];
+                    var gcEnv = System.Environment.GetEnvironmentVariable("SD_GLASSES_COLOR");
+                    if (!string.IsNullOrEmpty(gcEnv)) { var cs = gcEnv.Split(','); lk.GlassesColor = MeshKit.Hex(cs[i % cs.Length], lk.GlassesColor); }
+                }
                 var rig = System.Environment.GetEnvironmentVariable("SD_MON") == "1" ? SdModel.BuildMonster(ids[i], holder, 0)
                         : System.Environment.GetEnvironmentVariable("SD_RAW") == "1" ? RawSample(holder)
                         : SdRef.Build(ids[i], holder, 0) ?? SdBase.Build(ids[i], holder, 0);

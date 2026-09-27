@@ -26,6 +26,8 @@ namespace ExcelHeroes.World
         public string Outfit = "suit";          // suit | shirt | vest | cardigan | hoodie | coat | labcoat | apron | dress
         public string Legwear = "";             // skirts: bare (short socks) | socks (knee-high) | tights; "" = trousers
         public string Eyes = "almond";          // round | almond | sharp | droop
+        public string GlassesStyle = "square";  // square | round | oval | half | cat | rimless
+        public Color GlassesColor = new(0.17f, 0.17f, 0.21f);
 
         [Serializable] class Row { public string id, hair, top, shirt, bottom, legs, shoes, eye, skin; }
         [Serializable] class File { public List<Row> items = new(); }
@@ -88,6 +90,10 @@ namespace ExcelHeroes.World
                 var eh = 0; foreach (var ch in key) eh = eh * 31 + ch;
                 var r = Mathf.Abs(eh / 3) % 100;
                 k.Eyes = k.Male ? "sharp" : r < 38 ? "almond" : r < 64 ? "round" : r < 84 ? "sharp" : "droop";
+                var g = Mathf.Abs(eh / 7) % 100;
+                k.GlassesStyle = g < 30 ? "square" : g < 50 ? "round" : g < 65 ? "oval" : g < 80 ? "half" : g < 92 ? "cat" : "rimless";
+                var gc = Mathf.Abs(eh / 11) % 100;
+                k.GlassesColor = gc < 45 ? new Color(0.13f, 0.13f, 0.16f) : gc < 65 ? new Color(0.36f, 0.22f, 0.14f) : gc < 85 ? new Color(0.72f, 0.74f, 0.78f) : new Color(0.78f, 0.62f, 0.3f);
             }
             k.Cap = d.Has("cap") ? H(d.AccColor("cap", "#3b5bd6"), Color.blue) : d.Has("hardhat") ? H(d.AccColor("hardhat", "#f5c542"), Color.yellow) : new Color(0, 0, 0, 0);
             k.Headset = d.Has("headset") || d.Has("headphones");
@@ -98,6 +104,8 @@ namespace ExcelHeroes.World
                 k.Headset = sp.headset;
                 k.Legwear = sp.legwear ?? "";
                 if (!string.IsNullOrEmpty(sp.eyes)) k.Eyes = sp.eyes;
+                if (!string.IsNullOrEmpty(sp.glassesStyle)) k.GlassesStyle = sp.glassesStyle;
+                if (!string.IsNullOrEmpty(sp.glassesColor)) k.GlassesColor = H(sp.glassesColor, k.GlassesColor);
                 // the spec row is the source of truth for whatever it carries; colours re-derived
                 // from it so the shirt / legs / shoes follow a hand edit
                 if (sp.hair != "") k.Hair = H(sp.hair, k.Hair);

@@ -146,7 +146,7 @@ namespace ExcelHeroes.World
             var sh = new MeshKit.Builder();
             sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
-            if (look.Glasses || look.Sunglasses) SdRefProps.Glasses(rig, body, root, look.Sunglasses, layer);
+            if (look.Glasses || look.Sunglasses) { var gk = SdLook.For(heroId); SdRefProps.Glasses(rig, body, root, look.Sunglasses, gk.GlassesStyle, gk.GlassesColor, layer); }
             var k = SdLook.For(heroId);
             if (k.Skirt || k.Dress) SdRefProps.Skirt(rig, root, k, layer);
             SdRefProps.HandProp(rig, root, RoleOf(heroId), k, layer);
@@ -160,6 +160,25 @@ namespace ExcelHeroes.World
             // hair, tag and hem chains trail the motion (the sample's own secondary bones)
             root.gameObject.AddComponent<SdSecondary>().Init(go.transform, look.Style);
             return rig;
+        }
+
+        /// <summary>
+        /// Hangs the back sheet on the chest bone (Spine1) so it bows, leans and falls with the
+        /// body instead of floating at a fixed spot behind the root — the halo-like piece must
+        /// never look detached. Called after ChibiBuilder.AddSheet; the world spot is the one the
+        /// per-frame code used (side × 0.12, 0.744, −0.14 in the root's frame).
+        /// </summary>
+        public static void WearSheet(ChibiRig rig, float scale)
+        {
+            if (rig.Sheet == null || rig.Spine == null) return;
+            var root = rig.Root;
+            var pos = root.TransformPoint(new Vector3(rig.SheetSide * 0.12f, 0.744f, -0.14f));
+            var rot = root.rotation * Quaternion.Euler(0f, 180f, rig.SheetSide * 12f);
+            rig.Sheet.SetParent(rig.Spine, true);
+            var ls = rig.Spine.lossyScale;
+            rig.Sheet.localScale = new Vector3(scale / ls.x, scale / ls.y, scale / ls.z);
+            rig.Sheet.position = pos; rig.Sheet.rotation = rot;
+            rig.SheetWorn = true;
         }
 
         /// <summary>The hero's role (tank / melee / ranged / healer), "ranged" when the defs are not loaded.</summary>

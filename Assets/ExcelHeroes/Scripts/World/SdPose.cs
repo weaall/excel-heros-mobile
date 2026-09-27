@@ -57,6 +57,24 @@ namespace ExcelHeroes.World
         /// at ω rad/s with damping ζ (0.7–0.8 overshoots a little, the way a body settles after a
         /// move). The expression and the spin are copied straight from the target.
         /// </summary>
+        // follow-through: the joints down the chain are softer, so a forearm trails its upper arm and
+        // a hand trails the forearm by a few frames (indices as in ToArray)
+        static readonly float[] OmegaScale =
+        {
+            1f, 1f, 1f, 1f,            // shoulders
+            0.82f, 0.82f, 0.82f, 0.82f,// elbows, forearm folds
+            1f, 1f, 1f, 1f,            // knees, thighs
+            1f, 1f, 1f, 1f, 1f,        // trunk
+            0.78f, 0.78f, 0.78f,       // head
+            1f,                        // Y
+            0.66f, 0.66f, 0.66f, 0.66f,// wrists
+            0.9f, 0.9f,                // toes
+            0.6f, 0.6f,                // fingers
+            1f, 1f,                    // sway, hip roll
+            1f, 1f, 1f, 1f,            // clavicles
+            1f, 1f, 1f, 1f, 1f,        // step, spare
+        };
+
         public static void Spring(ref Pose cur, float[] vel, in Pose target, float dt, float omega, float zeta)
         {
             var c = new float[Count]; var tg = new float[Count];
@@ -65,7 +83,8 @@ namespace ExcelHeroes.World
             for (var k = 0; k < n; k++)
                 for (var i = 0; i < Count; i++)
                 {
-                    vel[i] += (tg[i] - c[i]) * omega * omega * h - 2f * zeta * omega * vel[i] * h;
+                    var w = omega * OmegaScale[i];
+                    vel[i] += (tg[i] - c[i]) * w * w * h - 2f * zeta * w * vel[i] * h;
                     c[i] += vel[i] * h;
                 }
             cur.FromArray(c);

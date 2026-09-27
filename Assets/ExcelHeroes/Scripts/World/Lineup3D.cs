@@ -117,6 +117,7 @@ namespace ExcelHeroes.World
                 var owned = Game.Player?.Find(id);
                 var spec = BackSheet.For(def, owned);
                 if (!rig.Sprite) ChibiBuilder.AddSheet(rig, SheetTexture.For(spec, id), spec.Left ? 1 : -1, Layer);
+                if (rig.RefModel) SdRef.WearSheet(rig, 1f);
                 SetLayer(rig.Root, Layer);
                 rig.Root.localPosition = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
                 var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 1.02f / rig.Height, slotW * worldW * 1.6f) : scale;
@@ -174,7 +175,7 @@ namespace ExcelHeroes.World
                         if (rig.ArmL != null) rig.ArmL.localRotation = Quaternion.Euler(0f, 0f, 6f + br * 3f);
                         if (rig.ArmR != null) rig.ArmR.localRotation = Quaternion.Euler(0f, 0f, -6f - br * 3f);
                     }
-                    if (rig.Sheet != null)
+                    if (rig.Sheet != null && !rig.SheetWorn)
                     {
                         rig.Sheet.localPosition = new Vector3(rig.SheetSide * 0.12f, rig.Height * 0.62f + Mathf.Sin(_t * 1.6f + phase) * 0.015f, -0.14f);
                         rig.Sheet.localRotation = Quaternion.Euler(0f, 180f, rig.SheetSide * 12f);

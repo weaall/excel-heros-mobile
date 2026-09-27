@@ -63,8 +63,31 @@ namespace ExcelHeroes.World
             b.Disc(new Vector3(0f, bottom, 0f), r1, r1 * 0.85f, dark, false, seg);       // the underside, so it is never hollow from below
             var mat = MeshKit.NewToon(0.007f);
             mat.SetFloat("_ShadeStrength", 0.3f);
-            var go = Attach("skirt", rig.Pelvis, b.Bake("skirt"), mat, layer, root.position, root.rotation);
-            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+            // skinned, not rigid: the hem follows the thighs (85 % at the bottom, by side), so a
+            // walking or kicking leg carries its side of the skirt instead of poking through it
+            var mesh = b.Bake("skirt");
+            var go = new GameObject("skirt") { layer = layer };
+            go.transform.SetParent(rig.Pelvis, false);
+            var ls = rig.Pelvis.lossyScale;
+            go.transform.localScale = new Vector3(1f / ls.x, 1f / ls.y, 1f / ls.z);
+            go.transform.position = root.position; go.transform.rotation = root.rotation;
+            var bones = new[] { rig.Pelvis, rig.LegL ?? rig.Pelvis, rig.LegR ?? rig.Pelvis };
+            var verts = mesh.vertices; var bw = new BoneWeight[verts.Length];
+            for (var i = 0; i < verts.Length; i++)
+            {
+                var t = Mathf.Clamp01((top - verts[i].y) / (top - bottom));
+                var sR = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-0.06f, 0.06f, verts[i].x));   // the character's right is +x
+                var leg = t * 0.85f;
+                bw[i] = new BoneWeight { boneIndex0 = 0, weight0 = 1f - leg, boneIndex1 = 1, weight1 = leg * (1f - sR), boneIndex2 = 2, weight2 = leg * sR };
+            }
+            mesh.boneWeights = bw;
+            var bind = new Matrix4x4[bones.Length];
+            for (var i = 0; i < bones.Length; i++) bind[i] = bones[i].worldToLocalMatrix * go.transform.localToWorldMatrix;
+            mesh.bindposes = bind;
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh; smr.bones = bones; smr.rootBone = rig.Pelvis; smr.sharedMaterial = mat;
+            smr.updateWhenOffscreen = true; smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; smr.receiveShadows = false;
+            rig.Renderers.Add(smr);
         }
 
         /// <summary>
@@ -131,52 +154,100 @@ namespace ExcelHeroes.World
             return pts.ToArray();
         }
 
+        static Vector3[] Ellipse(Vector3 c, float rx, float ry, int n = 24)
+        {
+            var pts = new Vector3[n];
+            for (var i = 0; i < n; i++) { var a = i / (float)n * Mathf.PI * 2f; pts[i] = c + new Vector3(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry, 0f); }
+            return pts;
+        }
+
         /// <summary>
-        /// Glasses the way the samples sculpt them: thin rounded-rectangle frames sitting on the
-        /// eye line (eye centre mesh (0, −0.00135, 0.0075); the frame a hair in front of the eye
-        /// plates), a bridge, nose pads, temples that run back along the head to the ears with a
-        /// hook, and lenses on the Glass shader — faintly tinted for glasses, dark but see-through
-        /// for sunglasses — each with a slanted glint. On the head bone, counter-scaled.
+        /// Glasses the way the samples sculpt them, in six styles: square (rounded rectangle),
+        /// round, oval, half (rim on the top half only), cat (the outer top corner swept up) and
+        /// rimless (a pale glass edge, no frame). Each lens is centred on its eye (mesh x ±0.00075,
+        /// y −0.00128, z 0.00752), a hair in front of the eye plates; a bridge arch, nose pads,
+        /// hinge beads, temples that run back along the head to the ears with a hook; lenses on
+        /// the Glass shader — a faint tint for glasses, dark but see-through for sunglasses — with
+        /// a slanted glint. On the head bone, counter-scaled.
         /// </summary>
-        public static void Glasses(ChibiRig rig, SkinnedMeshRenderer body, Transform root, bool dark, int layer)
+        public static void Glasses(ChibiRig rig, SkinnedMeshRenderer body, Transform root, bool dark, string style, Color frame, int layer)
         {
             if (rig.Head == null) return;
             var s = body.transform.lossyScale.x;
             var centre = body.transform.TransformPoint(new Vector3(0f, -0.00128f, 0.00752f));
-            var frame = dark ? new Color(0.09f, 0.09f, 0.11f) : new Color(0.17f, 0.17f, 0.21f);
+            frame.a = 1f;
+            if (dark) frame = Color.Lerp(frame, Color.black, 0.5f);
+            var rimless = style == "rimless";
             var b = new MeshKit.Builder();
-            float w = 0.00044f * s, h = 0.00031f * s, gap = 0.00007f * s, rad = 0.00012f * s, tube = (dark ? 0.000032f : 0.000024f) * s;
+            float ex = 0.00075f * s, w = 0.00040f * s, h = 0.00030f * s, tube = (dark ? 0.000034f : 0.000024f) * s;
+            if (style == "round") { w = 0.00034f * s; h = 0.00034f * s; }
+            if (style == "oval") { w = 0.00040f * s; h = 0.00026f * s; }
             foreach (var sx in new[] { -1f, 1f })
             {
-                var cx = sx * (w + gap);
-                Tube(b, RoundedRect(new Vector3(cx, 0f, 0f), w, h, rad), true, tube, frame);
-                // temple: from the outer top corner back along the side of the head, hooking down at the ear
-                var x0 = sx * (2f * w + gap);
+                var cx = sx * ex;
+                Vector3[] path;
+                var closed = true;
+                switch (style)
+                {
+                    case "round": path = Ellipse(new Vector3(cx, 0f, 0f), w, h); break;
+                    case "oval": path = Ellipse(new Vector3(cx, 0f, 0f), w, h); break;
+                    case "half":
+                        {
+                            // the rim over the top only: the rounded-rect points above 40 % down, in order from the outer bottom
+                            var full = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 6);
+                            var keep = new System.Collections.Generic.List<Vector3>();
+                            var start = 0; for (var k = 0; k < full.Length; k++) if (full[k].y > -h * 0.4f && full[(k + full.Length - 1) % full.Length].y <= -h * 0.4f && sx * (full[k].x - cx) > 0f) start = k;
+                            for (var k = 0; k < full.Length; k++) { var q = full[(start + k) % full.Length]; if (q.y > -h * 0.4f) keep.Add(q); else if (keep.Count > 0) break; }
+                            path = keep.ToArray(); closed = false; break;
+                        }
+                    case "cat":
+                        {
+                            path = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 6);
+                            for (var k = 0; k < path.Length; k++)
+                            {
+                                var outer = Mathf.Clamp01(sx * (path[k].x - cx) / w);
+                                if (path[k].y > 0f) { path[k].y += 0.00013f * s * outer * outer; path[k].x += sx * 0.00007f * s * outer * outer; }
+                            }
+                            break;
+                        }
+                    default: path = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 5); break;
+                }
+                if (rimless) Tube(b, path, closed, tube * 0.45f, new Color(0.8f, 0.84f, 0.9f), 6);
+                else Tube(b, path, closed, tube, frame);
+                // hinge bead at the outer top corner, then the temple back along the head to the ear, hooking down
+                var x0 = cx + sx * w;
+                b.Ellipsoid(new Vector3(x0, h * 0.4f, -0.00002f * s), new Vector3(0.00004f, 0.00004f, 0.00004f) * s, frame, 6);
                 var temple = new[]
                 {
-                    new Vector3(x0, h * 0.45f, 0f), new Vector3(x0 + sx * 0.00012f * s, h * 0.45f, -0.00018f * s),
-                    new Vector3(x0 + sx * 0.00020f * s, h * 0.4f, -0.0009f * s), new Vector3(x0 + sx * 0.00022f * s, h * 0.3f, -0.00135f * s),
-                    new Vector3(x0 + sx * 0.00022f * s, -h * 0.4f, -0.00150f * s),
+                    new Vector3(x0, h * 0.4f, 0f), new Vector3(x0 + sx * 0.00010f * s, h * 0.4f, -0.00020f * s),
+                    new Vector3(x0 + sx * 0.00016f * s, h * 0.35f, -0.0009f * s), new Vector3(x0 + sx * 0.00018f * s, h * 0.25f, -0.00135f * s),
+                    new Vector3(x0 + sx * 0.00018f * s, -h * 0.5f, -0.00150f * s),
                 };
-                Tube(b, temple, false, tube * 0.9f, frame, 6);
-                // nose pad: a tiny bead inside the frame, low
-                b.Ellipsoid(new Vector3(sx * gap * 1.2f, -h * 0.25f, -0.00004f * s), new Vector3(0.00003f, 0.00004f, 0.00003f) * s, frame, 6);
+                Tube(b, temple, false, tube * 0.85f, frame, 6);
+                // nose pad: a bead on the inner lower edge
+                b.Ellipsoid(new Vector3(cx - sx * (w - 0.00004f * s), -h * 0.2f, -0.00005f * s), new Vector3(0.00003f, 0.00004f, 0.00003f) * s, frame, 6);
             }
-            // the bridge: a short arch over the nose between the frames
-            Tube(b, new[] { new Vector3(-gap * 1.05f, h * 0.35f, 0f), new Vector3(0f, h * 0.48f, -0.00002f * s), new Vector3(gap * 1.05f, h * 0.35f, 0f) }, false, tube, frame, 6);
+            // the bridge: an arch between the inner edges
+            var gapIn = ex - w;
+            Tube(b, new[] { new Vector3(-gapIn * 0.98f, h * 0.3f, 0f), new Vector3(0f, h * 0.48f, -0.00002f * s), new Vector3(gapIn * 0.98f, h * 0.3f, 0f) }, false, tube, frame, 6);
             var mat = MeshKit.NewToon(0.0008f);
             mat.SetFloat("_ShadeStrength", 0.12f);
-            var go = Attach(dark ? "sunglasses" : "glasses", rig.Head, b.Bake("glasses"), mat, layer, centre, root.rotation);
-            var ls = rig.Head.lossyScale;
+            var go = Attach(dark ? "sunglasses" : "glasses:" + style, rig.Head, b.Bake("glasses"), mat, layer, centre, root.rotation);
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
             // lenses + glints, transparent, as a second part under the same anchor
             var lb = new MeshKit.Builder();
-            var lensCol = dark ? new Color(0.10f, 0.09f, 0.16f, 0.74f) : new Color(0.78f, 0.9f, 1f, 0.16f);
+            var lensCol = dark ? new Color(0.10f, 0.09f, 0.16f, 0.74f) : new Color(0.78f, 0.9f, 1f, rimless ? 0.12f : 0.16f);
             var glint = new Color(1f, 1f, 1f, dark ? 0.35f : 0.5f);
             foreach (var sx in new[] { -1f, 1f })
             {
-                var cx = sx * (w + gap);
-                lb.Quad(new Vector3(cx, 0f, -0.00001f * s), new Vector3(w - tube, 0f, 0f), new Vector3(0f, h - tube, 0f), lensCol);
+                var cx = sx * ex;
+                if (style is "round" or "oval")
+                {
+                    lb.M = Matrix4x4.TRS(new Vector3(cx, 0f, -0.00001f * s), Quaternion.Euler(-90f, 0f, 0f), Vector3.one);
+                    lb.Disc(Vector3.zero, w - tube, h - tube, lensCol, true, 20);
+                    lb.M = Matrix4x4.identity;
+                }
+                else lb.Quad(new Vector3(cx, style == "cat" ? h * 0.05f : 0f, -0.00001f * s), new Vector3(w - tube, 0f, 0f), new Vector3(0f, h - tube + (style == "cat" ? h * 0.05f : 0f), 0f), lensCol);
                 lb.Quad(new Vector3(cx - sx * w * 0.35f, h * 0.35f, 0.00001f * s), new Vector3(w * 0.22f, h * 0.18f, 0f), new Vector3(-w * 0.05f, h * 0.06f, 0f), glint);
             }
             var lens = MeshKit.NewGlass(null, Color.white);
