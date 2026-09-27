@@ -131,7 +131,43 @@ namespace ExcelHeroes.World
             var sh = new MeshKit.Builder();
             sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
+            if (look.Glasses || look.Sunglasses) Glasses(rig, body, root, look.Sunglasses, layer);
             return rig;
+        }
+
+        /// <summary>
+        /// Glasses on the head bone: two thin frames in front of the eyes (mesh z 0.0072–0.0078,
+        /// the face front at y −0.0011), a bridge and temples running back along the head; dark
+        /// lenses for sunglasses. Built in world units and counter-scaled under the bone, like the scalp.
+        /// </summary>
+        static void Glasses(ChibiRig rig, SkinnedMeshRenderer body, Transform root, bool dark, int layer)
+        {
+            var s = body.transform.lossyScale.x;
+            var centre = body.transform.TransformPoint(new Vector3(0f, -0.00135f, 0.0075f));
+            var frame = new Color(0.16f, 0.16f, 0.2f);
+            var lens = new Color(0.27f, 0.24f, 0.36f);      // dark but not black: the face stays readable
+            var sb = new MeshKit.Builder();
+            float w = 0.00046f * s, h = 0.00032f * s, t = 0.00005f * s, gap = 0.00006f * s;
+            foreach (var sx in new[] { -1f, 1f })
+            {
+                var cx = sx * (w + gap);
+                sb.Box(new Vector3(cx, h, 0f), new Vector3(w * 2f, t, t), frame);      // top
+                sb.Box(new Vector3(cx, -h, 0f), new Vector3(w * 2f, t, t), frame);     // bottom
+                sb.Box(new Vector3(cx - w, 0f, 0f), new Vector3(t, h * 2f, t), frame); // inner/outer
+                sb.Box(new Vector3(cx + w, 0f, 0f), new Vector3(t, h * 2f, t), frame);
+                if (dark) sb.Quad(new Vector3(cx, 0f, -t * 0.2f), new Vector3(w - t * 0.5f, 0f, 0f), new Vector3(0f, h - t * 0.5f, 0f), lens);
+                // the temple: back along the side of the head, then a little down
+                sb.Box(new Vector3(sx * (2f * w + gap + 0.0001f * s), h * 0.5f, -0.0006f * s), new Vector3(t, t, 0.0013f * s), frame);
+            }
+            sb.Box(new Vector3(0f, h * 0.3f, 0f), new Vector3(gap * 2f + t, t, t), frame);   // the bridge
+            var mat = MeshKit.NewToon(0.0015f);
+            mat.SetFloat("_ShadeStrength", 0.15f);
+            var go = MeshKit.Part("glasses", rig.Head, sb.Bake("glasses"), mat, layer);
+            var ls = rig.Head.lossyScale;
+            go.transform.localScale = new Vector3(1f / ls.x, 1f / ls.y, 1f / ls.z);
+            go.transform.position = centre;
+            go.transform.rotation = root.rotation;
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
         }
 
         static void SetLayer(Transform t, int layer)
@@ -196,6 +232,8 @@ namespace ExcelHeroes.World
         public string Style => _k.Style;
         public bool Male => _k.Male;
         public bool Ahoge => _k.Ahoge;
+        public bool Glasses => _k.Glasses;
+        public bool Sunglasses => _k.Sunglasses;
         /// <summary>Fringe variant by character (stable hash): 0 sample, 1 longer, 2/3 swept, 4 short and parted.</summary>
         public int Fringe
         {
