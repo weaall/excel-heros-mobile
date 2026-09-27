@@ -162,13 +162,14 @@ namespace ExcelHeroes.World
         }
 
         /// <summary>
-        /// Glasses the way the samples sculpt them, in six styles: square (rounded rectangle),
-        /// round, oval, half (rim on the top half only), cat (the outer top corner swept up) and
-        /// rimless (a pale glass edge, no frame). Each lens is centred on its eye (mesh x ±0.00075,
-        /// y −0.00128, z 0.00752), a hair in front of the eye plates; a bridge arch, nose pads,
-        /// hinge beads, temples that run back along the head to the ears with a hook; lenses on
-        /// the Glass shader — a faint tint for glasses, dark but see-through for sunglasses — with
-        /// a slanted glint. On the head bone, counter-scaled.
+        /// Glasses in six styles: square (rounded rectangle), round, oval, half (rim on the top
+        /// only), cat (the outer top corner swept up) and rimless (a thin pale edge). v4, against
+        /// Gemini mock-ups of these very faces (tools/gemini_edit.py, glasses_*): what made the old
+        /// ones ugly was a thin frame, a blue-grey tint that muddied the eyes, and hardware (hinge
+        /// beads, nose pads, temples to the ears) that a chibi face has no room for. Now: a bold
+        /// solid frame hugging each eye (mesh x ±0.00075, y −0.00128, z 0.00752), a short bridge,
+        /// stub temples that vanish into the hair, CLEAR lenses carrying only a glint (sunglasses
+        /// stay dark). On the head bone, counter-scaled.
         /// </summary>
         public static void Glasses(ChibiRig rig, SkinnedMeshRenderer body, Transform root, bool dark, string style, Color frame, int layer)
         {
@@ -179,9 +180,9 @@ namespace ExcelHeroes.World
             if (dark) frame = Color.Lerp(frame, Color.black, 0.5f);
             var rimless = style == "rimless";
             var b = new MeshKit.Builder();
-            float ex = 0.00075f * s, w = 0.00040f * s, h = 0.00030f * s, tube = (dark ? 0.000034f : 0.000024f) * s;
-            if (style == "round") { w = 0.00034f * s; h = 0.00034f * s; }
-            if (style == "oval") { w = 0.00040f * s; h = 0.00026f * s; }
+            float ex = 0.00075f * s, w = 0.00033f * s, h = 0.00026f * s, tube = (dark ? 0.00005f : 0.00004f) * s;
+            if (style == "round") { w = 0.00031f * s; h = 0.00031f * s; }
+            if (style == "oval") { w = 0.00037f * s; h = 0.00024f * s; }
             foreach (var sx in new[] { -1f, 1f })
             {
                 var cx = sx * ex;
@@ -189,12 +190,12 @@ namespace ExcelHeroes.World
                 var closed = true;
                 switch (style)
                 {
-                    case "round": path = Ellipse(new Vector3(cx, 0f, 0f), w, h); break;
-                    case "oval": path = Ellipse(new Vector3(cx, 0f, 0f), w, h); break;
+                    case "round": path = Ellipse(new Vector3(cx, 0f, 0f), w, h, 40); break;
+                    case "oval": path = Ellipse(new Vector3(cx, 0f, 0f), w, h, 40); break;
                     case "half":
                         {
                             // the rim over the top only: the rounded-rect points above 40 % down, in order from the outer bottom
-                            var full = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 6);
+                            var full = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 9);
                             var keep = new System.Collections.Generic.List<Vector3>();
                             var start = 0; for (var k = 0; k < full.Length; k++) if (full[k].y > -h * 0.4f && full[(k + full.Length - 1) % full.Length].y <= -h * 0.4f && sx * (full[k].x - cx) > 0f) start = k;
                             for (var k = 0; k < full.Length; k++) { var q = full[(start + k) % full.Length]; if (q.y > -h * 0.4f) keep.Add(q); else if (keep.Count > 0) break; }
@@ -202,7 +203,7 @@ namespace ExcelHeroes.World
                         }
                     case "cat":
                         {
-                            path = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 6);
+                            path = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 9);
                             for (var k = 0; k < path.Length; k++)
                             {
                                 var outer = Mathf.Clamp01(sx * (path[k].x - cx) / w);
@@ -210,34 +211,25 @@ namespace ExcelHeroes.World
                             }
                             break;
                         }
-                    default: path = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 5); break;
+                    default: path = RoundedRect(new Vector3(cx, 0f, 0f), w, h, 0.00010f * s, 9); break;
                 }
-                if (rimless) Tube(b, path, closed, tube * 0.45f, new Color(0.8f, 0.84f, 0.9f), 6);
-                else Tube(b, path, closed, tube, frame);
-                // hinge bead at the outer top corner, then the temple back along the head to the ear, hooking down
+                if (rimless) Tube(b, path, closed, tube * 0.45f, new Color(0.8f, 0.84f, 0.9f), 8);
+                else Tube(b, path, closed, tube, frame, 10);
+                // a stub temple from the outer top corner, straight back into the hair
                 var x0 = cx + sx * w;
-                b.Ellipsoid(new Vector3(x0, h * 0.4f, -0.00002f * s), new Vector3(0.00004f, 0.00004f, 0.00004f) * s, frame, 6);
-                var temple = new[]
-                {
-                    new Vector3(x0, h * 0.4f, 0f), new Vector3(x0 + sx * 0.00010f * s, h * 0.4f, -0.00020f * s),
-                    new Vector3(x0 + sx * 0.00016f * s, h * 0.35f, -0.0009f * s), new Vector3(x0 + sx * 0.00018f * s, h * 0.25f, -0.00135f * s),
-                    new Vector3(x0 + sx * 0.00018f * s, -h * 0.5f, -0.00150f * s),
-                };
-                Tube(b, temple, false, tube * 0.85f, frame, 6);
-                // nose pad: a bead on the inner lower edge
-                b.Ellipsoid(new Vector3(cx - sx * (w - 0.00004f * s), -h * 0.2f, -0.00005f * s), new Vector3(0.00003f, 0.00004f, 0.00003f) * s, frame, 6);
+                Tube(b, new[] { new Vector3(x0, h * 0.35f, 0f), new Vector3(x0 + sx * 0.00006f * s, h * 0.35f, -0.00035f * s) }, false, tube * 0.8f, frame, 6);
             }
             // the bridge: an arch between the inner edges
             var gapIn = ex - w;
             Tube(b, new[] { new Vector3(-gapIn * 0.98f, h * 0.3f, 0f), new Vector3(0f, h * 0.48f, -0.00002f * s), new Vector3(gapIn * 0.98f, h * 0.3f, 0f) }, false, tube, frame, 6);
             var mat = MeshKit.NewToon(0.0008f);
-            mat.SetFloat("_ShadeStrength", 0.12f);
+            mat.SetFloat("_ShadeStrength", 0.05f);
             var go = Attach(dark ? "sunglasses" : "glasses:" + style, rig.Head, b.Bake("glasses"), mat, layer, centre, root.rotation);
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
             // lenses + glints, transparent, as a second part under the same anchor
             var lb = new MeshKit.Builder();
-            var lensCol = dark ? new Color(0.10f, 0.09f, 0.16f, 0.74f) : new Color(0.78f, 0.9f, 1f, rimless ? 0.12f : 0.16f);
-            var glint = new Color(1f, 1f, 1f, dark ? 0.35f : 0.5f);
+            var lensCol = dark ? new Color(0.10f, 0.09f, 0.16f, 0.74f) : new Color(1f, 1f, 1f, 0.03f);     // clear: the eyes must stay bright
+            var glint = new Color(1f, 1f, 1f, dark ? 0.35f : 0.6f);
             foreach (var sx in new[] { -1f, 1f })
             {
                 var cx = sx * ex;

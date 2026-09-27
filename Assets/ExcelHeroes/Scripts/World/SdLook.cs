@@ -94,7 +94,9 @@ namespace ExcelHeroes.World
                 var g = Mathf.Abs(eh / 7) % 100;
                 k.GlassesStyle = g < 30 ? "square" : g < 50 ? "round" : g < 65 ? "oval" : g < 80 ? "half" : g < 92 ? "cat" : "rimless";
                 var gc = Mathf.Abs(eh / 11) % 100;
-                k.GlassesColor = gc < 45 ? new Color(0.13f, 0.13f, 0.16f) : gc < 65 ? new Color(0.36f, 0.22f, 0.14f) : gc < 85 ? new Color(0.72f, 0.74f, 0.78f) : new Color(0.78f, 0.62f, 0.3f);
+                // navy 35 / black 30 / gold 20 / red 15 % — the frames that read on a chibi face in the
+                // Gemini glasses mock-ups; brown and silver vanished into hair and skin
+                k.GlassesColor = gc < 35 ? new Color(0.13f, 0.18f, 0.36f) : gc < 65 ? new Color(0.1f, 0.1f, 0.13f) : gc < 85 ? new Color(0.86f, 0.66f, 0.24f) : new Color(0.8f, 0.14f, 0.18f);
             }
             k.Cap = d.Has("cap") ? H(d.AccColor("cap", "#3b5bd6"), Color.blue) : d.Has("hardhat") ? H(d.AccColor("hardhat", "#f5c542"), Color.yellow) : new Color(0, 0, 0, 0);
             k.Headset = d.Has("headset") || d.Has("headphones");
