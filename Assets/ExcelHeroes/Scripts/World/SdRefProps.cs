@@ -162,6 +162,61 @@ namespace ExcelHeroes.World
             }, col);
         }
 
+        /// <summary>
+        /// The face's own depth across the eyes, measured: the face submesh's vertices in a band at
+        /// eye height, brought into the glasses' frame (origin between the eyes, x across, y up, +z
+        /// out of the face) at rest, binned by x — each bin keeps its most forward point. The glasses
+        /// are then laid ON that surface. A circle standing in for the face either left the far lens
+        /// floating past the cheek in a three-quarter view (too flat) or turned the lenses sideways
+        /// into rings on the cheeks (too round); the real profile does neither.
+        /// </summary>
+        static float[] FaceProfile(SkinnedMeshRenderer body, Vector3 centre, Quaternion frame, float halfW, int bins)
+        {
+            var prof = new float[bins]; for (var i = 0; i < bins; i++) prof[i] = float.NaN;
+            var mesh = body.sharedMesh; var faceSub = -1;
+            var mats = body.sharedMaterials;
+            // the brow strips share the face sheet: take the face-textured submesh with the most triangles
+            var most = 0;
+            for (var i = 0; i < mats.Length && i < mesh.subMeshCount; i++)
+                if (mats[i] && mats[i].mainTexture && mats[i].mainTexture.name.StartsWith("face:") && mesh.GetTriangles(i).Length > most) { most = mesh.GetTriangles(i).Length; faceSub = i; }
+            if (faceSub < 0) { Debug.LogWarning("[glasses] no face submesh found"); return prof; }
+            var verts = mesh.vertices; var inv = Quaternion.Inverse(frame);
+            var band = halfW * 0.3f;
+            foreach (var idx in mesh.GetTriangles(faceSub))
+            {
+                var p = inv * (body.transform.TransformPoint(verts[idx]) - centre);
+                if (Mathf.Abs(p.y) > band || Mathf.Abs(p.x) >= halfW) continue;
+                var bi = Mathf.Clamp((int)((p.x / halfW * 0.5f + 0.5f) * bins), 0, bins - 1);
+                if (float.IsNaN(prof[bi]) || p.z > prof[bi]) prof[bi] = p.z;
+            }
+            // fill empty bins from their neighbours, then smooth
+            for (var pass = 0; pass < bins; pass++)
+                for (var i = 0; i < bins; i++)
+                    if (float.IsNaN(prof[i])) { var l = i > 0 ? prof[i - 1] : float.NaN; var r = i < bins - 1 ? prof[i + 1] : float.NaN; prof[i] = float.IsNaN(l) ? r : float.IsNaN(r) ? l : (l + r) * 0.5f; }
+            if (System.Environment.GetEnvironmentVariable("SD_GLASSDUMP") == "1") Debug.Log($"[glasses] faceSub {faceSub} profile/halfW: {string.Join(" ", System.Array.ConvertAll(prof, z => (z / halfW).ToString("F2")))}");
+            var sm = (float[])prof.Clone();
+            for (var i = 1; i < bins - 1; i++) sm[i] = (prof[i - 1] + prof[i] * 2f + prof[i + 1]) * 0.25f;
+            return sm;
+        }
+
+        /// <summary>Lays glasses built flat onto the measured face profile (drop relative to the middle), a hair above the skin.</summary>
+        static Mesh WrapToFace(Mesh m, (float[] prof, float halfW, float lift) f)
+        {
+            var (prof, halfW, lift) = f;
+            if (prof.Length == 0 || float.IsNaN(prof[prof.Length / 2])) return m;
+            float Depth(float x)
+            {
+                var t = Mathf.Clamp01(x / halfW * 0.5f + 0.5f) * (prof.Length - 1);
+                var i = Mathf.Min((int)t, prof.Length - 2);
+                return Mathf.Lerp(prof[i], prof[i + 1], t - i);
+            }
+            var mid = Depth(0f);
+            var v = m.vertices;
+            for (var i = 0; i < v.Length; i++) v[i].z += Depth(v[i].x) - mid + lift;
+            m.vertices = v; m.RecalculateBounds();
+            return m;
+        }
+
         static Vector3[] RoundedRect(Vector3 c, float w, float h, float rad, int perCorner = 5)
         {
             var pts = new System.Collections.Generic.List<Vector3>();
@@ -200,10 +255,12 @@ namespace ExcelHeroes.World
             frame.a = 1f;
             if (dark) frame = Color.Lerp(frame, Color.black, 0.5f);
             var rimless = style == "rimless";
+            // the face's measured depth across the eyes (see FaceProfile); the glasses sit on it
+            var profile = (FaceProfile(body, centre, root.rotation, 0.0013f * s, 26), 0.0013f * s, 0.00004f * s);
             var b = new MeshKit.Builder();
-            float ex = 0.00075f * s, w = 0.00033f * s, h = 0.00026f * s, tube = (dark ? 0.00005f : 0.00004f) * s;
-            if (style == "round") { w = 0.00031f * s; h = 0.00031f * s; }
-            if (style == "oval") { w = 0.00037f * s; h = 0.00024f * s; }
+            float ex = 0.00075f * s, w = 0.00027f * s, h = 0.00021f * s, tube = (dark ? 0.000036f : 0.000028f) * s;
+            if (style == "round") { w = 0.00025f * s; h = 0.00025f * s; }
+            if (style == "oval") { w = 0.00029f * s; h = 0.00019f * s; }
             foreach (var sx in new[] { -1f, 1f })
             {
                 var cx = sx * ex;
@@ -243,9 +300,11 @@ namespace ExcelHeroes.World
             // the bridge: an arch between the inner edges
             var gapIn = ex - w;
             Tube(b, new[] { new Vector3(-gapIn * 0.98f, h * 0.3f, 0f), new Vector3(0f, h * 0.48f, -0.00002f * s), new Vector3(gapIn * 0.98f, h * 0.3f, 0f) }, false, tube, frame, 6);
-            var mat = MeshKit.NewToon(0.0008f);
+            // no outline pass: the hull drew a dark ring round every rim, so a red frame came out as a
+            // red frame inside a black one — doubled, cartoon-thick spectacles
+            var mat = MeshKit.NewToon(0f);
             mat.SetFloat("_ShadeStrength", 0.05f);
-            var go = Attach(dark ? "sunglasses" : "glasses:" + style, rig.Head, b.Bake("glasses"), mat, layer, centre, root.rotation);
+            var go = Attach(dark ? "sunglasses" : "glasses:" + style, rig.Head, WrapToFace(b.Bake("glasses"), profile), mat, layer, centre, root.rotation);
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
             // lenses + glints, transparent, as a second part under the same anchor
             var lb = new MeshKit.Builder();
@@ -264,7 +323,7 @@ namespace ExcelHeroes.World
                 lb.Quad(new Vector3(cx - sx * w * 0.35f, h * 0.35f, 0.00001f * s), new Vector3(w * 0.22f, h * 0.18f, 0f), new Vector3(-w * 0.05f, h * 0.06f, 0f), glint);
             }
             var lens = MeshKit.NewGlass(null, Color.white);
-            var lgo = MeshKit.Part("lenses", go.transform, lb.Bake("lenses"), lens, layer);
+            var lgo = MeshKit.Part("lenses", go.transform, WrapToFace(lb.Bake("lenses"), profile), lens, layer);
             lgo.transform.localPosition = Vector3.zero; lgo.transform.localRotation = Quaternion.identity; lgo.transform.localScale = Vector3.one;
             rig.Renderers.Add(lgo.GetComponent<MeshRenderer>());
         }
