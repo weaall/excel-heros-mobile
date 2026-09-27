@@ -252,6 +252,8 @@ namespace ExcelHeroes.EditorTools
             var look = SdLook.For(ids[0]);
             File.WriteAllBytes(Path.Combine(outDir, "tex_eyemouth.png"), SdRefTex.EyeMouth(look).EncodeToPNG());
             File.WriteAllBytes(Path.Combine(outDir, "tex_face.png"), SdRefTex.Face(look).EncodeToPNG());
+            File.WriteAllBytes(Path.Combine(outDir, "tex_hair.png"), SdRefTex.Hair(look).EncodeToPNG());
+            Debug.Log($"[SdBasePreview] hair colour {look.Hair} tex linear? {(SdRefTex.Hair(look).isDataSRGB ? "sRGB" : "linear")} body tex sRGB? {Resources.Load<Texture2D>("Art/SDBase/base_hair").isDataSRGB}");
             Debug.Log("[SdBasePreview] done");
         }
 

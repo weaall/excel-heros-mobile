@@ -24,7 +24,47 @@ namespace ExcelHeroes.World
     /// </summary>
     public static class SdRefTex
     {
-        static readonly Dictionary<string, Texture2D> Eyes = new(), Faces = new(), Bodies = new();
+        static readonly Dictionary<string, Texture2D> Eyes = new(), Faces = new(), Bodies = new(), Hairs = new();
+        static Color[] _hairSrc; static int _hairN; static float _hairMeanLum;
+
+        /// <summary>
+        /// The hair sheet in the character's colour. The sample's sheet is a flat purple with
+        /// lighter highlight streaks; tinting it with _Color multiplies the purple in (every
+        /// colour came out dark and muddy), so instead each texel's brightness relative to the
+        /// sheet's mean is applied to the character's hair colour, and the brightest streaks
+        /// blend toward the tip colour so even black hair keeps its shine.
+        /// </summary>
+        public static Texture2D Hair(SdLook k)
+        {
+            var id = ColorUtility.ToHtmlStringRGB(k.Hair);
+            if (Hairs.TryGetValue(id, out var t) && t != null) return t;
+            if (_hairSrc == null)
+            {
+                var src = Resources.Load<Texture2D>("Art/SDBase/base_hair");
+                _hairN = src.width; _hairSrc = src.GetPixels();
+                var sum = 0f; foreach (var c in _hairSrc) sum += Lum(c);
+                _hairMeanLum = Mathf.Max(0.02f, sum / _hairSrc.Length);
+            }
+            var px = new Color[_hairSrc.Length];
+            var hair = k.Hair; hair.a = 1f;
+            var tip = Color.Lerp(k.Hair, Color.white, 0.45f); tip.a = 1f;
+            for (var i = 0; i < px.Length; i++)
+            {
+                // the sheet is nearly flat (lum 0.35–0.42), so the contrast is amplified; the top
+                // few percent of texels are the highlight streaks. (Mathf.SmoothStep(a, b, t) is an
+                // ease between a and b, NOT a threshold — an explicit one here.)
+                var ratio = Lum(_hairSrc[i]) / _hairMeanLum;
+                var f = Mathf.Clamp(Mathf.Pow(ratio, 2.2f), 0.7f, 1.45f);
+                var c = new Color(Mathf.Clamp01(hair.r * f), Mathf.Clamp01(hair.g * f), Mathf.Clamp01(hair.b * f), 1f);
+                var u = Mathf.Clamp01((ratio - 1.08f) / 0.1f);
+                var shine = u * u * (3f - 2f * u);
+                px[i] = Color.Lerp(c, tip, shine * 0.6f);
+            }
+            t = new Texture2D(_hairN, _hairN, TextureFormat.RGBA32, true) { name = "hair:" + id, wrapMode = TextureWrapMode.Clamp };
+            t.SetPixels(px); t.Apply(true);
+            return Hairs[id] = t;
+        }
+        static float Lum(Color c) => 0.3f * c.r + 0.59f * c.g + 0.11f * c.b;
         static Color[] _bodySrc; static int _bodyN;
 
         /// <summary>
@@ -68,6 +108,9 @@ namespace ExcelHeroes.World
             var bottom = k.Pants ? k.Socks : k.Bottom; bottom.a = 1f;
             var legs = k.Socks; legs.a = 1f;
             Fill(px, n, new Rect(0.235f, 0f, 0.022f, 0.03f), (u, v) => shirt);
+            // the sample wears its jacket off the shoulders, so the shoulder/neck pieces sample the
+            // shirt swatches (u .125–.19): on a tailored outfit the jacket covers the shoulders
+            if (tailored) { var topS = MeshKit.Shade(k.Top, 0.97f); topS.a = 1f; Fill(px, n, new Rect(0.125f, 0f, 0.065f, 0.03f), (u, v) => topS); }
             Fill(px, n, new Rect(0.185f, 0f, 0.03f, 0.03f), (u, v) => bottom);
             Fill(px, n, new Rect(0.60f, 0.22f, 0.04f, 0.04f), (u, v) => legs);
             // the name tag on the chest (u .72–.98, v .03–.35 on the sheet): the sample's school

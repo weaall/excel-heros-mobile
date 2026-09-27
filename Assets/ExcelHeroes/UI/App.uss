@@ -5578,7 +5578,7 @@
     background-color: rgb(246, 250, 254); color: rgb(40, 60, 100); border-radius: 12px;
 }
 .party-rail--icons .btn.party-icon.btn--primary { background-color: rgb(84, 190, 245); color: rgb(255, 255, 255); }
-.party-strip { flex-direction: row; flex-shrink: 0; height: 196px; margin-top: 14px; align-items: stretch; }
+.party-strip { flex-direction: row; flex-shrink: 0; height: 220px; margin-top: 10px; align-items: stretch; }
 .party-strip .section-title { margin-top: 0; height: 44px; padding-top: 0; padding-bottom: 0; }
 .power-readout--strip { width: 300px; flex-shrink: 0; margin-right: var(--ex-space-2); justify-content: center; align-items: center; }
 .party-strip__panel { flex-grow: 1; flex-basis: 0; margin-right: var(--ex-space-2); margin-bottom: 0; margin-top: 0; padding: 10px 20px; overflow: hidden; }

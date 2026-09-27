@@ -314,9 +314,8 @@ namespace ExcelHeroes.World
             switch (key)
             {
                 case "hair":
-                    // the sample's hair texture is a flat colour + highlight: recolour to ours
-                    m = MeshKit.NewToon(0.004f, Tex("base_hair"));
-                    m.SetColor("_Color", MeshKit.Lin(_k.Hair));
+                    // the sample's hair sheet repainted in the character's colour (SdRefTex.Hair)
+                    m = MeshKit.NewToon(0.004f, SdRefTex.Hair(_k));
                     m.SetFloat("_ShadeStrength", 0.22f);
                     break;
                 case "eyebrow":
