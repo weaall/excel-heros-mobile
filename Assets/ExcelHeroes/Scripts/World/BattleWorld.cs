@@ -265,7 +265,7 @@ namespace ExcelHeroes.World
                 a.Scale = c.role == "tank" ? 1.08f : 1f;
                 a.Accent = spec.Accent;
             }
-            else if (SdSprite.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer) is { } sdm)
+            else if ((SdModel.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer) ?? SdSprite.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer)) is { } sdm)
             {
                 a.Rig = sdm;
                 a.Rig.Root.name = c.name;
@@ -662,7 +662,15 @@ namespace ExcelHeroes.World
                     lean = 80f * Mathf.SmoothStep(0f, 1f, k);
                 }
                 var yaw = hero ? Mathf.Lerp(-35f, -8f, closeUp) : 35f;   // model faces +z (camera); turn toward the enemy
-                root.localPosition = new Vector3(X, y, Z);
+                // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad
+                var lunge = 0f;
+                if (Rig.ArmR == null && Attack > 0f)
+                {
+                    var a = Mathf.Sin((1f - Attack / 0.32f) * Mathf.PI);
+                    lunge = (hero ? 1f : -1f) * a * 0.35f; y += a * 0.18f; lean += a * 12f;
+                }
+                if (Rig.ArmR == null && Hit > 0f) { var k = Hit / 0.16f; lunge = (hero ? -1f : 1f) * k * 0.12f; }
+                root.localPosition = new Vector3(X + lunge, y, Z);
                 // the mesh faces +z; the camera looks along +z, so 180 turns it to camera, yaw toward the fight
                 root.localRotation = Quaternion.Euler(0f, 180f + yaw + spin, 0f);
                 // bones: offsets onto the rest pose (the sample rig's rest rotations are not identity)

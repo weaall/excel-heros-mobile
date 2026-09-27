@@ -97,6 +97,32 @@ namespace ExcelHeroes.World
             return rig;
         }
 
+        /// <summary>
+        /// A 3D monster: the mascot's mesh (tools/mon3d.py, Resources/Art/SD3DM/&lt;id&gt;.bytes) on a
+        /// body pivot so the sprite-era hop, lean and flinch still apply; no limbs. Height 1.0,
+        /// facing +Z (BattleWorld turns it toward the squad). Null when the mascot has no mesh.
+        /// </summary>
+        public static ChibiRig BuildMonster(string typeId, Transform parent, int layer)
+        {
+            if (typeId == null) return null;
+            var asset = Resources.Load<TextAsset>($"Art/SD3DM/{typeId}");
+            if (asset == null) return null;
+            var mesh = LoadMesh("m:" + typeId, asset.bytes);
+            if (mesh == null) return null;
+            var root = new GameObject("sd3dm:" + typeId) { layer = layer }.transform;
+            root.SetParent(parent, false);
+            var body = new GameObject("body") { layer = layer }.transform;
+            body.SetParent(root, false);
+            var part = MeshKit.Part("mesh", body, mesh, Mat3D, layer);
+            var rig = new ChibiRig { Root = root, Body = body, Head = body, Height = mesh.bounds.max.y, Model3D = true };
+            rig.Renderers.Add(part.GetComponent<MeshRenderer>());
+            var sh = new MeshKit.Builder();
+            var w = Mathf.Max(0.2f, mesh.bounds.extents.x * 1.1f);
+            sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(w, 0f, 0f), new Vector3(0f, 0f, w * 0.7f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
+            MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
+            return rig;
+        }
+
         static Mesh LoadMesh(string key, byte[] bytes)
         {
             if (Cache.TryGetValue(key, out var m) && m != null) return m;

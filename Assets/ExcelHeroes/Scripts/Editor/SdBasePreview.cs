@@ -27,8 +27,11 @@ namespace ExcelHeroes.EditorTools
             {
                 var holder = new GameObject("preview").transform;
                 // SD_RAW=1: the untouched sample (its own materials), the reference for every edit
-                var rig = System.Environment.GetEnvironmentVariable("SD_RAW") == "1" ? RawSample(holder)
+                // SD_MON=1: the ids are monster type ids, built as 3D mascots (SdModel.BuildMonster)
+                var rig = System.Environment.GetEnvironmentVariable("SD_MON") == "1" ? SdModel.BuildMonster(ids[i], holder, 0)
+                        : System.Environment.GetEnvironmentVariable("SD_RAW") == "1" ? RawSample(holder)
                         : SdRef.Build(ids[i], holder, 0) ?? SdBase.Build(ids[i], holder, 0);
+                if (rig == null) { Debug.LogWarning("[SdBasePreview] no figure for " + ids[i]); Object.DestroyImmediate(holder.gameObject); continue; }
                 // SD_POSETEST=1: column i bends forearm / calf about one axis each, to find the joint axes
                 // SD_POSETEST=2: Z only; column 0/1 forearm (L same / L opposite sign), 2/3 calf likewise
                 if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "2" && rig.RefModel)
