@@ -53,7 +53,7 @@ namespace ExcelHeroes.UI
             _spot.pickingMode = PickingMode.Ignore;
             ModalFrame.Painted(_spot, DrawSpot);
 
-            var fig = UiKit.Div("guide__figure", _root);
+            var fig = UiKit.Div("guide__figure clips", _root);   // cropped at the bottom on purpose
             fig.pickingMode = PickingMode.Ignore;
             UiKit.SetArt(fig, GameData.StandingArt(GuideId) ?? GameData.CardArt(GuideId));
 

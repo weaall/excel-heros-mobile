@@ -76,8 +76,8 @@ namespace ExcelHeroes.UI
             var sColour = GameData.Grade("S")?.Color ?? Color.white;
 
             // the students: A a step behind and to the left, S in front
-            if (featuredA != null) Figure(featuredA.id, "gstage__fig gstage__fig--a");
-            if (featuredS != null) Figure(featuredS.id, "gstage__fig gstage__fig--s");
+            if (featuredA != null) Figure(featuredA.id, "gstage__fig gstage__fig--a clips");   // standing figures cut at the knees, as on the reference
+            if (featuredS != null) Figure(featuredS.id, "gstage__fig gstage__fig--s clips");
 
             // title block
             var block = UiKit.Div("gstage__block", _pickup);

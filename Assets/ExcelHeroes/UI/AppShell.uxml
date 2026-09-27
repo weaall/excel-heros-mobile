@@ -23,7 +23,7 @@
 
         <ui:VisualElement name="topbar" class="topbar">
             <!-- 메인 only: who is playing and how far they have got. -->
-            <ui:VisualElement name="playerPlate" class="plate">
+            <ui:VisualElement name="playerPlate" class="plate clips">
                 <ui:VisualElement class="plate__rank">
                     <ui:Label text="Lv" class="plate__rank-word" />
                     <ui:Label name="stageValue" text="1" class="plate__rank-num" />

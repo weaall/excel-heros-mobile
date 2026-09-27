@@ -54,6 +54,7 @@ namespace ExcelHeroes.UI
                 if (standing != null)
                 {
                     _charContainer.AddToClassList("home__char-container--standing");
+                    _charContainer.AddToClassList("clips");   // the figure runs off the bottom on purpose (the reference's lobby crop)
                     UiKit.SetArt(_charContainer, standing);
                 }
                 else UiKit.SetArt(_charContainer, GameData.WornCardArt(_heroId));

@@ -5658,3 +5658,14 @@
 .party-strip__panel .stat-row { height: 44px; }
 .party-strip .section-title { font-size: var(--ex-text-sm); margin-bottom: 4px; }
 .party-strip .synergy-line, .party-strip .muted { font-size: var(--ex-text-xs); }
+
+/* ================================================================ label fit (LayoutAudit)
+   Unity's default label carries 2px padding and 1px margin top and bottom: 6px of a small box
+   that the text then does not get. Every one of these was a glyph or tab label a few px short of
+   its own line height — 30-odd audit hits across the roster, the detail page and the tabs. */
+.card__grade-label, .card__role-glyph, .dtab__label, .dplate__dept, .plate__label,
+.chip__value, .chip__plus, .bboss__name, .bboss__lv, .pslot__tag-pos, .pslot__tag-role, .reveal-grid__gtext {
+    padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0;
+}
+/* the pager sits on the bottom edge: its 84px plates hung 8px off a 70px row */
+.pager__btn, .pager__btn:hover, .pager__btn:disabled { height: 70px; }

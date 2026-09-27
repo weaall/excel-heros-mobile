@@ -57,7 +57,7 @@ namespace ExcelHeroes.UI
             _root = UiKit.Div("prologue prologue--ba");
             _root.RegisterCallback<ClickEvent>(_ => Advance());
 
-            _art = UiKit.Div("prologue__art", _root);
+            _art = UiKit.Div("prologue__art clips", _root);   // a slow zoom past the frame, on purpose
             _art.pickingMode = PickingMode.Ignore;
 
             // the sheet, drawn by the game over the scene

@@ -65,7 +65,9 @@ namespace ExcelHeroes.Core
                 var size = label.MeasureTextSize(label.text, 0, VisualElement.MeasureMode.Undefined,
                                                  0, VisualElement.MeasureMode.Undefined);
                 var content = label.contentRect;
-                if (content.width > 1f && !wraps && size.x > content.width + 1.5f)
+                // a label set to end in "…" is cut on purpose (a long name on a fixed plate)
+                var ellipsis = label.resolvedStyle.textOverflow == TextOverflow.Ellipsis;
+                if (content.width > 1f && !wraps && !ellipsis && size.x > content.width + 1.5f)
                     problems.Add(new Problem
                     {
                         Where = Describe(label),
