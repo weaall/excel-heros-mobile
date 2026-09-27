@@ -201,11 +201,14 @@ namespace ExcelHeroes.World
                     if (expr == "angry" && v > cy + ry * 0.55f) continue;            // narrowed: the top of the iris hidden
                     var g = Mathf.InverseLerp(cy + ry, cy - ry, v);            // 0 top .. 1 bottom
                     var c = Color.Lerp(dark, light, Mathf.SmoothStep(0f, 1f, g * 1.15f));
-                    if (d > 0.84f) c = Color.Lerp(c, dark, Mathf.InverseLerp(0.84f, 1f, d));
+                    if (d > 0.78f) c = Color.Lerp(c, dark, Mathf.InverseLerp(0.78f, 1f, d));
+                    if (g < 0.22f) c = Color.Lerp(c, new Color(0.05f, 0.04f, 0.08f), (0.22f - g) / 0.22f * 0.7f);   // the lid's shadow over the top
                     var pu = Mathf.Sqrt(((u - cx) / (rx * 0.17f)) * ((u - cx) / (rx * 0.17f)) + ((v - (cy + ry * 0.05f)) / (ry * 0.36f)) * ((v - (cy + ry * 0.05f)) / (ry * 0.36f)));
                     if (pu < 1f) c = Color.Lerp(new Color(0.95f, 0.3f, 0.5f), dark, Mathf.Clamp01(pu * 1.3f - 0.45f));
                     var lc = Mathf.Sqrt(((u - cx) / (rx * 0.62f)) * ((u - cx) / (rx * 0.62f)) + ((v - (cy - ry * 0.38f)) / (ry * 0.4f)) * ((v - (cy - ry * 0.38f)) / (ry * 0.4f)));
-                    if (lc < 1f && v < cy - ry * 0.12f) c = Color.Lerp(c, Color.Lerp(light, Color.white, 0.65f), 0.6f * (1f - lc * 0.6f));
+                    if (lc < 1f && v < cy - ry * 0.12f) c = Color.Lerp(c, Color.Lerp(light, Color.white, 0.7f), 0.7f * (1f - lc * 0.5f));
+                    var g2 = Mathf.Sqrt(((u - (cx - rx * 0.35f)) / (rx * 0.16f)) * ((u - (cx - rx * 0.35f)) / (rx * 0.16f)) + ((v - (cy - ry * 0.55f)) / (ry * 0.11f)) * ((v - (cy - ry * 0.55f)) / (ry * 0.11f)));
+                    if (g2 < 1f) c = Color.Lerp(c, Color.white, 0.85f);              // a second, lower glint
                     var hl = Mathf.Sqrt(((u - (cx + rx * 0.45f)) / (rx * 0.13f)) * ((u - (cx + rx * 0.45f)) / (rx * 0.13f)) + ((v - (cy - ry * 0.3f)) / (ry * 0.09f)) * ((v - (cy - ry * 0.3f)) / (ry * 0.09f)));
                     if (hl < 1f) c = Color.white;
                     c.a = 1f;
@@ -213,7 +216,7 @@ namespace ExcelHeroes.World
                 }
             // eye white: the socket plug — opaque skin with the white blob giving the eye its shape
             var skinO = k.Skin; skinO.a = 1f;
-            var lashC = Color.Lerp(k.Hair, new Color(0.12f, 0.08f, 0.1f), 0.75f); lashC.a = 1f;
+            var lashC = Color.Lerp(k.Hair, new Color(0.1f, 0.07f, 0.09f), 0.8f); lashC.a = 1f;
             Fill(px, N, new Rect(0.036f, 0.677f, 0.195f, 0.171f), (u, v) =>
             {
                 var lu = (u - 0.036f) / 0.195f; var lv = (v - 0.677f) / 0.171f;
@@ -224,9 +227,20 @@ namespace ExcelHeroes.World
                     var line = expr == "happy" ? 0.62f - e * e * 0.3f : expr == "blink" ? 0.56f - e * e * 0.06f : 0.55f - Mathf.Abs(e) * 0.28f;
                     return Mathf.Abs(lv - line) < (expr == "blink" ? 0.075f : 0.1f) && Mathf.Abs(e) < 0.8f ? lashC : skinO;
                 }
-                // the white in the character's eye shape (the iris, its own mesh, sits over it)
+                // the white in the character's eye shape (the iris, its own mesh, sits over it), with
+                // the lids drawn on it the way the samples do: a heavy dark line along the upper edge
+                // (thicker toward the outer corner), a faint shadow under it, a thin lower line
                 if (expr == "angry" && lv > 0.74f) return skinO;                     // narrowed lid
-                return InWhite(es, lu, lv) ? new Color(0.99f, 0.99f, 1f, 1f) : skinO;
+                if (!InWhite(es, lu, lv)) return skinO;
+                var cyl = es.Lift + (0.5f - lu) * es.Tilt;
+                var dxn = Mathf.Abs(lu - 0.5f) / es.Rx;
+                var topEdge = cyl + es.Ry * Mathf.Pow(Mathf.Max(0f, 1f - Mathf.Pow(dxn, es.Exp)), 1f / es.Exp);
+                var botEdge = cyl - es.Ry * Mathf.Pow(Mathf.Max(0f, 1f - Mathf.Pow(dxn, es.Exp)), 1f / es.Exp);
+                var lidThick = 0.055f + 0.05f * (1f - lu) + 0.02f * (1f - dxn);      // thicker at the outer corner (u = 0) and the middle
+                if (topEdge - lv < lidThick) return lashC;
+                if (topEdge - lv < lidThick + 0.09f) return Color.Lerp(new Color(0.99f, 0.99f, 1f, 1f), new Color(0.72f, 0.7f, 0.82f, 1f), 0.55f);
+                if (lv - botEdge < 0.03f) return Color.Lerp(new Color(0.99f, 0.99f, 1f, 1f), lashC, 0.35f);
+                return new Color(0.99f, 0.99f, 1f, 1f);
             });
             // mouth: a small smile line; the rest of the plate stays clear
             Fill(px, N, new Rect(0.009f, 0.043f, 0.232f, 0.164f), (u, v) =>
@@ -276,8 +290,13 @@ namespace ExcelHeroes.World
                 var lu = (u - 0.589f) / 0.384f; var lv = (v - 0.763f) / 0.2f;
                 // the crescent follows the eye shape: its outer end (high u) rises for a sharp eye, drops for a droop
                 var top = 0.62f + 0.3f * Mathf.Sin(Mathf.Clamp01(lu) * Mathf.PI * 0.9f + 0.15f) + (lu - 0.5f) * es.LashTilt;
-                var thick = Mathf.Lerp(0.03f, es.Lash, Mathf.SmoothStep(0f, 1f, lu));
+                // the samples' upper lid is a heavy line the whole width, thickest at the outer end,
+                // reaching down over the top of the iris; ours tapered to a hairline at the inner corner
+                var thick = Mathf.Lerp(0.14f, es.Lash + 0.14f, Mathf.SmoothStep(0f, 1f, lu));
                 if (lu > 0.04f && lu < 0.98f && lv < top && lv > top - thick) return lash;
+                // a soft lid shadow under the line, then a small lower lash tick at the outer end
+                if (lu > 0.06f && lu < 0.96f && lv < top - thick && lv > top - thick - 0.07f) return Color.Lerp(skin, lash, 0.25f);
+                if (lu > 0.7f && lu < 0.92f && lv < top - thick - 0.42f && lv > top - thick - 0.5f) return Color.Lerp(skin, lash, 0.7f);
                 return skin;
             });
             // brow bars: the main bar in the brow colour, the through-hair bar lighter
