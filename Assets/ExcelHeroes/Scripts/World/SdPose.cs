@@ -194,9 +194,11 @@ namespace ExcelHeroes.World
             // holds, glances, and returns
             var side = Mathf.Sin(t * 0.32f + phase * 0.7f);
             var glance = Mathf.Sin(t * 0.55f + phase) * Mathf.Sin(t * 0.21f + phase * 1.3f);
-            p.Lean = br * 1.2f; p.SpineBend = br * 0.8f; p.HeadPitch = -br * 1.2f;
+            // breathing a chibi can be SEEN doing: 1–1.5° read as a statue at battle distance, so the
+            // chest, shoulders and head move about twice that, and the whole figure bobs a little
+            p.Lean = br * 2.4f; p.SpineBend = br * 2f; p.HeadPitch = -br * 2.6f;
             p.HeadYaw = glance * 10f; p.HeadTilt = glance * 3f;
-            p.ShrugL = br * 1.5f; p.ShrugR = br * 1.5f;
+            p.ShrugL = br * 4f; p.ShrugR = br * 4f; p.Y = (br * 0.5f + 0.5f) * 0.006f;
             p.Sway = side * 0.012f; p.HipRoll = side * 4f; p.SpineSide = -side * 2.5f;
             p.KneeL = Mathf.Max(0f, side) * 12f; p.KneeR = Mathf.Max(0f, -side) * 12f;
             switch (variant % IdleCount)

@@ -193,7 +193,10 @@ namespace ExcelHeroes.World
             for (var i = 0; i < px.Length; i++) px[i] = clear;
             var eye = k.Eye;
             var dark = Color.Lerp(eye, new Color(0.08f, 0.06f, 0.12f), 0.62f);
-            var light = Color.Lerp(eye, Color.white, 0.3f);
+            // saturated, not greyed: the samples' irises are the brightest colour on the face
+            Color.RGBToHSV(eye, out var eh, out var esat, out var ev);
+            var vivid = Color.HSVToRGB(eh, Mathf.Clamp01(esat * 1.35f + 0.1f), Mathf.Clamp01(ev * 1.1f + 0.08f));
+            var light = Color.Lerp(vivid, Color.white, 0.22f);
             // iris: ellipse in its box, dark rim, gradient dark(top) → light(bottom), slit pupil, lower crescent light, glint
             Rect box = new(0.251f, 0.011f, 0.718f, 0.973f);
             var cx = box.center.x; var cy = box.center.y; var rx = box.width * 0.5f * es.Iris; var ry = box.height * 0.5f * es.Iris;
@@ -214,7 +217,7 @@ namespace ExcelHeroes.World
                     if (lc < 1f && v < cy - ry * 0.12f) c = Color.Lerp(c, Color.Lerp(light, Color.white, 0.7f), 0.7f * (1f - lc * 0.5f));
                     var g2 = Mathf.Sqrt(((u - (cx - rx * 0.35f)) / (rx * 0.16f)) * ((u - (cx - rx * 0.35f)) / (rx * 0.16f)) + ((v - (cy - ry * 0.55f)) / (ry * 0.11f)) * ((v - (cy - ry * 0.55f)) / (ry * 0.11f)));
                     if (g2 < 1f) c = Color.Lerp(c, Color.white, 0.85f);              // a second, lower glint
-                    var hl = Mathf.Sqrt(((u - (cx + rx * 0.45f)) / (rx * 0.13f)) * ((u - (cx + rx * 0.45f)) / (rx * 0.13f)) + ((v - (cy - ry * 0.3f)) / (ry * 0.09f)) * ((v - (cy - ry * 0.3f)) / (ry * 0.09f)));
+                    var hl = Mathf.Sqrt(((u - (cx + rx * 0.42f)) / (rx * 0.2f)) * ((u - (cx + rx * 0.42f)) / (rx * 0.2f)) + ((v - (cy - ry * 0.28f)) / (ry * 0.14f)) * ((v - (cy - ry * 0.28f)) / (ry * 0.14f)));
                     if (hl < 1f) c = Color.white;
                     c.a = 1f;
                     px[y * N + x] = c;
@@ -267,8 +270,12 @@ namespace ExcelHeroes.World
                     case "angry":                                   // a set line
                         return Mathf.Abs(lv - 0.42f) < 0.07f && Mathf.Abs(e) < 0.5f ? mouth : null;
                 }
-                var curve = 0.42f + e * e * 0.22f;          // v is bottom-up: corners higher = a smile
-                if (Mathf.Abs(lv - curve) < 0.08f && Mathf.Abs(e) < 0.62f) return mouth;
+                // Blue Archive's resting mouth is SMALL: a short soft curve in the middle of the plate.
+                // The old one ran 62 % of the plate at 16 % of its height and read on the face as a
+                // wide open "\_/" block (compare.png against the samples).
+                var curve = 0.45f + e * e * 0.3f;           // v is bottom-up: corners higher = a smile
+                var w = 1f - Mathf.Abs(e) / 0.34f;          // tapers to nothing at the corners
+                if (w > 0f && Mathf.Abs(lv - curve) < 0.035f + 0.03f * w) return new Color(0.62f, 0.26f, 0.32f, 1f);
                 return null;
             });
             // glint quads

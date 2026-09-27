@@ -324,6 +324,18 @@ namespace ExcelHeroes.World
 
         static Texture2D Tex(string n) => Resources.Load<Texture2D>("Art/SDBase/" + n);
 
+        // Shadows in colour, the reference's way (Gemini's read of compare.png): skin and cloth shade
+        // towards a soft rose-violet, hair towards a deeper, more saturated tone of its own colour.
+        // The shader's default tint was a grey-blue that muddied every face and jacket. The outline
+        // went 0.004 → 0.006: at battle distance the old one vanished and the figure lost its edge.
+        static readonly Color WarmShade = new(0.93f, 0.78f, 0.9f, 1f);
+        static Color ShadeOf(Color c)
+        {
+            Color.RGBToHSV(c, out var h, out var sat, out var v);
+            var t = Color.HSVToRGB(h, Mathf.Clamp01(sat * 1.2f + 0.15f), Mathf.Clamp01(v * 0.72f + 0.12f));
+            return Color.Lerp(t, WarmShade, 0.35f);
+        }
+
         public Material MaterialFor(string matName)
         {
             var key = matName.Contains("eyemouth") ? "eyemouth" : matName.Contains("eyebrow") ? "eyebrow"
@@ -334,8 +346,10 @@ namespace ExcelHeroes.World
             {
                 case "hair":
                     // the sample's hair sheet repainted in the character's colour (SdRefTex.Hair)
-                    m = MeshKit.NewToon(0.004f, SdRefTex.Hair(_k));
-                    m.SetFloat("_ShadeStrength", 0.22f);
+                    m = MeshKit.NewToon(0.006f, SdRefTex.Hair(_k));
+                    m.SetFloat("_ShadeStrength", 0.26f);
+                    // hair shades into a deeper tone of itself, not into grey-blue
+                    m.SetColor("_ShadeTint", ShadeOf(_k.Hair));
                     break;
                 case "eyebrow":
                     // the brow strips sample the FACE sheet's brow bars
@@ -353,13 +367,15 @@ namespace ExcelHeroes.World
                     break;
                 case "face":
                     // flat-lit like the reference's face shading; the lash plates cut by alpha
-                    m = MeshKit.NewToon(0.004f, SdRefTex.Face(_k));
+                    m = MeshKit.NewToon(0.006f, SdRefTex.Face(_k));
                     m.SetFloat("_Cutoff", 0.5f);
                     m.SetFloat("_ShadeStrength", 0.06f);
+                    m.SetColor("_ShadeTint", WarmShade);
                     break;
                 default:
-                    m = MeshKit.NewToon(0.004f, SdRefTex.Body(_k, SheetFor(_k.Id)));
-                    m.SetFloat("_ShadeStrength", 0.22f);
+                    m = MeshKit.NewToon(0.006f, SdRefTex.Body(_k, SheetFor(_k.Id)));
+                    m.SetFloat("_ShadeStrength", 0.24f);
+                    m.SetColor("_ShadeTint", WarmShade);
                     break;
             }
             m.SetFloat("_Rim", key is "eyemouth" or "eyebrow" ? 0f : 0.1f);
