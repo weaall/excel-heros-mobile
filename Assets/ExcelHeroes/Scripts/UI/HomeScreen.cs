@@ -106,8 +106,11 @@ namespace ExcelHeroes.UI
             ModalFrame.Painted(folder, DrawFolder);
             UiKit.Text(Icons.Battle, "icon home__folder-glyph", folder).pickingMode = PickingMode.Ignore;
             var plate = UiKit.Div("home__campaign-plate", campaign);
-            ModalFrame.Painted(plate, (ctx, r) => SkewPlate.DrawPlate(ctx, r, SkewPlate.Kind.Light, accents: false));
+            // cyan, white type: the white plate sank into the bright lounge (ui_critique, 05-Home #1),
+            // and the lobby's one way in has to be its loudest object after the character
+            ModalFrame.Painted(plate, (ctx, r) => SkewPlate.DrawPlate(ctx, r, SkewPlate.Kind.Primary, accents: false));
             UiKit.Text("업무", "home__campaign-label", plate).pickingMode = PickingMode.Ignore;
+            UiKit.Text($"PHASE {Mathf.Max(1, Game.Player?.stage ?? 1)}", "home__campaign-sub", plate).pickingMode = PickingMode.Ignore;
             var tag = UiKit.Div("home__campaign-tag", campaign);
             ModalFrame.Painted(tag, (ctx, r) =>
             {
