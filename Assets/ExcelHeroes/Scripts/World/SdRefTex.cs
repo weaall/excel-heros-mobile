@@ -25,6 +25,27 @@ namespace ExcelHeroes.World
     public static class SdRefTex
     {
         static readonly Dictionary<string, Texture2D> Eyes = new(), Faces = new(), Bodies = new(), Hairs = new();
+
+        /// <summary>
+        /// The eye shapes the samples vary between: the white's proportions and how far its outer
+        /// corner rises (a "tsurime" sharp eye) or falls (a "tareme" droop), the iris's size in
+        /// its plate, and the upper lash's thickness and slant. u runs from the OUTER corner.
+        /// </summary>
+        struct EyeStyle { public float Rx, Ry, Tilt, Exp, Iris, Lash, LashTilt, Lift; }
+        static EyeStyle StyleOf(string eyes) => eyes switch
+        {
+            "round" => new EyeStyle { Rx = 0.40f, Ry = 0.50f, Tilt = 0.00f, Exp = 2.2f, Iris = 1.00f, Lash = 0.18f, LashTilt = 0.00f, Lift = 0.54f },
+            "sharp" => new EyeStyle { Rx = 0.47f, Ry = 0.37f, Tilt = 0.16f, Exp = 3.2f, Iris = 0.86f, Lash = 0.27f, LashTilt = 0.14f, Lift = 0.56f },
+            "droop" => new EyeStyle { Rx = 0.44f, Ry = 0.43f, Tilt = -0.13f, Exp = 2.4f, Iris = 0.98f, Lash = 0.20f, LashTilt = -0.12f, Lift = 0.50f },
+            _ => new EyeStyle { Rx = 0.43f, Ry = 0.44f, Tilt = 0.06f, Exp = 2.6f, Iris = 0.95f, Lash = 0.21f, LashTilt = 0.06f, Lift = 0.54f },
+        };
+        /// <summary>Inside the styled white: a superellipse tilted so the outer corner (u=0) moves by Tilt.</summary>
+        static bool InWhite(in EyeStyle e, float lu, float lv)
+        {
+            var cy = e.Lift + (0.5f - lu) * e.Tilt;                 // the centreline slopes toward the outer corner
+            var dx = Mathf.Abs(lu - 0.5f) / e.Rx; var dy = Mathf.Abs(lv - cy) / e.Ry;
+            return Mathf.Pow(dx, e.Exp) + Mathf.Pow(dy, e.Exp) < 1f;
+        }
         static Color[] _hairSrc; static int _hairN; static float _hairMeanLum;
 
         /// <summary>
@@ -157,9 +178,10 @@ namespace ExcelHeroes.World
         /// </summary>
         public static Texture2D EyeMouth(SdLook k, string expr = "")
         {
-            var id = k.Id + ":" + expr;
+            var id = k.Id + ":" + expr + ":" + k.Eyes;
             if (Eyes.TryGetValue(id, out var t) && t != null) return t;
             var shut = expr is "happy" or "hurt" or "blink";
+            var es = StyleOf(k.Eyes);
             const int N = 128;
             var px = new Color[N * N];
             var clear = new Color(0f, 0f, 0f, 0f);
@@ -169,7 +191,7 @@ namespace ExcelHeroes.World
             var light = Color.Lerp(eye, Color.white, 0.3f);
             // iris: ellipse in its box, dark rim, gradient dark(top) → light(bottom), slit pupil, lower crescent light, glint
             Rect box = new(0.251f, 0.011f, 0.718f, 0.973f);
-            var cx = box.center.x; var cy = box.center.y; var rx = box.width * 0.5f; var ry = box.height * 0.5f;
+            var cx = box.center.x; var cy = box.center.y; var rx = box.width * 0.5f * es.Iris; var ry = box.height * 0.5f * es.Iris;
             for (var y = 0; y < N; y++)
                 for (var x = 0; x < N; x++)
                 {
@@ -202,10 +224,9 @@ namespace ExcelHeroes.World
                     var line = expr == "happy" ? 0.62f - e * e * 0.3f : expr == "blink" ? 0.56f - e * e * 0.06f : 0.55f - Mathf.Abs(e) * 0.28f;
                     return Mathf.Abs(lv - line) < (expr == "blink" ? 0.075f : 0.1f) && Mathf.Abs(e) < 0.8f ? lashC : skinO;
                 }
-                // the white sits a little high and narrow, so the iris (its own mesh) fills most of it
-                var d = new Vector2((lu - 0.5f) / 0.4f, (lv - 0.54f) / 0.45f).magnitude;
-                if (expr == "angry" && lv > 0.78f) return skinO;                     // narrowed lid
-                return d < 1f ? new Color(0.99f, 0.99f, 1f, 1f) : skinO;
+                // the white in the character's eye shape (the iris, its own mesh, sits over it)
+                if (expr == "angry" && lv > 0.74f) return skinO;                     // narrowed lid
+                return InWhite(es, lu, lv) ? new Color(0.99f, 0.99f, 1f, 1f) : skinO;
             });
             // mouth: a small smile line; the rest of the plate stays clear
             Fill(px, N, new Rect(0.009f, 0.043f, 0.232f, 0.164f), (u, v) =>
@@ -240,20 +261,22 @@ namespace ExcelHeroes.World
 
         public static Texture2D Face(SdLook k)
         {
-            if (Faces.TryGetValue(k.Id, out var t) && t != null) return t;
+            if (Faces.TryGetValue(k.Id + ":" + k.Eyes, out var t) && t != null) return t;
             const int N = 256;
             var px = new Color[N * N];
             var skin = k.Skin; skin.a = 1f;
             for (var i = 0; i < px.Length; i++) px[i] = skin;
             var lash = Color.Lerp(k.Hair, new Color(0.16f, 0.1f, 0.12f), 0.55f); lash.a = 1f;
+            var es = StyleOf(k.Eyes);
             var brow = Color.Lerp(k.Hair, new Color(0.2f, 0.13f, 0.14f), 0.4f); brow.a = 1f;
             // lash plates: clear except the upper lash — a crescent along the top of the region,
             // thick at the high-u end, tapering to a point at the low-u end (the sample's shape)
             Fill(px, N, new Rect(0.589f, 0.763f, 0.384f, 0.2f), (u, v) =>
             {
                 var lu = (u - 0.589f) / 0.384f; var lv = (v - 0.763f) / 0.2f;
-                var top = 0.62f + 0.3f * Mathf.Sin(Mathf.Clamp01(lu) * Mathf.PI * 0.9f + 0.15f);
-                var thick = Mathf.Lerp(0.03f, k.Male ? 0.16f : 0.22f, Mathf.SmoothStep(0f, 1f, lu));
+                // the crescent follows the eye shape: its outer end (high u) rises for a sharp eye, drops for a droop
+                var top = 0.62f + 0.3f * Mathf.Sin(Mathf.Clamp01(lu) * Mathf.PI * 0.9f + 0.15f) + (lu - 0.5f) * es.LashTilt;
+                var thick = Mathf.Lerp(0.03f, es.Lash, Mathf.SmoothStep(0f, 1f, lu));
                 if (lu > 0.04f && lu < 0.98f && lv < top && lv > top - thick) return lash;
                 return skin;
             });
@@ -268,7 +291,7 @@ namespace ExcelHeroes.World
             });
             t = new Texture2D(N, N, TextureFormat.RGBA32, true) { name = "face:" + k.Id, wrapMode = TextureWrapMode.Clamp };
             t.SetPixels(px); t.Apply(true);
-            return Faces[k.Id] = t;
+            return Faces[k.Id + ":" + k.Eyes] = t;
         }
 
         static void Fill(Color[] px, int n, Rect r, System.Func<float, float, Color?> f)

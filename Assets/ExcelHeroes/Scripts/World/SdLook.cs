@@ -25,6 +25,7 @@ namespace ExcelHeroes.World
         public bool Headset;
         public string Outfit = "suit";          // suit | shirt | vest | cardigan | hoodie | coat | labcoat | apron | dress
         public string Legwear = "";             // skirts: bare (short socks) | socks (knee-high) | tights; "" = trousers
+        public string Eyes = "almond";          // round | almond | sharp | droop
 
         [Serializable] class Row { public string id, hair, top, shirt, bottom, legs, shoes, eye, skin; }
         [Serializable] class File { public List<Row> items = new(); }
@@ -83,6 +84,11 @@ namespace ExcelHeroes.World
             k.Glasses = d.Has("glasses");
             k.Sunglasses = d.Has("sunglasses");
             k.Ahoge = BackSheetHash(key) % 3 == 0;
+            {
+                var eh = 0; foreach (var ch in key) eh = eh * 31 + ch;
+                var r = Mathf.Abs(eh / 3) % 100;
+                k.Eyes = k.Male ? "sharp" : r < 38 ? "almond" : r < 64 ? "round" : r < 84 ? "sharp" : "droop";
+            }
             k.Cap = d.Has("cap") ? H(d.AccColor("cap", "#3b5bd6"), Color.blue) : d.Has("hardhat") ? H(d.AccColor("hardhat", "#f5c542"), Color.yellow) : new Color(0, 0, 0, 0);
             k.Headset = d.Has("headset") || d.Has("headphones");
             if (sp != null)
@@ -91,6 +97,7 @@ namespace ExcelHeroes.World
                 k.Cap = sp.cap != "" ? H(sp.cap, Color.blue) : new Color(0, 0, 0, 0);
                 k.Headset = sp.headset;
                 k.Legwear = sp.legwear ?? "";
+                if (!string.IsNullOrEmpty(sp.eyes)) k.Eyes = sp.eyes;
                 // the spec row is the source of truth for whatever it carries; colours re-derived
                 // from it so the shirt / legs / shoes follow a hand edit
                 if (sp.hair != "") k.Hair = H(sp.hair, k.Hair);

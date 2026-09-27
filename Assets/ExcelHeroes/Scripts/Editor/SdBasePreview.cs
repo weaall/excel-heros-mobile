@@ -173,6 +173,20 @@ namespace ExcelHeroes.EditorTools
                         var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(ids[i]).EyeSheet(pz.Expr)); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub);
                     }
                 }
+                var eyesEnv = System.Environment.GetEnvironmentVariable("SD_EYES");
+                if (!string.IsNullOrEmpty(eyesEnv) && rig.RefModel && rig.EyeSub >= 0)
+                {
+                    // the style forced per column: repaint both sheets on a copy of the look
+                    var ey = eyesEnv.Split(',')[i % eyesEnv.Split(',').Length];
+                    var lk = SdLook.For(ids[i]); var saved = lk.Eyes; lk.Eyes = ey;
+                    var mats = rig.FaceRenderer.sharedMaterials;
+                    for (var mi = 0; mi < mats.Length; mi++)
+                    {
+                        if (mi == rig.EyeSub) { var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefTex.EyeMouth(lk, "")); rig.FaceRenderer.SetPropertyBlock(eb, mi); }
+                        else if (mats[mi] != null && mats[mi].mainTexture != null && mats[mi].mainTexture.name.StartsWith("face:")) { var fb = new MaterialPropertyBlock(); fb.SetTexture("_MainTex", SdRefTex.Face(lk)); rig.FaceRenderer.SetPropertyBlock(fb, mi); }
+                    }
+                    lk.Eyes = saved;
+                }
                 var exprEnv = System.Environment.GetEnvironmentVariable("SD_EXPR");
                 if (!string.IsNullOrEmpty(exprEnv) && rig.RefModel && rig.EyeSub >= 0)
                 {

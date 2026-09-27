@@ -24,6 +24,7 @@
    "cap": "",
    "headset": false,
    "legwear": "bare",
+   "eyes": "",
    "manual": []
   },
   {
@@ -50,6 +51,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -76,6 +78,7 @@
    "cap": "#f1c40f",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -102,6 +105,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -128,6 +132,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -154,6 +159,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -180,6 +186,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -206,6 +213,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -232,6 +240,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -258,6 +267,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -284,6 +294,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -310,6 +321,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -336,6 +348,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -362,6 +375,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -388,6 +402,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -414,6 +429,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -440,6 +456,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -466,6 +483,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -492,6 +510,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -518,6 +537,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -544,6 +564,7 @@
    "cap": "#3b5bd6",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -570,6 +591,7 @@
    "cap": "",
    "headset": true,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -596,6 +618,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -622,6 +645,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -648,6 +672,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -674,6 +699,7 @@
    "cap": "#5b9bd5",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -700,6 +726,7 @@
    "cap": "",
    "headset": true,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -726,6 +753,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -752,6 +780,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -778,6 +807,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -804,6 +834,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -830,6 +861,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -856,6 +888,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -882,6 +915,7 @@
    "cap": "",
    "headset": true,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -908,6 +942,7 @@
    "cap": "",
    "headset": true,
    "legwear": "bare",
+   "eyes": "",
    "manual": []
   },
   {
@@ -934,6 +969,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -960,6 +996,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -986,6 +1023,7 @@
    "cap": "",
    "headset": false,
    "legwear": "bare",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1012,6 +1050,7 @@
    "cap": "",
    "headset": false,
    "legwear": "bare",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1038,6 +1077,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1064,6 +1104,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1090,6 +1131,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1116,6 +1158,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1142,6 +1185,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1168,6 +1212,7 @@
    "cap": "",
    "headset": true,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1194,6 +1239,7 @@
    "cap": "#2c3345",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1220,6 +1266,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1246,6 +1293,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1272,6 +1320,7 @@
    "cap": "",
    "headset": false,
    "legwear": "bare",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1298,6 +1347,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1324,6 +1374,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1350,6 +1401,7 @@
    "cap": "",
    "headset": false,
    "legwear": "bare",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1376,6 +1428,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1402,6 +1455,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1428,6 +1482,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1454,6 +1509,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1480,6 +1536,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1506,6 +1563,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1532,6 +1590,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1558,6 +1617,7 @@
    "cap": "",
    "headset": true,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1584,6 +1644,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1610,6 +1671,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1636,6 +1698,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1662,6 +1725,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1688,6 +1752,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1714,6 +1779,7 @@
    "cap": "",
    "headset": false,
    "legwear": "",
+   "eyes": "",
    "manual": []
   },
   {
@@ -1740,6 +1806,7 @@
    "cap": "",
    "headset": false,
    "legwear": "socks",
+   "eyes": "",
    "manual": []
   }
  ]
