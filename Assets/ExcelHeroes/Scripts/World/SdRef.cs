@@ -72,6 +72,14 @@ namespace ExcelHeroes.World
             var s = Height / Mathf.Max(1e-5f, size.y);
             go.transform.localScale = Vector3.one * s;
             go.transform.localPosition = new Vector3(-(lo.x + hi.x) * 0.5f * s, -lo.y * s, -(lo.z + hi.z) * 0.5f * s);
+            // centre on the HIPS, not the bounds: a ponytail reaching back would otherwise push
+            // the body forward of the root, and everything hung on the root (skirt, shadow) behind it
+            var pelvis = go.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Bip001 Pelvis");
+            if (pelvis != null)
+            {
+                var pl = root.InverseTransformPoint(pelvis.position);
+                go.transform.localPosition -= new Vector3(pl.x, 0f, pl.z);
+            }
             // the face is on +Z of the FBX already (RefAnalyze: EyeMouth at z > 0) — our forward
             rends = new[] { body };
             var look = SdRefLook.For(heroId);
@@ -138,7 +146,21 @@ namespace ExcelHeroes.World
             sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
             if (look.Glasses || look.Sunglasses) Glasses(rig, body, root, look.Sunglasses, layer);
+            var k = SdLook.For(heroId);
+            if (k.Skirt || k.Dress) SdRefProps.Skirt(rig, root, k, layer);
+            SdRefProps.HandProp(rig, root, RoleOf(heroId), k, layer);
             return rig;
+        }
+
+        /// <summary>The hero's role (tank / melee / ranged / healer), "ranged" when the defs are not loaded.</summary>
+        public static string RoleOf(string heroId)
+        {
+            try
+            {
+                var id = heroId == "intern" ? Data.GameData.MainId : heroId;
+                return Data.GameData.Hero(id)?.role ?? "ranged";
+            }
+            catch (System.Exception) { return "ranged"; }
         }
 
         /// <summary>

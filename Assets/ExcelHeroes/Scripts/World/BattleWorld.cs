@@ -678,7 +678,7 @@ namespace ExcelHeroes.World
                     else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
                     else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.heroId, C.role), 1f - Attack / 0.32f);
                     else if (walking) _pose = SdPose.Walk(_walk * 0.9f);
-                    else _pose = SdPose.Idle(SdPose.IdleOf(C.heroId), time, Z * 2f);
+                    else _pose = SdPose.Ready(SdPose.AttackOf(C.heroId, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
                     // ease between states so a pose change never pops (fast into an attack, softer otherwise)
                     var ease = Attack > 0f || Hit > 0f ? 0.035f : 0.09f;
                     _shown = _shownInit ? Pose.Lerp(_shown, _pose, 1f - Mathf.Exp(-dt / ease)) : _pose;

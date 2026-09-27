@@ -27,7 +27,7 @@ namespace ExcelHeroes.EditorTools
             var ids = (System.Environment.GetEnvironmentVariable("SD_IDS") ?? "intern").Split(',');
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
             if (!ExcelHeroes.Data.GameData.Loaded) ExcelHeroes.Data.GameData.Load();
-            const int W = 220, H = 300;
+            const int W = 220, H = 300, COLS = 5;
             foreach (var id in ids)
             {
                 var holder = new GameObject("preview").transform;
@@ -36,7 +36,7 @@ namespace ExcelHeroes.EditorTools
                 // one rig rendered many times in one editor frame: Unity skins it once per frame
                 // unless told to redo the matrices per render (only the root bone moved otherwise)
                 if (rig.FaceRenderer is SkinnedMeshRenderer smr) smr.forceMatrixRecalculationPerRender = true;
-                var sheet = new Texture2D(W * 4, H * 3, TextureFormat.RGB24, false);
+                var sheet = new Texture2D(W * COLS, H * 3, TextureFormat.RGB24, false);
                 void Put(int col, int row, Texture2D img) { sheet.SetPixels(W * col, H * (2 - row), W, H, img.GetPixels()); Object.DestroyImmediate(img); }
                 void Expr(string e)
                 {
@@ -46,18 +46,20 @@ namespace ExcelHeroes.EditorTools
                 // row 1: the four views in the character's own idle
                 var idle = SdPose.Idle(SdPose.IdleOf(id), 0.4f, 0f);
                 SdPose.Apply(rig, idle);
-                float[] yaws = { 180f, 145f, 90f, 0f };
-                for (var a = 0; a < 4; a++) { rig.Root.rotation = Quaternion.Euler(0f, yaws[a], 0f); Put(a, 0, Shoot(SdBase.Height, W, H)); }
+                float[] yaws = { 180f, 145f, 90f, 0f, 235f };                 // front · ¾ · side · back · rear ¾
+                for (var a = 0; a < COLS; a++) { rig.Root.rotation = Quaternion.Euler(0f, yaws[a], 0f); Put(a, 0, Shoot(SdBase.Height, W, H)); }
                 // row 2: the head, four expressions (arms down so nothing covers the face)
                 SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
                 rig.Root.rotation = Quaternion.Euler(0f, 180f, 0f);
                 string[] exprs = { "", "happy", "hurt", "angry" };
                 for (var e = 0; e < 4; e++) { Expr(exprs[e]); Put(e, 1, Shoot(SdBase.Height, W, H, 0.22f, 0.8f)); }
-                // row 3: idle · victory · attack · walk, the three-quarter that shows the right arm
+                Expr(""); rig.Root.rotation = Quaternion.Euler(0f, 145f, 0f); Put(4, 1, Shoot(SdBase.Height, W, H, 0.22f, 0.8f));   // the face in three-quarter
+                // row 3: idle · ready · attack · victory · walk, the three-quarter that shows the right arm
                 rig.Root.rotation = Quaternion.Euler(0f, 215f, 0f);
-                var role = ExcelHeroes.Data.GameData.Hero(id == "intern" ? ExcelHeroes.Data.GameData.MainId : id)?.role ?? "melee";
-                var poses = new[] { idle, SdPose.Victory(SdPose.WinOf(id), 0.55f), SdPose.Attack(SdPose.AttackOf(id, role), 0.5f), SdPose.Walk(Mathf.PI / 3f) };
-                for (var p = 0; p < 4; p++)
+                var role = SdRef.RoleOf(id);
+                var kind = SdPose.AttackOf(id, role);
+                var poses = new[] { idle, SdPose.Ready(kind, 0.3f, 0f), SdPose.Attack(kind, 0.5f), SdPose.Victory(SdPose.WinOf(id), 0.55f), SdPose.Walk(Mathf.PI / 3f) };
+                for (var p = 0; p < COLS; p++)
                 {
                     SdPose.Apply(rig, poses[p]); rig.Root.localPosition = new Vector3(0f, poses[p].Y, 0f);
                     Expr(poses[p].Expr ?? "");

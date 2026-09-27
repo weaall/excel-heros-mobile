@@ -117,6 +117,39 @@ namespace ExcelHeroes.World
             return p;
         }
 
+        // ------------------------------------------------------------------ ready --
+
+        /// <summary>
+        /// The combat stance, by attack kind: 0 melee — feet apart, fists up, bouncing on the
+        /// toes; 1 ranged — the tablet raised in both hands at chest height, sighting; 2 healer —
+        /// the cup held up, the other hand ready. Held while waiting between actions in a fight.
+        /// </summary>
+        public static Pose Ready(int kind, float t, float phase)
+        {
+            var p = Pose.Rest;
+            var br = Mathf.Sin(t * 3f + phase);
+            switch (kind)
+            {
+                default:
+                    p.RaiseL = -12f; p.SwingL = 40f; p.ElbowL = 95f; p.InL = 30f; p.FistL = 1f; p.HandFlexL = 45f;
+                    p.RaiseR = -8f; p.SwingR = 30f; p.ElbowR = 105f; p.InR = 20f; p.FistR = 1f; p.HandFlexR = 45f;
+                    p.KneeL = 14f; p.KneeR = 14f; p.Lean = -6f; p.Twist = 10f; p.Y = Mathf.Abs(br) * 0.015f;
+                    p.HeadPitch = 2f; p.Sway = 0.008f;
+                    break;
+                case 1:
+                    p.RaiseR = -6f; p.SwingR = 62f; p.ElbowR = 55f; p.InR = 35f; p.HandFlexR = 10f; p.FistR = 0.6f;
+                    p.RaiseL = -10f; p.SwingL = 55f; p.ElbowL = 70f; p.InL = 45f; p.HandFlexL = 20f; p.FistL = 0.6f;
+                    p.KneeL = 8f; p.Lean = -4f; p.Twist = 12f + br * 1f; p.HeadPitch = 3f; p.Sway = 0.01f;
+                    break;
+                case 2:
+                    p.RaiseR = -14f; p.SwingR = 45f; p.ElbowR = 100f; p.InR = 15f; p.HandFlexR = 0f; p.FistR = 0.7f;
+                    p.RaiseL = -30f; p.SwingL = 10f; p.ElbowL = 35f; p.InL = 60f; p.HandFlexL = 30f; p.FistL = 0.3f;
+                    p.KneeR = 8f; p.Sway = -0.01f; p.HipRoll = -3f; p.HeadRoll = 4f + br * 1.5f;
+                    break;
+            }
+            return p;
+        }
+
         // ------------------------------------------------------------------ win --
 
         /// <summary>
