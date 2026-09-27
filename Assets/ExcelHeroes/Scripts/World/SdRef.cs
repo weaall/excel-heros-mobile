@@ -145,10 +145,17 @@ namespace ExcelHeroes.World
     /// The sample mesh carries vertex colours whose alpha is a face-shading mask for the
     /// reference's own shader; on ours that alpha reaches the cutout and punched a band out of
     /// the face (the eye line). The figure is built on a copy with the colour stream removed.
+    ///
+    /// The body sheet is mostly a PALETTE: the body pieces sample swatches on a strip at v ≈ 0.01
+    /// (measured, HairDump: skin u .27–.29, the shirt u .24–.25, the shorts u .19–.21, shoes
+    /// u .29–.33). Legs and hands share the skin swatch, so the leg vertices (|x| &lt; 0.002 in
+    /// mesh units, z 5–39 % of height) are moved to a cell of their own (LegsUV, an unused
+    /// corner) that SdRefTex.Body paints per character — trousers, stockings or bare skin.
     /// </summary>
     public static class SdRefMesh
     {
         static readonly Dictionary<Mesh, Mesh> Cache = new();
+        public static readonly Vector2 LegsUV = new(0.62f, 0.24f);
 
         public static Mesh Plain(Mesh src)
         {
@@ -156,6 +163,19 @@ namespace ExcelHeroes.World
             m = Object.Instantiate(src);
             m.name = src.name + ":plain";
             m.colors = null;
+            var v = m.vertices; var uv = m.uv;
+            var zmin = float.MaxValue; var zmax = float.MinValue;
+            foreach (var p in v) { zmin = Mathf.Min(zmin, p.z); zmax = Mathf.Max(zmax, p.z); }
+            var H = zmax - zmin;
+            var moved = 0;
+            foreach (var i in m.GetTriangles(0))
+            {
+                var h = (v[i].z - zmin) / H;
+                if (uv[i].x > 0.265f && uv[i].x < 0.29f && uv[i].y < 0.05f && h > 0.05f && h < 0.39f && Mathf.Abs(v[i].x) < 0.002f)
+                { uv[i] = LegsUV; moved++; }
+            }
+            m.uv = uv;
+            Debug.Log($"[SdRefMesh] legs remapped: {moved} vertex refs");
             return Cache[src] = m;
         }
     }

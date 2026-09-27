@@ -57,6 +57,17 @@ namespace ExcelHeroes.World
                 o.a = 1f;
                 px[i] = o;
             }
+            // the palette strip, explicitly: the shirt under the jacket, the shorts, and the legs'
+            // own cell (SdRefMesh.LegsUV) — trousers continue the shorts' colour, a skirt gets the
+            // sampled stocking/skin colour
+            var shirt = k.Shirt; shirt.a = 1f;
+            // trousers: the shorts cell and the legs share the sampled LEG colour (the "bottom" sample
+            // is unreliable on waist-up art); a skirt keeps its own colour over stockings/skin
+            var bottom = k.Pants ? k.Socks : k.Bottom; bottom.a = 1f;
+            var legs = k.Socks; legs.a = 1f;
+            Fill(px, n, new Rect(0.235f, 0f, 0.022f, 0.03f), (u, v) => shirt);
+            Fill(px, n, new Rect(0.185f, 0f, 0.03f, 0.03f), (u, v) => bottom);
+            Fill(px, n, new Rect(0.60f, 0.22f, 0.04f, 0.04f), (u, v) => legs);
             t = new Texture2D(n, n, TextureFormat.RGBA32, true) { name = "body:" + k.Id, wrapMode = TextureWrapMode.Clamp };
             t.SetPixels(px); t.Apply(true);
             return Bodies[k.Id] = t;
