@@ -24,20 +24,25 @@ namespace ExcelHeroes.World
         public static readonly Vector3 HeadCentre = new(0f, 0.0006f, 0.0081f);
         public static readonly Vector3 HeadRadii = new(0.0015f, 0.0011f, 0.0017f);
 
-        public static void Apply(SkinnedMeshRenderer body, string style, int hairSub, int bodySub = 0)
+        /// <summary>
+        /// <paramref name="fringe"/>: 0 the sample's, 1 longer, 2 swept left, 3 swept right, 4 short and
+        /// parted — the fringe tips (front vertices around the hairline) pulled down or sideways.
+        /// <paramref name="ahoge"/>: keep the cowlick strand on the crown.
+        /// </summary>
+        public static void Apply(SkinnedMeshRenderer body, string style, int hairSub, int bodySub = 0, int fringe = 0, bool ahoge = true)
         {
             if (hairSub < 0) return;
             var src = body.sharedMesh;
-            var key = (src, style ?? "short");
+            var key = (src, (style ?? "short") + ":" + fringe + ":" + (ahoge ? "a" : "-"));
             if (!Cache.TryGetValue(key, out var mesh))
             {
-                mesh = Edit(src, hairSub, bodySub, style ?? "short");
+                mesh = Edit(src, hairSub, bodySub, style ?? "short", fringe, ahoge);
                 Cache[key] = mesh;
             }
             body.sharedMesh = mesh;
         }
 
-        static Mesh Edit(Mesh src, int hairSub, int bodySub, string style)
+        static Mesh Edit(Mesh src, int hairSub, int bodySub, string style, int fringe, bool ahoge)
         {
             var keepBelow = style switch
             {
@@ -46,7 +51,7 @@ namespace ExcelHeroes.World
                 "side" => 0.5f, "curly" => 0.52f, "bob" => 0.62f,
                 _ => 0.66f,
             };
-            if (keepBelow <= 0f) return src;
+            if (keepBelow <= 0f && fringe == 0 && ahoge) return src;
             var twin = style == "twin";                          // the tail is moved to both sides instead of dropped
             var cropSides = style is "short" or "spiky";         // no chin-length side locks on short hair
             var keepTie = style is "ponytail" or "twin" or "bun";
@@ -74,6 +79,9 @@ namespace ExcelHeroes.World
                 // the ribbon's loose tails: tiny pieces well behind the head
                 var tail = c.Count < 12 && frontMost > 0.1f;
                 if (keepBunch && hi > 0.97f) continue;
+                // the cowlick: a small strand on the crown, in front
+                if (!ahoge && c.Count < 30 && lo > 0.9f && frontMost < -0.1f) { foreach (var i in c) drop.Add(i); continue; }
+                if (keepBelow <= 0f) continue;
                 if (cropSides && !behind && lo < 0.70f && hi < 0.95f) { foreach (var i in c) drop.Add(i); continue; }
                 if (behind && (lo < keepBelow || ((tie || tail) && !keepTie)))
                 {
@@ -91,6 +99,7 @@ namespace ExcelHeroes.World
             m.name = src.name + ":" + style;
             if (twin && tailVerts.Count > 0) kept.AddRange(Twin(m, tris, tailVerts, v, H));
             m.SetTriangles(kept.ToArray(), hairSub);
+            if (fringe != 0) Fringe(m, kept, fringe, zmin, H);
             // the scrunchie on the crown is part of the body submesh: the only body piece that high
             if (!keepTie && bodySub >= 0)
             {
@@ -108,6 +117,33 @@ namespace ExcelHeroes.World
             }
             Debug.Log($"[SdRefHair] {style}: H {H:F4} keepBelow {keepBelow} pieces {comps.Count} dropped verts {drop.Count} tris {tris.Length / 3} -> {kept.Count / 3}");
             return m;
+        }
+
+        /// <summary>
+        /// The fringe variants: hair vertices in front of the face (y &lt; -0.06 H) between the brow
+        /// and the hairline (z 0.66..0.82 H) are the fringe tips; weighted by how far down the
+        /// tip they are, they move down (longer), sideways (swept) or up and apart (short, parted).
+        /// </summary>
+        static void Fringe(Mesh m, List<int> hairTris, int fringe, float zmin, float H)
+        {
+            var v = m.vertices;
+            var idx = new HashSet<int>(hairTris);
+            foreach (var i in idx)
+            {
+                var h = (v[i].z - zmin) / H;
+                if (v[i].y > -0.06f * H || h < 0.62f || h > 0.83f) continue;
+                var t = Mathf.Clamp01((0.83f - h) / 0.17f);            // 0 at the hairline .. 1 at the tips
+                var p = v[i];
+                switch (fringe)
+                {
+                    case 1: p.z -= t * 0.022f * H; break;                                          // longer (not over the eyes)
+                    case 2: p.x -= t * 0.05f * H; p.z += t * 0.01f * H * Mathf.Abs(Mathf.Sin(p.x / H * 20f)); break;   // swept left
+                    case 3: p.x += t * 0.05f * H; p.z += t * 0.01f * H * Mathf.Abs(Mathf.Sin(p.x / H * 20f)); break;   // swept right
+                    case 4: p.z += t * 0.03f * H; p.x += t * Mathf.Sign(p.x) * 0.02f * H; break;  // short, parted
+                }
+                v[i] = p;
+            }
+            m.vertices = v;
         }
 
         /// <summary>

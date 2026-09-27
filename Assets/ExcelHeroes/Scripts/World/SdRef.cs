@@ -80,7 +80,7 @@ namespace ExcelHeroes.World
             for (var i = 0; i < body.sharedMaterials.Length; i++)
                 if (body.sharedMaterials[i] && body.sharedMaterials[i].name.ToLowerInvariant().Contains("hair")) hairSub = i;
             body.sharedMesh = SdRefMesh.Plain(body.sharedMesh);
-            SdRefHair.Apply(body, look.Style, hairSub);
+            SdRefHair.Apply(body, look.Style, hairSub, 0, look.Fringe, look.Ahoge);
 
 
             foreach (var r in rends)
@@ -195,6 +195,17 @@ namespace ExcelHeroes.World
         SdRefLook(SdLook k) { _k = k; }
         public string Style => _k.Style;
         public bool Male => _k.Male;
+        public bool Ahoge => _k.Ahoge;
+        /// <summary>Fringe variant by character (stable hash): 0 sample, 1 longer, 2/3 swept, 4 short and parted.</summary>
+        public int Fringe
+        {
+            get
+            {
+                if (_k.Style == "spiky") return 4;
+                var h = 0; foreach (var ch in _k.Id) h = h * 31 + ch;
+                return Mathf.Abs(h) % 5;
+            }
+        }
         /// <summary>The eye/mouth sheet for an expression ("" normal, happy, hurt, angry).</summary>
         public Texture2D EyeSheet(string expr) => SdRefTex.EyeMouth(_k, expr);
 

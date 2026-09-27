@@ -800,4 +800,5 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 검수: `SD_IDS=a,b SD_PREVIEW_OUT=<dir> Unity -batchmode -quit -executeMethod ExcelHeroes.EditorTools.SdBasePreview.Run` → 정면/¾/옆/뒤 + 얼굴 확대 행, 첫 캐릭터의 `tex_eyemouth.png`/`tex_face.png`. `SD_RAW=1`은 샘플 원본(자기 시트), `SD_DEBUG=1` 서브메시별 단색, `SD_NOHAIR=1`.
 - 이름표(시트 u .72–.98 v .03–.35)는 캐릭터 카드로 다시 칠함: 흰 바탕 + Top색 띠 + 자기 4칸 시트(`SheetTexture`) 축소 — `SdRefLook.SheetFor`(게임 데이터 필요; 미리보기는 `GameData.Load()`). "bun"은 꼭대기 뭉치·리본을 남기고 늘어진 꼬리만 제거.
 - "twin"은 꼬리(늘어진 조각+꼭대기 뭉치)를 양옆(±17 %H, 앞·아래로 조금)에 복제(본 가중치 유지), "short·spiky"는 턱 길이 옆머리(앞쪽, lo < .70) 제거 → bob과 구분.
-- 다음: 앞머리 변형, 치마 형태, 스파이크 머리, 의상 형태(정장·치마)는 몸 조각 편집, 표정 스왑(EyeMouth 텍스처 교체), 이름표 자리에 4칸 시트, 몬스터도 같은 방식. `Resources/Art/SDTex/`(구 SdBase 제미나이 채색 결과 21 MB)는 미커밋 — SdBase 폴백 전용.
+- 앞머리 변형(`SdRefHair.Fringe`, 캐릭터 해시로 0 원본·1 길게·2/3 옆으로 쓸기·4 짧은 가르마; spiky는 4): 앞쪽(y < −.06H) 이마선~눈썹(z .62–.83H) 정점을 끝으로 갈수록 이동. 아호게는 `SdLook.Ahoge`만 유지.
+- 다음: 치마 형태, 스파이크 머리 실루엣, 안경/선글라스 소품, 의상 형태(정장·치마)는 몸 조각 편집, 표정 스왑(EyeMouth 텍스처 교체), 이름표 자리에 4칸 시트, 몬스터도 같은 방식. `Resources/Art/SDTex/`(구 SdBase 제미나이 채색 결과 21 MB)는 미커밋 — SdBase 폴백 전용.
