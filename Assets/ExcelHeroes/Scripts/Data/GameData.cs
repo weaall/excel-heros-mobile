@@ -230,7 +230,8 @@ namespace ExcelHeroes.Data
         public static Sprite MonsterSd(string typeId) => typeId == null ? null : Resources.Load<Sprite>($"Art/SDMonsters/{typeId}");
 
         /// <summary>The painted battle backdrop for a mood (day / evening / night), or null.</summary>
-        public static Sprite BattleBackdrop(string mood) => Resources.Load<Sprite>($"Art/Battle/office_{mood}");
+        /// <summary>The street set (the reference's low, close battle camera) when it exists, else the office.</summary>
+        public static Sprite BattleBackdrop(string mood) => Resources.Load<Sprite>($"Art/Battle/street_{mood}") ?? Resources.Load<Sprite>($"Art/Battle/office_{mood}");
 
         /// <summary>An illustrated UI icon (Resources/Art/Icons), or null if it has not been generated.</summary>
         public static Sprite Icon(string name) => Resources.Load<Sprite>($"Art/Icons/{name}");

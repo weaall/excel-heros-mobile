@@ -1604,14 +1604,18 @@ namespace ExcelHeroes.UI
             // top-right, the squad that fought is a strip of small cards bottom-left, and the way
             // on is one cyan plate bottom-right.
             var popup = UiKit.Div("bresult", _root);
+            // the HUD pill, the EX cards and the cost bar make way for the result (the reference
+            // shows only the title, the numbers and the squad)
+            _root.AddToClassList("battle--result");
             void Close()
             {
+                _root.RemoveFromClassList("battle--result");
                 popup.RemoveFromHierarchy();
                 _restartIn = 0f;
                 NewRun();
             }
 
-            var title = UiKit.Text(_sim.Won ? "업무 완료!" : _sim.TimedOut ? "시간 초과" : "업무 실패",
+            var title = UiKit.Text(_sim.Won ? "Battle Complete" : _sim.TimedOut ? "Time Over" : "Battle Failed",
                                    "bresult__title" + (_sim.Won ? "" : " bresult__title--lose"), popup);
             title.pickingMode = PickingMode.Ignore;
 
@@ -1631,7 +1635,7 @@ namespace ExcelHeroes.UI
             Gain(gainRow, "gem", Icons.Gem, $"+{gems:N0}");
 
             var squad = UiKit.Div("bresult__squad", popup);
-            UiKit.Text("출근 인원", "bresult__squad-label", squad);
+            UiKit.Text("STRIKER", "bresult__squad-label", squad);
             var strip = UiKit.Div("bresult__strip", squad);
             foreach (var id in Game.Player.party)
             {

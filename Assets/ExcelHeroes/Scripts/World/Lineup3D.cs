@@ -105,7 +105,7 @@ namespace ExcelHeroes.World
                 var id = ids[i];
                 if (string.IsNullOrEmpty(id)) continue;
                 // the SD sprite when it exists, the built model otherwise
-                var rig = SdModel.Build(id, _cast, Layer) ?? SdSprite.Build(id, _cast, Layer);
+                var rig = SdBase.Build(id, _cast, Layer) ?? SdSprite.Build(id, _cast, Layer);
                 if (rig == null)
                 {
                     var go = Instantiate(Template(id), _cast);

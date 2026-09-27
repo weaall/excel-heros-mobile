@@ -118,9 +118,16 @@ namespace ExcelHeroes.EditorTools
 
                 var atlas = new Color[Atlas * Atlas];
                 var filled = new bool[Atlas * Atlas];
+                var uv2 = mesh.uv2;
                 for (var t = 0; t < tris.Length; t += 3)
+                {
+                    // the face plate is pasted, the hair painted (flat colour + highlight band, like the
+                    // reference's hair texture): neither is projected
+                    if (uv2.Length > 0 && uv2[tris[t]].x > 0.5f) { if (uv2[tris[t]].x > 1.5f) PaintHairTri(tris[t], tris[t + 1], tris[t + 2], v, uv, col, atlas, filled); continue; }
                     RasterTri(tris[t], tris[t + 1], tris[t + 2], v, n, uv, col, views, viewMats, zbufs, atlas, filled);
+                }
                 Dilate(atlas, filled, 6);
+                PasteFace(views, viewMats, atlas);
 
                 var tex = new Texture2D(Atlas, Atlas, TextureFormat.RGBA32, false);
                 tex.SetPixels(atlas); tex.Apply();
@@ -130,6 +137,62 @@ namespace ExcelHeroes.EditorTools
                 Debug.Log($"[SdTexBake] baked {id} from {views.Count} views");
             }
             UnityEditor.AssetDatabase.Refresh();
+        }
+
+        /// <summary>
+        /// The face plate's texels straight from the painted FRONT view: the plate's box projected
+        /// through the front camera is a rectangle on the view; copy it, alpha included.
+        /// </summary>
+        static void PasteFace(List<(float yaw, Color32[] px, int w, int h)> views, List<Matrix4x4> mats, Color[] atlas)
+        {
+            var fi = views.FindIndex(x => Mathf.Approximately(x.yaw, 180f));
+            if (fi < 0) return;
+            var view = views[fi]; var m = mats[fi];
+            var r = SdBase.FaceRect; var box = SdBase.FaceBox;
+            int x0 = (int)(r.xMin * Atlas), x1 = (int)(r.xMax * Atlas), y0 = (int)(r.yMin * Atlas), y1 = (int)(r.yMax * Atlas);
+            for (var y = y0; y < y1; y++)
+                for (var x = x0; x < x1; x++)
+                {
+                    var u = (x - x0) / (float)(x1 - x0); var vv = (y - y0) / (float)(y1 - y0);
+                    var p = new Vector3(Mathf.Lerp(box.xMin, box.xMax, u), Mathf.Lerp(box.yMin, box.yMax, vv), 0f) * SdBase.Height;
+                    var wp = m.MultiplyPoint3x4(p);
+                    var sx = (wp.x / Ortho) * 0.5f + 0.5f; var sy = ((wp.y - CentreY) / Ortho) * 0.5f + 0.5f;
+                    if (sx < 0f || sx >= 1f || sy < 0f || sy >= 1f) continue;
+                    var c = Sample(view.px, view.w, view.h, sx, sy);
+                    atlas[y * Atlas + x] = new Color(c.r, c.g, c.b, c.a);
+                }
+        }
+
+        /// <summary>Hair texel = vertex hair colour, shaded darker towards the tips, with a glossy
+        /// highlight band across the crown at about 82% of height (the reference's hair spec).</summary>
+        static void PaintHairTri(int i0, int i1, int i2, Vector3[] v, Vector2[] uv, Color[] col, Color[] atlas, bool[] filled)
+        {
+            Vector2 A = uv[i0] * Atlas, B = uv[i1] * Atlas, C = uv[i2] * Atlas;
+            var minX = Mathf.Max(0, Mathf.FloorToInt(Mathf.Min(A.x, B.x, C.x)) - 1); var maxX = Mathf.Min(Atlas - 1, Mathf.CeilToInt(Mathf.Max(A.x, B.x, C.x)) + 1);
+            var minY = Mathf.Max(0, Mathf.FloorToInt(Mathf.Min(A.y, B.y, C.y)) - 1); var maxY = Mathf.Min(Atlas - 1, Mathf.CeilToInt(Mathf.Max(A.y, B.y, C.y)) + 1);
+            var det = (B.x - A.x) * (C.y - A.y) - (C.x - A.x) * (B.y - A.y);
+            if (Mathf.Abs(det) < 1e-9f) return;
+            for (var y = minY; y <= maxY; y++)
+                for (var x = minX; x <= maxX; x++)
+                {
+                    var px = x + 0.5f; var py = y + 0.5f;
+                    var w0 = ((B.x - px) * (C.y - py) - (C.x - px) * (B.y - py)) / det;
+                    var w1 = ((C.x - px) * (A.y - py) - (A.x - px) * (C.y - py)) / det;
+                    var w2 = 1f - w0 - w1;
+                    if (w0 < -0.15f || w1 < -0.15f || w2 < -0.15f) continue;
+                    var inside = w0 >= 0f && w1 >= 0f && w2 >= 0f;
+                    var i = y * Atlas + x;
+                    if (filled[i] && !inside) continue;
+                    var pos = v[i0] * w0 + v[i1] * w1 + v[i2] * w2;
+                    var c = col.Length > 0 ? col[i0] * w0 + col[i1] * w1 + col[i2] * w2 : Color.gray;
+                    if (QualitySettings.activeColorSpace == ColorSpace.Linear) c = c.gamma;
+                    var h = pos.y / SdBase.Height;
+                    var band = Mathf.Exp(-Mathf.Pow((h - 0.84f) / 0.035f, 2f));          // the highlight band
+                    var gloss = Mathf.Lerp(0f, 0.45f, band);
+                    var outc = Color.Lerp(c, Color.white, gloss);
+                    outc.a = 1f;
+                    atlas[i] = outc; filled[i] = true;
+                }
         }
 
         static Vector2 Project(Vector3 p, Matrix4x4 m)
@@ -208,10 +271,18 @@ namespace ExcelHeroes.EditorTools
                         var w = Mathf.Pow(facing, 4f);
                         acc += new Color(c.r, c.g, c.b) * w; wsum += w;
                     }
-                    var final = wsum > 0f ? acc / wsum : new Color(basec.r, basec.g, basec.b);
-                    // the flat base colour is linear in the mesh; the atlas is sRGB
-                    if (wsum <= 0f && QualitySettings.activeColorSpace == ColorSpace.Linear) final = final.gamma;
-                    final.a = 1f;
+                    // A texel no view can see keeps the base (vertex) colour — for hair that is the
+                    // hair colour — and is NOT marked filled, so dilation never smears painted
+                    // neighbours across it. Dilation is only for gutters now.
+                    if (wsum <= 0f)
+                    {
+                        var basev = new Color(basec.r, basec.g, basec.b);
+                        if (QualitySettings.activeColorSpace == ColorSpace.Linear) basev = basev.gamma;
+                        basev.a = 1f;
+                        if (!filled[i]) atlas[i] = basev;
+                        continue;
+                    }
+                    var final = acc / wsum; final.a = 1f;
                     atlas[i] = final; filled[i] = true;
                 }
         }
@@ -235,7 +306,7 @@ namespace ExcelHeroes.EditorTools
                     for (var x = 1; x < Atlas - 1; x++)
                     {
                         var i = y * Atlas + x;
-                        if (src[i]) continue;
+                        if (src[i] || atlas[i].a > 0f) continue;
                         Color acc = Color.black; var cnt = 0;
                         foreach (var (dx, dy) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
                         {

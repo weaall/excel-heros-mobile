@@ -86,9 +86,12 @@ namespace ExcelHeroes.World
         void PlaceCamera(float shake)
         {
             var k = Mathf.SmoothStep(0f, 1f, _closeUp);
-            var target = Vector3.Lerp(new Vector3(-0.1f, 0.5f, 0.35f), _partyCentre + new Vector3(0.9f, 0.5f, 0f), k);
-            var pitch = Mathf.Lerp(25f, 12f, k) * Mathf.Deg2Rad;
-            var dist = Mathf.Lerp(9.0f, 6.4f, k);
+            // The reference's battle camera is low and close: about 15° above eye level, the
+            // squad filling the lower half of the frame, buildings running past the top.
+            // the close-up looks at the squad's centre (the reference lines them up mid-frame)
+            var target = Vector3.Lerp(new Vector3(-0.1f, 0.55f, 0.35f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
+            var pitch = Mathf.Lerp(15f, 8f, k) * Mathf.Deg2Rad;
+            var dist = Mathf.Lerp(7.6f, 5.6f, k);
             var pos = target + new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
@@ -158,7 +161,7 @@ namespace ExcelHeroes.World
             var imgAspect = r.width / r.height;
             // cover: crop the image's height when the frame is wider than the picture
             var vSpan = Mathf.Clamp01(imgAspect / _cam.aspect);
-            var v0 = Mathf.Clamp01(1f - vSpan);                   // keep the top: the painted foreground furniture is what gets cut
+            var v0 = Mathf.Clamp01((1f - vSpan) * 0.35f);          // street set: keep most of the road, trim a little sky
             var uv0 = new Vector2(r.xMin / tex.width, (r.yMin + r.height * v0) / tex.height);
             var uv1 = new Vector2(r.xMax / tex.width, (r.yMin + r.height * (v0 + vSpan)) / tex.height);
             var b = new MeshKit.Builder();
@@ -189,7 +192,8 @@ namespace ExcelHeroes.World
         /// <summary>Sim lane x (the web build's 832-unit field) to world x.</summary>
         public static float WX(float simX) => (simX - 400f) / 64f * 0.95f;
 
-        static readonly float[] LaneZ = { 0.15f, 0.95f, -0.7f, 1.55f, -1.25f };
+        // a shallower stagger: the camera is low now and a deep row reads as floating
+        static readonly float[] LaneZ = { 0.1f, 0.6f, -0.45f, 1.0f, -0.8f };
 
         float ZOf(Combatant c)
         {
@@ -228,7 +232,8 @@ namespace ExcelHeroes.World
             if (_actors.TryGetValue(c, out var a)) return a;
             a = new Actor { C = c };
             // 3D SD first (made from the 2D SD, World/SdModel), then the 2D SD sprite, then the built doll
-            if (c.side == Side.Hero && (SdModel.Build(c.heroId, _root, Layer) ?? SdSprite.Build(c.heroId, _root, Layer)) is { } sd)
+            // the common SD base (World/SdBase) first: one body, one skeleton, one set of motions
+            if (c.side == Side.Hero && (SdBase.Build(c.heroId, _root, Layer) ?? SdSprite.Build(c.heroId, _root, Layer)) is { } sd)
             {
                 a.Rig = sd;
                 a.Rig.Root.name = c.name;
@@ -237,6 +242,7 @@ namespace ExcelHeroes.World
                 var spec = BackSheet.For(def, owned);
                 // a 2D SD already has its sheet painted in; the 3D one carries it on the back
                 if (!a.Rig.Sprite) ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
+                if (a.Rig.Model3D) a.Rig.Sheet.localScale = Vector3.one * 0.9f;
                 a.Scale = c.role == "tank" ? 1.06f : 1f;
                 a.Accent = spec.Accent;
             }

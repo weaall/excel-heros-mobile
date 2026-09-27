@@ -60,14 +60,18 @@ namespace ExcelHeroes.World
         class SB
         {
             public readonly List<Vector3> V = new(), N = new();
-            public readonly List<Vector2> UV = new();
+            public readonly List<Vector2> UV = new(), UV2 = new();
+            /// <summary>Marks the last added vertex (uv2.x); unmarked vertices are padded with zero at bake.</summary>
+            public void Flag(float f) { UV2[UV2.Count - 1] = new Vector2(f, 0f); }
             public readonly List<Color> C = new();
             public readonly List<BoneWeight> W = new();
             public readonly List<int> T = new();
 
             public int Add(Vector3 p, Vector3 n, Vector2 uv, Color c, BoneWeight w)
             {
-                V.Add(p); N.Add(n.normalized); UV.Add(uv); C.Add(c); W.Add(w); return V.Count - 1;
+                V.Add(p); N.Add(n.normalized); UV.Add(uv); C.Add(c); W.Add(w);
+                UV2.Add(Vector2.zero);                       // kept in step; Flag() overwrites the last entry
+                return V.Count - 1;
             }
 
             public void Quad(int a, int b, int c, int d) { T.Add(a); T.Add(b); T.Add(c); T.Add(a); T.Add(c); T.Add(d); }
@@ -80,6 +84,7 @@ namespace ExcelHeroes.World
         class Packer
         {
             public const int Size = 2048;
+            public static bool Log = System.Environment.GetEnvironmentVariable("SD_PACK_LOG") == "1";
             const int Gutter = 4;
             const float TexelsPerUnit = 800f;           // px per unit of character height
             int _x, _y, _rowH;
@@ -91,6 +96,7 @@ namespace ExcelHeroes.World
                 if (_y + h + Gutter > Size) { Debug.LogWarning("[SdBase] atlas full"); _y = 0; }
                 var r = new Rect((_x + Gutter) / (float)Size, (_y + Gutter) / (float)Size, (w - Gutter) / (float)Size, (h - Gutter) / (float)Size);
                 _x += w + Gutter; _rowH = Mathf.Max(_rowH, h);
+                if (Log) Debug.Log($"[SdBase.pack] {r.xMin:F3},{r.yMin:F3} {r.width:F3}x{r.height:F3}");
                 return r;
             }
         }
@@ -204,6 +210,10 @@ namespace ExcelHeroes.World
         // Rect.zero = "take a rect from the packer". The head and hair grids take theirs directly.
         static readonly Rect WhiteUV = Rect.zero;
         static Rect _headRect;
+        /// <summary>Atlas rect of the face plate (eyes, brows, mouth). Public for the bake.</summary>
+        public static Rect FaceRect { get; private set; }
+        /// <summary>The face plate's box on the front of the head, fractions of height (x, y): the reference's EyeMouth+Eyebrow extent.</summary>
+        public static readonly Rect FaceBox = Rect.MinMaxRect(-0.118f, 0.615f, 0.118f, 0.805f);
 
         // ---------------------------------------------------------------- build --
         public static ChibiRig Build(string heroId, Transform parent, int layer)
@@ -230,8 +240,10 @@ namespace ExcelHeroes.World
             var sb = new SB();
             _pack = new Packer();
             _headRect = _pack.Take(HeadR.x * 2f * Mathf.PI, HeadR.y * Mathf.PI);
+            FaceRect = _pack.Take(FaceBox.width * 1.6f, FaceBox.height * 1.6f);
             BuildBody(sb, look);
             BuildHead(sb, look);
+            BuildFacePlate(sb, look);
             BuildHair(sb, look);
             BuildOutfit(sb, look);
 
@@ -242,8 +254,17 @@ namespace ExcelHeroes.World
             var lin = new List<Color>(sb.C.Count);
             var linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
             var hasBaked = Baked(look.Id) != null;
-            foreach (var c in sb.C) lin.Add(hasBaked ? Color.white : linear ? new Color(c.linear.r, c.linear.g, c.linear.b, 1f) : c);
-            mesh.SetVertices(verts); mesh.SetNormals(sb.N); mesh.SetUVs(0, sb.UV); mesh.SetColors(lin); mesh.SetTriangles(sb.T, 0);
+            // with a baked atlas the texture is the paint (white vertex colour) — except hair, whose
+            // atlas texels are painted FROM the vertex colour (SdTexBake.PaintHairTri) and whose
+            // shading still comes from it
+            for (var vi = 0; vi < sb.C.Count; vi++)
+            {
+                var c = sb.C[vi];
+                var hair = vi < sb.UV2.Count && sb.UV2[vi].x > 1.5f;
+                lin.Add(hasBaked && !hair ? Color.white : linear ? new Color(c.linear.r, c.linear.g, c.linear.b, 1f) : c);
+            }
+            while (sb.UV2.Count < sb.V.Count) sb.UV2.Add(Vector2.zero);
+            mesh.SetVertices(verts); mesh.SetNormals(sb.N); mesh.SetUVs(0, sb.UV); mesh.SetUVs(1, sb.UV2); mesh.SetColors(lin); mesh.SetTriangles(sb.T, 0);
             mesh.boneWeights = sb.W.ToArray();
             var bind = new Matrix4x4[BoneCount];
             for (var i = 0; i < BoneCount; i++) bind[i] = bones[i].worldToLocalMatrix * root.localToWorldMatrix;
@@ -431,6 +452,41 @@ namespace ExcelHeroes.World
             }
         }
 
+        /// <summary>
+        /// The face plate. The reference does not paint eyes onto the skull: EyeMouth is a thin
+        /// separate shell a hair in front of the face carrying the front-view drawing, so the
+        /// features stay crisp from every angle. Same here: a curved patch hugging the head over
+        /// FaceBox, lifted 0.006, its uv a plain rectangle in FaceRect, flagged in uv2 so the
+        /// projection bake leaves it alone.
+        /// </summary>
+        static void BuildFacePlate(SB sb, SdLook k)
+        {
+            const int NX = 16, NY = 16;
+            var start = sb.V.Count;
+            for (var j = 0; j <= NY; j++)
+                for (var i = 0; i <= NX; i++)
+                {
+                    var u = i / (float)NX; var v = j / (float)NY;
+                    var x = Mathf.Lerp(FaceBox.xMin, FaceBox.xMax, u);
+                    var y = Mathf.Lerp(FaceBox.yMin, FaceBox.yMax, v);
+                    var dx = (x - HeadC.x) / HeadR.x; var dy = (y - HeadC.y) / HeadR.y;
+                    var inside = Mathf.Max(0f, 1f - dx * dx - dy * dy);
+                    var down = Mathf.Clamp01(-dy);
+                    var z = HeadC.z + HeadR.z * Mathf.Sqrt(inside) * Mathf.Lerp(1f, 0.85f, Mathf.Pow(down, 1.4f));
+                    var pos = new Vector3(x * Mathf.Lerp(1f, 0.62f, Mathf.Pow(down, 1.6f)), y, z + 0.006f);
+                    var n = new Vector3(dx / HeadR.x, dy / HeadR.y, Mathf.Sqrt(inside) / HeadR.z).normalized;
+                    sb.Add(pos, n, new Vector2(FaceRect.xMin + u * FaceRect.width, FaceRect.yMin + v * FaceRect.height), Color.white, W1(B.Head));
+                    sb.Flag(1f);
+                }
+            var stride = NX + 1;
+            for (var j = 0; j < NY; j++)
+                for (var i = 0; i < NX; i++)
+                {
+                    var a = start + j * stride + i; var b = a + stride;
+                    sb.Quad(a, a + 1, b + 1, b);
+                }
+        }
+
         // ---------------------------------------------------------------- hair --
         /// <summary>
         /// Where the hair ends at angle phi (0 = the character's left, 90° = the forehead), as a
@@ -520,6 +576,7 @@ namespace ExcelHeroes.World
                     var t = tvals[i, j];
                     var col = Color.Lerp(k.Hair, k.HairTip, t * t);
                     sb.Add(p, n, new Vector2(hairRect.xMin + i / (float)NP * hairRect.width, hairRect.yMin + (1f - t) * hairRect.height), col, W2(B.Head, Bone(t, phi), Mathf.Clamp01((t - 0.5f) * 2f)));
+                    sb.Flag(2f);
                 }
             // inner layer, pulled in towards the head axis, facing inward
             var i0 = sb.V.Count;
@@ -533,6 +590,7 @@ namespace ExcelHeroes.World
                     var q = p + towards * thick * (0.55f + 0.45f * (1f - t)) + Vector3.down * 0.002f;
                     var n = -(p - (HeadC + Vector3.down * 0.05f));
                     sb.Add(q, n, new Vector2(hairInRect.xMin + i / (float)NP * hairInRect.width, hairInRect.yMin + (1f - t) * hairInRect.height), MeshKit.Shade(k.Hair, 0.72f), W2(B.Head, Bone(t, phi), Mathf.Clamp01((t - 0.5f) * 2f)));
+                    sb.Flag(2f);
                 }
             var stride = NS + 1;
             for (var i = 0; i < NP; i++)
@@ -683,24 +741,18 @@ namespace ExcelHeroes.World
             var face = FaceTexture.For(new FaceTexture.Look { Eye = k.Eye, Hair = k.Hair, Male = k.Male, Glasses = k.Glasses, Sunglasses = k.Sunglasses });
             var fp = face.GetPixels();
             var fs = face.width;
-            var r = _headRect;
+            // the face plate's rect: transparent except where the drawing is (the toon shader
+            // clips at alpha 0.5); FaceTexture covers the whole front of the head, the plate is
+            // its middle band
+            var r = FaceRect;
             int x0 = (int)(r.xMin * N), x1 = (int)(r.xMax * N), y0 = (int)(r.yMin * N), y1 = (int)(r.yMax * N);
             for (var y = y0; y < y1; y++)
                 for (var x = x0; x < x1; x++)
                 {
-                    var phi = (x - x0) / (float)(x1 - x0) * Mathf.PI * 2f;
-                    var th = (1f - (y - y0) / (float)(y1 - y0)) * Mathf.PI;
-                    var unit = new Vector3(Mathf.Sin(th) * Mathf.Cos(phi), Mathf.Cos(th), Mathf.Sin(th) * Mathf.Sin(phi));
-                    if (unit.z < -0.1f) continue;
-                    var p = Vector3.Scale(unit, HeadR);
-                    var fu = 0.5f + p.x / (HeadR.x * 2.1f);
-                    var fv = 0.5f + (p.y + 0.02f) / (HeadR.y * 2.1f);
-                    var su = (fu - 0.5f) * 1.02f + 0.5f; var sv = (fv - 0.5f) * 1.02f + 0.5f;
-                    if (su < 0f || su >= 1f || sv < 0f || sv >= 1f) continue;
+                    var u = (x - x0) / (float)(x1 - x0); var v = (y - y0) / (float)(y1 - y0);
+                    var su = 0.5f + (u - 0.5f) * 0.86f; var sv = 0.235f + v * 0.62f;
                     var f = fp[Mathf.Clamp((int)(sv * fs), 0, fs - 1) * fs + Mathf.Clamp((int)(su * fs), 0, fs - 1)];
-                    var sk = k.Skin;
-                    var tint = new Color(Mathf.Min(1f, f.r / Mathf.Max(0.05f, sk.r)), Mathf.Min(1f, f.g / Mathf.Max(0.05f, sk.g)), Mathf.Min(1f, f.b / Mathf.Max(0.05f, sk.b)));
-                    px[y * N + x] = Color.Lerp(Color.white, tint, f.a);
+                    px[y * N + x] = new Color(f.r, f.g, f.b, f.a);
                 }
             t = new Texture2D(N, N, TextureFormat.RGBA32, true) { name = "sdb:" + k.Id, wrapMode = TextureWrapMode.Clamp };
             t.SetPixels(px);

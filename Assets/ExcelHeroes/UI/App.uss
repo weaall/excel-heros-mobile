@@ -5529,3 +5529,30 @@
 }
 .reveal-grid__sfx { position: absolute; left: -12%; right: -12%; top: -8%; bottom: -8%; }
 .reveal-grid__heart { position: absolute; left: -6%; top: -6%; width: 64px; height: 60px; }
+
+/* ================================================================ 업무 완료 (reference: Battle Complete)
+   No scrim: the squad stands large on the field in the close-up. A big yellow italic title
+   top-left, the run's numbers in a thin navy pill top-right, STRIKER / SPECIAL card strips along
+   the bottom, a chart pill and a cyan 확인 bottom-right. */
+.bresult { background-color: rgba(0, 0, 0, 0); }
+.bresult__title { left: 70px; top: 18px; font-size: 96px; rotate: 0deg; -unity-text-outline-width: 4px; }
+.bresult__info { position: absolute; right: 60px; top: 24px; width: 760px; height: 62px; padding: 0 30px; flex-direction: row; align-items: center; }
+.bresult__line { flex-grow: 1; }
+.bresult__phase { font-size: 30px; }
+.bresult__time { font-size: 26px; }
+.bresult__gains { margin-top: 0; margin-left: 30px; }
+.bresult__gain { margin-right: 26px; }
+.bresult__gain-icon { width: 40px; height: 40px; }
+.bresult__gain-text { font-size: 30px; }
+.bresult__squad { left: 60px; bottom: 30px; }
+.bresult__squad-label {
+    align-self: flex-start;
+    font-size: 22px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255);
+    background-color: rgb(230, 60, 80);
+    padding: 2px 16px; margin-bottom: 8px;
+}
+.bresult__strip { flex-direction: row; }
+.bresult__mini { width: 104px; height: 104px; margin-right: 10px; }
+.bresult__acts { right: 60px; bottom: 36px; }
+.bresult__btn { width: 300px; height: 96px; margin-left: 20px; font-size: 38px; }
+.battle--result .bhud, .battle--result .ex-bar, .battle--result .ex-cost-bar, .battle--result .bmenu { display: none; }

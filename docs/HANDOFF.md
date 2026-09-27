@@ -774,3 +774,11 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - `tools/bake_story.py`: 프롤로그 sheet·awaken·roster 장면에 김인턴의 시트를 인물 컷아웃 뒤로 합성(웹 `assets/story/*.webp`도 갱신). 게임이 띄우던 시트 오버레이는 제거.
 - 깨끗한 원본이 3D 복원(`sd3d.py`)과 얼굴 상자(`face_boxes.py`)의 입력. 로비·학생 상세의 UI 시트 오버레이, 2D SD 스프라이트의 시트 쿼드는 중복이라 제거 — 3D SD만 등 뒤 쿼드를 씀.
 - 남은 일: 프롤로그 장면의 인턴 얼굴이 장면마다 다름 → HF 쿼터가 차면 인턴 디자인 고정 태그로 재생성 후 다시 합성.
+
+## 공통 SD 베이스 + 제미나이 채색 (한 몸, 한 뼈대, 한 모션)
+- 참고 FBX 9종 실측(`Assets/_Ref/Editor/Deep.cs`, `Profile2.cs` → `tools/ref_tables.py` → `World/SdProfile.cs`): 관절 평균, 뼈별 단면 반지름 r(t, 각도), 머리·머리카락 구면 맵, 얼굴 파츠 상자. 메시는 쓰지 않고 수치만.
+- `World/SdBase`: 그 표로 로프트한 몸 + 머리 + 얼굴판(참고의 EyeMouth처럼 얼굴 앞의 얇은 별도 판, uv2.x=1) + 머리카락 셸(uv2.x=2, 안팎 2겹, 스타일별 길이·꼬리·번·아호게) + 의상(치마·재킷·라펠·깃·넥타이). 뼈 18개(Bip 구조), UV 아틀라스 자동 패킹(`Packer`).
+- 채색: `SdTexBake.Views`(정면·뒤·좌·우 평면 렌더) → `tools/gen_sdtex_gemini.py`(나노바나나가 SD 일러를 참고해 각 면을 손그림 텍스처로 다시 칠함, 실루엣에 맞춰 정렬) → `SdTexBake.Bake`(면별 깊이 검사 투영 → `Resources/Art/SDTex/<id>.png`). 얼굴판은 정면 그림을 그대로 붙임(투영 안 함 → 뭉개짐 없음), 머리카락은 정점색 + 하이라이트 띠로 절차 채색(투영하면 물결 생김).
+- `SdLook` + `tools/sample_looks.py`: 캐릭터별 색은 자기 SD 일러에서 샘플(`looks.json`), 스타일 플래그는 `dolls.json`.
+- 전투·편성 모두 SdBase 우선(→ 2D SD → 인형). 전투 카메라는 참고처럼 낮고 가깝게(피치 15°, 거리 7.6), 배경은 제미나이 거리 세트(`street_{day,evening,night}`, `gen_bg_gemini.py --street`), 결과 화면은 Battle Complete 레이아웃(HUD 숨김, STRIKER 띠).
+- 다음: 43명 나머지 채색(제미나이, 4장×43), 얼굴판 눈 크기 미세 조정, 보스 HP 바·타격 링·킬 카운터(참고 `712980` 우측), 표정 텍스처 교체(EyeMouth 스왑) 구조.

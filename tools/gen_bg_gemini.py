@@ -16,6 +16,17 @@ ENV_FILE = os.environ.get("ENV_FILE", r"C:\Users\user\Desktop\mindsai_weaall.env
 OUT = os.path.join(os.path.dirname(__file__), "..", "Assets", "ExcelHeroes", "Resources", "Art", "Battle")
 MODELS = ["gemini-2.5-flash-image", "gemini-2.5-flash-image-preview", "gemini-3-pro-image-preview"]
 
+# The reference's battle camera is LOW and close: a street seen from about 15 degrees above
+# eye level, buildings rising past the top of the frame, the road running left to right in the
+# lower half where the squad stands. Two sets: an office district street (the game's world)
+# with the same framing, day / evening / night.
+BASE_STREET = ("Background art for the battle stage of an anime mobile gacha game, in the visual style of Blue Archive's "
+        "battle maps: clean stylised 3D render with soft cel shading, bright pastel palette, crisp simple shapes, painterly. "
+        "A quiet city street in a modern Korean office district, seen from a LOW three-quarter camera only slightly above eye level, "
+        "wide landscape framing. The asphalt road with white crosswalk stripes and a curb runs left to right across the lower half of "
+        "the frame and is completely EMPTY — a clear lane for characters to stand and fight. Behind it: a row of low office buildings and "
+        "shops with glass fronts, a convenience store, a cafe, potted trees, a bus stop sign, power lines, the buildings rising past the top "
+        "of the frame. No people, no characters, no animals, no text, no letters, no logos, no user interface. ")
 BASE = ("Background art for the battle stage of an anime mobile gacha game, in the visual style of Blue Archive's "
         "battle maps: clean stylised 3D render with soft cel shading, bright pastel palette, crisp simple shapes. "
         "A modern open-plan office floor seen from a high three-quarter camera looking down at about 30 degrees, "
@@ -39,9 +50,9 @@ def read_key():
                 return line.split("=", 1)[1].strip().strip('"').strip("'")
     sys.exit("GEMINI_API_KEY not found in the env file")
 
-def generate(name, key):
+def generate(name, key, base=None, prefix="office"):
     body = json.dumps({
-        "contents": [{"parts": [{"text": BASE + MOODS[name]}]}],
+        "contents": [{"parts": [{"text": (base or BASE) + MOODS[name]}]}],
         "generationConfig": {"responseModalities": ["IMAGE"], "imageConfig": {"aspectRatio": "16:9"}},
     }).encode("utf-8")
     for model in MODELS:
@@ -59,7 +70,7 @@ def generate(name, key):
                 inline = part.get("inlineData") or part.get("inline_data")
                 if inline and inline.get("data"):
                     os.makedirs(OUT, exist_ok=True)
-                    path = os.path.join(OUT, f"office_{name}.png")
+                    path = os.path.join(OUT, f"{prefix}_{name}.png")
                     with open(path, "wb") as f:
                         f.write(base64.b64decode(inline["data"]))
                     print(f"  {name}: saved with {model}")
@@ -69,6 +80,7 @@ def generate(name, key):
 
 if __name__ == "__main__":
     key = read_key()
-    names = sys.argv[1:] or list(MOODS)
-    ok = sum(generate(n, key) for n in names)
+    street = "--street" in sys.argv
+    names = [a for a in sys.argv[1:] if not a.startswith("--")] or list(MOODS)
+    ok = sum(generate(n, key, BASE_STREET if street else None, "street" if street else "office") for n in names)
     print(f"{ok}/{len(names)} backdrops")
