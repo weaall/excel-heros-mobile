@@ -54,3 +54,7 @@ tools/out/
 # reference models for analysis only (not ours, never committed)
 Assets/_Ref/
 Assets/_Ref.meta
+
+# the sample-derived base model: kept local until the derived version replaces it
+Assets/ExcelHeroes/Resources/Art/SDBase/
+Assets/ExcelHeroes/Resources/Art/SDBase.meta

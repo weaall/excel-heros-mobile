@@ -105,7 +105,7 @@ namespace ExcelHeroes.World
                 var id = ids[i];
                 if (string.IsNullOrEmpty(id)) continue;
                 // the SD sprite when it exists, the built model otherwise
-                var rig = SdBase.Build(id, _cast, Layer) ?? SdSprite.Build(id, _cast, Layer);
+                var rig = SdRef.Build(id, _cast, Layer) ?? SdBase.Build(id, _cast, Layer) ?? SdSprite.Build(id, _cast, Layer);
                 if (rig == null)
                 {
                     var go = Instantiate(Template(id), _cast);
@@ -160,10 +160,20 @@ namespace ExcelHeroes.World
                 if (rig.Model3D)
                 {
                     // the 3D SD: breathing on the bones, a slow sway, the sheet behind the back
-                    rig.Body.localRotation = Quaternion.Euler(br * 1.5f, Mathf.Sin(_t * 0.6f + phase) * 4f, 0f);
-                    if (rig.Head != null) rig.Head.localRotation = Quaternion.Euler(br * 2f, 0f, Mathf.Sin(_t * 0.7f + phase) * 3f);
-                    if (rig.ArmL != null) rig.ArmL.localRotation = Quaternion.Euler(0f, 0f, 6f + br * 3f);
-                    if (rig.ArmR != null) rig.ArmR.localRotation = Quaternion.Euler(0f, 0f, -6f - br * 3f);
+                    if (rig.RefModel)
+                    {
+                        rig.Pose(rig.Body, Quaternion.Euler(0f, 0f, -br * 1.5f) * Quaternion.Euler(Mathf.Sin(_t * 0.6f + phase) * 4f, 0f, 0f));
+                        rig.Pose(rig.Head, Quaternion.Euler(0f, 0f, -br * 2f) * Quaternion.Euler(Mathf.Sin(_t * 0.7f + phase) * 3f, 0f, 0f));
+                        rig.Pose(rig.ArmL, Quaternion.Euler(0f, 0f, br * 3f));
+                        rig.Pose(rig.ArmR, Quaternion.Euler(0f, 0f, -br * 3f));
+                    }
+                    else
+                    {
+                        rig.Body.localRotation = Quaternion.Euler(br * 1.5f, Mathf.Sin(_t * 0.6f + phase) * 4f, 0f);
+                        if (rig.Head != null) rig.Head.localRotation = Quaternion.Euler(br * 2f, 0f, Mathf.Sin(_t * 0.7f + phase) * 3f);
+                        if (rig.ArmL != null) rig.ArmL.localRotation = Quaternion.Euler(0f, 0f, 6f + br * 3f);
+                        if (rig.ArmR != null) rig.ArmR.localRotation = Quaternion.Euler(0f, 0f, -6f - br * 3f);
+                    }
                     if (rig.Sheet != null)
                     {
                         rig.Sheet.localPosition = new Vector3(rig.SheetSide * 0.12f, rig.Height * 0.62f + Mathf.Sin(_t * 1.6f + phase) * 0.015f, -0.14f);

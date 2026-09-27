@@ -233,7 +233,7 @@ namespace ExcelHeroes.World
             a = new Actor { C = c };
             // 3D SD first (made from the 2D SD, World/SdModel), then the 2D SD sprite, then the built doll
             // the common SD base (World/SdBase) first: one body, one skeleton, one set of motions
-            if (c.side == Side.Hero && (SdBase.Build(c.heroId, _root, Layer) ?? SdSprite.Build(c.heroId, _root, Layer)) is { } sd)
+            if (c.side == Side.Hero && (SdRef.Build(c.heroId, _root, Layer) ?? SdBase.Build(c.heroId, _root, Layer) ?? SdSprite.Build(c.heroId, _root, Layer)) is { } sd)
             {
                 a.Rig = sd;
                 a.Rig.Root.name = c.name;
@@ -665,13 +665,28 @@ namespace ExcelHeroes.World
                 root.localPosition = new Vector3(X, y, Z);
                 // the mesh faces +z; the camera looks along +z, so 180 turns it to camera, yaw toward the fight
                 root.localRotation = Quaternion.Euler(0f, 180f + yaw + spin, 0f);
-                // bones
-                if (Rig.Body != null) Rig.Body.localRotation = Quaternion.Euler(lean, twist, 0f);
-                if (Rig.Head != null) Rig.Head.localRotation = Quaternion.Euler(br * 2f, 0f, Hit > 0f ? 6f : 0f);
-                if (Rig.ArmL != null) Rig.ArmL.localRotation = Quaternion.Euler(fwdL, 0f, armL);
-                if (Rig.ArmR != null) Rig.ArmR.localRotation = Quaternion.Euler(fwdR, 0f, armR);
-                if (Rig.LegL != null) Rig.LegL.localRotation = Quaternion.Euler(legSwing, 0f, 0f);
-                if (Rig.LegR != null) Rig.LegR.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
+                // bones: offsets onto the rest pose (the sample rig's rest rotations are not identity)
+                if (Rig.RefModel)
+                {
+                    // Bip001: the bone's X axis runs along the bone; lean = pitch about the pelvis's
+                    // side axis, arm swing = rotation about the shoulder's up axis
+                    Rig.Pose(Rig.Body, Quaternion.Euler(0f, 0f, -lean) * Quaternion.Euler(twist, 0f, 0f));
+                    Rig.Pose(Rig.Head, Quaternion.Euler(0f, 0f, -br * 2f) * Quaternion.Euler(Hit > 0f ? 6f : 0f, 0f, 0f));
+                    // the sample's rest pose is already an A-pose: only the animated part goes on
+                    Rig.Pose(Rig.ArmL, Quaternion.Euler(0f, fwdL, -(armL - 8f) - 12f));
+                    Rig.Pose(Rig.ArmR, Quaternion.Euler(0f, -fwdR, (armR + 8f) + 12f));
+                    Rig.Pose(Rig.LegL, Quaternion.Euler(0f, 0f, -legSwing));
+                    Rig.Pose(Rig.LegR, Quaternion.Euler(0f, 0f, legSwing));
+                }
+                else
+                {
+                    if (Rig.Body != null) Rig.Body.localRotation = Quaternion.Euler(lean, twist, 0f);
+                    if (Rig.Head != null) Rig.Head.localRotation = Quaternion.Euler(br * 2f, 0f, Hit > 0f ? 6f : 0f);
+                    if (Rig.ArmL != null) Rig.ArmL.localRotation = Quaternion.Euler(fwdL, 0f, armL);
+                    if (Rig.ArmR != null) Rig.ArmR.localRotation = Quaternion.Euler(fwdR, 0f, armR);
+                    if (Rig.LegL != null) Rig.LegL.localRotation = Quaternion.Euler(legSwing, 0f, 0f);
+                    if (Rig.LegR != null) Rig.LegR.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
+                }
                 var flash = Hit > 0.08f ? 0.8f : 0f;
                 foreach (var r in Rig.Renderers)
                 {

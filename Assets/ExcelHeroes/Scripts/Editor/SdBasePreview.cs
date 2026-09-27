@@ -24,7 +24,7 @@ namespace ExcelHeroes.EditorTools
             for (var i = 0; i < ids.Length; i++)
             {
                 var holder = new GameObject("preview").transform;
-                var rig = SdBase.Build(ids[i], holder, 0);
+                var rig = SdRef.Build(ids[i], holder, 0) ?? SdBase.Build(ids[i], holder, 0);
                 for (var a = 0; a < yaws.Length; a++)
                 {
                     rig.Root.rotation = Quaternion.Euler(0f, yaws[a], 0f);

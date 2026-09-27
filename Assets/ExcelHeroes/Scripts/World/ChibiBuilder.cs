@@ -13,7 +13,18 @@ namespace ExcelHeroes.World
         public Renderer SheetRenderer;
         public bool Sprite;                 // an SD sprite (SdSprite) rather than a built model
         public bool Model3D;
-        public Transform[] Base;            // the common SD base skeleton (SdBase.B order), when built on it                // the reconstructed, auto-rigged 3D SD (SdModel)
+        public Transform[] Base;            // the common SD base skeleton (SdBase.B order), when built on it
+        public bool RefModel;               // built on the sample FBX (SdRef): Bip001 bones, extra joints below
+        public Transform Spine, ForearmL, ForearmR, CalfL, CalfR;
+        /// <summary>Rest local rotations of the posed bones (the sample's Bip001 rest pose is not
+        /// identity): animation offsets are multiplied ONTO these, never assigned over them.</summary>
+        public readonly Dictionary<Transform, Quaternion> Rest = new();
+        public void Pose(Transform bone, Quaternion offset)
+        {
+            if (bone == null) return;
+            if (!Rest.TryGetValue(bone, out var rest)) { rest = bone.localRotation; Rest[bone] = rest; }
+            bone.localRotation = rest * offset;
+        }                // the reconstructed, auto-rigged 3D SD (SdModel)
         public Renderer SpriteRenderer;
         public float Height = 0.95f;
         public int SheetSide = 1;           // +1 = the character's left (+Z), -1 = right

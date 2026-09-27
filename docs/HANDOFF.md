@@ -782,3 +782,11 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - `SdLook` + `tools/sample_looks.py`: 캐릭터별 색은 자기 SD 일러에서 샘플(`looks.json`), 스타일 플래그는 `dolls.json`.
 - 전투·편성 모두 SdBase 우선(→ 2D SD → 인형). 전투 카메라는 참고처럼 낮고 가깝게(피치 15°, 거리 7.6), 배경은 제미나이 거리 세트(`street_{day,evening,night}`, `gen_bg_gemini.py --street`), 결과 화면은 Battle Complete 레이아웃(HUD 숨김, STRIKER 띠).
 - 다음: 43명 나머지 채색(제미나이, 4장×43), 얼굴판 눈 크기 미세 조정, 보스 HP 바·타격 링·킬 카운터(참고 `712980` 우측), 표정 텍스처 교체(EyeMouth 스왑) 구조.
+
+## 샘플 모델 기반 편집 (SdRef) — 사용자 지시: "샘플 모델링을 기반으로 조금씩 바꿔가자"
+- `Resources/Art/SDBase/base.fbx`(+ body/face/eyemouth/hair png) = 샘플 CH0184(유우카 체육복)을 그대로 베이스로. **git 제외**(우리 것이 아님). 뼈 Bip001, 서브메시 Body/Face/Hair/Eyebrow/EyeMouth. `isReadable: 1` 필수(빌드에서 메시 편집).
+- `World/SdRef`: 프리팹 Instantiate → 몸 렌더러만(서브메시가 가장 많은 것; 무기·가방 렌더러는 끔) → 바운드로 키 1.2에 발끝 y=0 → 서브메시별 재질 교체 → 본 바인딩(Pelvis/Head/UpperArm/Thigh + Spine/Forearm/Calf). 얼굴은 FBX +Z에 이미 있음(뒤집지 말 것).
+- 모션은 **휴식 자세에 오프셋을 곱함**(`ChibiRig.Pose`): Bip001 휴식 회전이 항등이 아니라, 대입하면 뒤집힘. 팔은 이미 A포즈라 −12°부터.
+- 캐릭터별 편집: `SdRefTex.EyeMouth`(64² 레이아웃 실측: 홍채 원판 u .25–.97 / 흰자 u .04–.23 v .68–.85 / 입 u .01–.24 v .04–.21 / 반짝 u .03–.12 v .90–.96 — 눈 색·동공·하이라이트), `SdRefTex.Face`(눈썹 띠 u .59–.97 v .76–.96 = 머리색, 볼 홍조, 별 제거), 머리카락 = 샘플 텍스처 틴트(`_Color`), `SdRefHair` = 스타일별로 뒤로 늘어진 조각 제거(메시는 FBX 축: +Z가 위, +Y가 뒤).
+- 우선순위: SdRef → SdBase(자체 로프트) → 2D SD 스프라이트 → 인형. 전투·편성 모두.
+- 다음: 스타일별 머리 모양(앞머리·트윈·번은 샘플 조각 재배치/우리 셸 덧붙임), 의상 색을 부위별로(Body 텍스처를 마스크로 부위 분리해 칠하기), 표정 스왑(EyeMouth 텍스처 교체), 몬스터도 같은 방식.
