@@ -166,14 +166,18 @@ namespace ExcelHeroes.UI
                 var head = UiKit.Div("qrow__head", text);
                 UiKit.Text(def.name, "qrow__name", head);
 
-                var reward = def.goldKills > 0
-                    ? $"◈{def.gems} · ₩{def.goldKills * StatMath.StageGold(Mathf.Max(1, p.stage)):N0}"
-                    : $"◈{def.gems}";
-                UiKit.Text($"{q.count} / {def.target}　·　{reward}", "qrow__meta", head);
+                UiKit.Text($"{q.count} / {def.target}", "qrow__meta", head);
 
                 var track = UiKit.Div("qrow__track", text);
                 var fill = UiKit.Div("qrow__fill", track);
                 fill.style.width = Length.Percent(Mathf.Clamp01(q.count / (float)def.target) * 100f);
+
+                // the rewards as chips with their drawn icons, between the bar and the button —
+                // "◈20 · ₩360" run into the progress text did not read as something to be won
+                // (ui_critique round 3, 10-Quests #1)
+                var rewards = UiKit.Div("qrow__rewards", row);
+                RewardChip(rewards, "gem", def.gems.ToString("N0"));
+                if (def.goldKills > 0) RewardChip(rewards, "gold", (def.goldKills * StatMath.StageGold(Mathf.Max(1, p.stage))).ToString("N0"));
 
                 if (q.claimed) UiKit.Text("완료", "qrow__done", row);
                 else
@@ -188,6 +192,14 @@ namespace ExcelHeroes.UI
                     SkewPlate.Apply(claim, SkewPlate.Kind.Primary);
                 }
             }
+        }
+
+        static void RewardChip(VisualElement parent, string icon, string amount)
+        {
+            var chip = UiKit.Div("rchip", parent);
+            var art = GameData.Icon(icon);
+            if (art != null) UiKit.SetArt(UiKit.Div("rchip__icon", chip), art);
+            UiKit.Text(amount, "rchip__amount", chip);
         }
 
         void BuildAllClear(VisualElement parent, PlayerState p, QuestFile file)

@@ -1031,10 +1031,17 @@ namespace ExcelHeroes.UI
             foreach (var slot in EquipService.Slots)
             {
                 var worn = EquipService.Worn(Game.Player, heroId, slot.id);
+                // a socket, the way the reference shows gear: the part's own picture in a square frame
+                // (faint and with a + when empty), the slot name beside it (ui_critique round 3, 16-Detail #2)
                 var tile = UiKit.Div("kittile" + (worn == null ? " kittile--empty" : ""), strip);
-                UiKit.Text(slot.name, "kittile__slot", tile);
-                UiKit.Text(worn == null ? "비어 있음" : EquipService.Label(worn), "kittile__name", tile);
-                UiKit.Text(worn == null ? "" : $"+{EquipService.Pct(worn) * 100f:0}%", "kittile__val", tile);
+                var sock = UiKit.Div("kittile__sock", tile);
+                var pic = GameData.Icon("eq_" + slot.id);
+                if (pic != null) UiKit.SetArt(UiKit.Div("kittile__pic", sock), pic);
+                if (worn == null) UiKit.Text("+", "kittile__plus", sock);
+                var words = UiKit.Div("kittile__words", tile);
+                UiKit.Text(slot.name, "kittile__slot", words);
+                UiKit.Text(worn == null ? "비어 있음" : EquipService.Label(worn), "kittile__name", words);
+                if (worn != null) UiKit.Text($"+{EquipService.Pct(worn) * 100f:0}%", "kittile__val", words);
             }
         }
 
