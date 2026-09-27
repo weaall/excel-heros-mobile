@@ -25,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "..", "Assets", "ExcelHeroes", "Resources", "Data")
 SPEC = os.path.join(DATA, "sdspec.json")
 FIELDS = ["style", "fringe", "ahoge", "glasses", "sunglasses", "hair", "eye", "skin", "top", "shirt",
-          "bottom", "legs", "shoes", "outfit", "bottomType", "idle", "win", "attack"]
+          "bottom", "legs", "shoes", "outfit", "bottomType", "idle", "win", "attack", "tie", "cap", "headset"]
 
 
 def load(name):
@@ -45,7 +45,8 @@ def hash_of(s):
 def build_row(cid, doll, look, old):
     r = {"id": cid, "style": "short", "fringe": -1, "ahoge": False, "glasses": False, "sunglasses": False,
          "hair": "", "eye": "", "skin": "", "top": "", "shirt": "", "bottom": "", "legs": "", "shoes": "",
-         "outfit": "suit", "bottomType": "pants", "idle": -1, "win": -1, "attack": "", "manual": []}
+         "outfit": "suit", "bottomType": "pants", "idle": -1, "win": -1, "attack": "",
+         "tie": "", "cap": "", "headset": False, "manual": []}
     if doll:
         acc = [a.split(":")[0] for a in doll.get("acc", [])]
         r.update(style=doll.get("hair", "short"), outfit=doll.get("outfit", "suit"), bottomType=doll.get("bottom", "pants"),
@@ -53,6 +54,14 @@ def build_row(cid, doll, look, old):
                  hair=doll.get("hairColor", ""), eye=doll.get("eye", ""), top=doll.get("top", ""), shirt=doll.get("shirt", ""),
                  bottom=doll.get("bottomColor", ""))
         r["ahoge"] = (sum(ord(c) for c in cid) % 3) == 0
+        def acc_colour(name, default):
+            for a in doll.get("acc", []):
+                if a == name: return default
+                if a.startswith(name + ":"): return a.split(":", 1)[1]
+            return ""
+        r["tie"] = acc_colour("tie", "#2f3d5c") or acc_colour("scarf", "#ffb7a1")
+        r["cap"] = acc_colour("cap", "#3b5bd6") or acc_colour("hardhat", "#f5c542")
+        r["headset"] = "headset" in acc or "headphones" in acc
     if look:
         for k in ("hair", "eye", "skin", "top", "bottom", "legs", "shoes"):
             if look.get(k): r[k] = look[k]

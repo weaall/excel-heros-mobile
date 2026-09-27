@@ -108,7 +108,9 @@ namespace ExcelHeroes.EditorTools
                 if (!string.IsNullOrEmpty(poseEnv) && rig.RefModel)
                 {
                     var pz = poseEnv == "win" ? SdPose.Victory(i, 0.55f) : poseEnv == "attack" ? SdPose.Attack(i % 3, 0.5f)
-                           : poseEnv == "walk" ? SdPose.Walk(i * Mathf.PI / 3f) : SdPose.Idle(i, 0.4f, 0f);
+                           : poseEnv == "walk" ? SdPose.Walk(i * Mathf.PI / 3f)
+                           : poseEnv.StartsWith("skill") ? SdPose.Skill(int.Parse(poseEnv.Substring(5)), (i + 0.5f) / ids.Length)
+                           : SdPose.Idle(i, 0.4f, 0f);
                     SdPose.Apply(rig, pz);
                     rig.Root.localPosition = new Vector3(0f, pz.Y, 0f);
                     if (rig.EyeSub >= 0 && !string.IsNullOrEmpty(pz.Expr))
@@ -160,6 +162,34 @@ namespace ExcelHeroes.EditorTools
                     var d = i % 2 == 0 ? 70f : -70f; var ax = i / 2;
                     var q = ax == 0 ? Quaternion.Euler(d, 0f, 0f) : ax == 1 ? Quaternion.Euler(0f, d, 0f) : Quaternion.Euler(0f, 0f, d);
                     foreach (var f in rig.FingersR) if (f != null && !f.name.EndsWith("Finger0") && !f.name.EndsWith("Finger01")) rig.Pose(f, q);
+                }
+                // SD_POSETEST=12: secondary motion under a real walk — 40 frames of the cycle with the root
+                // advancing at 0.9 m/s, rendered on the last frame (column i picks the phase)
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "12" && rig.RefModel)
+                {
+                    var sec = rig.Root.GetComponent<SdSecondary>();
+                    sec?.Settle();
+                    for (var f = 0; f < 40; f++)
+                    {
+                        var ph = (f + i * 7) * (1f / 60f) * 9f;
+                        var wp = SdPose.Walk(ph);
+                        SdPose.Apply(rig, wp);
+                        rig.Root.localPosition = new Vector3(f * 0.9f / 60f, wp.Y, 0f);
+                        sec?.Step(1f / 60f);
+                    }
+                    rig.Root.localPosition = new Vector3(0f, rig.Root.localPosition.y, 0f);
+                }
+                // SD_POSETEST=11: secondary motion — the figure whipped round 70 degrees over 6 frames, then rendered mid-lag
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "11" && rig.RefModel)
+                {
+                    var sec = rig.Root.GetComponent<SdSecondary>();
+                    SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
+                    if (sec != null)
+                    {
+                        sec.Settle();
+                        for (var f = 0; f < 6; f++) { rig.Root.rotation = Quaternion.Euler(0f, 180f + f * 12f * (i % 2 == 0 ? 1f : -1f), 0f); rig.Root.localPosition = new Vector3(f * 0.05f, f % 2 == 0 ? 0.06f : 0f, 0f); sec.Step(1f / 60f); }
+                    }
+                    rig.Root.localPosition = Vector3.zero;
                 }
                 // SD_POSETEST=8: the RIGHT foot likewise
                 if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "8" && rig.RefModel)

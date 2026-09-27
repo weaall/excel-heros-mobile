@@ -67,6 +67,122 @@ namespace ExcelHeroes.World
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
         }
 
+        /// <summary>
+        /// A necktie on the chest bone (Spine1): a knot at the collar (mesh z 0.0061, y −0.00105) and
+        /// a blade hanging to z 0.0044, kept a hair in front of the jacket (front profile −0.00137).
+        /// Mesh space: z up, −y forward; world = body.TransformPoint.
+        /// </summary>
+        public static void Tie(ChibiRig rig, SkinnedMeshRenderer body, Transform root, Color col, int layer)
+        {
+            if (rig.Spine == null || col.a <= 0f) return;
+            var s = body.transform.lossyScale.x;
+            col.a = 1f;
+            var knot = body.transform.TransformPoint(new Vector3(0f, -0.00118f, 0.00605f));
+            var b = new MeshKit.Builder();
+            // sizes in mesh units × the figure's scale; built in the wrapper's frame (+z forward, +y up)
+            b.Box(new Vector3(0f, 0f, 0f), new Vector3(0.00026f * s, 0.00022f * s, 0.00012f * s), MeshKit.Shade(col, 0.85f));   // the knot
+            // the blade: a strip widening then tapering, tilted so its bottom sits in front of the jacket
+            b.Grid(1, 6, (u, t) =>
+            {
+                var w = Mathf.Lerp(0.00010f, 0.00018f, Mathf.Sin(t * Mathf.PI * 0.85f)) * s;
+                var y = -0.00012f * s - t * 0.00158f * s;
+                var z = Mathf.Lerp(0f, 0.00028f, t) * s;
+                return (new Vector3((u - 0.5f) * 2f * w, y, z), Vector3.forward, new Vector2(u, t));
+            }, col);
+            var mat = MeshKit.NewToon(0.0025f);
+            mat.SetFloat("_ShadeStrength", 0.2f);
+            var go = Attach("tie", rig.Spine, b.Bake("tie"), mat, layer, knot, root.rotation);
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+        }
+
+        /// <summary>
+        /// A cap on the head bone: a dome over the crown (hair top mesh z 0.01018, skull centre
+        /// (0, 0.0006, 0.0081)) with a brim forward, in the accessory's colour; a hard hat is the
+        /// same dome, taller and without the brim, with a short rim all round.
+        /// </summary>
+        public static void Cap(ChibiRig rig, SkinnedMeshRenderer body, Transform root, Color col, bool hard, int layer)
+        {
+            if (rig.Head == null || col.a <= 0f) return;
+            var s = body.transform.lossyScale.x;
+            col.a = 1f;
+            var centre = body.transform.TransformPoint(new Vector3(0f, 0.00045f, 0.00905f));
+            var b = new MeshKit.Builder();
+            var rx = 0.00168f * s; var ry = (hard ? 0.00115f : 0.00082f) * s; var rz = 0.0018f * s;
+            // the dome: the upper half of an ellipsoid (thetaMax π/2 everywhere), a little lower at the back
+            b.Ellipsoid(Vector3.zero, new Vector3(rx, ry, rz), col, 18, phi => Mathf.PI * 0.52f);
+            if (hard)
+                b.Disc(new Vector3(0f, -0.0001f * s, 0f), rx * 1.12f, rz * 1.12f, MeshKit.Shade(col, 0.9f), true, 18);
+            else
+            {
+                // the brim: a flat half-disc forward of the dome, drawn double-sided
+                b.Grid(8, 1, (u, t) =>
+                {
+                    var a = Mathf.Lerp(-1.2f, 1.2f, u);
+                    var r = Mathf.Lerp(rz * 0.9f, rz * 1.75f, t);
+                    return (new Vector3(Mathf.Sin(a) * r * 0.85f, -0.00008f * s - t * 0.00006f * s, Mathf.Cos(a) * r), Vector3.up, new Vector2(u, t));
+                }, MeshKit.Shade(col, 0.88f));
+                b.Grid(8, 1, (u, t) =>
+                {
+                    var a = Mathf.Lerp(-1.2f, 1.2f, u);
+                    var r = Mathf.Lerp(rz * 0.9f, rz * 1.75f, t);
+                    return (new Vector3(Mathf.Sin(a) * r * 0.85f, -0.00011f * s - t * 0.00006f * s, Mathf.Cos(a) * r), Vector3.down, new Vector2(u, t));
+                }, MeshKit.Shade(col, 0.7f));
+                b.Box(new Vector3(0f, ry * 1.02f, 0f), new Vector3(0.00012f * s, 0.00012f * s, 0.00012f * s), MeshKit.Shade(col, 0.8f));   // the button
+            }
+            var mat = MeshKit.NewToon(0.004f);
+            mat.SetFloat("_ShadeStrength", 0.22f);
+            var go = Attach(hard ? "hardhat" : "cap", rig.Head, b.Bake("cap"), mat, layer, centre, root.rotation);
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+        }
+
+        /// <summary>A headset: a band over the crown from ear to ear, two ear cups, a mic arm on the right.</summary>
+        public static void Headset(ChibiRig rig, SkinnedMeshRenderer body, Transform root, Color accent, int layer)
+        {
+            if (rig.Head == null) return;
+            var s = body.transform.lossyScale.x;
+            var centre = body.transform.TransformPoint(new Vector3(0f, 0.0005f, 0.0079f));
+            var dark = new Color(0.16f, 0.17f, 0.22f);
+            accent.a = 1f;
+            var b = new MeshKit.Builder();
+            var R = 0.00236f * s; var Rz = 0.0002f * s;                    // outside the hair at the sides (hair reaches x ±0.0023) …
+            // the band: a strip along an arc in the x–y plane, width w along z, slightly proud of the hair
+            var w = 0.00016f * s;
+            b.Grid(16, 1, (u, t) =>
+            {
+                var a = Mathf.Lerp(-1.5f, 1.5f, u);
+                var p = new Vector3(Mathf.Sin(a) * R, Mathf.Cos(a) * R * 0.9f, Rz + (t - 0.5f) * 2f * w);    // … and sunk into the crown
+                return (p, new Vector3(Mathf.Sin(a), Mathf.Cos(a), 0f), new Vector2(u, t));
+            }, dark);
+            b.Grid(16, 1, (u, t) =>
+            {
+                var a = Mathf.Lerp(-1.5f, 1.5f, u);
+                var p = new Vector3(Mathf.Sin(a) * R * 0.97f, Mathf.Cos(a) * R * 0.87f, Rz + (t - 0.5f) * 2f * w);
+                return (p, new Vector3(-Mathf.Sin(a), -Mathf.Cos(a), 0f), new Vector2(u, t));
+            }, dark);
+            // the cups, over the ears (mesh x ±0.0013 at z 0.0072–0.0078)
+            foreach (var sx in new[] { -1f, 1f })
+            {
+                var c = new Vector3(sx * 0.00232f * s, -0.0006f * s, -0.0003f * s);
+                b.Ellipsoid(c, new Vector3(0.00028f * s, 0.00042f * s, 0.00042f * s), dark, 12);
+                b.Ellipsoid(c + new Vector3(sx * 0.00022f * s, 0f, 0f), new Vector3(0.0001f * s, 0.00028f * s, 0.00028f * s), accent, 10);
+            }
+            // the mic arm from the right cup, forward and down to the mouth's side
+            // the mic arm: from the right cup forward-down to beside the mouth, as a thin lofted tube
+            var a0 = new Vector3(0.00232f * s, -0.0007f * s, -0.0001f * s); var a1 = new Vector3(0.0012f * s, -0.0016f * s, 0.0016f * s);
+            b.Grid(1, 8, (u, t) =>
+            {
+                var p = Vector3.Lerp(a0, a1, t); var ang = u * Mathf.PI * 2f;
+                var side = Vector3.Cross((a1 - a0).normalized, Vector3.up).normalized; var upv = Vector3.Cross(side, (a1 - a0).normalized);
+                var q = p + (side * Mathf.Cos(ang) + upv * Mathf.Sin(ang)) * 0.00005f * s;
+                return (q, (side * Mathf.Cos(ang) + upv * Mathf.Sin(ang)), new Vector2(u, t));
+            }, dark);
+            b.Ellipsoid(a1, new Vector3(0.00009f * s, 0.00009f * s, 0.00013f * s), accent, 8);
+            var mat = MeshKit.NewToon(0.002f);
+            mat.SetFloat("_ShadeStrength", 0.2f);
+            var go = Attach("headset", rig.Head, b.Bake("headset"), mat, layer, centre, root.rotation);
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+        }
+
         /// <summary>The hand prop by role: melee a rolled document, ranged a tablet, healer a coffee cup, tank a clipboard.</summary>
         public static void HandProp(ChibiRig rig, Transform root, string role, SdLook k, int layer)
         {

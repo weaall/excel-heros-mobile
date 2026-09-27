@@ -21,6 +21,8 @@ namespace ExcelHeroes.World
         // from the spec (sdspec.json): -1 / "" = not set, decided by hash or role
         public int Fringe = -1, Idle = -1, Win = -1;
         public string Attack = "";
+        public Color Cap = new(0, 0, 0, 0);     // alpha 0 = no cap
+        public bool Headset;
 
         [Serializable] class Row { public string id, hair, top, shirt, bottom, legs, shoes, eye, skin; }
         [Serializable] class File { public List<Row> items = new(); }
@@ -77,8 +79,13 @@ namespace ExcelHeroes.World
             k.Glasses = d.Has("glasses");
             k.Sunglasses = d.Has("sunglasses");
             k.Ahoge = BackSheetHash(key) % 3 == 0;
+            k.Cap = d.Has("cap") ? H(d.AccColor("cap", "#3b5bd6"), Color.blue) : d.Has("hardhat") ? H(d.AccColor("hardhat", "#f5c542"), Color.yellow) : new Color(0, 0, 0, 0);
+            k.Headset = d.Has("headset") || d.Has("headphones");
             if (sp != null)
             {
+                k.Tie = sp.tie != "" ? H(sp.tie, Color.blue) : new Color(0, 0, 0, 0);
+                k.Cap = sp.cap != "" ? H(sp.cap, Color.blue) : new Color(0, 0, 0, 0);
+                k.Headset = sp.headset;
                 // the spec row is the source of truth for whatever it carries; colours re-derived
                 // from it so the shirt / legs / shoes follow a hand edit
                 if (sp.hair != "") k.Hair = H(sp.hair, k.Hair);

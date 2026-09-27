@@ -674,7 +674,7 @@ namespace ExcelHeroes.World
                     _winT = cheering ? _winT + dt : 0f;
                     if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f);
                     else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(C.heroId), _winT);
-                    else if (Skill > 0f) _pose = SdPose.Skill(1f - Skill / 0.75f);
+                    else if (Skill > 0f) _pose = SdPose.Skill(SdPose.AttackOf(C.heroId, C.role), 1f - Skill / 0.75f);
                     else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
                     else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.heroId, C.role), 1f - Attack / 0.32f);
                     else if (walking) _pose = SdPose.Walk(_walk * 0.9f);

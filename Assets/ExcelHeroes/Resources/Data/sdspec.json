@@ -20,6 +20,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -42,6 +45,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -64,6 +70,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "#f1c40f",
+   "headset": false,
    "manual": []
   },
   {
@@ -86,6 +95,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -108,6 +120,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -130,6 +145,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#f5c542",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -152,6 +170,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -174,6 +195,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#ffe0b2",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -196,6 +220,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -218,6 +245,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -240,6 +270,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -262,6 +295,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#d4a017",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -284,6 +320,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -306,6 +345,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -328,6 +370,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#151515",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -350,6 +395,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -372,6 +420,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -394,6 +445,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -416,6 +470,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -438,6 +495,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -460,6 +520,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "#3b5bd6",
+   "headset": false,
    "manual": []
   },
   {
@@ -482,6 +545,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": true,
    "manual": []
   },
   {
@@ -504,6 +570,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -526,6 +595,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -548,6 +620,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -570,6 +645,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "#5b9bd5",
+   "headset": false,
    "manual": []
   },
   {
@@ -592,6 +670,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": true,
    "manual": []
   },
   {
@@ -614,6 +695,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#d4a017",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -636,6 +720,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#1f2a44",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -658,6 +745,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#16a085",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -680,6 +770,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -702,6 +795,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#c0392b",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -724,6 +820,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -746,6 +845,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": true,
    "manual": []
   },
   {
@@ -768,6 +870,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": true,
    "manual": []
   },
   {
@@ -790,6 +895,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -812,6 +920,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -834,6 +945,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -856,6 +970,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -878,6 +995,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#e1bee7",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -900,6 +1020,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -922,6 +1045,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -944,6 +1070,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -966,6 +1095,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -988,6 +1120,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": true,
    "manual": []
   },
   {
@@ -1010,6 +1145,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "#2c3345",
+   "headset": false,
    "manual": []
   },
   {
@@ -1032,6 +1170,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1054,6 +1195,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1076,6 +1220,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1098,6 +1245,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#111111",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1120,6 +1270,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1142,6 +1295,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1164,6 +1320,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1186,6 +1345,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1208,6 +1370,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1230,6 +1395,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#c0392b",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1252,6 +1420,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#c0392b",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1274,6 +1445,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#c0392b",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1296,6 +1470,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1318,6 +1495,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": true,
    "manual": []
   },
   {
@@ -1340,6 +1520,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#1f2a44",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1362,6 +1545,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#2f3d5c",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1384,6 +1570,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1406,6 +1595,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1428,6 +1620,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#f5f6fa",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1450,6 +1645,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "",
+   "cap": "",
+   "headset": false,
    "manual": []
   },
   {
@@ -1472,6 +1670,9 @@
    "idle": -1,
    "win": -1,
    "attack": "",
+   "tie": "#ffb7a1",
+   "cap": "",
+   "headset": false,
    "manual": []
   }
  ]

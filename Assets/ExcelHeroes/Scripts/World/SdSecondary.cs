@@ -1,0 +1,104 @@
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+namespace ExcelHeroes.World
+{
+    /// <summary>
+    /// Secondary motion on the sample rig. The FBX skins its hair (bone_hair_b_l/m/r_01..03 down
+    /// the back, bone_hair_Bt_00..02 the ponytail, bone_hair_f/fL the fringe, bone_hair_m_l/r the
+    /// side locks), the gym shorts' hem (bone_skirt_*) and the chest tag (bone_Nameplate_00..02)
+    /// to chains of small bones that the reference drives with physics. Here each bone is a
+    /// damped spring: its tip wants to be where the rigid rest would put it, lags when the head
+    /// or body ACCELERATES (the damping is relative to the rest point's own motion, so hair rides
+    /// along at a steady walk instead of streaming back like drag), sags a little under gravity,
+    /// and never bends past MaxBend. Runs in LateUpdate, after the frame's pose has been applied,
+    /// so the chains trail the motion.
+    /// </summary>
+    public class SdSecondary : MonoBehaviour
+    {
+        const float Stiffness = 700f, Damping = 38f, MaxBend = 20f, MaxStep = 1f / 90f;   // ~4 Hz, ζ≈0.7: a soft bounce that settles in a few frames
+        static readonly Vector3 Gravity = new(0f, -2f, 0f);
+
+        class Node
+        {
+            public Transform T; public Quaternion RestLocal; public Vector3 RestTipLocal; public float Len; public Vector3 Tip, Vel, PrevTarget; public float Weight; public bool HasPrev;
+        }
+        readonly List<Node> _nodes = new();     // root-first
+        bool _ready;
+
+        public void Init(Transform model, string style = "")
+        {
+            _nodes.Clear();
+            var all = model.GetComponentsInChildren<Transform>(true);
+            bool Dyn(Transform t) => t.name.StartsWith("bone_hair_") || t.name.StartsWith("bone_skirt_") || t.name.StartsWith("bone_Nameplate_");
+            // depth order so parents are stepped before children
+            foreach (var t in all.Where(Dyn).OrderBy(Depth))
+            {
+                var child = Enumerable.Range(0, t.childCount).Select(t.GetChild).FirstOrDefault(Dyn) ?? (t.childCount > 0 ? t.GetChild(0) : null);
+                Vector3 tipWorld;
+                if (child != null) tipWorld = child.position;
+                else if (t.parent != null) tipWorld = t.position + (t.position - t.parent.position);     // a chain end: extrapolate the parent segment
+                else continue;
+                var len = (tipWorld - t.position).magnitude;
+                if (len < 1e-5f) continue;
+                // the tag and the shorts swing less than hair; the fringe barely at all
+                var w = t.name.StartsWith("bone_hair_f") ? 0.35f : t.name.StartsWith("bone_hair_m") ? 0.6f : t.name.StartsWith("bone_skirt_") ? 0.5f : t.name.StartsWith("bone_Nameplate_") ? 0.7f : 1f;
+                // the ponytail chain: its bones sit at the crown, so a twin-tail copy hanging out to the
+                // side swings on a long lever — keep that chain stiff for twins, moderate otherwise
+                if (t.name.StartsWith("bone_hair_Bt")) w = style == "twin" ? 0.25f : 0.6f;
+                // the twin copies hang off the back-hair chains too, out to the sides: the same long lever
+                if (style == "twin" && t.name.StartsWith("bone_hair_b_")) w = 0.3f;
+                _nodes.Add(new Node { T = t, RestLocal = t.localRotation, RestTipLocal = t.InverseTransformPoint(tipWorld), Len = len, Tip = tipWorld, Weight = w });
+            }
+            _ready = _nodes.Count > 0;
+        }
+
+        static int Depth(Transform t) { var d = 0; while (t.parent != null) { d++; t = t.parent; } return d; }
+
+        void LateUpdate()
+        {
+            if (!_ready) return;
+            Step(Time.deltaTime);
+        }
+
+        /// <summary>One simulation step (split into sub-steps when large); public so a preview can run it by hand.</summary>
+        public void Step(float dt)
+        {
+            if (!_ready || dt <= 0f) return;
+            var n = Mathf.Clamp(Mathf.CeilToInt(dt / MaxStep), 1, 8);
+            var h = dt / n;
+            for (var i = 0; i < n; i++) Sub(h);
+        }
+
+        void Sub(float dt)
+        {
+            foreach (var nd in _nodes)
+            {
+                var t = nd.T;
+                t.localRotation = nd.RestLocal;                            // back to the rest each step: the target must not include last step's swing
+                var target = t.TransformPoint(nd.RestTipLocal);           // where the rigid rest puts the tip, given the parent's current pose
+                var restDir = (target - t.position).normalized;
+                var targetVel = nd.HasPrev ? (target - nd.PrevTarget) / dt : Vector3.zero;
+                nd.PrevTarget = target; nd.HasPrev = true;
+                nd.Vel += (target - nd.Tip) * (Stiffness * dt);
+                nd.Vel += Gravity * (nd.Weight * dt);
+                var rel = (nd.Vel - targetVel) * Mathf.Exp(-Damping * dt);   // damp only the motion relative to the rest point
+                nd.Vel = targetVel + rel;
+                nd.Tip += nd.Vel * dt;
+                var dir = nd.Tip - t.position;
+                if (dir.sqrMagnitude < 1e-10f) dir = restDir; else dir.Normalize();
+                var bend = MaxBend * nd.Weight;
+                if (Vector3.Angle(restDir, dir) > bend) dir = Vector3.RotateTowards(restDir, dir, bend * Mathf.Deg2Rad, 0f);
+                nd.Tip = t.position + dir * nd.Len;
+                t.rotation = Quaternion.FromToRotation(restDir, dir) * t.rotation;
+            }
+        }
+
+        /// <summary>Puts every chain back to rest (after a teleport, so hair does not whip across the stage).</summary>
+        public void Settle()
+        {
+            foreach (var nd in _nodes) { nd.T.localRotation = nd.RestLocal; nd.Tip = nd.T.TransformPoint(nd.RestTipLocal); nd.Vel = Vector3.zero; nd.HasPrev = false; }
+        }
+    }
+}

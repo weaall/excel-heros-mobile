@@ -15,9 +15,9 @@ namespace ExcelHeroes.World
     public class SdSpecRow
     {
         public string id = "", style = "", hair = "", eye = "", skin = "", top = "", shirt = "", bottom = "", legs = "", shoes = "";
-        public string outfit = "", bottomType = "", attack = "";
+        public string outfit = "", bottomType = "", attack = "", tie = "", cap = "";
         public int fringe = -1, idle = -1, win = -1;
-        public bool ahoge, glasses, sunglasses;
+        public bool ahoge, glasses, sunglasses, headset;
         public string[] manual = Array.Empty<string>();
         public bool Has(string field) => manual != null && manual.Contains(field);
     }

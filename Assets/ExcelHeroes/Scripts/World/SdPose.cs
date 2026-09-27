@@ -273,12 +273,63 @@ namespace ExcelHeroes.World
             return p;
         }
 
-        public static Pose Skill(float k)
+        /// <summary>
+        /// The EX move, by attack kind. 0 melee: crouch, leap with the fist drawn back, smash down
+        /// two-handed, land low. 1 ranged: the tablet raised overhead in both hands, a spin, then
+        /// hurled forward. 2 healer: the cup raised high with a hop, the other arm flung out, happy.
+        /// </summary>
+        public static Pose Skill(int kind, float k)
         {
             var p = Pose.Rest; p.Expr = "angry";
-            var up = Mathf.Sin(k * Mathf.PI);
-            p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, 100f, up); p.SwingL = p.SwingR = Mathf.Lerp(3f, -40f, up); p.ElbowL = p.ElbowR = 12f;
-            p.KneeL = p.KneeR = up * 50f; p.Y = up * 0.45f; p.Yaw = k * 360f;
+            switch (kind)
+            {
+                default:
+                    {
+                        if (k < 0.2f) { var c = k / 0.2f; p.KneeL = p.KneeR = 45f * c; p.Lean = 12f * c; p.RaiseR = -36f + 10f * c; p.SwingR = -30f * c; p.ElbowR = 14f + 80f * c; p.FistR = 1f; p.FistL = 1f; p.SwingL = 20f * c; p.ElbowL = 60f * c; }
+                        else if (k < 0.55f)
+                        {
+                            var c = (k - 0.2f) / 0.35f; var arc = Mathf.Sin(c * Mathf.PI);
+                            p.Y = arc * 0.55f; p.KneeL = p.KneeR = 45f * (1f - c) + 30f * arc; p.Lean = Mathf.Lerp(12f, -15f, c);
+                            p.RaiseR = Mathf.Lerp(-26f, 110f, c); p.SwingR = Mathf.Lerp(-30f, -30f, c); p.ElbowR = Mathf.Lerp(94f, 100f, c); p.FistR = p.FistL = 1f;
+                            p.RaiseL = Mathf.Lerp(-36f, 95f, c); p.SwingL = -25f; p.ElbowL = 95f; p.HeadPitch = -8f;
+                        }
+                        else if (k < 0.7f)
+                        {
+                            // the smash: both fists driven down, the body folding forward
+                            var c = (k - 0.55f) / 0.15f;
+                            p.RaiseL = p.RaiseR = Mathf.Lerp(105f, -10f, c); p.SwingL = p.SwingR = Mathf.Lerp(-30f, 70f, c); p.ElbowL = p.ElbowR = Mathf.Lerp(100f, 20f, c);
+                            p.FistL = p.FistR = 1f; p.Lean = Mathf.Lerp(-15f, 28f, c); p.KneeL = p.KneeR = 50f; p.Y = Mathf.Lerp(0.15f, 0f, c); p.HeadPitch = 10f * c;
+                        }
+                        else
+                        {
+                            var c = (k - 0.7f) / 0.3f;
+                            p.RaiseL = p.RaiseR = Mathf.Lerp(-10f, -36f, c); p.SwingL = p.SwingR = Mathf.Lerp(70f, 3f, c); p.ElbowL = p.ElbowR = Mathf.Lerp(20f, 14f, c);
+                            p.FistL = p.FistR = Mathf.Lerp(1f, 0.25f, c); p.Lean = 28f * (1f - c); p.KneeL = p.KneeR = 50f * (1f - c); p.HeadPitch = 10f * (1f - c);
+                        }
+                        break;
+                    }
+                case 1:
+                    {
+                        var up = k < 0.35f ? Mathf.SmoothStep(0f, 1f, k / 0.35f) : 1f;
+                        var spin = k > 0.3f && k < 0.75f ? Mathf.SmoothStep(0f, 1f, (k - 0.3f) / 0.45f) : k >= 0.75f ? 1f : 0f;
+                        var hurl = k > 0.75f ? Mathf.Sin(Mathf.Clamp01((k - 0.75f) / 0.25f) * Mathf.PI) : 0f;
+                        p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, 100f, up) - hurl * 70f; p.SwingL = p.SwingR = Mathf.Lerp(3f, -40f, up) + hurl * 110f;
+                        p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 25f, up) - hurl * 15f; p.FistL = p.FistR = 0.6f;
+                        p.Yaw = spin * 360f; p.Y = Mathf.Sin(spin * Mathf.PI) * 0.3f + hurl * 0.08f; p.Lean = -6f * up + hurl * 22f;
+                        p.KneeL = p.KneeR = Mathf.Sin(spin * Mathf.PI) * 30f + hurl * 20f; p.HeadPitch = -8f * up + hurl * 12f;
+                        break;
+                    }
+                case 2:
+                    {
+                        p.Expr = "happy";
+                        var up = k < 0.3f ? Mathf.SmoothStep(0f, 1f, k / 0.3f) : k > 0.8f ? 1f - Mathf.SmoothStep(0f, 1f, (k - 0.8f) / 0.2f) : 1f;
+                        var hop = k > 0.3f && k < 0.8f ? Mathf.Sin((k - 0.3f) / 0.5f * Mathf.PI) : 0f;
+                        p.RaiseR = Mathf.Lerp(-36f, 100f, up); p.SwingR = Mathf.Lerp(3f, -40f, up); p.ElbowR = 12f; p.HandFlexR = -10f; p.FistR = 0.7f;
+                        p.RaiseL = Mathf.Lerp(-36f, 40f, up); p.SwingL = Mathf.Lerp(3f, -20f, up); p.ElbowL = 20f; p.HandFlexL = -20f; p.HandDevL = 20f; p.FistL = 0f;
+                        p.Y = hop * 0.35f; p.KneeL = p.KneeR = hop * 45f; p.ToeL = p.ToeR = hop * 25f; p.HeadPitch = -10f * up; p.HeadRoll = 8f * up;
+                        break;
+                    }
+            }
             return p;
         }
 

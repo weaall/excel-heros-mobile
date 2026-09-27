@@ -149,6 +149,11 @@ namespace ExcelHeroes.World
             var k = SdLook.For(heroId);
             if (k.Skirt || k.Dress) SdRefProps.Skirt(rig, root, k, layer);
             SdRefProps.HandProp(rig, root, RoleOf(heroId), k, layer);
+            if (k.Tie.a > 0f) SdRefProps.Tie(rig, body, root, k.Tie, layer);
+            if (k.Cap.a > 0f) SdRefProps.Cap(rig, body, root, k.Cap, DollData.For(heroId == Data.GameData.MainId ? "intern" : heroId).Has("hardhat"), layer);
+            if (k.Headset) SdRefProps.Headset(rig, body, root, k.Accent, layer);
+            // hair, tag and hem chains trail the motion (the sample's own secondary bones)
+            root.gameObject.AddComponent<SdSecondary>().Init(go.transform, look.Style);
             return rig;
         }
 
