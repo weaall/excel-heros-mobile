@@ -23,6 +23,7 @@ namespace ExcelHeroes.World
         public string Attack = "";
         public Color Cap = new(0, 0, 0, 0);     // alpha 0 = no cap
         public bool Headset;
+        public string Outfit = "suit";          // suit | shirt | vest | cardigan | hoodie | coat | labcoat | apron | dress
 
         [Serializable] class Row { public string id, hair, top, shirt, bottom, legs, shoes, eye, skin; }
         [Serializable] class File { public List<Row> items = new(); }
@@ -60,6 +61,8 @@ namespace ExcelHeroes.World
             k.Bottom = H(s?.bottom, H(d.bottomColor, new Color(0.17f, 0.2f, 0.27f)));
             k.Shoes = H(s?.shoes, new Color(0.16f, 0.16f, 0.2f));
             var outfit = d.outfit ?? "suit";
+            if (sp != null && sp.outfit != "") outfit = sp.outfit;
+            k.Outfit = outfit;
             k.Skirt = !k.Male && d.bottom == "skirt" && outfit != "dress";
             k.Dress = outfit == "dress";
             k.Pants = !k.Skirt && !k.Dress;

@@ -149,6 +149,8 @@ namespace ExcelHeroes.World
             var k = SdLook.For(heroId);
             if (k.Skirt || k.Dress) SdRefProps.Skirt(rig, root, k, layer);
             SdRefProps.HandProp(rig, root, RoleOf(heroId), k, layer);
+            if (k.Outfit is "suit" or "coat" or "labcoat" or "dress" or "shirt" or "vest") SdRefProps.Collar(rig, body, root, k, layer);
+            if (k.Outfit is "coat" or "labcoat") SdRefProps.CoatTail(rig, root, k, layer);
             if (k.Tie.a > 0f) SdRefProps.Tie(rig, body, root, k.Tie, layer);
             if (k.Cap.a > 0f) SdRefProps.Cap(rig, body, root, k.Cap, DollData.For(heroId == Data.GameData.MainId ? "intern" : heroId).Has("hardhat"), layer);
             if (k.Headset) SdRefProps.Headset(rig, body, root, k.Accent, layer);

@@ -96,6 +96,84 @@ namespace ExcelHeroes.World
         }
 
         /// <summary>
+        /// The collar that tells a suit from a tracksuit: on the chest bone, a V of two lapel
+        /// strips in the jacket colour (a shade darker) opening from the collar (mesh z 0.0061)
+        /// down to z 0.0049, with the shirt showing inside the V and a small shirt collar at the
+        /// neck. "shirt" and "vest" outfits get the shirt collar only. Sits just in front of the
+        /// front profile (−0.00122 at that height).
+        /// </summary>
+        public static void Collar(ChibiRig rig, SkinnedMeshRenderer body, Transform root, SdLook k, int layer)
+        {
+            if (rig.Spine == null) return;
+            var s = body.transform.lossyScale.x;
+            var anchor = body.transform.TransformPoint(new Vector3(0f, -0.00128f, 0.00612f));
+            var b = new MeshKit.Builder();
+            var shirt = k.Shirt; shirt.a = 1f;
+            var lapel = MeshKit.Shade(k.Top, 0.8f); lapel.a = 1f;
+            var withLapels = k.Outfit is "suit" or "coat" or "labcoat" or "dress";
+            // closed thin boxes, not single-sided strips: the outline pass draws a hull around a
+            // box the way it does the tie's knot, whereas a lone strip can end up drawn only by it
+            void Slab(Vector3 c, Vector3 size, float zDeg, Color col)
+            {
+                b.M = Matrix4x4.TRS(c * s, Quaternion.Euler(0f, 0f, zDeg), Vector3.one);
+                b.Box(Vector3.zero, size * s, col);
+                b.M = Matrix4x4.identity;
+            }
+            if (withLapels)
+            {
+                Slab(new Vector3(0f, -0.00072f, 0.00003f), new Vector3(0.00062f, 0.00140f, 0.00003f), 0f, shirt);              // the shirt inside the V
+                foreach (var sx in new[] { -1f, 1f })
+                    Slab(new Vector3(sx * 0.00031f, -0.00078f, 0.00006f), new Vector3(0.00024f, 0.00158f, 0.00004f), sx * -21f, lapel);   // a lapel, top out at the shoulder
+                b.Ellipsoid(new Vector3(0f, -0.00152f, 0.00008f) * s, new Vector3(0.00005f, 0.00005f, 0.00004f) * s, MeshKit.Shade(k.Top, 0.5f), 8);   // the button
+            }
+            else
+                Slab(new Vector3(0f, -0.00030f, 0.00003f), new Vector3(0.00040f, 0.00050f, 0.00003f), 0f, shirt);              // an open shirt neck
+            // the shirt collar: two wings at the neck, tips pointing down and out
+            foreach (var sx in new[] { -1f, 1f })
+                Slab(new Vector3(sx * 0.00024f, -0.00013f, 0.00009f), new Vector3(0.00036f, 0.00015f, 0.00004f), sx * -32f, MeshKit.Shade(shirt, 0.94f));
+            var mat = MeshKit.NewToon(0.002f);
+            mat.SetFloat("_ShadeStrength", 0.18f);
+            var go = Attach("collar", rig.Spine, b.Bake("collar"), mat, layer, anchor, root.rotation);
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+        }
+
+        /// <summary>
+        /// Coat tails for coat / labcoat outfits: a lofted band from the hips (y 0.42 of the 1.2 m
+        /// figure) to mid-thigh (0.24), open at the front (the coat hangs unbuttoned), in the
+        /// jacket colour, on the pelvis so it swings with the body.
+        /// </summary>
+        public static void CoatTail(ChibiRig rig, Transform root, SdLook k, int layer)
+        {
+            if (rig.Pelvis == null) return;
+            var b = new MeshKit.Builder();
+            var col = k.Top; col.a = 1f;
+            var inner = MeshKit.Shade(col, 0.72f);
+            float top = 0.43f, bottom = 0.24f, r0 = 0.15f, r1 = 0.185f;
+            const int seg = 14;
+            // from 50° past the front on one side round the back to 50° past the front on the other: angles measured from +z (front)
+            b.Grid(seg, 1, (s, t) =>
+            {
+                var a = Mathf.Lerp(0.85f, Mathf.PI * 2f - 0.85f, s);
+                var r = Mathf.Lerp(r0, r1, t);
+                var p = new Vector3(Mathf.Sin(a) * r, Mathf.Lerp(top, bottom, t), Mathf.Cos(a) * r * 0.82f);
+                var n = new Vector3(Mathf.Sin(a), (r1 - r0) / (top - bottom), Mathf.Cos(a)).normalized;
+                return (p, n, new Vector2(s, t));
+            }, col);
+            b.Grid(seg, 1, (s, t) =>
+            {
+                var a = Mathf.Lerp(0.85f, Mathf.PI * 2f - 0.85f, s);
+                var r = Mathf.Lerp(r0, r1, t) * 0.985f;
+                var p = new Vector3(Mathf.Sin(a) * r, Mathf.Lerp(top, bottom, t), Mathf.Cos(a) * r * 0.82f);
+                var n = -new Vector3(Mathf.Sin(a), (r1 - r0) / (top - bottom), Mathf.Cos(a)).normalized;
+                return (p, n, new Vector2(s, t));
+            }, inner);
+            var mat = MeshKit.NewToon(0.006f);
+            mat.SetFloat("_ShadeStrength", 0.26f);
+            var go = Attach("coat", rig.Pelvis, b.Bake("coat"), mat, layer, root.position, root.rotation);
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+        }
+
+        /// <summary>
         /// A cap on the head bone: a dome over the crown (hair top mesh z 0.01018, skull centre
         /// (0, 0.0006, 0.0081)) with a brim forward, in the accessory's colour; a hard hat is the
         /// same dome, taller and without the brim, with a short rim all round.

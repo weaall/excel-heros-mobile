@@ -44,12 +44,13 @@ namespace ExcelHeroes.World
             }
             var n = _bodyN;
             var px = new Color[_bodySrc.Length];
+            var tailored = k.Outfit is "suit" or "coat" or "labcoat" or "shirt" or "vest" or "dress";
             for (var i = 0; i < px.Length; i++)
             {
                 var c = _bodySrc[i]; var o = c;
                 float mx = Mathf.Max(c.r, c.g, c.b), mn = Mathf.Min(c.r, c.g, c.b);
                 var sat = mx - mn;
-                if (mx > 0.85f && sat < 0.12f) o = c;                                           // white stripes, tag, highlights
+                if (mx > 0.85f && sat < 0.12f) o = tailored ? Scale(k.Top, c, 1f) : c;         // white stripes, zipper: kept on sportswear, jacket-coloured on a suit/coat (the tag is painted after)
                 else if (mx < 0.25f) o = Scale(k.Shoes, c, 0.12f);                                // near-black: shoes, outlines
                 else if (c.r > c.b + 0.08f && c.r > c.g) o = Scale(k.Skin, c, 0.9f);           // warm: skin swatches
                 else if (c.b > 0.8f && c.g > 0.65f) o = Scale(k.Top, c, 0.8f);                  // light blue: the jacket
