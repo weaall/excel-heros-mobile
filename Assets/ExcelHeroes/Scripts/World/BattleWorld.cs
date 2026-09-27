@@ -26,7 +26,7 @@ namespace ExcelHeroes.World
 
         readonly Transform _root;
         readonly Camera _cam;
-        Transform _set;
+        Transform _set, _street;
         int _setMood = -1;
         RenderTexture _rt;
         readonly Transform _templates;
@@ -86,12 +86,12 @@ namespace ExcelHeroes.World
         void PlaceCamera(float shake)
         {
             var k = Mathf.SmoothStep(0f, 1f, _closeUp);
-            // The reference's battle camera is low and close: about 15° above eye level, the
-            // squad filling the lower half of the frame, buildings running past the top.
-            // the close-up looks at the squad's centre (the reference lines them up mid-frame)
-            var target = Vector3.Lerp(new Vector3(-0.1f, 0.55f, 0.35f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
-            var pitch = Mathf.Lerp(15f, 8f, k) * Mathf.Deg2Rad;
-            var dist = Mathf.Lerp(7.6f, 5.6f, k);
+            // The reference's battle camera (temp_images/712980) is HIGH: about 32° above the
+            // street, looking down onto the road, the sidewalk and the storefronts — no sky. The
+            // close-up for the win drops lower and nearer to the squad's centre.
+            var target = Vector3.Lerp(new Vector3(0f, 0.4f, 0.9f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
+            var pitch = Mathf.Lerp(32f, 14f, k) * Mathf.Deg2Rad;
+            var dist = Mathf.Lerp(9.2f, 5.8f, k);
             var pos = target + new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
@@ -114,10 +114,13 @@ namespace ExcelHeroes.World
             if (_set == null || mood != _setMood)
             {
                 if (_set != null) Object.Destroy(_set.gameObject);
+                if (_street != null) Object.Destroy(_street.gameObject);
                 // The painted stage (tools/gen_bg_gemini.py) when there is one: a backdrop fixed to
-                // the camera, filling the frame. The procedural office is the fallback.
+                // the camera for the sky and the far city, with the 3D street set (StreetSet) in
+                // front of it. The procedural office is the fallback.
                 var bg = GameData.BattleBackdrop(mood == 2 ? "night" : mood == 1 ? "evening" : "day");
                 _set = bg != null ? Backdrop(bg) : OfficeStage.Build(_root, Layer, sim.Stage);
+                _street = bg != null ? StreetSet.Build(_root, Layer, mood) : null;
                 _setMood = mood;
                 _cam.backgroundColor = mood == 2 ? new Color(0.16f, 0.18f, 0.32f) : new Color(0.86f, 0.93f, 1f);
             }
