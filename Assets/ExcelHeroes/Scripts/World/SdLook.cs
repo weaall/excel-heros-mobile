@@ -1,0 +1,81 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+namespace ExcelHeroes.World
+{
+    /// <summary>
+    /// What varies between characters on the common SD base (SdBase): hair style and colour,
+    /// eyes, skin, outfit type and colours, accessories. Style flags come from the paper-doll
+    /// spec (Resources/Data/dolls.json); colours, when present, from the character's own SD
+    /// illustration (Resources/Data/looks.json, sampled by tools/sample_looks.py) so the 3D model
+    /// wears exactly what the SD art wears.
+    /// </summary>
+    public class SdLook
+    {
+        public string Id, Style;
+        public bool Male, Pants, Skirt, Dress, Jacket, Coat, Collar, ShortSleeve, Ahoge, Glasses, Sunglasses;
+        public Color Skin, Hair, HairTip, Eye, Top, Shirt, Sleeve, Bottom, Socks, Shoes, Tie, Cuff, Lapel, CollarColor, SkirtHem, Accent;
+        public float SockTop = 0.16f;
+
+        [Serializable] class Row { public string id, hair, top, shirt, bottom, legs, shoes, eye, skin; }
+        [Serializable] class File { public List<Row> items = new(); }
+        static Dictionary<string, Row> _rows;
+        static readonly Dictionary<string, SdLook> Cache = new();
+
+        static Row Sampled(string id)
+        {
+            if (_rows == null)
+            {
+                var a = Resources.Load<TextAsset>("Data/looks");
+                _rows = a != null ? JsonUtility.FromJson<File>(a.text).items.ToDictionary(r => r.id) : new Dictionary<string, Row>();
+            }
+            return _rows.TryGetValue(id, out var r) ? r : null;
+        }
+
+        static Color H(string hex, Color fb) => MeshKit.Hex(hex, fb);
+
+        public static SdLook For(string heroId)
+        {
+            var key = heroId == Data.GameData.MainId ? "intern" : heroId;
+            if (Cache.TryGetValue(key, out var k)) return k;
+            var d = DollData.For(key == "intern" ? "intern" : key);
+            var s = Sampled(key);
+            k = new SdLook { Id = key, Style = d.hair ?? "short", Male = key == "intern" };
+            k.Skin = H(s?.skin, d.skin switch { "light" => H("#f7dccb", Color.white), "tan" => H("#e2b894", Color.white), _ => H("#fbe3d4", Color.white) });
+            k.Hair = H(s?.hair, H(d.hairColor, new Color(0.25f, 0.2f, 0.2f)));
+            if (k.Male) k.Hair = H("#1d1f2a", Color.black);     // 김인턴: black hair, always (CLAUDE.md)
+            k.HairTip = Color.Lerp(k.Hair, Color.white, 0.12f);
+            k.Eye = H(s?.eye, H(d.eye, new Color(0.35f, 0.55f, 0.85f)));
+            k.Top = H(s?.top, H(d.top, new Color(0.2f, 0.3f, 0.5f)));
+            k.Shirt = H(d.shirt, Color.white);
+            k.Bottom = H(s?.bottom, H(d.bottomColor, new Color(0.17f, 0.2f, 0.27f)));
+            k.Shoes = H(s?.shoes, new Color(0.16f, 0.16f, 0.2f));
+            var outfit = d.outfit ?? "suit";
+            k.Skirt = !k.Male && d.bottom == "skirt" && outfit != "dress";
+            k.Dress = outfit == "dress";
+            k.Pants = !k.Skirt && !k.Dress;
+            k.Jacket = outfit is "suit" or "coat" or "labcoat" or "cardigan";
+            k.Coat = outfit is "coat" or "labcoat";
+            k.Collar = outfit is not "hoodie";
+            k.ShortSleeve = outfit == "shirt" && key == "intern";
+            k.Sleeve = outfit is "vest" or "apron" ? k.Shirt : k.Top;
+            k.Socks = H(s?.legs, k.Skirt || k.Dress ? new Color(0.14f, 0.15f, 0.2f) : k.Bottom);
+            k.SockTop = k.Skirt ? 0.2f : 0.08f;
+            k.Tie = d.Has("tie") ? H(d.AccColor("tie", "#2f3d5c"), Color.blue) : d.Has("scarf") ? H(d.AccColor("scarf", "#ffb7a1"), Color.red) : new Color(0, 0, 0, 0);
+            k.Cuff = d.Has("trim") ? H(d.AccColor("trim", "#d4a017"), Color.yellow) : new Color(0, 0, 0, 0);
+            k.Lapel = MeshKit.Shade(k.Top, 0.78f);
+            k.CollarColor = outfit == "shirt" ? k.Top : k.Shirt;
+            k.SkirtHem = d.Has("trim") ? k.Cuff : new Color(0, 0, 0, 0);
+            k.Accent = H(d.AccColor("lanyard", "#3b5bd6"), new Color(0.3f, 0.4f, 0.9f));
+            k.Glasses = d.Has("glasses");
+            k.Sunglasses = d.Has("sunglasses");
+            k.Ahoge = BackSheetHash(key) % 3 == 0;
+            Cache[key] = k;
+            return k;
+        }
+
+        static int BackSheetHash(string id) { var h = 0; foreach (var c in id) h += c; return h; }
+    }
+}

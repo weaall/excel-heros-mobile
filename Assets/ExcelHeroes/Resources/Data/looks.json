@@ -1,0 +1,372 @@
+{
+ "items": [
+  {
+   "id": "acct_lead",
+   "hair": "#494c60",
+   "top": "#3a4156",
+   "bottom": "#b7a498",
+   "legs": "#b6aba6",
+   "shoes": "#202330"
+  },
+  {
+   "id": "ai_lead",
+   "hair": "#79a18a",
+   "top": "#fdfdfe",
+   "bottom": "#f4f6f9",
+   "legs": "#bfc0d5",
+   "shoes": "#817988"
+  },
+  {
+   "id": "barista",
+   "hair": "#ad584c",
+   "top": "#fefefe",
+   "bottom": "#88655c",
+   "legs": "#88665c",
+   "shoes": "#331e22"
+  },
+  {
+   "id": "cco",
+   "hair": "#fbf8f6",
+   "top": "#c36489",
+   "bottom": "#b2a5c2",
+   "legs": "#f285a9",
+   "shoes": "#ec7ba2"
+  },
+  {
+   "id": "cdo",
+   "hair": "#725f64",
+   "top": "#4f4d5a",
+   "bottom": "#4e4b58",
+   "legs": "#252635",
+   "shoes": "#312f3b"
+  },
+  {
+   "id": "ceo",
+   "hair": "#faf8fa",
+   "top": "#373749",
+   "bottom": "#333344",
+   "legs": "#2d2d3c",
+   "shoes": "#2e2f41"
+  },
+  {
+   "id": "cfo",
+   "hair": "#f7f5f6",
+   "top": "#352d5f",
+   "bottom": "#372d60",
+   "legs": "#26263a",
+   "shoes": "#312831"
+  },
+  {
+   "id": "chairman",
+   "hair": "#fbf9f8",
+   "top": "#b98b4e",
+   "bottom": "#c5954f",
+   "legs": "#b7b0b1",
+   "shoes": "#b6afb3"
+  },
+  {
+   "id": "chairwoman",
+   "hair": "#fdfbf7",
+   "top": "#272834",
+   "bottom": "#262733",
+   "legs": "#232330",
+   "shoes": "#45455c"
+  },
+  {
+   "id": "chief_of_staff",
+   "hair": "#b1a0a4",
+   "top": "#b2afba",
+   "bottom": "#b2afbb",
+   "legs": "#a6a5b6",
+   "shoes": "#1f1e23"
+  },
+  {
+   "id": "chro",
+   "hair": "#605e6a",
+   "top": "#855a9d",
+   "bottom": "#77508e",
+   "legs": "#5b2522",
+   "shoes": "#27262d"
+  },
+  {
+   "id": "cleaner",
+   "hair": "#fafcff",
+   "top": "#7b675f",
+   "bottom": "#b7652f",
+   "legs": "#b1622f",
+   "shoes": "#262126"
+  },
+  {
+   "id": "cmo",
+   "hair": "#e06159",
+   "top": "#774d63",
+   "bottom": "#fafafb",
+   "legs": "#231f2c",
+   "shoes": "#252131"
+  },
+  {
+   "id": "contract",
+   "hair": "#a1989e",
+   "top": "#fef9f4",
+   "bottom": "#445875",
+   "legs": "#242333",
+   "shoes": "#a38277"
+  },
+  {
+   "id": "coo",
+   "hair": "#a39cab",
+   "top": "#afb3c6",
+   "bottom": "#aaaec5",
+   "legs": "#8c6b4e",
+   "shoes": "#241f20"
+  },
+  {
+   "id": "courier",
+   "hair": "#1c8dc6",
+   "top": "#fdfbfa",
+   "bottom": "#c99694",
+   "legs": "#ca9896",
+   "shoes": "#1d2842"
+  },
+  {
+   "id": "cpo",
+   "hair": "#b38874",
+   "top": "#35a38a",
+   "bottom": "#2f7980",
+   "legs": "#423847",
+   "shoes": "#9a8aa2"
+  },
+  {
+   "id": "cro",
+   "hair": "#857275",
+   "top": "#5d5964",
+   "bottom": "#4e4b59",
+   "legs": "#4f4a58",
+   "shoes": "#443438"
+  },
+  {
+   "id": "cso",
+   "hair": "#a5888c",
+   "top": "#ffffff",
+   "bottom": "#ffffff",
+   "legs": "#aeb2ca",
+   "shoes": "#242431"
+  },
+  {
+   "id": "cto",
+   "hair": "#5e5a6e",
+   "top": "#5a5a6d",
+   "bottom": "#1e1f2a",
+   "legs": "#1d1e29",
+   "shoes": "#22202d"
+  },
+  {
+   "id": "design_lead",
+   "hair": "#3e4d7a",
+   "top": "#feffff",
+   "bottom": "#8ccdf2",
+   "legs": "#793036",
+   "shoes": "#384262"
+  },
+  {
+   "id": "dev_lead",
+   "hair": "#3c4150",
+   "top": "#9c2b38",
+   "bottom": "#99877e",
+   "legs": "#b5b1c0",
+   "shoes": "#342f35"
+  },
+  {
+   "id": "founder",
+   "hair": "#fdfdfd",
+   "top": "#d6dae9",
+   "bottom": "#d0d3e4",
+   "legs": "#d5d7e4",
+   "shoes": "#ae8660"
+  },
+  {
+   "id": "ga_lead",
+   "hair": "#fdf9f4",
+   "top": "#ffffff",
+   "bottom": "#a99a9b",
+   "legs": "#352b32",
+   "shoes": "#251e25"
+  },
+  {
+   "id": "hacker",
+   "hair": "#4e4e68",
+   "top": "#42465a",
+   "bottom": "#3d4254",
+   "legs": "#d1d2e8",
+   "shoes": "#3a4463"
+  },
+  {
+   "id": "helpdesk",
+   "hair": "#5f5c6c",
+   "top": "#878896",
+   "bottom": "#485c76",
+   "legs": "#947a74",
+   "shoes": "#b08b75"
+  },
+  {
+   "id": "hr_jung",
+   "hair": "#c19d91",
+   "top": "#caefec",
+   "bottom": "#fefeff",
+   "legs": "#743531",
+   "shoes": "#2e2224"
+  },
+  {
+   "id": "intern",
+   "hair": "#605c6e",
+   "top": "#fefdfb",
+   "bottom": "#f6f5f7",
+   "legs": "#484451",
+   "shoes": "#8f9dc3"
+  },
+  {
+   "id": "intern_min",
+   "hair": "#e86d65",
+   "top": "#d69098",
+   "bottom": "#c79a9d",
+   "legs": "#c79b9f",
+   "shoes": "#9d706a"
+  },
+  {
+   "id": "intern_seo",
+   "hair": "#755e58",
+   "top": "#3c424e",
+   "bottom": "#be948f",
+   "legs": "#be9793",
+   "shoes": "#a0827c"
+  },
+  {
+   "id": "labor_atty",
+   "hair": "#fdfaf6",
+   "top": "#c3bac0",
+   "bottom": "#bbb5bb",
+   "legs": "#b7b1b9",
+   "shoes": "#272223"
+  },
+  {
+   "id": "legal_yoon",
+   "hair": "#717aa2",
+   "top": "#161d34",
+   "bottom": "#3c435b",
+   "legs": "#2f2128",
+   "shoes": "#9696ae"
+  },
+  {
+   "id": "logistics_bae",
+   "hair": "#978078",
+   "top": "#99725c",
+   "bottom": "#342f39",
+   "legs": "#ae5134",
+   "shoes": "#625c65"
+  },
+  {
+   "id": "macro",
+   "hair": "#605f6f",
+   "top": "#d5d8e0",
+   "bottom": "#c5c8d3",
+   "legs": "#cacbdd",
+   "shoes": "#323844"
+  },
+  {
+   "id": "mail_cho",
+   "hair": "#608ec3",
+   "top": "#77869d",
+   "bottom": "#597383",
+   "legs": "#372d32",
+   "shoes": "#be967b"
+  },
+  {
+   "id": "nurse_han",
+   "hair": "#fdfdfe",
+   "top": "#fdfdfe",
+   "bottom": "#fdfdfe",
+   "legs": "#bbbac6",
+   "shoes": "#b8b5c0"
+  },
+  {
+   "id": "parttime",
+   "hair": "#9f877f",
+   "top": "#4f5b83",
+   "bottom": "#c2a29f",
+   "legs": "#c49f9c",
+   "shoes": "#202233"
+  },
+  {
+   "id": "pr_yoo",
+   "hair": "#de5156",
+   "top": "#fefeff",
+   "bottom": "#c49594",
+   "legs": "#c88a86",
+   "shoes": "#221e25"
+  },
+  {
+   "id": "qa_lee",
+   "hair": "#565170",
+   "top": "#d5bce8",
+   "bottom": "#d3bae9",
+   "legs": "#853835",
+   "shoes": "#877588"
+  },
+  {
+   "id": "sales_kang",
+   "hair": "#5d5665",
+   "top": "#4e5976",
+   "bottom": "#968f9c",
+   "legs": "#464964",
+   "shoes": "#302024"
+  },
+  {
+   "id": "secretary_yun",
+   "hair": "#575970",
+   "top": "#4a4963",
+   "bottom": "#c19899",
+   "legs": "#1f2640",
+   "shoes": "#1a2037"
+  },
+  {
+   "id": "security_yang",
+   "hair": "#6d646c",
+   "top": "#f8f9fa",
+   "bottom": "#f9f9fa",
+   "legs": "#5e2e36",
+   "shoes": "#222434"
+  },
+  {
+   "id": "staff_park",
+   "hair": "#ac8c85",
+   "top": "#fefdfd",
+   "bottom": "#ca9792",
+   "legs": "#59251b",
+   "shoes": "#2c2836"
+  },
+  {
+   "id": "union_chief",
+   "hair": "#59515d",
+   "top": "#43485c",
+   "bottom": "#464b5c",
+   "legs": "#454a5c",
+   "shoes": "#5b5d6e"
+  },
+  {
+   "id": "vlookup",
+   "hair": "#4c5a87",
+   "top": "#fefeff",
+   "bottom": "#fdfeff",
+   "legs": "#aca8c5",
+   "shoes": "#8d8bb3"
+  },
+  {
+   "id": "welfare",
+   "hair": "#ec5e67",
+   "top": "#ee656e",
+   "bottom": "#c19b91",
+   "legs": "#892c35",
+   "shoes": "#dc5e66"
+  }
+ ]
+}

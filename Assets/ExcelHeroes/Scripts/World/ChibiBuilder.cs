@@ -12,7 +12,8 @@ namespace ExcelHeroes.World
         public Transform Root, Body, Head, ArmL, ArmR, LegL, LegR, Sheet;
         public Renderer SheetRenderer;
         public bool Sprite;                 // an SD sprite (SdSprite) rather than a built model
-        public bool Model3D;                // the reconstructed, auto-rigged 3D SD (SdModel)
+        public bool Model3D;
+        public Transform[] Base;            // the common SD base skeleton (SdBase.B order), when built on it                // the reconstructed, auto-rigged 3D SD (SdModel)
         public Renderer SpriteRenderer;
         public float Height = 0.95f;
         public int SheetSide = 1;           // +1 = the character's left (+Z), -1 = right
