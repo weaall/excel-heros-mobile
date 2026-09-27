@@ -43,6 +43,17 @@ namespace ExcelHeroes.EditorTools
                     rig.Pose(rig.CalfR, i >= 2 ? q : Quaternion.identity);
                     rig.Pose(rig.CalfL, i == 2 ? q : i == 3 ? qn : Quaternion.identity);
                 }
+                var poseEnv = System.Environment.GetEnvironmentVariable("SD_POSE");
+                if (!string.IsNullOrEmpty(poseEnv) && rig.RefModel)
+                {
+                    var pz = poseEnv == "win" ? SdPose.Victory(i, 0.55f) : poseEnv == "attack" ? SdPose.Attack(i % 3, 0.5f) : SdPose.Idle(i, 0.4f, 0f);
+                    SdPose.Apply(rig, pz);
+                    rig.Root.localPosition = new Vector3(0f, pz.Y, 0f);
+                    if (rig.EyeSub >= 0 && !string.IsNullOrEmpty(pz.Expr))
+                    {
+                        var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(ids[i]).EyeSheet(pz.Expr)); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub);
+                    }
+                }
                 var exprEnv = System.Environment.GetEnvironmentVariable("SD_EXPR");
                 if (!string.IsNullOrEmpty(exprEnv) && rig.RefModel && rig.EyeSub >= 0)
                 {

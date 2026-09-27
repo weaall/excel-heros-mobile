@@ -162,10 +162,9 @@ namespace ExcelHeroes.World
                     // the 3D SD: breathing on the bones, a slow sway, the sheet behind the back
                     if (rig.RefModel)
                     {
-                        rig.Pose(rig.Body, Quaternion.Euler(0f, 0f, -br * 1.5f) * Quaternion.Euler(Mathf.Sin(_t * 0.6f + phase) * 4f, 0f, 0f));
-                        rig.Pose(rig.Head, Quaternion.Euler(0f, 0f, -br * 2f) * Quaternion.Euler(Mathf.Sin(_t * 0.7f + phase) * 3f, 0f, 0f));
-                        rig.Pose(rig.ArmL, Quaternion.Euler(0f, 0f, br * 3f));
-                        rig.Pose(rig.ArmR, Quaternion.Euler(0f, 0f, -br * 3f));
+                        // the character's own idle from the pose library (root name = "sdref:<id>")
+                        var id = rig.Root.name.Contains(":") ? rig.Root.name.Substring(rig.Root.name.IndexOf(':') + 1) : rig.Root.name;
+                        SdPose.Apply(rig, SdPose.Idle(SdPose.IdleOf(id), _t, phase));
                     }
                     else
                     {

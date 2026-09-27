@@ -638,6 +638,8 @@ namespace ExcelHeroes.World
             /// bones — idle sway, a trot, an arm-thrown attack with anticipation, a flinch, a spin
             /// for EX, a hop and wave for the win.
             /// </summary>
+            Pose _pose; float _winT;
+
             void Update3D(float dt, float time, bool walking, MaterialPropertyBlock mpb, float closeUp)
             {
                 var hero = C.side == Side.Hero;
@@ -664,6 +666,21 @@ namespace ExcelHeroes.World
                     var k = Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f;
                     lean = 80f * Mathf.SmoothStep(0f, 1f, k);
                 }
+                if (Rig.RefModel)
+                {
+                    // the sample rig: a real pose per state from the library — the character's own
+                    // idle and victory, an attack by role — instead of offsets on the A-pose
+                    var cheering = (Cheer > 0f || closeUp > 0.5f) && C.Alive;
+                    _winT = cheering ? _winT + dt : 0f;
+                    if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f);
+                    else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(C.heroId), _winT);
+                    else if (Skill > 0f) _pose = SdPose.Skill(1f - Skill / 0.75f);
+                    else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
+                    else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.role), 1f - Attack / 0.32f);
+                    else if (walking) _pose = SdPose.Walk(_walk * 0.9f);
+                    else _pose = SdPose.Idle(SdPose.IdleOf(C.heroId), time, Z * 2f);
+                    y = _pose.Y; spin = _pose.Yaw;
+                }
                 var yaw = hero ? Mathf.Lerp(-35f, -8f, closeUp) : 35f;   // model faces +z (camera); turn toward the enemy
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad
                 var lunge = 0f;
@@ -679,56 +696,8 @@ namespace ExcelHeroes.World
                 // bones: offsets onto the rest pose (the sample rig's rest rotations are not identity)
                 if (Rig.RefModel)
                 {
-                    // Bip001, measured (SD_POSETEST=2/4): the bone's X runs along the bone. Right
-                    // shoulder: forward swing = +Z, raise (out to the side, up) = -Y; the left mirrors
-                    // both signs. Elbows and knees flex about +Z on BOTH sides. lean = pelvis Z.
-                    var elbowL = 14f + br * 2f; var elbowR = 14f - br * 2f; var kneeL = 0f; var kneeR = 0f;
-                    // the rest pose is an A-pose: a little lower reads as relaxed
-                    var raiseL = -8f + br * 3f; var raiseR = -8f - br * 3f; var swingL = 4f; var swingR = 4f;
-                    var expr = "";
-                    if (walking)
-                    {
-                        var sw = Mathf.Sin(_walk * 0.9f);
-                        kneeL = Mathf.Max(0f, sw) * 45f; kneeR = Mathf.Max(0f, -sw) * 45f;
-                        swingL = -sw * 28f; swingR = sw * 28f; elbowL = elbowR = 35f;
-                    }
-                    if (Attack > 0f)
-                    {
-                        // wind up: the arm drawn back with the elbow curled; strike: thrown forward and
-                        // straight, the body turning in; recover
-                        var a = 1f - Attack / 0.32f;
-                        if (a < 0.3f) { var k = a / 0.3f; swingR = Mathf.Lerp(4f, -45f, k); elbowR = Mathf.Lerp(14f, 95f, k); raiseR = 20f * k; }
-                        else if (a < 0.6f) { var k = (a - 0.3f) / 0.3f; swingR = Mathf.Lerp(-45f, 100f, k); elbowR = Mathf.Lerp(95f, 5f, k); raiseR = 20f; kneeL = 18f; }
-                        else { var k = (a - 0.6f) / 0.4f; swingR = Mathf.Lerp(100f, 4f, k); elbowR = Mathf.Lerp(5f, 14f, k); raiseR = Mathf.Lerp(20f, 10f, k); kneeL = 18f * (1f - k); }
-                        swingL = 30f; elbowL = 70f;                                  // guard hand at the chest
-                        expr = "angry";
-                    }
-                    if (Hit > 0f) { var k = Hit / 0.16f; raiseL = raiseR = -8f + 40f * k; swingL = swingR = -15f * k; elbowL = elbowR = 14f + 50f * k; expr = "hurt"; }
-                    if (Skill > 0f)
-                    {
-                        var k = 1f - Skill / 0.75f; var up = Mathf.Sin(k * Mathf.PI);
-                        raiseL = raiseR = Mathf.Lerp(-8f, 100f, up); swingL = swingR = Mathf.Lerp(4f, -40f, up); elbowL = elbowR = 12f; kneeL = kneeR = up * 50f; expr = "angry";
-                    }
-                    if ((Cheer > 0f || closeUp > 0.5f) && C.Alive)
-                    {
-                        var h = Mathf.Abs(Mathf.Sin(time * 7f));
-                        // one arm straight up beside the head, waving; the other down
-                        // measured (SD_POSETEST=6): raise 100 + swing -40 = straight up beside the head
-                        raiseR = 100f; swingR = -40f + Mathf.Sin(time * 12f) * 12f; elbowR = 8f + Mathf.Abs(Mathf.Sin(time * 12f)) * 15f;
-                        raiseL = -10f; elbowL = 20f; kneeL = kneeR = h * 35f; expr = "happy";
-                    }
-                    if (Dying > 0f || !C.Alive) { raiseL = raiseR = 15f; swingL = swingR = 25f; elbowL = elbowR = 50f; expr = "hurt"; }
-                    Rig.Pose(Rig.Body, Quaternion.Euler(0f, 0f, -lean) * Quaternion.Euler(twist, 0f, 0f));
-                    Rig.Pose(Rig.Head, Quaternion.Euler(0f, 0f, -br * 2f) * Quaternion.Euler(Hit > 0f ? 6f : 0f, 0f, 0f));
-                    Rig.Pose(Rig.ArmR, Quaternion.Euler(0f, -raiseR, swingR));
-                    Rig.Pose(Rig.ArmL, Quaternion.Euler(0f, raiseL, -swingL));
-                    Rig.Pose(Rig.ForearmL, Quaternion.Euler(0f, 0f, elbowL));
-                    Rig.Pose(Rig.ForearmR, Quaternion.Euler(0f, 0f, elbowR));
-                    Rig.Pose(Rig.LegL, Quaternion.Euler(0f, 0f, -legSwing));
-                    Rig.Pose(Rig.LegR, Quaternion.Euler(0f, 0f, legSwing));
-                    Rig.Pose(Rig.CalfL, Quaternion.Euler(0f, 0f, kneeL));
-                    Rig.Pose(Rig.CalfR, Quaternion.Euler(0f, 0f, kneeR));
-                    SetExpression(expr);
+                    SdPose.Apply(Rig, _pose);
+                    SetExpression(_pose.Expr ?? "");
                 }
                 else
                 {
