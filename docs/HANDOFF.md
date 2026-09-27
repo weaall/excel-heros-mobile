@@ -783,6 +783,9 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 전투·편성 모두 SdBase 우선(→ 2D SD → 인형). 전투 카메라는 참고처럼 낮고 가깝게(피치 15°, 거리 7.6), 배경은 제미나이 거리 세트(`street_{day,evening,night}`, `gen_bg_gemini.py --street`), 결과 화면은 Battle Complete 레이아웃(HUD 숨김, STRIKER 띠).
 - 다음: 43명 나머지 채색(제미나이, 4장×43), 얼굴판 눈 크기 미세 조정, 보스 HP 바·타격 링·킬 카운터(참고 `712980` 우측), 표정 텍스처 교체(EyeMouth 스왑) 구조.
 
+## 빌드·캡처 (repo 안, 다른 PC에서도)
+- `bash tools/buildshots.sh` → 헤드리스 Windows 빌드 후 실행해 32화면을 `tools/out/shots/`에. `BURST=1`이면 다음 라운드 전투 중 30프레임(0.07 s 간격, `Burst00..29`)을 더 찍는다 — 관절 튐·부품 분리·스프링 안착을 **시간축**으로 보는 용도. `UNITY=<경로>`로 에디터 지정. (예전 스크래치의 buildshots.sh와 같음.)
+
 ## 캐릭터 틀 — 새 캐릭터 추가 / 일러 교체 절차 (사용자: "틀을 잘 만들어 두면 일러가 바뀌어도 쉽다")
 한 캐릭터 = 풀 일러 → 2D SD 컷아웃 → **스펙 한 줄** → 3D SD(샘플 베이스 편집) + 모션(포즈 라이브러리) + 검수 시트. 사람 손이 닿는 곳은 스펙 파일과 시트 검수뿐.
 1. 일러 → 웹 repo에서 컷아웃·SD: `SD=1 node scripts/genCardsHF.mjs <id>` → `ArtSource/SD/<id>.png`(시트 없는 원본), `bake_sheet.py`로 시트 박힌 본.

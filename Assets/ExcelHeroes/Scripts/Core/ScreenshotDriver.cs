@@ -189,6 +189,17 @@ namespace ExcelHeroes.Core
                             yield return new WaitForSeconds(0.45f);
                             yield return Shoot($"{n:00}-Fight{f}");
                         }
+                        // -burst: a run of close frames (24 × 0.07 s) to judge the motion in time —
+                        // joint pops, parts coming loose, the springs settling — on a contact sheet
+                        if (ArgValue("-burst") != null || System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-burst") >= 0)
+                        {
+                            yield return new WaitForSeconds(3.2f);          // past the next run's entrance walk, into the fighting
+                            for (var f = 0; f < 30; f++)
+                            {
+                                yield return new WaitForSeconds(0.07f);
+                                yield return Shoot($"{n:00}-Burst{f:00}");
+                            }
+                        }
                     }
 
                     // The home sheet gets a second shot a few seconds later. The first one keeps
