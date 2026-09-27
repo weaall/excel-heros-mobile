@@ -46,7 +46,8 @@ namespace ExcelHeroes.EditorTools
                 var poseEnv = System.Environment.GetEnvironmentVariable("SD_POSE");
                 if (!string.IsNullOrEmpty(poseEnv) && rig.RefModel)
                 {
-                    var pz = poseEnv == "win" ? SdPose.Victory(i, 0.55f) : poseEnv == "attack" ? SdPose.Attack(i % 3, 0.5f) : SdPose.Idle(i, 0.4f, 0f);
+                    var pz = poseEnv == "win" ? SdPose.Victory(i, 0.55f) : poseEnv == "attack" ? SdPose.Attack(i % 3, 0.5f)
+                           : poseEnv == "walk" ? SdPose.Walk(i * Mathf.PI / 3f) : SdPose.Idle(i, 0.4f, 0f);
                     SdPose.Apply(rig, pz);
                     rig.Root.localPosition = new Vector3(0f, pz.Y, 0f);
                     if (rig.EyeSub >= 0 && !string.IsNullOrEmpty(pz.Expr))
@@ -75,6 +76,27 @@ namespace ExcelHeroes.EditorTools
                     float[] rs = { -110f, -100f, -120f, -130f }; float[] sw = { -25f, -40f, -35f, -50f };
                     rig.Pose(rig.ArmR, Quaternion.Euler(0f, rs[i % 4], sw[i % 4])); rig.Pose(rig.ForearmR, Quaternion.Euler(0f, 0f, 8f));
                     rig.Pose(rig.ArmL, Quaternion.Euler(0f, -10f, -4f)); rig.Pose(rig.ForearmL, Quaternion.Euler(0f, 0f, 20f));
+                }
+                // SD_POSETEST=7: the RIGHT hand about +X, -X, +Y, -Y, +Z, -Z (columns 0..5), 60 degrees, arms hanging
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "7" && rig.RefModel)
+                {
+                    SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
+                    var d = i % 2 == 0 ? 60f : -60f; var ax = i / 2;
+                    rig.Pose(rig.HandR, ax == 0 ? Quaternion.Euler(d, 0f, 0f) : ax == 1 ? Quaternion.Euler(0f, d, 0f) : Quaternion.Euler(0f, 0f, d));
+                }
+                // SD_POSETEST=9: the LEFT hand about +Y / -Y (columns 0/1), +Z / -Z (2/3), to settle the mirror
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "9" && rig.RefModel)
+                {
+                    SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
+                    rig.Pose(rig.HandL, i == 0 ? Quaternion.Euler(0f, 60f, 0f) : i == 1 ? Quaternion.Euler(0f, -60f, 0f) : i == 2 ? Quaternion.Euler(0f, 0f, 60f) : Quaternion.Euler(0f, 0f, -60f));
+                    rig.Pose(rig.HandR, Quaternion.identity);
+                }
+                // SD_POSETEST=8: the RIGHT foot likewise
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "8" && rig.RefModel)
+                {
+                    SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
+                    var d = i % 2 == 0 ? 40f : -40f; var ax = i / 2;
+                    rig.Pose(rig.FootR, ax == 0 ? Quaternion.Euler(d, 0f, 0f) : ax == 1 ? Quaternion.Euler(0f, d, 0f) : Quaternion.Euler(0f, 0f, d));
                 }
                 if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "5" && rig.RefModel)
                 {

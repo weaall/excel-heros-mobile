@@ -36,7 +36,16 @@ namespace ExcelHeroes.UI
 
             // Two columns, as the reference's 부대 편성 is: the line-up on the left at a size where
             // you can read a face, everything the line-up adds up to on the right.
+            // The reference's 부대 편성 (temp_images/208908) has three bands: the 부대 tabs down
+            // the left, the line-up filling the middle, and a narrow rail of square icon buttons
+            // down the right. The readouts go on a strip under the line-up.
             var cols = UiKit.Div("party-cols", _root);
+            var tabs = UiKit.Div("party-tabs", cols);
+            for (var t = 1; t <= 4; t++)
+            {
+                var tab = UiKit.Btn($"{t}부대", t == 1 ? "party-tab party-tab--on" : "party-tab", () => { }, tabs);
+                if (t > 1) tab.SetEnabled(false);
+            }
             var left = UiKit.Div("party-cols__left", cols);
             var right = UiKit.Div("party-cols__right", cols);
 
@@ -67,13 +76,13 @@ namespace ExcelHeroes.UI
             // own; two columns and a rail is 2500px of content in a 2280px working width, and the
             // spec's split — 1500 for the line-up, 700 for everything it adds up to — leaves no
             // room for a third. Stacked, so no line can run out the way the original row did.
-            var actions = UiKit.Div("party-rail", right);
+            var actions = UiKit.Div("party-rail party-rail--icons", right);
 
             // 자동 편성 goes first because it is the one most players will press. Choosing by hand
             // means opening 55 cards, and the best party is not the five biggest numbers — 부문
             // 시너지, a healer and a spread of roles all beat raw 전투력, and none of them shows on
             // a card by itself.
-            var auto = UiKit.Btn("자동 편성", "btn", () =>
+            var auto = UiKit.Btn("⚙\n자동 편성", "btn party-icon", () =>
             {
                 AutoPartyService.Auto(Game.Player);
                 AudioService.Play("bond");
@@ -84,7 +93,7 @@ namespace ExcelHeroes.UI
 
             // 비품 자동 장착 sits next to it: both answer "just put the good stuff on", and
             // four slots across five heroes is the other thing nobody compares by hand.
-            var gear = UiKit.Btn("비품 장착", "btn", () =>
+            var gear = UiKit.Btn("▣\n비품 장착", "btn party-icon", () =>
             {
                 var (heroes, slotsChanged) = AutoEquipService.EquipParty(Game.Player);
                 AudioService.Play("upgrade", 0.6f);
@@ -95,8 +104,8 @@ namespace ExcelHeroes.UI
             }, actions);
             gear.SetEnabled(Game.Player.items.Count > 0 && p.PartyCount() > 0);
 
-            UiKit.Btn("빈 칸 채우기", "btn", OpenPicker, actions);
-            var bulk = UiKit.Btn("일괄 강화", "btn btn--primary", () =>
+            UiKit.Btn("＋\n빈 칸 채우기", "btn party-icon", OpenPicker, actions);
+            var bulk = UiKit.Btn("▲\n일괄 강화", "btn party-icon btn--primary", () =>
             {
                 var before = Game.Player.gold;
                 foreach (var member in Game.Player.PartyMembers())
@@ -110,12 +119,13 @@ namespace ExcelHeroes.UI
             bulk.SetEnabled(p.PartyCount() > 0);
 
             var power = p.PartyMembers().Sum(StatMath.Power);
-            var readout = UiKit.Div("power-readout", right);
+            var strip = UiKit.Div("party-strip", left);
+            var readout = UiKit.Div("power-readout power-readout--strip", strip);
             UiKit.Text(power.ToString("N0"), "power-readout__value", readout);
             UiKit.Text("총 전투력", "power-readout__label", readout);
 
             var syn = StatMath.Synergy(p);
-            var panel = UiKit.Div("panel", right);
+            var panel = UiKit.Div("panel party-strip__panel", strip);
             UiKit.Text("부문 시너지", "section-title", panel);
             if (syn.lines.Count == 0)
             {
@@ -143,7 +153,7 @@ namespace ExcelHeroes.UI
             //
             // So the content gets smaller instead of being hidden: four roles in two lines saves
             // 120px and the column fits honestly.
-            var composition = UiKit.Div("panel", right);
+            var composition = UiKit.Div("panel party-strip__panel", strip);
             UiKit.Text("편성 구성", "section-title", composition);
             var compGrid = UiKit.Div("statgrid", composition);
             foreach (var role in GameData.Roles)

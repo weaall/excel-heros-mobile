@@ -123,6 +123,10 @@ namespace ExcelHeroes.World
             rig.Spine = Find("Bip001 Spine1") ?? Find("Bip001 Spine");
             rig.ForearmL = Find("Bip001 L Forearm"); rig.ForearmR = Find("Bip001 R Forearm");
             rig.CalfL = Find("Bip001 L Calf"); rig.CalfR = Find("Bip001 R Calf");
+            rig.HandL = Find("Bip001 L Hand"); rig.HandR = Find("Bip001 R Hand");
+            rig.FootL = Find("Bip001 L Foot"); rig.FootR = Find("Bip001 R Foot");
+            rig.Pelvis = Find("Bip001 Pelvis");
+            if (rig.Pelvis != null) rig.PelvisRest = rig.Pelvis.localPosition;
             foreach (var r in rends) if (r.gameObject.activeSelf) rig.Renderers.Add(r);
             rig.FaceRenderer = body;
             for (var i = 0; i < body.sharedMaterials.Length; i++)

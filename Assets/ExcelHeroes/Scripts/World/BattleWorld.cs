@@ -638,7 +638,7 @@ namespace ExcelHeroes.World
             /// bones — idle sway, a trot, an arm-thrown attack with anticipation, a flinch, a spin
             /// for EX, a hop and wave for the win.
             /// </summary>
-            Pose _pose; float _winT;
+            Pose _pose, _shown; bool _shownInit; float _winT;
 
             void Update3D(float dt, float time, bool walking, MaterialPropertyBlock mpb, float closeUp)
             {
@@ -679,9 +679,16 @@ namespace ExcelHeroes.World
                     else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.role), 1f - Attack / 0.32f);
                     else if (walking) _pose = SdPose.Walk(_walk * 0.9f);
                     else _pose = SdPose.Idle(SdPose.IdleOf(C.heroId), time, Z * 2f);
-                    y = _pose.Y; spin = _pose.Yaw;
+                    // ease between states so a pose change never pops (fast into an attack, softer otherwise)
+                    var ease = Attack > 0f || Hit > 0f ? 0.035f : 0.09f;
+                    _shown = _shownInit ? Pose.Lerp(_shown, _pose, 1f - Mathf.Exp(-dt / ease)) : _pose;
+                    _shownInit = true;
+                    y = _shown.Y; spin = _shown.Yaw;
                 }
-                var yaw = hero ? Mathf.Lerp(-35f, -8f, closeUp) : 35f;   // model faces +z (camera); turn toward the enemy
+                // The reference's squads FACE the enemy (right), seen from behind-and-above; they only
+                // turn to the camera for the win close-up. Root rotation 180 = facing the camera,
+                // 90 = facing +x (the enemies): heroes at 105, enemies mirrored at 255.
+                var yaw = hero ? Mathf.Lerp(-75f, -10f, closeUp) : 75f;
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad
                 var lunge = 0f;
                 if (Rig.ArmR == null && Attack > 0f)
@@ -696,8 +703,8 @@ namespace ExcelHeroes.World
                 // bones: offsets onto the rest pose (the sample rig's rest rotations are not identity)
                 if (Rig.RefModel)
                 {
-                    SdPose.Apply(Rig, _pose);
-                    SetExpression(_pose.Expr ?? "");
+                    SdPose.Apply(Rig, _shown);
+                    SetExpression(_shown.Expr ?? "");
                 }
                 else
                 {

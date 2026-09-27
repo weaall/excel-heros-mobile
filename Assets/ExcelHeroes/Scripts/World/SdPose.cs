@@ -16,10 +16,36 @@ namespace ExcelHeroes.World
     {
         public float RaiseL, RaiseR, SwingL, SwingR, ElbowL, ElbowR, InL, InR, KneeL, KneeR, ThighL, ThighR;
         public float Lean, Twist, HeadPitch, HeadRoll, Y, Yaw;
+        // wrists: Flex folds the hand toward the body (+Y on the right hand, measured), Dev bends it
+        // sideways (+Z out); feet: Toe > 0 points the toes down (+Z right foot), < 0 lifts them
+        public float HandFlexL, HandFlexR, HandDevL, HandDevR, ToeL, ToeR;
+        // weight: the whole figure shifted sideways (metres, +x = the figure's right) and a hip tilt
+        public float Sway, HipRoll;
         public string Expr;
 
+        /// <summary>Blend of two poses (the joint angles; the expression and the spin come from b).</summary>
+        public static Pose Lerp(in Pose a, in Pose b, float t)
+        {
+            return new Pose
+            {
+                RaiseL = Mathf.Lerp(a.RaiseL, b.RaiseL, t), RaiseR = Mathf.Lerp(a.RaiseR, b.RaiseR, t),
+                SwingL = Mathf.Lerp(a.SwingL, b.SwingL, t), SwingR = Mathf.Lerp(a.SwingR, b.SwingR, t),
+                ElbowL = Mathf.Lerp(a.ElbowL, b.ElbowL, t), ElbowR = Mathf.Lerp(a.ElbowR, b.ElbowR, t),
+                InL = Mathf.Lerp(a.InL, b.InL, t), InR = Mathf.Lerp(a.InR, b.InR, t),
+                KneeL = Mathf.Lerp(a.KneeL, b.KneeL, t), KneeR = Mathf.Lerp(a.KneeR, b.KneeR, t),
+                ThighL = Mathf.Lerp(a.ThighL, b.ThighL, t), ThighR = Mathf.Lerp(a.ThighR, b.ThighR, t),
+                Lean = Mathf.Lerp(a.Lean, b.Lean, t), Twist = Mathf.Lerp(a.Twist, b.Twist, t),
+                HeadPitch = Mathf.Lerp(a.HeadPitch, b.HeadPitch, t), HeadRoll = Mathf.Lerp(a.HeadRoll, b.HeadRoll, t),
+                Y = Mathf.Lerp(a.Y, b.Y, t), Yaw = b.Yaw, Expr = b.Expr,
+                HandFlexL = Mathf.Lerp(a.HandFlexL, b.HandFlexL, t), HandFlexR = Mathf.Lerp(a.HandFlexR, b.HandFlexR, t),
+                HandDevL = Mathf.Lerp(a.HandDevL, b.HandDevL, t), HandDevR = Mathf.Lerp(a.HandDevR, b.HandDevR, t),
+                ToeL = Mathf.Lerp(a.ToeL, b.ToeL, t), ToeR = Mathf.Lerp(a.ToeR, b.ToeR, t),
+                Sway = Mathf.Lerp(a.Sway, b.Sway, t), HipRoll = Mathf.Lerp(a.HipRoll, b.HipRoll, t),
+            };
+        }
+
         /// <summary>Arms hanging, everything else neutral.</summary>
-        public static Pose Rest => new() { RaiseL = -36f, RaiseR = -36f, SwingL = 3f, SwingR = 3f, ElbowL = 14f, ElbowR = 14f, Expr = "" };
+        public static Pose Rest => new() { RaiseL = -36f, RaiseR = -36f, SwingL = 3f, SwingR = 3f, ElbowL = 14f, ElbowR = 14f, HandFlexL = 18f, HandFlexR = 18f, Expr = "" };
     }
 
     public static class SdPose
@@ -153,14 +179,31 @@ namespace ExcelHeroes.World
             return p;
         }
 
+        /// <summary>
+        /// A walk with weight in it. ph runs one cycle per 2π: the LEFT thigh is forward at π/2,
+        /// back at 3π/2. The swinging leg bends at the knee as it passes and its toes point down
+        /// at toe-off; the stance leg stays straight; the arms swing against the legs with the
+        /// elbow bending on the forward swing; the body rises at mid-stance and drops at each
+        /// contact, shifts over the stance leg and rocks at the hips; the head counter-bobs.
+        /// </summary>
         public static Pose Walk(float ph)
         {
             var p = Pose.Rest;
-            var sw = Mathf.Sin(ph);
-            p.KneeL = Mathf.Max(0f, sw) * 45f; p.KneeR = Mathf.Max(0f, -sw) * 45f;
-            p.ThighL = sw * 30f; p.ThighR = sw * 30f;
-            p.SwingL = -sw * 28f; p.SwingR = sw * 28f; p.ElbowL = p.ElbowR = 35f;
-            p.RaiseL = p.RaiseR = -30f; p.Lean = -6f; p.Y = Mathf.Abs(sw) * 0.06f;
+            var sw = Mathf.Sin(ph);                             // +1 left thigh forward
+            var pass = Mathf.Cos(ph);                           // +1 left leg swinging forward through the pass
+            p.ThighL = sw * 28f; p.ThighR = -sw * 28f;
+            p.KneeL = Mathf.Max(0f, pass) * 55f + 4f; p.KneeR = Mathf.Max(0f, -pass) * 55f + 4f;
+            p.ToeL = Mathf.Max(0f, -sw) * 28f - Mathf.Max(0f, sw) * 8f;     // down at toe-off, up a little at heel strike
+            p.ToeR = Mathf.Max(0f, sw) * 28f - Mathf.Max(0f, -sw) * 8f;
+            p.SwingL = -sw * 16f; p.SwingR = sw * 16f;
+            p.ElbowL = 20f + Mathf.Max(0f, -sw) * 18f; p.ElbowR = 20f + Mathf.Max(0f, sw) * 18f;
+            p.RaiseL = p.RaiseR = -34f;
+            p.HandFlexL = p.HandFlexR = 22f;
+            p.Lean = -3f;
+            p.Y = 0.012f + Mathf.Abs(pass) * 0.03f;             // up at mid-stance, down at double support
+            p.Sway = -pass * 0.012f;                            // over the stance leg (the right when the left swings)
+            p.HipRoll = pass * 4f; p.Twist = sw * 5f;           // pelvis with the legs, shoulders against
+            p.HeadPitch = -Mathf.Abs(pass) * 2f + 2f;
             return p;
         }
 
@@ -202,6 +245,17 @@ namespace ExcelHeroes.World
             rig.Pose(rig.LegR, Quaternion.Euler(0f, 0f, p.ThighR));
             rig.Pose(rig.CalfL, Quaternion.Euler(0f, 0f, p.KneeL));
             rig.Pose(rig.CalfR, Quaternion.Euler(0f, 0f, p.KneeR));
+            if (rig.HandR != null) rig.Pose(rig.HandR, Quaternion.Euler(0f, p.HandFlexR, p.HandDevR));
+            if (rig.HandL != null) rig.Pose(rig.HandL, Quaternion.Euler(0f, p.HandFlexL, p.HandDevL));   // measured: the hands are NOT mirrored
+            if (rig.FootR != null) rig.Pose(rig.FootR, Quaternion.Euler(0f, 0f, p.ToeR));
+            if (rig.FootL != null) rig.Pose(rig.FootL, Quaternion.Euler(0f, 0f, p.ToeL));
+            // weight: the figure over its stance leg, and the hips rocking (roll about the pelvis's forward)
+            if (rig.Pelvis != null)
+            {
+                var worldOff = rig.Root.rotation * new Vector3(p.Sway, 0f, 0f);
+                rig.Pelvis.localPosition = rig.PelvisRest + rig.Pelvis.parent.InverseTransformVector(worldOff);
+                if (p.HipRoll != 0f) rig.Pose(rig.Body, Quaternion.Euler(0f, 0f, -p.Lean) * Quaternion.Euler(p.Twist, p.HipRoll, 0f));
+            }
         }
     }
 }

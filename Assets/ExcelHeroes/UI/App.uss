@@ -5556,3 +5556,32 @@
 .bresult__acts { right: 60px; bottom: 36px; }
 .bresult__btn { width: 300px; height: 96px; margin-left: 20px; font-size: 38px; }
 .battle--result .bhud, .battle--result .ex-bar, .battle--result .ex-cost-bar, .battle--result .bmenu { display: none; }
+
+
+/* ---- 편성: the reference's three bands (temp_images/208908) — 부대 tabs · line-up · icon rail ---- */
+.party-tabs { width: 200px; flex-shrink: 0; margin-right: var(--ex-space-3); padding-top: 24px; }
+.party-tab {
+    height: 84px; margin-bottom: 14px; padding-left: 0; padding-right: 0;
+    font-size: 30px; -unity-font-style: bold; color: rgb(52, 74, 110);
+    background-color: rgb(238, 244, 250); border-width: 0; border-radius: 8px;
+    -unity-text-align: middle-center;
+}
+.party-tab--on { background-color: rgb(24, 44, 88); color: rgb(255, 255, 255); }
+.party-tab:disabled { opacity: 0.6; }
+.party-cols__left { width: auto; flex-grow: 1; min-width: 0; min-height: 0; }
+.party-cols__left .party-slots { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.party-cols__right { width: 180px; flex-shrink: 0; margin-left: var(--ex-space-3); padding-top: 24px; }
+.party-rail--icons { flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; margin-top: 0; }
+.party-rail--icons .btn.party-icon {
+    width: 150px; height: 150px; margin-bottom: 18px; padding: 0;
+    font-size: 20px; white-space: normal; -unity-text-align: middle-center;
+    background-color: rgb(246, 250, 254); color: rgb(40, 60, 100); border-radius: 12px;
+}
+.party-rail--icons .btn.party-icon.btn--primary { background-color: rgb(84, 190, 245); color: rgb(255, 255, 255); }
+.party-strip { flex-direction: row; flex-shrink: 0; height: 196px; margin-top: 14px; align-items: stretch; }
+.party-strip .section-title { margin-top: 0; height: 44px; padding-top: 0; padding-bottom: 0; }
+.power-readout--strip { width: 300px; flex-shrink: 0; margin-right: var(--ex-space-2); justify-content: center; align-items: center; }
+.party-strip__panel { flex-grow: 1; flex-basis: 0; margin-right: var(--ex-space-2); margin-bottom: 0; margin-top: 0; padding: 10px 20px; overflow: hidden; }
+.party-strip__panel .stat-row { height: 44px; }
+.party-strip .section-title { font-size: var(--ex-text-sm); margin-bottom: 4px; }
+.party-strip .synergy-line, .party-strip .muted { font-size: var(--ex-text-xs); }
