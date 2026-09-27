@@ -5842,3 +5842,18 @@
 .minicard--icon .minicard__name { font-size: 30px; }
 .minicard--icon .minicard__lv { font-size: 22px; }
 .bigstats, .kitstrip, .block--bare { flex-shrink: 0; }
+
+/* battle HUD vs target_3, round 2: bigger gold-rimmed squares with words, the 격파 glass plate, red enemy bars */
+.bhud__sq { width: 104px; height: 104px; margin-left: 12px; }
+.bhud__sq-icon { left: 20px; right: 20px; top: 12px; bottom: 34px; }
+.bhud__sq-label { font-size: 22px; bottom: 8px; padding: 0; margin: 0; }
+.bhud__auto .bhud__sq-label { height: 104px; font-size: 28px; }
+.bkill { height: 84px; padding: 0 44px 0 30px; top: 22px; }
+.bkill__glyph { font-size: 48px; color: rgb(30, 48, 86); margin-right: 12px; padding: 0; }
+.bkill__num { color: rgb(22, 36, 64); font-size: 38px; padding: 0; margin: 0; }
+.fighter--3d.fighter--monster .fighter__hpfill { background-color: rgb(238, 88, 62); }
+.fighter--3d.fighter--hero .fighter__hpfill { background-color: rgb(118, 214, 72); }
+
+.bboss { left: 430px; }
+.bigstat__key { font-size: 26px; }
+.kittile__sock { background-color: rgb(232, 240, 248); border-radius: 8px; }

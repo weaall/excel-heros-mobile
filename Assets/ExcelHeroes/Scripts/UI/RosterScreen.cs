@@ -1052,7 +1052,7 @@ namespace ExcelHeroes.UI
                 // (faint and with a + when empty), the slot name beside it (ui_critique round 3, 16-Detail #2)
                 var tile = UiKit.Div("kittile" + (worn == null ? " kittile--empty" : ""), strip);
                 var sock = UiKit.Div("kittile__sock", tile);
-                ModalFrame.Painted(sock, (ctx, r) => Chrome.DrawGlassTile(ctx, r, false, corner: false));   // target_2: square glass sockets
+                ModalFrame.Painted(sock, (ctx, r) => Chrome.DrawGlassTile(ctx, r, false, corner: true, edge: UiPaint.C(176, 200, 226)));   // target_2: square glass sockets
                 var pic = GameData.Icon("eq_" + slot.id);
                 if (pic != null) UiKit.SetArt(UiKit.Div("kittile__pic", sock), pic);
                 if (worn == null) UiKit.Text("+", "kittile__plus", sock);

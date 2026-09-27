@@ -85,6 +85,7 @@ namespace ExcelHeroes.UI
         public void DebugBoss(float hpFrac) { _pendingBoss = hpFrac; Debug.Log($"[shots] boss requested (sim {(_sim == null ? "none" : _sim.Finished ? "finished" : "live")})"); }
         float _pendingBoss;
         VisualElement _resultPopup;
+        VisualElement _kills;
         Label _costWords;     // the result overlay on screen, if any (NewRun takes it down)
         public string DebugState() => _sim == null ? "no sim" : $"P{_sim.Stage} wave {_sim.Wave}/{_sim.WaveCount} t {_sim.Elapsed:F1} finished {_sim.Finished} boss {(_sim.Monsters.FirstOrDefault(m => m.boss != null) is { } b ? $"{b.hp}/{b.maxHp}" : "-")} bar {(_bossBar == null ? "null" : _bossBar.ClassListContains("hidden") ? "hidden" : "shown")}";
 
@@ -156,7 +157,8 @@ namespace ExcelHeroes.UI
             _autoButton = Square(hud, null, ToggleAuto, out var autoLabel);
             autoLabel.text = "AUTO";
             _autoButton.AddToClassList("bhud__auto");
-            Square(hud, DrawMenuIcon, ToggleMenu, out _);
+            Square(hud, DrawMenuIcon, ToggleMenu, out var menuLabel);
+            menuLabel.text = "메뉴";
 
             // Built before the menu so the menu opens over them (build order is the only z-order).
             _bossBar = UiKit.Div("bboss hidden", _root);
@@ -166,14 +168,10 @@ namespace ExcelHeroes.UI
             _bossName = UiKit.Text("", "bboss__name", bossPlate);
             _bossCount = UiKit.Text("", "bboss__count", _bossBar);
 
-            var kills = UiKit.Div("bkill", _root);
-            ModalFrame.Painted(kills, (ctx, r) =>
-            {
-                var poly = UiPaint.RoundRect(r, r.height * 0.5f, 8);
-                UiPaint.Fill(ctx, poly, UiPaint.C(18, 28, 50, 0.66f));
-                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.22f), 2f);
-            });
-            ModalFrame.Painted(UiKit.Div("bkill__icon", kills), DrawClipboardIcon);
+            var kills = _kills = UiKit.Div("bkill", _root);
+            // target_3: "격파: 12 / 50" on a glass plate, a navy sword before it
+            ModalFrame.Painted(kills, (ctx, r) => Chrome.DrawGlassTile(ctx, r, false));
+            UiKit.Text("", "icon bkill__glyph", kills);   // swords
             _killLabel = UiKit.Text("", "bkill__num", kills);
 
             _menu = UiKit.Div("bmenu hidden", _root);
@@ -355,7 +353,7 @@ namespace ExcelHeroes.UI
                 2 => 3,
                 _ => 1,
             };
-            if (_speedLabel != null) _speedLabel.text = $"×{_speedMultiplier}";
+            if (_speedLabel != null) _speedLabel.text = $"속도 x{_speedMultiplier}";
             SetOn(_speedButton, _speedMultiplier > 1);
             AudioService.Play("tap", 0.5f);
         }
@@ -397,7 +395,8 @@ namespace ExcelHeroes.UI
                 var poly = UiPaint.RoundRect(r, 12f, 5);
                 UiPaint.Fill(ctx, poly, on ? UiPaint.Vertical(UiPaint.C(255, 222, 90), UiPaint.C(255, 190, 40), r.yMin, r.yMax)
                                             : UiPaint.Flat(UiPaint.C(18, 28, 50, 0.66f)));
-                UiPaint.Stroke(ctx, poly, on ? UiPaint.C(255, 250, 220, 0.9f) : UiPaint.C(255, 255, 255, 0.25f), 2f);
+                UiPaint.Stroke(ctx, poly, on ? UiPaint.C(255, 250, 220, 0.9f) : UiPaint.C(226, 186, 90, 0.95f), 2.5f);   // target_3: a gold rim
+                UiPaint.Stroke(ctx, UiPaint.Offset(poly, -5f), UiPaint.C(255, 255, 255, on ? 0.5f : 0.16f), 1.2f);
             });
             if (icon != null)
             {
@@ -594,7 +593,7 @@ namespace ExcelHeroes.UI
             _advanceButton?.EnableInClassList("auto-toggle--on", p.autoAdvance);
             _upgradeButton?.EnableInClassList("auto-toggle--on", p.autoUpgrade);
 
-            if (_speedLabel != null) _speedLabel.text = $"×{_speedMultiplier}";
+            if (_speedLabel != null) _speedLabel.text = $"속도 x{_speedMultiplier}";
             SetOn(_speedButton, _speedMultiplier > 1);
 
             if (_safeButton == null) return;
@@ -787,7 +786,8 @@ namespace ExcelHeroes.UI
                     ? $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
                     : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}";
             if (_enemyLabel != null) _enemyLabel.text = _sim.Monsters.Count(m => m.Alive).ToString();
-            if (_killLabel != null) _killLabel.text = _sim.EnemyTotal > 0 ? $"{_sim.Kills}/{_sim.EnemyTotal}" : _sim.Kills.ToString();
+            _kills?.EnableInClassList("hidden", _sim.Finished);   // the result screen has its own title there
+            if (_killLabel != null) _killLabel.text = _sim.EnemyTotal > 0 ? $"격파: {_sim.Kills} / {_sim.EnemyTotal}" : $"격파: {_sim.Kills}";
             if (_timeLabel != null)
             {
                 var left = Mathf.Max(0f, BattleSim.TimeLimit - _sim.Elapsed);

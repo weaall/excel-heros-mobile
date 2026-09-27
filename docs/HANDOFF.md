@@ -871,6 +871,15 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - 5바퀴: 편성 발밑 바닥 원판(3D 카메라가 수평이라 UI 층 `pslotsFloor`로, 렌더 텍스처 뒤).
 - 다음 후보(비평): 전투 스킬 카드(BA는 3장 + NEXT), 코스트 게이지 질감, 로비 '업무' CTA 판, 상세 이름판 레이어, 검토 화면 카드, 10회 이름을 카드 안 명판으로.
 
+## 세 장의 시안과 같은 수준으로 (2026-09-28, 사용자: "제미나이에게 BA식 UI 시안을 세 개로 나눠 받아서 같은 퀄리티로. 적도, 공격 모션·임팩트도")
+- 기준: `tools/out/design/target_1_0.png`(로비), `target_2_0.png`(캐릭터 상세), `target_3_0.png`(전투). 매 바퀴 캡처를 이 셋과 나란히 놓고 비교.
+- **로비**: `Chrome.DrawGlassTile(ctx, r, active, corner, edge)` = 기울어진 반투명 유리 판(흰 테, 오른쪽 위 시안 삼각형, 오른쪽 아래 사선 세 줄, 활성은 시안). 왼쪽 메뉴(아이콘 + 굵은 글자 한 줄), 하단 내비 타일(네이비 띠 위에 서 있음 — `DrawBottomStrip`), 설정·홈 네모 타일(글리프는 자식 `topbar__glyph`로 — 페인터는 자기 텍스트 위에 그린다), 플레이어 판 = 유리 + 리드 얼굴 원형 아바타(`AppRoot.PlateAvatar`, 로비 들어올 때마다 다시), 모집 금색 큰 판, 재화 `+` 원형 시안.
+- **상세**: 2×2 큰 스탯(`BigStat`: Material Symbols 글리프 + 작은 캡션 + 58px 숫자), 스킬·특성 카드에 네이비 아이콘 사각(`MiniIcon`), 비품 = 정사각 유리 소켓(흰 패널 위라 `edge` 색 테), 버튼 `btn--ivory`(`SkewPlate.Kind.Ivory` 흰 바탕 금테), 이름판 금테 + 금색 별.
+- **전투 HUD**: CRITICAL 금색 숫자·팝, 같은 대상 0.5 s 안의 숫자는 위·옆으로 계단(`_floatStack`), COMBO 오른쪽(끝나면 숨김), 육각 COST 배지 + 게이지 안 "코스트 N/10", 보스 바 다이아몬드 xN(`bboss` left 430), "격파: N / M" 유리 판(결과 화면에선 숨김), 속도·AUTO·메뉴 금테 네모 + 글자, 적 HP 빨강.
+- **타격 타이밍**: 시뮬은 휘두르는 순간 피해를 확정한다 → 공격자 스윙은 즉시(`BattleWorld.Swing`), 나머지 모든 이벤트(피격·링·숫자·사망)는 `BattleScreen.ImpactLag` 0.1 s 뒤 = 스윙의 접촉 프레임. 모든 이벤트가 같은 지연이라 순서 유지. 넉백 적 0.2(치명 0.34), 아군 −0.08(−0.16), 복귀는 빠르게 나왔다가 부드럽게.
+- **적 v2**: `python tools/gen_monsters_v2.py [ids] [--force]` — 기존 스프라이트(`ArtSource/Monsters_v2/_orig_<id>.png`로 한 번 보관)를 정체성 참조로 제미나이가 **한 화풍의 BA 마스코트**(둥근 몸, 큰 눈, 네이비 외곽선, 보스는 왕관·경고 표식)로 다시 그림 → 흰 배경 테두리 플러드로 잘라 `Resources/Art/SDMonsters/<id>.png`(512, 발 바닥 정렬). 43/43. 전투는 2D 스프라이트 우선(`SdSprite.BuildMonster` → 없으면 TripoSR 메시). 원본·v2 raw는 드라이브 `generated/monsters_v2_raw`(restore.py가 `ArtSource/Monsters_v2`로).
+- 다음: 스킬 카드 2번(흰 머리 캐릭터) 초상이 머리카락만 잡힘(얼굴 박스), 전투 타격 스파크(시안의 노란 번개 파편), 보스 바 이름판 "보스 | 이름" 판 분리, 편성·모집 화면도 같은 유리 타일로, `ceo_chair`는 얼굴이 약함(재생성 후보).
+
 ## UI v2 — BA급 화면 (2026-09-28, 사용자: "게임 퀄리티가 BA보다 너무 떨어져")
 - 화면별 제미나이 시안(`tools/out/design/ui_*`: 우리 캡처 → "같은 화면을 BA UI 수준으로")이 공통으로 짚은 것: 흐린 일러 배경, 반투명 유리 패널, 큰 글자.
 - **배경**: `Art/Backdrop/menu.png`(밝은 사무실, 흐림 + 22 % 흰 안개), `lobby.png`(창가 라운지, 약간 흐림) — 제미나이 생성 후 PIL로 흐림·안개(1024 → 2048×868). `Chrome.SetScene`이 셸 루트의 첫 자식 `shellScene`으로 깔고 로비/메뉴에 따라 교체, 그림 없으면 옛 칠한 하늘. 화면을 덮어야 하는 전체 페이지(사원 상세)는 `Chrome.PaintScene`으로 같은 그림을 자기 배경에. 모집 화면은 자체 하늘을 그만 그림(`.gacha` 투명).

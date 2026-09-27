@@ -88,7 +88,7 @@ namespace ExcelHeroes.UI
         /// a white rim, a small cyan triangle in the top-right corner and three faint diagonal
         /// stripes in the lower right. Lit, the same plate in cyan with white marks.
         /// </summary>
-        public static void DrawGlassTile(MeshGenerationContext ctx, Rect r, bool active, bool corner = true)
+        public static void DrawGlassTile(MeshGenerationContext ctx, Rect r, bool active, bool corner = true, Color? edge = null)
         {
             var h = r.height; var w = r.width;
             var slant = Mathf.Min(Mathf.Tan(10f * Mathf.Deg2Rad) * h, w * 0.14f);
@@ -111,6 +111,8 @@ namespace ExcelHeroes.UI
                 var stripe = new List<Vector2> { new(x, r.yMax - h * 0.46f), new(x + sw, r.yMax - h * 0.46f), new(x + sw - h * 0.46f, r.yMax), new(x - h * 0.46f, r.yMax) };
                 UiPaint.Fill(ctx, UiPaint.Clip(stripe, inner), mark, 0.8f);
             }
+            // on a white panel the white rim vanishes: the caller gives it an edge colour
+            if (edge.HasValue) UiPaint.Stroke(ctx, outer, edge.Value, 2f);
             if (corner)
             {
                 var s = Mathf.Clamp(h * 0.11f, 7f, 14f);
