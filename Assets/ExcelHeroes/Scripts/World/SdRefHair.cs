@@ -42,11 +42,13 @@ namespace ExcelHeroes.World
             var keepBelow = style switch
             {
                 "long" => 0.0f,
-                "ponytail" => 0.35f, "twin" => 0.42f,
+                "ponytail" => 0.35f, "twin" => 0.66f,
                 "side" => 0.5f, "curly" => 0.52f, "bob" => 0.62f,
                 _ => 0.66f,
             };
             if (keepBelow <= 0f) return src;
+            var twin = style == "twin";                          // the tail is moved to both sides instead of dropped
+            var cropSides = style is "short" or "spiky";         // no chin-length side locks on short hair
             var keepTie = style is "ponytail" or "twin" or "bun";
             var keepBunch = style == "bun";                     // the tail's top bunch reads as a bun once the tail is gone
 
@@ -58,6 +60,7 @@ namespace ExcelHeroes.World
             var tris = src.GetTriangles(hairSub);
             var comps = Components(tris);
             var drop = new HashSet<int>();
+            var tailVerts = new HashSet<int>();
             foreach (var c in comps)
             {
                 var lo = c.Min(i => (v[i].z - zmin) / H);
@@ -71,7 +74,12 @@ namespace ExcelHeroes.World
                 // the ribbon's loose tails: tiny pieces well behind the head
                 var tail = c.Count < 12 && frontMost > 0.1f;
                 if (keepBunch && hi > 0.97f) continue;
-                if (behind && (lo < keepBelow || ((tie || tail) && !keepTie))) foreach (var i in c) drop.Add(i);
+                if (cropSides && !behind && lo < 0.70f && hi < 0.95f) { foreach (var i in c) drop.Add(i); continue; }
+                if (behind && (lo < keepBelow || ((tie || tail) && !keepTie)))
+                {
+                    foreach (var i in c) drop.Add(i);
+                    if (twin && (lo < keepBelow || hi > 0.97f)) foreach (var i in c) tailVerts.Add(i);
+                }
             }
             var kept = new List<int>(tris.Length);
             for (var t = 0; t < tris.Length; t += 3)
@@ -81,6 +89,7 @@ namespace ExcelHeroes.World
             }
             var m = Object.Instantiate(src);
             m.name = src.name + ":" + style;
+            if (twin && tailVerts.Count > 0) kept.AddRange(Twin(m, tris, tailVerts, v, H));
             m.SetTriangles(kept.ToArray(), hairSub);
             // the scrunchie on the crown is part of the body submesh: the only body piece that high
             if (!keepTie && bodySub >= 0)
@@ -99,6 +108,41 @@ namespace ExcelHeroes.World
             }
             Debug.Log($"[SdRefHair] {style}: H {H:F4} keepBelow {keepBelow} pieces {comps.Count} dropped verts {drop.Count} tris {tris.Length / 3} -> {kept.Count / 3}");
             return m;
+        }
+
+        /// <summary>
+        /// Twin tails: the sample's single tail (its hanging pieces and the crown bunch) copied
+        /// twice, to either side of the head and a little forward and lower, the copies keeping
+        /// their bone weights so they swing with the head. Returns the copies' triangles.
+        /// </summary>
+        static List<int> Twin(Mesh m, int[] tris, HashSet<int> tailVerts, Vector3[] v, float H)
+        {
+            var N = m.normals; var UV = m.uv; var BW = m.boneWeights; var TG = m.tangents;
+            var nv = new List<Vector3>(v); var nn = new List<Vector3>(N); var nuv = new List<Vector2>(UV);
+            var nbw = new List<BoneWeight>(BW); var ntg = new List<Vector4>(TG);
+            var outTris = new List<int>();
+            var cx = tailVerts.Average(i => v[i].x);
+            foreach (var side in new[] { -1f, 1f })
+            {
+                var map = new Dictionary<int, int>();
+                var offset = new Vector3(side * H * 0.17f - cx, -H * 0.03f, -H * 0.05f);   // out to the side, forward, lower
+                foreach (var i in tailVerts)
+                {
+                    map[i] = nv.Count;
+                    var p = v[i] + offset;
+                    p.x = cx + (p.x - cx) * 0.85f;                    // a little slimmer than the single tail
+                    nv.Add(p); nn.Add(N[i]); nuv.Add(UV[i]);
+                    if (BW.Length > 0) nbw.Add(BW[i]);
+                    if (TG.Length > 0) ntg.Add(TG[i]);
+                }
+                for (var t = 0; t < tris.Length; t += 3)
+                    if (tailVerts.Contains(tris[t]) && tailVerts.Contains(tris[t + 1]) && tailVerts.Contains(tris[t + 2]))
+                    { outTris.Add(map[tris[t]]); outTris.Add(map[tris[t + 1]]); outTris.Add(map[tris[t + 2]]); }
+            }
+            m.SetVertices(nv); m.SetNormals(nn); m.SetUVs(0, nuv);
+            if (TG.Length > 0) m.SetTangents(ntg);
+            if (BW.Length > 0) m.boneWeights = nbw.ToArray();
+            return outTris;
         }
 
         static List<List<int>> Components(int[] tris)

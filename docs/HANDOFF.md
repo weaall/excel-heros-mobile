@@ -799,4 +799,5 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - **3D 거리 세트** `World/StreetSet`: 참고 전투 스샷(`temp_images/712980`)의 카메라는 **높다**(약 32° 내려다봄, 하늘 없음) — 이전 "낮은 카메라"는 오독. 도로(중앙 점선·정지선·차선 화살표·횡단보도·맨홀·패치), 코너(x −8.5)에서 교차로, 보도(타일·연석·배수구), 파스텔 건물 줄(창·간판·차양·옥상 설비), 화분 나무·가로등·버스정류장·신호등. 그림 배경은 상단 띠용으로 뒤에 남김. 무드로 색·창 불빛.
 - 검수: `SD_IDS=a,b SD_PREVIEW_OUT=<dir> Unity -batchmode -quit -executeMethod ExcelHeroes.EditorTools.SdBasePreview.Run` → 정면/¾/옆/뒤 + 얼굴 확대 행, 첫 캐릭터의 `tex_eyemouth.png`/`tex_face.png`. `SD_RAW=1`은 샘플 원본(자기 시트), `SD_DEBUG=1` 서브메시별 단색, `SD_NOHAIR=1`.
 - 이름표(시트 u .72–.98 v .03–.35)는 캐릭터 카드로 다시 칠함: 흰 바탕 + Top색 띠 + 자기 4칸 시트(`SheetTexture`) 축소 — `SdRefLook.SheetFor`(게임 데이터 필요; 미리보기는 `GameData.Load()`). "bun"은 꼭대기 뭉치·리본을 남기고 늘어진 꼬리만 제거.
-- 다음: 트윈테일(꼬리 조각을 양옆으로 복제), 앞머리 변형, 치마 형태, 의상 형태(정장·치마)는 몸 조각 편집, 표정 스왑(EyeMouth 텍스처 교체), 이름표 자리에 4칸 시트, 몬스터도 같은 방식. `Resources/Art/SDTex/`(구 SdBase 제미나이 채색 결과 21 MB)는 미커밋 — SdBase 폴백 전용.
+- "twin"은 꼬리(늘어진 조각+꼭대기 뭉치)를 양옆(±17 %H, 앞·아래로 조금)에 복제(본 가중치 유지), "short·spiky"는 턱 길이 옆머리(앞쪽, lo < .70) 제거 → bob과 구분.
+- 다음: 앞머리 변형, 치마 형태, 스파이크 머리, 의상 형태(정장·치마)는 몸 조각 편집, 표정 스왑(EyeMouth 텍스처 교체), 이름표 자리에 4칸 시트, 몬스터도 같은 방식. `Resources/Art/SDTex/`(구 SdBase 제미나이 채색 결과 21 MB)는 미커밋 — SdBase 폴백 전용.
