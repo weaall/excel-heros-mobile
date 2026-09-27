@@ -16,6 +16,9 @@ namespace ExcelHeroes.World
         public Transform[] Base;            // the common SD base skeleton (SdBase.B order), when built on it
         public bool RefModel;               // built on the sample FBX (SdRef): Bip001 bones, extra joints below
         public Transform Spine, ForearmL, ForearmR, CalfL, CalfR;
+        public Renderer FaceRenderer;       // the renderer carrying the eye/mouth submesh (SdRef)
+        public int EyeSub = -1;             // its submesh index; -1 = no expression swaps
+        public string Expression = "";       // the sheet currently shown
         /// <summary>Rest local rotations of the posed bones (the sample's Bip001 rest pose is not
         /// identity): animation offsets are multiplied ONTO these, never assigned over them.</summary>
         public readonly Dictionary<Transform, Quaternion> Rest = new();

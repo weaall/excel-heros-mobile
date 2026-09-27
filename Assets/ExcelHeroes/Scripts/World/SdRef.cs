@@ -124,6 +124,9 @@ namespace ExcelHeroes.World
             rig.ForearmL = Find("Bip001 L Forearm"); rig.ForearmR = Find("Bip001 R Forearm");
             rig.CalfL = Find("Bip001 L Calf"); rig.CalfR = Find("Bip001 R Calf");
             foreach (var r in rends) if (r.gameObject.activeSelf) rig.Renderers.Add(r);
+            rig.FaceRenderer = body;
+            for (var i = 0; i < body.sharedMaterials.Length; i++)
+                if (body.sharedMaterials[i] == look.MaterialFor("eyemouth")) rig.EyeSub = i;
 
             var sh = new MeshKit.Builder();
             sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
@@ -172,6 +175,8 @@ namespace ExcelHeroes.World
         SdRefLook(SdLook k) { _k = k; }
         public string Style => _k.Style;
         public bool Male => _k.Male;
+        /// <summary>The eye/mouth sheet for an expression ("" normal, happy, hurt, angry).</summary>
+        public Texture2D EyeSheet(string expr) => SdRefTex.EyeMouth(_k, expr);
 
         public static SdRefLook For(string heroId)
         {

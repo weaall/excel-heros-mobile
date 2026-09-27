@@ -70,9 +70,15 @@ namespace ExcelHeroes.World
             return new Color(Mathf.Clamp01(target.r * f), Mathf.Clamp01(target.g * f), Mathf.Clamp01(target.b * f), 1f);
         }
 
-        public static Texture2D EyeMouth(SdLook k)
+        /// <summary>
+        /// The eye/mouth sheet per expression, the reference's way (same plates, another sheet):
+        /// "" normal · "happy" eyes shut in arcs, open smile · "hurt" &gt;_&lt; · "angry" narrowed, set mouth.
+        /// </summary>
+        public static Texture2D EyeMouth(SdLook k, string expr = "")
         {
-            if (Eyes.TryGetValue(k.Id, out var t) && t != null) return t;
+            var id = k.Id + ":" + expr;
+            if (Eyes.TryGetValue(id, out var t) && t != null) return t;
+            var shut = expr is "happy" or "hurt";
             const int N = 128;
             var px = new Color[N * N];
             var clear = new Color(0f, 0f, 0f, 0f);
@@ -88,7 +94,8 @@ namespace ExcelHeroes.World
                 {
                     var u = (x + 0.5f) / N; var v = (y + 0.5f) / N;
                     var d = Mathf.Sqrt(((u - cx) / rx) * ((u - cx) / rx) + ((v - cy) / ry) * ((v - cy) / ry));
-                    if (d >= 1f) continue;
+                    if (d >= 1f || shut) continue;                                   // shut: the iris plate is clipped away
+                    if (expr == "angry" && v > cy + ry * 0.55f) continue;            // narrowed: the top of the iris hidden
                     var g = Mathf.InverseLerp(cy + ry, cy - ry, v);            // 0 top .. 1 bottom
                     var c = Color.Lerp(dark, light, Mathf.SmoothStep(0f, 1f, g * 1.15f));
                     if (d > 0.84f) c = Color.Lerp(c, dark, Mathf.InverseLerp(0.84f, 1f, d));
@@ -103,11 +110,20 @@ namespace ExcelHeroes.World
                 }
             // eye white: the socket plug — opaque skin with the white blob giving the eye its shape
             var skinO = k.Skin; skinO.a = 1f;
+            var lashC = Color.Lerp(k.Hair, new Color(0.12f, 0.08f, 0.1f), 0.75f); lashC.a = 1f;
             Fill(px, N, new Rect(0.036f, 0.677f, 0.195f, 0.171f), (u, v) =>
             {
                 var lu = (u - 0.036f) / 0.195f; var lv = (v - 0.677f) / 0.171f;
+                if (shut)
+                {
+                    // eyes shut: a line drawn on the plug — an arch (happy) or a > chevron (hurt)
+                    var e = (lu - 0.5f) * 2f;
+                    var line = expr == "happy" ? 0.62f - e * e * 0.3f : 0.55f - Mathf.Abs(e) * 0.28f;
+                    return Mathf.Abs(lv - line) < 0.1f && Mathf.Abs(e) < 0.8f ? lashC : skinO;
+                }
                 // the white sits a little high and narrow, so the iris (its own mesh) fills most of it
                 var d = new Vector2((lu - 0.5f) / 0.4f, (lv - 0.54f) / 0.45f).magnitude;
+                if (expr == "angry" && lv > 0.78f) return skinO;                     // narrowed lid
                 return d < 1f ? new Color(0.99f, 0.99f, 1f, 1f) : skinO;
             });
             // mouth: a small smile line; the rest of the plate stays clear
@@ -115,15 +131,30 @@ namespace ExcelHeroes.World
             {
                 var lu = (u - 0.009f) / 0.232f; var lv = (v - 0.043f) / 0.164f;
                 var e = (lu - 0.5f) * 2f;
+                var mouth = new Color(0.5f, 0.18f, 0.26f, 1f);
+                switch (expr)
+                {
+                    case "happy":                                   // an open smile: a filled D, tongue-pink inside
+                        {
+                            var top = 0.62f; var bottom = 0.62f - (1f - e * e) * 0.34f;
+                            if (Mathf.Abs(e) < 0.7f && lv < top && lv > bottom)
+                                return lv < bottom + 0.06f || lv > top - 0.06f || Mathf.Abs(e) > 0.6f ? mouth : new Color(0.85f, 0.35f, 0.42f, 1f);
+                            return null;
+                        }
+                    case "hurt":                                    // a small wobble, set low
+                        return Mathf.Abs(lv - (0.36f + Mathf.Sin(e * 6f) * 0.05f)) < 0.07f && Mathf.Abs(e) < 0.45f ? mouth : null;
+                    case "angry":                                   // a set line
+                        return Mathf.Abs(lv - 0.42f) < 0.07f && Mathf.Abs(e) < 0.5f ? mouth : null;
+                }
                 var curve = 0.42f + e * e * 0.22f;          // v is bottom-up: corners higher = a smile
-                if (Mathf.Abs(lv - curve) < 0.08f && Mathf.Abs(e) < 0.62f) return new Color(0.5f, 0.18f, 0.26f, 1f);
+                if (Mathf.Abs(lv - curve) < 0.08f && Mathf.Abs(e) < 0.62f) return mouth;
                 return null;
             });
             // glint quads
             Fill(px, N, new Rect(0.033f, 0.901f, 0.087f, 0.062f), (u, v) => new Color(1f, 1f, 1f, 1f));
-            t = new Texture2D(N, N, TextureFormat.RGBA32, false) { name = "eyemouth:" + k.Id, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            t = new Texture2D(N, N, TextureFormat.RGBA32, false) { name = "eyemouth:" + id, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             t.SetPixels(px); t.Apply();
-            return Eyes[k.Id] = t;
+            return Eyes[id] = t;
         }
 
         public static Texture2D Face(SdLook k)

@@ -668,15 +668,56 @@ namespace ExcelHeroes.World
                 // bones: offsets onto the rest pose (the sample rig's rest rotations are not identity)
                 if (Rig.RefModel)
                 {
-                    // Bip001: the bone's X axis runs along the bone; lean = pitch about the pelvis's
-                    // side axis, arm swing = rotation about the shoulder's up axis
+                    // Bip001, measured (SD_POSETEST=2/4): the bone's X runs along the bone. Right
+                    // shoulder: forward swing = +Z, raise (out to the side, up) = -Y; the left mirrors
+                    // both signs. Elbows and knees flex about +Z on BOTH sides. lean = pelvis Z.
+                    var elbowL = 14f + br * 2f; var elbowR = 14f - br * 2f; var kneeL = 0f; var kneeR = 0f;
+                    // the rest pose is an A-pose: a little lower reads as relaxed
+                    var raiseL = -8f + br * 3f; var raiseR = -8f - br * 3f; var swingL = 4f; var swingR = 4f;
+                    var expr = "";
+                    if (walking)
+                    {
+                        var sw = Mathf.Sin(_walk * 0.9f);
+                        kneeL = Mathf.Max(0f, sw) * 45f; kneeR = Mathf.Max(0f, -sw) * 45f;
+                        swingL = -sw * 28f; swingR = sw * 28f; elbowL = elbowR = 35f;
+                    }
+                    if (Attack > 0f)
+                    {
+                        // wind up: the arm drawn back with the elbow curled; strike: thrown forward and
+                        // straight, the body turning in; recover
+                        var a = 1f - Attack / 0.32f;
+                        if (a < 0.3f) { var k = a / 0.3f; swingR = Mathf.Lerp(4f, -45f, k); elbowR = Mathf.Lerp(14f, 95f, k); raiseR = 20f * k; }
+                        else if (a < 0.6f) { var k = (a - 0.3f) / 0.3f; swingR = Mathf.Lerp(-45f, 100f, k); elbowR = Mathf.Lerp(95f, 5f, k); raiseR = 20f; kneeL = 18f; }
+                        else { var k = (a - 0.6f) / 0.4f; swingR = Mathf.Lerp(100f, 4f, k); elbowR = Mathf.Lerp(5f, 14f, k); raiseR = Mathf.Lerp(20f, 10f, k); kneeL = 18f * (1f - k); }
+                        swingL = 30f; elbowL = 70f;                                  // guard hand at the chest
+                        expr = "angry";
+                    }
+                    if (Hit > 0f) { var k = Hit / 0.16f; raiseL = raiseR = -8f + 40f * k; swingL = swingR = -15f * k; elbowL = elbowR = 14f + 50f * k; expr = "hurt"; }
+                    if (Skill > 0f)
+                    {
+                        var k = 1f - Skill / 0.75f; var up = Mathf.Sin(k * Mathf.PI);
+                        raiseL = raiseR = Mathf.Lerp(-8f, 100f, up); swingL = swingR = Mathf.Lerp(4f, -40f, up); elbowL = elbowR = 12f; kneeL = kneeR = up * 50f; expr = "angry";
+                    }
+                    if ((Cheer > 0f || closeUp > 0.5f) && C.Alive)
+                    {
+                        var h = Mathf.Abs(Mathf.Sin(time * 7f));
+                        // one arm straight up beside the head, waving; the other down
+                        // measured (SD_POSETEST=6): raise 100 + swing -40 = straight up beside the head
+                        raiseR = 100f; swingR = -40f + Mathf.Sin(time * 12f) * 12f; elbowR = 8f + Mathf.Abs(Mathf.Sin(time * 12f)) * 15f;
+                        raiseL = -10f; elbowL = 20f; kneeL = kneeR = h * 35f; expr = "happy";
+                    }
+                    if (Dying > 0f || !C.Alive) { raiseL = raiseR = 15f; swingL = swingR = 25f; elbowL = elbowR = 50f; expr = "hurt"; }
                     Rig.Pose(Rig.Body, Quaternion.Euler(0f, 0f, -lean) * Quaternion.Euler(twist, 0f, 0f));
                     Rig.Pose(Rig.Head, Quaternion.Euler(0f, 0f, -br * 2f) * Quaternion.Euler(Hit > 0f ? 6f : 0f, 0f, 0f));
-                    // the sample's rest pose is already an A-pose: only the animated part goes on
-                    Rig.Pose(Rig.ArmL, Quaternion.Euler(0f, fwdL, -(armL - 8f) - 12f));
-                    Rig.Pose(Rig.ArmR, Quaternion.Euler(0f, -fwdR, (armR + 8f) + 12f));
+                    Rig.Pose(Rig.ArmR, Quaternion.Euler(0f, -raiseR, swingR));
+                    Rig.Pose(Rig.ArmL, Quaternion.Euler(0f, raiseL, -swingL));
+                    Rig.Pose(Rig.ForearmL, Quaternion.Euler(0f, 0f, elbowL));
+                    Rig.Pose(Rig.ForearmR, Quaternion.Euler(0f, 0f, elbowR));
                     Rig.Pose(Rig.LegL, Quaternion.Euler(0f, 0f, -legSwing));
                     Rig.Pose(Rig.LegR, Quaternion.Euler(0f, 0f, legSwing));
+                    Rig.Pose(Rig.CalfL, Quaternion.Euler(0f, 0f, kneeL));
+                    Rig.Pose(Rig.CalfR, Quaternion.Euler(0f, 0f, kneeR));
+                    SetExpression(expr);
                 }
                 else
                 {
@@ -698,6 +739,18 @@ namespace ExcelHeroes.World
                     Rig.Sheet.localPosition = new Vector3(Rig.SheetSide * 0.12f, Rig.Height * 0.62f + Mathf.Sin(time * 1.7f) * 0.015f, -0.14f);
                     Rig.Sheet.localRotation = Quaternion.Euler(0f, 180f, Rig.SheetSide * 12f);
                 }
+            }
+
+            /// <summary>Swaps the eye/mouth sheet on the face renderer's eye submesh (SdRef only).</summary>
+            void SetExpression(string expr)
+            {
+                if (Rig.EyeSub < 0 || Rig.FaceRenderer == null || Rig.Expression == expr) return;
+                Rig.Expression = expr;
+                var look = SdRefLook.For(C.heroId);
+                var b = new MaterialPropertyBlock();
+                Rig.FaceRenderer.GetPropertyBlock(b, Rig.EyeSub);
+                b.SetTexture("_MainTex", look.EyeSheet(expr));
+                Rig.FaceRenderer.SetPropertyBlock(b, Rig.EyeSub);
             }
 
             void UpdateSprite(float dt, float time, bool walking, Transform cam, MaterialPropertyBlock mpb, float closeUp)

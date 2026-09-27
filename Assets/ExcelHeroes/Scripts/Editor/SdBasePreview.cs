@@ -29,6 +29,73 @@ namespace ExcelHeroes.EditorTools
                 // SD_RAW=1: the untouched sample (its own materials), the reference for every edit
                 var rig = System.Environment.GetEnvironmentVariable("SD_RAW") == "1" ? RawSample(holder)
                         : SdRef.Build(ids[i], holder, 0) ?? SdBase.Build(ids[i], holder, 0);
+                // SD_POSETEST=1: column i bends forearm / calf about one axis each, to find the joint axes
+                // SD_POSETEST=2: Z only; column 0/1 forearm (L same / L opposite sign), 2/3 calf likewise
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "2" && rig.RefModel)
+                {
+                    var q = Quaternion.Euler(0f, 0f, 70f); var qn = Quaternion.Euler(0f, 0f, -70f);
+                    rig.Pose(rig.ForearmR, i < 2 ? q : Quaternion.identity);
+                    rig.Pose(rig.ForearmL, i == 0 ? q : i == 1 ? qn : Quaternion.identity);
+                    rig.Pose(rig.CalfR, i >= 2 ? q : Quaternion.identity);
+                    rig.Pose(rig.CalfL, i == 2 ? q : i == 3 ? qn : Quaternion.identity);
+                }
+                var exprEnv = System.Environment.GetEnvironmentVariable("SD_EXPR");
+                if (!string.IsNullOrEmpty(exprEnv) && rig.RefModel && rig.EyeSub >= 0)
+                {
+                    var exprs = exprEnv.Split(','); var ex = exprs[i % exprs.Length];
+                    var b = new MaterialPropertyBlock();
+                    b.SetTexture("_MainTex", SdRefLook.For(ids[i]).EyeSheet(ex));
+                    rig.FaceRenderer.SetPropertyBlock(b, rig.EyeSub);
+                }
+                // SD_POSETEST=4: the RIGHT shoulder about +X, -X, +Y, -Y, +Z, -Z (columns 0..5), 70 degrees
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "4" && rig.RefModel)
+                {
+                    var d = i % 2 == 0 ? 70f : -70f; var ax = i / 2;
+                    rig.Pose(rig.ArmR, ax == 0 ? Quaternion.Euler(d, 0f, 0f) : ax == 1 ? Quaternion.Euler(0f, d, 0f) : Quaternion.Euler(0f, 0f, d));
+                }
+                // SD_POSETEST=5: the cheer frame (arm up beside the head) and the relaxed idle (column 1)
+                // SD_POSETEST=6: raise/swing pairs for the arm-up pose, one per column
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "6" && rig.RefModel)
+                {
+                    float[] rs = { -110f, -100f, -120f, -130f }; float[] sw = { -25f, -40f, -35f, -50f };
+                    rig.Pose(rig.ArmR, Quaternion.Euler(0f, rs[i % 4], sw[i % 4])); rig.Pose(rig.ForearmR, Quaternion.Euler(0f, 0f, 8f));
+                    rig.Pose(rig.ArmL, Quaternion.Euler(0f, -10f, -4f)); rig.Pose(rig.ForearmL, Quaternion.Euler(0f, 0f, 20f));
+                }
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "5" && rig.RefModel)
+                {
+                    if (i % 2 == 0)
+                    {
+                        rig.Pose(rig.ArmR, Quaternion.Euler(0f, -125f, 10f)); rig.Pose(rig.ForearmR, Quaternion.Euler(0f, 0f, 20f));
+                        rig.Pose(rig.ArmL, Quaternion.Euler(0f, -10f, -4f)); rig.Pose(rig.ForearmL, Quaternion.Euler(0f, 0f, 20f));
+                        rig.Pose(rig.CalfL, Quaternion.Euler(0f, 0f, 30f)); rig.Pose(rig.CalfR, Quaternion.Euler(0f, 0f, 30f));
+                    }
+                    else
+                    {
+                        rig.Pose(rig.ArmR, Quaternion.Euler(0f, 8f, 4f)); rig.Pose(rig.ForearmR, Quaternion.Euler(0f, 0f, 14f));
+                        rig.Pose(rig.ArmL, Quaternion.Euler(0f, -8f, -4f)); rig.Pose(rig.ForearmL, Quaternion.Euler(0f, 0f, 14f));
+                    }
+                }
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "3" && rig.RefModel)
+                {
+                    // a punch frame: R arm thrown forward (+Z) and straight, L guard, front knee bent, lean in
+                    rig.Pose(rig.Body, Quaternion.Euler(0f, 0f, 8f) * Quaternion.Euler(16f, 0f, 0f));
+                    rig.Pose(rig.ArmR, Quaternion.Euler(0f, -20f, 100f));
+                    rig.Pose(rig.ForearmR, Quaternion.Euler(0f, 0f, 5f));
+                    rig.Pose(rig.ArmL, Quaternion.Euler(0f, 10f, -30f));
+                    rig.Pose(rig.ForearmL, Quaternion.Euler(0f, 0f, 70f));
+                    rig.Pose(rig.LegL, Quaternion.Euler(0f, 0f, -20f));
+                    rig.Pose(rig.CalfL, Quaternion.Euler(0f, 0f, 30f));
+                }
+                if (System.Environment.GetEnvironmentVariable("SD_POSETEST") == "1" && rig.RefModel)
+                {
+                    var ax = i % 3; var deg = 70f;
+                    var q = ax == 0 ? Quaternion.Euler(deg, 0f, 0f) : ax == 1 ? Quaternion.Euler(0f, deg, 0f) : Quaternion.Euler(0f, 0f, deg);
+                    var qn = ax == 0 ? Quaternion.Euler(-deg, 0f, 0f) : ax == 1 ? Quaternion.Euler(0f, -deg, 0f) : Quaternion.Euler(0f, 0f, -deg);
+                    rig.Pose(rig.ForearmR, i < 3 ? q : Quaternion.identity);
+                    rig.Pose(rig.ForearmL, i < 3 ? qn : Quaternion.identity);
+                    rig.Pose(rig.CalfR, i >= 3 ? q : Quaternion.identity);
+                    rig.Pose(rig.CalfL, i >= 3 ? qn : Quaternion.identity);
+                }
                 for (var a = 0; a < yaws.Length; a++)
                 {
                     rig.Root.rotation = Quaternion.Euler(0f, yaws[a], 0f);
