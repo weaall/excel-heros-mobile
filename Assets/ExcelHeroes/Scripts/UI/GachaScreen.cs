@@ -501,7 +501,7 @@ namespace ExcelHeroes.UI
                     "B" => (UiPaint.C(140, 190, 250), UiPaint.C(60, 112, 204)),
                     _ => (UiPaint.C(176, 188, 204), UiPaint.C(104, 118, 142)),
                 };
-                if (isS || isA)
+                if (false)
                 {
                     // the beam: a soft vertical shaft of the grade's light behind the card
                     var beam = UiKit.Div("reveal-grid__beam", cell);
@@ -528,7 +528,9 @@ namespace ExcelHeroes.UI
                 {
                     var slant = SkewPlate.SlantFor(rect.height) * 0.3f;
                     var outer = UiPaint.SkewRect(rect, slant, 5f);
-                    if (isS) UiPaint.Ring(ctx, outer, UiPaint.C(255, 220, 110, 0.8f), UiPaint.C(255, 220, 110, 0f), 18f);
+                    // a crisp outer glow along the card's edge for the top grades, in place of the airbrushed beam
+                    if (isS) UiPaint.Ring(ctx, outer, UiPaint.C(255, 196, 40, 0.75f), UiPaint.C(255, 196, 40, 0f), 26f);
+                    else if (isA) UiPaint.Ring(ctx, outer, UiPaint.C(176, 96, 250, 0.6f), UiPaint.C(176, 96, 250, 0f), 18f);
                     UiPaint.Shadow(ctx, outer, new Vector2(0f, 5f), UiPaint.C(20, 40, 80, 0.3f), 10f);
                     UiPaint.Fill(ctx, outer, Color.white);
                     var inner = UiPaint.Offset(outer, -3f);
@@ -554,12 +556,20 @@ namespace ExcelHeroes.UI
                     UiPaint.Fill(ctx, UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(rect.xMin - 50f, bandTop - 1.5f, rect.xMax + 50f, bandTop + 1.5f), 0f)), UiPaint.WithAlpha(top, 0.95f), 0f);
                     UiPaint.Stroke(ctx, outer, UiPaint.WithAlpha(bot, 0.9f), 2f);
                 });
-                // the grade, large, in the top corner
-                UiKit.Text(r.grade, "reveal-grid__gbig reveal-grid__gbig--" + r.grade.ToLowerInvariant(), cell).pickingMode = PickingMode.Ignore;
+                // the grade on a slanted plate joined to the card's top corner (ui_critique: the floating
+                // outline letter read as a legacy mobile game)
+                var badge = UiKit.Div("reveal-grid__badge", cell);
+                badge.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(badge, (ctx, rr) =>
+                {
+                    var plate = UiPaint.SkewRect(rr, SkewPlate.SlantFor(rr.height), 3f);
+                    UiPaint.Shadow(ctx, plate, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.3f), 3f);
+                    UiPaint.Fill(ctx, plate, UiPaint.Vertical(Color.Lerp(top, Color.white, 0.1f), bot, rr.yMin, rr.yMax));
+                    UiPaint.Stroke(ctx, plate, UiPaint.C(255, 255, 255, 0.9f), 1.5f);
+                });
+                UiKit.Text(r.grade, "reveal-grid__badgetext", badge).pickingMode = PickingMode.Ignore;
                 var stars = UiKit.Text(new string('★', Mathf.Clamp(r.starAfter, 1, 5)), "reveal-grid__stars2", cell);
                 stars.pickingMode = PickingMode.Ignore;
-                UiKit.Text(grade?.label ?? "", "reveal-grid__glabel", cell).pickingMode = PickingMode.Ignore;
-
                 if (isS)
                 {
                     var fx = UiKit.Div("reveal-grid__sfx", cell);
@@ -587,8 +597,8 @@ namespace ExcelHeroes.UI
             var foot = UiKit.Div("reveal-foot", view);
             // 확인, and beside it the same pull again — the reference's result screen offers both
             // (ui_critique round 3, 21-Pull10 #3)
-            var ok = UiKit.Btn("확인", "btn reveal-foot__ok", onClose, foot);
-            SkewPlate.Apply(ok, SkewPlate.Kind.Light);
+            var ok = UiKit.Btn("확인", "btn btn--primary reveal-foot__ok", onClose, foot);
+            SkewPlate.Apply(ok, SkewPlate.Kind.Primary);
             if (again != null && Game.Player != null)
             {
                 var n = results.Count;

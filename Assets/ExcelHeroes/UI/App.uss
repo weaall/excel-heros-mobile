@@ -6024,3 +6024,9 @@
     -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(255, 255, 255); }
 .qrow .rchip__amount { font-size: 26px; -unity-font-style: bold; -unity-text-outline-width: 2px; right: 2px; bottom: -4px; }
 .qrow .rchip__icon { width: 48px; height: 48px; margin-bottom: 10px; }
+
+/* ten-pull after ui_critique: slanted grade badge, name with room (the grade name duplicated the badge) */
+.reveal-grid__badge { position: absolute; top: -2%; left: -4%; width: 62px; height: 40px; align-items: center; justify-content: center; }
+.reveal-grid__badgetext { font-size: 26px; -unity-font-style: bold; color: rgb(255, 255, 255); -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 0, 0, 0.45); padding: 0; margin: 0; }
+.reveal-grid__stars2 { bottom: 15%; }
+.reveal-grid__name { bottom: 3%; height: 50px; font-size: 21px; }
