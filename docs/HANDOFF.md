@@ -894,6 +894,13 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
 - **UI 라운드 10–13**: 강화 행 아이콘 + 비용 슬롯(새 아이콘 card·levelup·awaken·convert, `gen_more_icons.py`에 `ICON_BATCH`), 모집 천장 말풍선, 사원 목록 세로 스크롤, 패널 제목 영문 서브라벨(`UiKit.TitleSubs` — 한글 제목 표, 화면 빌드 뒤 적용), 메신저 목록(챕터 라벨·알약·잠금), 모집 탭 좌측 도킹, 편성 슬롯 일체화, 업적 버튼 보석 아이콘, 10연차 카드 안 이름 + NEW 리본, 전투 숫자·COMBO 두꺼운 외곽선 + text-shadow. 비평에서 일부러 안 한 것: 로비 왼쪽 메뉴 제거·상세 이름판 화이트화(target 시안과 반대), EX 카드 5→3(게임 규칙 변경).
 - **3D 안경**: `tools/sdspec_glasses_gemini.py`로 현재 일러스트 기준 재판정(5명 수정). 일러스트를 다시 뽑으면 이것도 다시 돌릴 것.
 - **3D 적 남은 20종**: HF ZeroGPU 한도(하루 단위)가 아직 막혀 있음 — `python tools/mon3d_trellis.py` → 새 GLB만 `python tools/mon3d_pack.py <ids>` → boss·cloud는 `python tools/mon3d_fix.py`.
+- **모델링 v3 — 샘플 원본 품질로**(사용자: "적어도 샘플 퀄리티 정도의 렌더링은 나와야"). 원인: 전원이 체육복 샘플 한 벌 + 눈을 한 판으로 그림.
+  - `World/SdFace`: BA 눈은 알파 없는 판 겹침 — eyemouth 서브메시를 조각별(UV 상자·판 법선 깊이·시트 밝기·면적)로 흰자/눈동자/하이라이트/선/입 분리. 흰자 스텐실 2, 눈동자 스텐실 안 ZTest Always, 흰자가 눈동자보다 훨씬 작으면(레이사: 흰자가 얼굴 시트에 그려짐) `IrisFree`(깊이 당김). 눈썹 `_DepthPull`. Toon 셰이더에 `_StencilRef/Comp/Pass`, `_ZTest`, `_DepthPull`. 얼굴이 별도 렌더러인 샘플(레이사·미쿠 `*_Face_Outline`; `Face0x`·`Eyebrow02`는 표정 대체라 숨김).
+  - `World/SdSample`: 샘플 9벌(`Resources/Art/SDBase/bodies/<key>`, git 밖 — 드라이브 `samples/unity_SDBase/bodies`)을 원래 옷 그대로. sdspec `body` = `tools/sdspec_body_gemini.py`(일러스트 → 가장 가까운 옷). 목 위·엉덩이 뒤 조각 제거(`StripKit`: 모자·뿔·꼬리). 머리는 라이브러리(긴 머리: hikari/mika — kayoko는 두 톤이라 제외), 짧은 머리·단발·똥머리는 `SdRefHairLib.MountCut`(하루카 머리를 턱선/목 아래로 컷). 샘플 FBX는 **Read/Write 필수**(빌드에서 GetTriangles 실패 → `ArtImportSettings.OnPreprocessModel`).
+  - 색: `SdSampleTex` — 머리 명암 매핑(중간 톤=캐릭터 색, 8–97 백분위), 눈동자 색상, 얼굴 시트 색 견본(눈썹) → 머리색, 옷은 큰 덩어리 둘만 캐릭터 색상(명도 반반)·작은 덩어리 강조 색상·흑백 유지.
+  - **일러스트 의상 칠하기**: `Editor/SampleRepaint.Views`(전신 4방향 평면 렌더) → `tools/gen_samplepaint_gemini.py`(일러스트의 옷으로, 정면 먼저) → `SampleRepaint.Bake`(깊이 검사 투영, 옷 서브메시만) → `Resources/Art/SDBase/painted/<id>.png`(git 밖), 있으면 `SdSampleTex`가 이걸 입음.
+  - 안경: `SdRefProps.Glasses.Enabled = false`(사용자 요청). 비교 도구 `_Ref/Editor/SampleCatalog`(샘플 원본 9벌), `SideBySide`(샘플 | 캐릭터), `EyeParts`, `RendList`.
+  - 남은 것: 주인공(남성)은 기본 체육복 몸체(남성 샘플 없음), 새 얼굴에 표정 전환 미연결, 옷 배정이 유우카 원본에 쏠림(31명).
 - **사람 모션**: 사용자가 Unity 모델·클립을 찾아주겠다고 함 → BA 원본 클립은 넥슨 저작권(출시 불가), **Mixamo 권장**(무료·게임 사용 허용). 받으면 런타임 Humanoid 아바타(`AvatarBuilder.BuildHumanAvatar` + Bip001 매핑)로 리타겟. 요청 목록: Rifle/Happy Idle, Running/Rifle Run, Pistol Shoot/Shooting/Punching/Sword Slash/Throw, Standing 1H Magic Attack, Hit Reaction, Standing Block, Dying, Victory/Cheering (FBX for Unity, Without Skin, 30fps).
 - 다음: 스킬 카드 2번(흰 머리 캐릭터) 초상이 머리카락만 잡힘(얼굴 박스), 전투 타격 스파크(시안의 노란 번개 파편), 보스 바 이름판 "보스 | 이름" 판 분리, 편성·모집 화면도 같은 유리 타일로, `ceo_chair`는 얼굴이 약함(재생성 후보).
 
