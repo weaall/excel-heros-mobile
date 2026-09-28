@@ -19,12 +19,12 @@ import gen_cards_gemini as g
 import sdspec_body_gemini as sb
 
 ASK = ("Describe this character's LOWER garment for re-cutting a 3D outfit. Answer JSON only: "
-       '{"pants": "none" | "slim" | "wide", "skirt": number, "flare": number, "legs": "bare" | "socks" | "tights", "legcolor": "#rrggbb", "shoecolor": "#rrggbb", "why": ""}. '
+       '{"pants": "none" | "slim" | "wide", "skirt": number, "flare": number, "legs": "bare" | "socks" | "tights", "bottomcolor": "#rrggbb", "legcolor": "#rrggbb", "shoecolor": "#rrggbb", "why": ""}. '
        "pants: 'slim' for fitted trousers / slacks / jeans, 'wide' for wide-leg or baggy trousers, 'none' for a skirt or dress. "
        "skirt (only when pants is none): the hem length, 0.6 = micro-mini, 1.0 = mid-thigh, 1.4 = just above the knee, "
        "1.8 = below the knee, 2.2 = ankle length. flare: -0.3 = tight pencil skirt, 0 = straight, 0.3 = A-line, 0.6 = full / pleated circle. "
        "legs: 'tights' for pantyhose / stockings on the whole leg, 'socks' for knee or calf socks, 'bare' otherwise. "
-       "legcolor: the colour of the tights or socks as they LOOK (sheer black tights over skin look dark grey-brown). shoecolor: the shoes' colour.")
+       "legcolor: the colour of the tights or socks as they LOOK (sheer black tights over skin look dark grey-brown). shoecolor: the shoes' colour. bottomcolor: the skirt's or trousers' main colour.")
 
 
 def ask(key, png):
@@ -55,5 +55,6 @@ if __name__ == "__main__":
         # the tights' / socks' and shoes' own colours (the sampled ones were often the skirt's)
         if re.fullmatch(r"#[0-9a-fA-F]{6}", str(a.get("legcolor"))) and legs != "bare": row["legs"] = a["legcolor"]
         if re.fullmatch(r"#[0-9a-fA-F]{6}", str(a.get("shoecolor"))): row["shoes"] = a["shoecolor"]
+        if re.fullmatch(r"#[0-9a-fA-F]{6}", str(a.get("bottomcolor"))): row["bottom"] = a["bottomcolor"]
         print(f"  {hid:16s} {row['garment']:50s} {a.get('why', '')[:50]}")
         with open(sb.SPEC, "w", encoding="utf-8", newline="\n") as f: json.dump(spec, f, ensure_ascii=False, indent=1)

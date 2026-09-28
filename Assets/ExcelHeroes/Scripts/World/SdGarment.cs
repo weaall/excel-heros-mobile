@@ -54,7 +54,7 @@ namespace ExcelHeroes.World
             var legs = pants != "none" ? "pants" : S("legs", k.Legwear switch { "socks" => "socks", "tights" => "tights", _ => "bare" });
             var skirtLen = pants != "none" ? 0.3f : F("skirt", 1f);
             // a pencil skirt drawn in no tighter than the thighs it covers
-            var flare = pants != "none" ? -0.25f : Mathf.Max(-0.15f, F("flare", 0f));
+            var flare = pants != "none" ? -0.25f : Mathf.Max(float.Parse(System.Environment.GetEnvironmentVariable("SD_FLAREMIN") ?? "-0.15", System.Globalization.CultureInfo.InvariantCulture), F("flare", 0f));
             if (rig.Pelvis == null) return;
             var pelvis = rig.Pelvis.position;
             var h = rig.Height;
@@ -95,10 +95,24 @@ namespace ExcelHeroes.World
                 {
                     var ws = sk.Select(i => l2w.MultiplyPoint3x4(v[i])).ToArray();
                     var top = ws.Max(x => x.y); var bot = ws.Min(x => x.y); var span = Mathf.Max(1e-4f, top - bot);
+                    // a pencil skirt has no pleats: the radius at each height and heading pulled to the mean of
+                    // its band and eighth of the circle, which keeps the oval and irons out the folds
+                    var iron = Mathf.Clamp01(-F("flare", 0f) / 0.3f) * (pants != "none" ? 0f : 1f);
+                    const int bands = 10, sectors = 8;
+                    var sum = new float[bands, sectors]; var cnt = new int[bands, sectors];
+                    int Band(float y) => Mathf.Clamp((int)((top - y) / span * bands), 0, bands - 1);
+                    int Sector(Vector3 q) => Mathf.Clamp((int)((Mathf.Atan2(q.z, q.x) / (Mathf.PI * 2f) + 0.5f) * sectors), 0, sectors - 1);
+                    foreach (var w in ws) { var q = new Vector3(w.x - pelvis.x, 0f, w.z - pelvis.z); sum[Band(w.y), Sector(q)] += q.magnitude; cnt[Band(w.y), Sector(q)]++; }
                     for (var j = 0; j < sk.Length; j++)
                     {
                         var w = ws[j]; var t = (top - w.y) / span;
                         var radial = new Vector3(w.x - pelvis.x, 0f, w.z - pelvis.z);
+                        if (iron > 0f && radial.sqrMagnitude > 1e-10f)
+                        {
+                            int bb = Band(w.y), ss = Sector(radial);
+                            var mean = sum[bb, ss] / Mathf.Max(1, cnt[bb, ss]);
+                            radial = radial.normalized * Mathf.Lerp(radial.magnitude, mean, iron * 0.85f);
+                        }
                         var y = top - (top - w.y) * skirtLen;
                         radial *= 1f + flare * t;
                         v[sk[j]] = w2l.MultiplyPoint3x4(new Vector3(pelvis.x, y, pelvis.z) + radial);
