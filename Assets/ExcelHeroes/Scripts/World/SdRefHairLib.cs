@@ -71,6 +71,61 @@ namespace ExcelHeroes.World
         /// straight fall becomes a bob or a short crop with the sample's own cap, fringe and strands —
         /// the samples have no short hair, and the base figure's trimmed cap looked lumpy beside them.
         /// </summary>
+        [System.Flags] public enum Region { Cap = 1, Front = 2, Side = 4, Back = 8, Extra = 16, All = 31 }
+
+        /// <summary>Which part of the head a hair bone moves (the samples' own names: f front, l/r/m sides, b back, dango / ribbon / t extras).</summary>
+        public static Region RegionOf(string bone)
+        {
+            if (string.IsNullOrEmpty(bone) || bone.StartsWith("Bip001")) return Region.Cap;
+            var n = bone.ToLowerInvariant().Replace("ch0242_", "");
+            if (n.Contains("dango") || n.Contains("ribbo") || n.Contains("shawl") || n.Contains("earing")) return Region.Extra;
+            var m = System.Text.RegularExpressions.Regex.Match(n, @"hair_([a-z]+)");
+            var tag = m.Success ? m.Groups[1].Value : "";
+            if (tag.StartsWith("b")) return Region.Back;
+            if (tag == "t" || tag == "ft" || tag == "f" || tag == "ff") return Region.Front;
+            if (tag.StartsWith("f") && tag.Length > 1) return tag == "fb" ? Region.Side : Region.Front;
+            if (tag.StartsWith("l") || tag.StartsWith("r") || tag.StartsWith("m")) return Region.Side;
+            return Region.Cap;
+        }
+
+        static Region _regions = Region.All;
+
+        /// <summary>Only the given regions of a sample's hair (a fringe from one sample, the back from another).</summary>
+        public static bool MountParts(ChibiRig rig, string name, SdLook k, int layer, Region regions, float cutY = float.NaN)
+        {
+            _regions = regions; _cutY = cutY;
+            try { return Mount(rig, name, k, layer); } finally { _regions = Region.All; _cutY = float.NaN; }
+        }
+
+        static Mesh Filter(Mesh src, SdHairBones lib)
+        {
+            if (_regions == Region.All || lib?.bones == null) return src;
+            var bw = src.boneWeights; if (bw.Length != src.vertexCount) return src;
+            var reg = new Region[bw.Length];
+            for (var i = 0; i < bw.Length; i++)
+            {
+                var w = bw[i]; var bi = w.boneIndex0; var mx = w.weight0;
+                if (w.weight1 > mx) { bi = w.boneIndex1; mx = w.weight1; }
+                if (w.weight2 > mx) { bi = w.boneIndex2; mx = w.weight2; }
+                if (w.weight3 > mx) bi = w.boneIndex3;
+                reg[i] = bi >= 0 && bi < lib.bones.Length ? RegionOf(lib.bones[bi].n) : Region.Cap;
+            }
+            var m = Object.Instantiate(src);
+            for (var s = 0; s < m.subMeshCount; s++)
+            {
+                var tris = m.GetTriangles(s); var keep = new List<int>(tris.Length);
+                for (var t = 0; t < tris.Length; t += 3)
+                {
+                    // a triangle goes with the region most of its corners belong to
+                    Region a = reg[tris[t]], b2 = reg[tris[t + 1]], c = reg[tris[t + 2]];
+                    var r = a == b2 || a == c ? a : b2 == c ? b2 : a;
+                    if ((_regions & r) != 0) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                }
+                m.SetTriangles(keep, s, false);
+            }
+            return m;
+        }
+
         public static bool MountCut(ChibiRig rig, string name, SdLook k, int layer, float cutY)
         {
             _cutY = cutY;
@@ -141,7 +196,8 @@ namespace ExcelHeroes.World
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             // a per-rig copy: the bind poses belong to this rig's rest, not to the shared asset
             var toMesh = go.transform.localToWorldMatrix;
-            var cut = Cut(Meshes[name], toMesh);
+            var filtered = Filter(Meshes[name], lib);
+            var cut = Cut(filtered, toMesh);
             var mesh = cut != Meshes[name] ? cut : Object.Instantiate(Meshes[name]);
             var bind = new Matrix4x4[bones.Length];
             for (var i = 0; i < bones.Length; i++) bind[i] = bones[i].worldToLocalMatrix * toMesh;

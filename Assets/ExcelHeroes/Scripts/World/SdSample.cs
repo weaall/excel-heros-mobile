@@ -45,8 +45,63 @@ namespace ExcelHeroes.World
         /// library has no sample for — the base figure's trimmed hair, built for this hero and moved
         /// across on the head bone. The sample's own hair is hidden unless it is already the pick.
         /// </summary>
+        /// <summary>
+        /// The hero's own hair assembled from parts of the samples' hair (SdRefHairLib regions): the
+        /// cap and fringe from one, the sides from one, the back from one, the extras (bun, ribbons)
+        /// from one, cut to the illustrated length. Recipe "front=miku;side=natsu;back=mika;extra=mika;len=long"
+        /// (sdspec "hair", tools/sdspec_hair_gemini.py; SD_HAIR overrides).
+        /// </summary>
+        static bool Recipe(ChibiRig rig, SdLook k, List<SkinnedMeshRenderer> kept, int layer)
+        {
+            var text = System.Environment.GetEnvironmentVariable("SD_HAIR") ?? k.HairRecipe;
+            if (string.IsNullOrEmpty(text)) return false;
+            var r = text.Split(';').Select(x => x.Split('=')).Where(x => x.Length == 2).ToDictionary(x => x[0].Trim(), x => x[1].Trim());
+            string Get(string key2, string fallback) => r.TryGetValue(key2, out var v) && v != "" ? v : fallback;
+            var front = Get("front", "haruka");
+            if (!SdRefHairLib.Has(front)) return false;
+            HideOwnHair(kept);
+            var cutY = float.NaN;
+            if (rig.Neck != null && rig.Head != null)
+            {
+                var neckY = rig.Neck.position.y; var headY = rig.Head.position.y; var span = headY - neckY;
+                cutY = Get("len", "long") switch
+                {
+                    "short" => neckY + span * 0.15f,
+                    "bob" => neckY - span * 0.35f,
+                    "shoulder" => neckY - span * 0.9f,
+                    _ => float.NaN,
+                };
+            }
+            // parts from the same sample go on together, so a sample's own cap is mounted once
+            var parts = new Dictionary<string, SdRefHairLib.Region>();
+            void Add(string lib, SdRefHairLib.Region reg) { if (lib == "none" || !SdRefHairLib.Has(lib)) return; parts[lib] = (parts.TryGetValue(lib, out var e) ? e : 0) | reg; }
+            Add(front, SdRefHairLib.Region.Cap | SdRefHairLib.Region.Front);
+            Add(Get("side", front), SdRefHairLib.Region.Side);
+            Add(Get("back", front), SdRefHairLib.Region.Back | SdRefHairLib.Region.Cap);   // its cap too: the back hangs off it
+            Add(Get("extra", "none"), SdRefHairLib.Region.Extra);
+            foreach (var kv in parts)
+            {
+                // the extras (a bun, a ribbon) are never cut: they sit where their sample put them
+                var reg = kv.Value;
+                if ((reg & ~SdRefHairLib.Region.Extra) != 0) SdRefHairLib.MountParts(rig, kv.Key, k, layer, reg & ~SdRefHairLib.Region.Extra, cutY);
+                if ((reg & SdRefHairLib.Region.Extra) != 0) SdRefHairLib.MountParts(rig, kv.Key, k, layer, SdRefHairLib.Region.Extra);
+            }
+            return true;
+        }
+
+        static void HideOwnHair(List<SkinnedMeshRenderer> kept)
+        {
+            foreach (var r in kept)
+            {
+                var mats = r.sharedMaterials;
+                for (var i = 0; i < mats.Length; i++)
+                    if (mats[i] != null && mats[i].mainTexture != null && mats[i].mainTexture.name.Contains("+hair")) mats[i].SetFloat("_Cutoff", 2f);
+            }
+        }
+
         static void DressHair(ChibiRig rig, string heroId, string key, SdLook k, List<SkinnedMeshRenderer> kept, int layer)
         {
+            if (Recipe(rig, k, kept, layer)) return;
             var lib = k.HairLib != "" ? (k.HairLib == "base" ? null : k.HairLib) : SdRefHairLib.Pick(k.Style, heroId);
             if (lib == OwnLib(key)) return;                       // the sample's hair is the right one
             foreach (var r in kept)

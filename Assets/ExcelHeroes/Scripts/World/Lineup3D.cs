@@ -25,6 +25,7 @@ namespace ExcelHeroes.World
         RenderTexture _rt;
         Transform _cast;
         readonly List<(ChibiRig rig, float phase)> _figs = new();
+        readonly Dictionary<ChibiRig, SdClips> _clips = new();
         readonly Dictionary<string, GameObject> _templates = new();
         Transform _templateRoot;
         VisualElement _host;
@@ -86,6 +87,8 @@ namespace ExcelHeroes.World
             }
 
             foreach (var f in _figs) if (f.rig?.Root != null) Destroy(f.rig.Root.gameObject);
+            foreach (var c in _clips.Values) c.Dispose();
+            _clips.Clear();
             _figs.Clear();
 
             var aspect = pxW / (float)pxH;
@@ -165,9 +168,25 @@ namespace ExcelHeroes.World
                     {
                         // the character's own idle from the pose library (root name = "sdref:<id>")
                         var id = rig.Root.name.Contains(":") ? rig.Root.name.Substring(rig.Root.name.IndexOf(':') + 1) : rig.Root.name;
-                        var ip = SdPose.Idle(SdPose.IdleOf(id), _t, phase);
-                        SdPose.Apply(rig, ip);
-                        rig.Root.localPosition = rig.Home + Vector3.up * ((ip.Y + rig.FootDrop) * rig.Root.localScale.y);
+                        if (SdClips.Available)
+                        {
+                            // keyframed: each member's own standing idle, started at their own point in it
+                            if (!_clips.TryGetValue(rig, out var cl))
+                            {
+                                _clips[rig] = cl = new SdClips(rig, id);
+                                var h = (uint)SdPose.Hash(id);
+                                string[] idles = { "Idle_Loop", "Idle_FoldArms_Loop", "Idle_Talking_Loop", "Idle_TalkingPhone_Loop", "Idle_Loop" };
+                                cl.Play(idles[h % idles.Length], 0f, (h % 97) / 97f * 2f, 0.9f + (h % 17) / 100f);
+                            }
+                            cl.Tick(Time.deltaTime);
+                            rig.Root.localPosition = rig.Home + Vector3.up * (rig.FootDrop * rig.Root.localScale.y);
+                        }
+                        else
+                        {
+                            var ip = SdPose.Idle(SdPose.IdleOf(id), _t, phase);
+                            SdPose.Apply(rig, ip);
+                            rig.Root.localPosition = rig.Home + Vector3.up * ((ip.Y + rig.FootDrop) * rig.Root.localScale.y);
+                        }
                         SdExpr.Tick(rig, id, "", _t);
                     }
                     else

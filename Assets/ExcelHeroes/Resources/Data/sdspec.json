@@ -29,7 +29,9 @@
    "glassesColor": "#333745",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=mika;extra=mika;len=short"
   },
   {
    "id": "admin",
@@ -150,7 +152,9 @@
    "glassesColor": "#63707e",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=mika;back=mika;extra=mika;len=long"
   },
   {
    "id": "audit_han",
@@ -181,7 +185,9 @@
    "glassesColor": "#1b1d24",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=kayoko;back=hikari;extra=none;len=short"
   },
   {
    "id": "barista",
@@ -212,7 +218,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "haruka"
+   "body": "haruka",
+   "lower": "",
+   "hairParts": "front=mika;side=mika;back=mika;extra=mika;len=short"
   },
   {
    "id": "bd_lead",
@@ -243,7 +251,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=yuuka;side=kayoko;back=haruka;extra=none;len=short"
   },
   {
    "id": "cco",
@@ -274,7 +284,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=haruka;extra=none;len=bob"
   },
   {
    "id": "cdo",
@@ -305,7 +317,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=hikari;back=hikari;extra=none;len=long"
   },
   {
    "id": "ceo",
@@ -336,7 +350,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "cfo",
@@ -367,7 +383,9 @@
    "glassesColor": "#c4a760",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=kayoko;back=mika;extra=mika;len=short"
   },
   {
    "id": "chairman",
@@ -398,7 +416,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=hikari;extra=none;len=bob"
   },
   {
    "id": "chairwoman",
@@ -429,7 +449,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "chief_of_staff",
@@ -460,7 +482,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=natsu;extra=none;len=shoulder"
   },
   {
    "id": "chro",
@@ -491,7 +515,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "kayoko_dress_ver_"
+   "body": "kayoko_dress_ver_",
+   "lower": "",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "cleaner",
@@ -522,7 +548,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "haruka"
+   "body": "hikari",
+   "lower": "haruka",
+   "hairParts": "front=mika;side=kayoko;back=mika;extra=mika;len=short"
   },
   {
    "id": "cmo",
@@ -553,7 +581,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "contract",
@@ -584,7 +614,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "haruka"
+   "body": "haruka",
+   "lower": "",
+   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "coo",
@@ -615,7 +647,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "courier",
@@ -646,7 +680,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "hayase_yuuka",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
   },
   {
    "id": "cpo",
@@ -677,7 +713,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "kayoko_dress_ver_"
+   "body": "kayoko_dress_ver_",
+   "lower": "",
+   "hairParts": "front=kayoko;side=haruka;back=hikari;extra=none;len=short"
   },
   {
    "id": "cro",
@@ -708,7 +746,9 @@
    "glassesColor": "#28252c",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=yuuka;side=kayoko;back=haruka;extra=mika;len=short"
   },
   {
    "id": "cso",
@@ -739,7 +779,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "cto",
@@ -770,7 +812,9 @@
    "glassesColor": "#232029",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=hikari;extra=none;len=short"
   },
   {
    "id": "design_lead",
@@ -801,7 +845,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "yutori_natsu"
+   "body": "yutori_natsu",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=haruka;extra=none;len=shoulder"
   },
   {
    "id": "dev_lead",
@@ -832,7 +878,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
   },
   {
    "id": "finance",
@@ -953,7 +1001,9 @@
    "glassesColor": "#b89e6c",
    "hairLib": "",
    "manual": [],
-   "body": "kayoko_dress_ver_"
+   "body": "kayoko_dress_ver_",
+   "lower": "",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "ga_lead",
@@ -984,7 +1034,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=haruka;back=hikari;extra=none;len=bob"
   },
   {
    "id": "guard",
@@ -1015,7 +1067,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
   },
   {
    "id": "hacker",
@@ -1046,7 +1100,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "kayoko_dress_ver_"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
   },
   {
    "id": "helpdesk",
@@ -1077,7 +1133,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "reisa"
+   "body": "reisa",
+   "lower": "haruka",
+   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "hr_jung",
@@ -1108,7 +1166,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=shoulder"
   },
   {
    "id": "intern",
@@ -1170,7 +1230,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=reisa;extra=none;len=shoulder"
   },
   {
    "id": "intern_seo",
@@ -1201,7 +1263,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "haruka",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "ir_lead",
@@ -1232,7 +1296,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=haruka;back=haruka;extra=none;len=short"
   },
   {
    "id": "lab_park",
@@ -1263,7 +1329,9 @@
    "glassesColor": "#3b3a3f",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "labor_atty",
@@ -1294,7 +1362,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "kayoko_dress_ver_"
+   "body": "kayoko_dress_ver_",
+   "lower": "",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "legal_yoon",
@@ -1325,7 +1395,9 @@
    "glassesColor": "#333b4d",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=hikari;extra=none;len=long"
   },
   {
    "id": "logistics_bae",
@@ -1356,7 +1428,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
   },
   {
    "id": "macro",
@@ -1387,7 +1461,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "reisa"
+   "body": "reisa",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=yuuka;side=yuuka;back=haruka;extra=none;len=short"
   },
   {
    "id": "mail_cho",
@@ -1418,7 +1494,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "reisa"
+   "body": "reisa",
+   "lower": "yutori_natsu",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "main",
@@ -1479,7 +1557,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=mika;extra=mika;len=short"
   },
   {
    "id": "parttime",
@@ -1510,7 +1590,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "haruka",
+   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "pivot",
@@ -1541,7 +1623,9 @@
    "glassesColor": "#333742",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=kayoko;back=haruka;extra=none;len=bob"
   },
   {
    "id": "pm_lead",
@@ -1572,7 +1656,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "pr_yoo",
@@ -1603,7 +1689,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "qa_lee",
@@ -1634,7 +1722,9 @@
    "glassesColor": "#4a4c59",
    "hairLib": "",
    "manual": [],
-   "body": "reisa"
+   "body": "reisa",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=hikari;side=hikari;back=hikari;extra=none;len=bob"
   },
   {
    "id": "reception_go",
@@ -1665,7 +1755,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=hikari;back=hikari;extra=none;len=long"
   },
   {
    "id": "sales",
@@ -1726,7 +1818,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=reisa;back=hikari;extra=none;len=short"
   },
   {
    "id": "sales_manager",
@@ -1817,7 +1911,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=kayoko;side=kayoko;back=haruka;extra=mika;len=short"
   },
   {
    "id": "security_yang",
@@ -1848,7 +1944,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hikari"
+   "body": "hikari",
+   "lower": "haruka",
+   "hairParts": "front=yuuka;side=kayoko;back=haruka;extra=none;len=bob"
   },
   {
    "id": "staff",
@@ -1909,7 +2007,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "haruka",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "trainer_seok",
@@ -1940,7 +2040,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
   },
   {
    "id": "translator_ji",
@@ -1971,7 +2073,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
   },
   {
    "id": "union_chief",
@@ -2002,7 +2106,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=yuuka;side=haruka;back=haruka;extra=none;len=short"
   },
   {
    "id": "vlookup",
@@ -2033,7 +2139,9 @@
    "glassesColor": "#232634",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob"
   },
   {
    "id": "welfare",
@@ -2064,7 +2172,9 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [],
-   "body": "hayase_yuuka"
+   "body": "hayase_yuuka",
+   "lower": "kayoko_dress_ver_",
+   "hairParts": "front=yuuka;side=haruka;back=hikari;extra=none;len=bob"
   }
  ]
 }
