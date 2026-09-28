@@ -49,6 +49,26 @@ def ask(key, path):
     return None
 
 
+LOWERS = {
+    "hayase_yuuka": "a short black pleated skirt, bare legs, black ankle boots",
+    "kayoko_dress_ver_": "a tight black mini dress hem, bare legs, black high heels",
+    "haruka": "a dark knee-length dress hem, bare legs, flat shoes",
+    "hikari": "a navy pleated skirt, thick white tights, navy boots",
+    "yutori_natsu": "a pleated skirt, black thigh-high socks, white sneakers",
+    "reisa": "a grey pleated skirt, pink sneakers and socks",
+}
+ASK_LOW = ("Match this character's LEGS and SKIRT / FOOTWEAR to the closest option:" + chr(10) +
+           chr(10).join(f"- '{k}': {v}" for k, v in LOWERS.items()) + chr(10) +
+           "Look at skirt length and type, tights or bare legs, and shoes. Answer JSON only: " + '{"lower": one option key, "why": a few words}.')
+
+
+def ask_low(key, path):
+    global ASK
+    saved = ASK; ASK = ASK_LOW
+    try: return ask(key, path)
+    finally: ASK = saved
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]; dry = "--dry" in args
     only = [a for a in args if not a.startswith("--")]
@@ -64,6 +84,11 @@ if __name__ == "__main__":
         if a is None: print(f"  ?  {hid}"); continue
         pick = "" if hid == "intern" or a.get("male") else (a.get("body") if a.get("body") in BODIES else "")
         row["body"] = pick
+        if pick and "--lower" in args:
+            lo = ask_low(key, png) or {}
+            low = lo.get("lower", "") if lo.get("lower", "") in LOWERS else ""
+            row["lower"] = "" if low == pick else low
+            print(f"      lower -> {row['lower'] or '(own)'}  {lo.get('why', '')}")
         counts[pick or "(base)"] = counts.get(pick or "(base)", 0) + 1
         print(f"  {hid:16s} -> {pick or '(base)':22s} {a.get('why', '')}")
     if not dry:

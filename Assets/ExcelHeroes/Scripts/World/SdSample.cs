@@ -168,6 +168,112 @@ namespace ExcelHeroes.World
         }
         static bool _raw;
 
+        static bool Lower(string bone)
+        {
+            var n = bone.ToLowerInvariant();
+            return n.Contains("skirt") || n.Contains("thigh") || n.Contains("calf") || n.Contains("foot") || n.Contains("toe");
+        }
+
+        static string Dominant(BoneWeight w, Transform[] bones)
+        {
+            var i = w.boneIndex0; var m = w.weight0;
+            if (w.weight1 > m) { i = w.boneIndex1; m = w.weight1; }
+            if (w.weight2 > m) { i = w.boneIndex2; m = w.weight2; }
+            if (w.weight3 > m) i = w.boneIndex3;
+            return i >= 0 && i < bones.Length && bones[i] != null ? bones[i].name : "";
+        }
+
+        /// <summary>
+        /// The lower body (skirt, legs, shoes: everything skinned to skirt, thigh, calf, foot or toe
+        /// bones) from another sample: cut from the hero's body, the donor's put on with its skirt
+        /// bone chains rebuilt under our pelvis. The nine samples share one Biped skeleton and are
+        /// normalised to the same height, so a Yuuka jacket over a Natsu skirt stands together.
+        /// </summary>
+        static void SwapLower(ChibiRig rig, SkinnedMeshRenderer body, string donorKey, SdLook k, Transform root, int layer)
+        {
+            var prefab = Prefab(donorKey); if (prefab == null) return;
+            var mesh = body.sharedMesh; var bw = mesh.boneWeights; var bones = body.bones;
+            var isLow = bw.Select(w => Lower(Dominant(w, bones))).ToArray();
+            var cut = Object.Instantiate(mesh);
+            for (var s = 0; s < cut.subMeshCount; s++)
+            {
+                var tris = cut.GetTriangles(s); var keep = new List<int>(tris.Length);
+                for (var t = 0; t < tris.Length; t += 3)
+                    if (!(isLow[tris[t]] && isLow[tris[t + 1]] && isLow[tris[t + 2]])) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                cut.SetTriangles(keep, s, false);
+            }
+            body.sharedMesh = cut;
+
+            var temp = new GameObject("donor").transform; temp.SetParent(root.parent, false);
+            temp.position = root.position; temp.rotation = root.rotation;
+            var dgo = Object.Instantiate(prefab, temp);
+            var drs = dgo.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            var dbody = drs.OrderByDescending(r => r.sharedMesh.subMeshCount).ThenByDescending(r => r.sharedMesh.vertexCount).First();
+            dbody.updateWhenOffscreen = true;
+            dgo.transform.localPosition = Vector3.zero; dgo.transform.localRotation = Quaternion.identity; dgo.transform.localScale = Vector3.one;
+            var wb = dbody.bounds; var lo = temp.InverseTransformPoint(wb.min); var hi = temp.InverseTransformPoint(wb.max);
+            var sc = SdRef.Height / Mathf.Max(1e-5f, hi.y - lo.y);
+            dgo.transform.localScale = Vector3.one * sc;
+            dgo.transform.localPosition = new Vector3(-(lo.x + hi.x) * 0.5f * sc, -lo.y * sc, -(lo.z + hi.z) * 0.5f * sc);
+            var dpel = dgo.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Bip001 Pelvis");
+            if (dpel != null) { var pl = temp.InverseTransformPoint(dpel.position); dgo.transform.localPosition -= new Vector3(pl.x, 0f, pl.z); }
+            // the donor's pelvis at our pelvis height, so the waistband meets the jacket
+            if (dpel != null && rig.Pelvis != null) dgo.transform.position += Vector3.up * (rig.Pelvis.position.y - dpel.position.y);
+
+            var dm = dbody.sharedMesh; var dbw = dm.boneWeights; var dbones = dbody.bones;
+            var dLow = dbw.Select(w => Lower(Dominant(w, dbones))).ToArray();
+            var part = Object.Instantiate(dm);
+            var dnames = dbody.sharedMaterials.Select(m => m ? m.name.ToLowerInvariant() : "").ToArray();
+            for (var s = 0; s < part.subMeshCount; s++)
+            {
+                var tris = dm.GetTriangles(s); var keep = new List<int>();
+                if (s < dnames.Length && dnames[s].Contains("body"))
+                    for (var t = 0; t < tris.Length; t += 3)
+                        if (dLow[tris[t]] || dLow[tris[t + 1]] || dLow[tris[t + 2]]) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                part.SetTriangles(keep, s, false);
+            }
+
+            // bones: ours by name; donor-only bones (its skirt chains) rebuilt under the nearest mapped parent
+            var ours = rig.Root.GetComponentsInChildren<Transform>(true).GroupBy(t => t.name).ToDictionary(g => g.Key, g => g.First());
+            var map = new Dictionary<Transform, Transform>();
+            Transform Map(Transform d)
+            {
+                if (d == null) return rig.Pelvis;
+                if (map.TryGetValue(d, out var mm)) return mm;
+                if (d.name.StartsWith("Bip001") && ours.TryGetValue(d.name, out var o)) return map[d] = o;
+                var parent = Map(d.parent);
+                var nb = new GameObject(d.name + "#low") { layer = layer }.transform;
+                nb.SetParent(parent, true);
+                nb.position = d.position; nb.rotation = d.rotation;
+                return map[d] = nb;
+            }
+            var newBones = dbones.Select(Map).ToArray();
+            var go = new GameObject("lower:" + donorKey) { layer = layer };
+            go.transform.SetParent(rig.Model, true);
+            go.transform.position = dbody.transform.position; go.transform.rotation = dbody.transform.rotation;
+            var ls = dbody.transform.lossyScale; var ps = rig.Model.lossyScale;
+            go.transform.localScale = new Vector3(ls.x / ps.x, ls.y / ps.y, ls.z / ps.z);
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            var toMesh = go.transform.localToWorldMatrix;
+            var bind = new Matrix4x4[newBones.Length];
+            for (var i = 0; i < newBones.Length; i++) bind[i] = newBones[i].worldToLocalMatrix * toMesh;
+            part.bindposes = bind;
+            smr.sharedMesh = part; smr.bones = newBones; smr.rootBone = rig.Pelvis;
+            var tex = SdSampleTex.For(donorKey, k, Sheet(donorKey, "body"), Sheet(donorKey, "hair"), Sheet(donorKey, "eyemouth"), null, paintedOk: false);
+            var mats = new Material[part.subMeshCount];
+            for (var i = 0; i < mats.Length; i++)
+            {
+                var m = MeshKit.NewToon(0.005f, tex.Body);
+                m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.24f); m.SetColor("_ShadeTint", SdRefLook.WarmShade); m.SetFloat("_Rim", 0.1f);
+                mats[i] = m;
+            }
+            smr.sharedMaterials = mats;
+            smr.updateWhenOffscreen = true;
+            smr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rig.Renderers.Add(smr);
+            Object.DestroyImmediate(temp.gameObject);
+        }
+
         public static ChibiRig Build(string heroId, string key, Transform parent, int layer)
         {
             var prefab = Prefab(key);
@@ -259,6 +365,8 @@ namespace ExcelHeroes.World
             rig.FaceRenderer = body;
             rig.EyeSub = -1;   // the layered eye is the sample's own: no sheet swaps for expressions (yet)
 
+            var lowerKey = System.Environment.GetEnvironmentVariable("SD_LOWER") ?? k.Lower;
+            if (!_raw && !string.IsNullOrEmpty(lowerKey) && lowerKey != key && Has(lowerKey)) SwapLower(rig, body, lowerKey, k, root, layer);
             if (!_raw) DressHair(rig, heroId, key, k, kept, layer);
 
             var sh = new MeshKit.Builder();
@@ -287,16 +395,16 @@ namespace ExcelHeroes.World
         public class Set { public Texture2D Body, Hair, EyeMouth, EyeMouthSrc, Face; }
         static readonly Dictionary<string, Set> Cache = new();
 
-        public static Set For(string key, SdLook k, Texture2D body, Texture2D hair, Texture2D eyemouth, Texture2D face = null)
+        public static Set For(string key, SdLook k, Texture2D body, Texture2D hair, Texture2D eyemouth, Texture2D face = null, bool paintedOk = true)
         {
-            var id = key + ":" + k.Id + (SdSample.SkipPainted ? ":raw" : "");
+            var id = key + ":" + k.Id + (SdSample.SkipPainted || !paintedOk ? ":raw" : "");
             if (Cache.TryGetValue(id, out var set)) return set;
             set = new Set { EyeMouthSrc = eyemouth };
             set.Hair = hair != null && hair.isReadable ? GradientMap(hair, k.Hair) : hair;
             set.EyeMouth = eyemouth != null && eyemouth.isReadable ? IrisHue(eyemouth, k.Eye) : eyemouth;
             set.Body = body != null && body.isReadable ? Outfit(body, k) : body;
             // the hero's own outfit painted from the illustration onto this sheet (Editor/SampleRepaint), when there is one
-            var painted = SdSample.SkipPainted ? null : Resources.Load<Texture2D>("Art/SDBase/painted/" + k.Id);
+            var painted = SdSample.SkipPainted || !paintedOk ? null : Resources.Load<Texture2D>("Art/SDBase/painted/" + k.Id);
             if (painted != null) set.Body = painted;
             set.Face = face != null && face.isReadable ? Swatches(face, k.Hair) : face;
             return Cache[id] = set;
