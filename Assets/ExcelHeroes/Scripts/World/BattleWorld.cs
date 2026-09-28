@@ -89,6 +89,7 @@ namespace ExcelHeroes.World
         public void Celebrate(bool on) => _closeUpTarget = on ? 1f : 0f;
 
         public static float QuarterPitch = 40f, QuarterYaw = 28f, QuarterDist = 10.5f;
+        float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN;
 
         void PlaceCamera(float shake)
         {
@@ -100,10 +101,12 @@ namespace ExcelHeroes.World
             // down): high AND turned, from the front-left, so the lane runs diagonally up the
             // picture as on target_3 — the squad near and low on the left, the errors further up
             // on the right. The close-up swings back square onto the party.
-            var target = Vector3.Lerp(new Vector3(-0.2f, 0.4f, 0.1f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
+            // the fight, not a fixed point: between the squad and the nearest errors (tools/out/action_critique.md
+            // #5 — the enemies stood small at the top-right edge), a little further out when they are far apart
+            var target = Vector3.Lerp(new Vector3(_camFocusX, 0.4f, 0.1f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
             var pitch = Mathf.Lerp(QuarterPitch, 14f, k) * Mathf.Deg2Rad;
             var yaw = Mathf.Lerp(QuarterYaw, 0f, k);
-            var dist = Mathf.Lerp(QuarterDist, 5.8f, k);
+            var dist = Mathf.Lerp(QuarterDist * _camZoom, 5.8f, k);
             var pos = target + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
@@ -365,7 +368,8 @@ namespace ExcelHeroes.World
                         t.Freeze = Mathf.Max(t.Freeze, e.crit ? 0.11f : 0.065f); t.FreezeShake = e.crit ? 0.045f : 0.025f;
                         if (e.actor != null && _actors.TryGetValue(e.actor, out var att) && (e.actor.side == Side.Monster || e.actor.role is "melee" or "tank"))
                             att.Freeze = Mathf.Max(att.Freeze, e.crit ? 0.08f : 0.05f);
-                        if (e.crit) AddShakeLocal(0.18f);
+                        AddShakeLocal(e.crit ? 0.18f : 0.05f);
+                        ImpactShards(t, e.crit);
                         // shoved back along the line: an enemy further than a hero, a crit twice as far
                         t.Knock = e.target.side == Side.Hero ? (e.crit ? -0.16f : -0.08f) : (e.crit ? 0.34f : 0.2f);
                         Spark(t, e.crit ? new Color(1f, 0.85f, 0.3f) : Color.white, e.crit ? 0.7f : 0.45f);
@@ -414,6 +418,14 @@ namespace ExcelHeroes.World
             float cx = 0f, cz = 0f; var alive = 0;
             foreach (var a in _actors.Values) if (a.C.side == Side.Hero && a.C.Alive) { cx += a.X; cz += a.Z; alive++; }
             if (alive > 0 && _closeUpTarget <= 0f) _partyCentre = new Vector3(cx / alive, 0f, cz / alive);
+            if (!float.IsNaN(_lastEnemyX) && !float.IsNaN(_lastHeroX))
+            {
+                var squadX = alive > 0 ? cx / alive : _lastHeroX;
+                var want = Mathf.Clamp(Mathf.Lerp(squadX, _lastEnemyX, 0.45f) - 0.4f, -1.5f, 2.2f);
+                _camFocusX = Mathf.Lerp(_camFocusX, want, 1f - Mathf.Exp(-dt * 2.2f));
+                var spread = Mathf.Abs(_lastEnemyX - squadX);
+                _camZoom = Mathf.Lerp(_camZoom, Mathf.Clamp(0.92f + spread * 0.03f, 0.92f, 1.12f), 1f - Mathf.Exp(-dt * 1.5f));
+            }
             PlaceCamera((shake + _localShake * 20f) * (1f - _closeUp));
 
             foreach (var c in _sim.Heroes) Ensure(c);
@@ -425,6 +437,7 @@ namespace ExcelHeroes.World
             foreach (var h in _sim.Heroes) if (h.Alive) nearestHeroX = Mathf.Max(nearestHeroX, WX(h.x));
             if (nearestEnemyX == float.MaxValue) nearestEnemyX = WX(800f);
             if (nearestHeroX == float.MinValue) nearestHeroX = WX(0f);
+            _lastEnemyX = nearestEnemyX; _lastHeroX = nearestHeroX;
             _actorKeys.Clear(); _actorKeys.AddRange(_actors.Keys);
             foreach (var c in _actorKeys)
             {
@@ -460,7 +473,7 @@ namespace ExcelHeroes.World
                 {
                     t = MakeShot(shot);
                     _shots[shot] = t;
-                    if (shot.From != null && _actors.TryGetValue(shot.From, out var fa)) fa.Attack = 0.32f;
+                    if (shot.From != null && _actors.TryGetValue(shot.From, out var fa)) { fa.Attack = 0.32f; MuzzleFlash(fa, shot.Hostile); }
                 }
                 if (shot.From == null || shot.To == null) continue;
                 _actors.TryGetValue(shot.From, out var from);
@@ -808,6 +821,42 @@ namespace ExcelHeroes.World
             var glow = MeshKit.Part("glow", root, Quad, GlowMat(accent), Layer).transform;
             glow.localScale = Vector3.one * (shot.Kind == "slash" ? 1.1f : 0.55f);
             return root;
+        }
+
+        /// <summary>A blow landing: a white-core burst and a handful of spreadsheet cells flying off the target.</summary>
+        void ImpactShards(Actor t, bool crit)
+        {
+            var at = Mid(t);
+            var n = crit ? 8 : 5;
+            var col = crit ? new Color(1f, 0.85f, 0.3f) : new Color(0.55f, 0.95f, 0.7f);
+            for (var i = 0; i < n; i++)
+            {
+                var shard = FxPart("shard", Cell, MeshKit.Toon, Layer).transform;
+                var mpb = new MaterialPropertyBlock();
+                mpb.SetColor("_Color", MeshKit.Lin(i % 2 == 0 ? Color.white : col));
+                shard.GetComponent<MeshRenderer>().SetPropertyBlock(mpb);
+                shard.position = at;
+                var ang = (i / (float)n + Random.value * 0.15f) * Mathf.PI * 2f;
+                var away = t.C.side == Side.Monster ? 1f : -1f;
+                var vel = new Vector3(Mathf.Cos(ang) * 1.6f + away * 1.2f, 1.4f + Mathf.Abs(Mathf.Sin(ang)) * 1.6f, Mathf.Sin(ang) * 0.9f);
+                _fx.Add(new Fx { T = shard, Life = 0.28f, Max = 0.28f, Vel = vel, Gravity = true, Grow0 = crit ? 0.55f : 0.4f, Grow1 = 0.1f, Spin = true });
+            }
+        }
+
+        /// <summary>The flash at the muzzle as a shot leaves: a bright cross over a soft glow, 0.06 s.</summary>
+        void MuzzleFlash(Actor a, bool hostile)
+        {
+            var p = Muzzle(a);
+            var c = hostile ? new Color(1f, 0.4f, 0.35f) : new Color(0.3f, 1f, 0.6f);
+            var glow = FxPart("muzzle", Quad, GlowMat(c), Layer).transform;
+            glow.position = p;
+            _fx.Add(new Fx { T = glow, Life = 0.08f, Max = 0.08f, Grow0 = 0.5f, Grow1 = 0.15f, Face = true });
+            foreach (var roll in new[] { 0f, 90f })
+            {
+                var q = FxPart("muzzle", Quad, GlowMat(Color.white), Layer).transform;
+                q.position = p;
+                _fx.Add(new Fx { T = q, Life = 0.06f, Max = 0.06f, Aspect = new Vector2(0.55f, 0.08f), Grow0 = 1f, Grow1 = 0.3f, Face = true, Roll = roll + 45f });
+            }
         }
 
         /// <summary>An enemy's end: a flash, a ring on the street and its body's cells flying off in its colours.</summary>
@@ -1692,6 +1741,18 @@ namespace ExcelHeroes.World
                     if (Rig.LegL != null) Rig.LegL.localRotation = Quaternion.Euler(legSwing, 0f, 0f);
                     if (Rig.LegR != null) Rig.LegR.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
                 }
+                // a blow's body: a shooter pulls back before the shot and kicks back after it; a melee
+                // striker leans in on the swing
+                if (Rig.RefModel && Attack > 0f && C.Alive)
+                {
+                    var a = 1f - Attack / 0.32f;
+                    var dir = hero ? -1f : 1f;   // away from the enemy line
+                    var ranged = hero && C.role is "ranged" or "healer";
+                    if (ranged)
+                        lunge += dir * (a < 0.25f ? 0.03f * (a / 0.25f) : a < 0.35f ? Mathf.Lerp(0.03f, 0.12f, (a - 0.25f) / 0.1f) : 0.12f * (1f - Mathf.SmoothStep(0f, 1f, (a - 0.35f) / 0.5f))) * Rig.Height;
+                    else
+                        lunge -= dir * Mathf.Sin(Mathf.Clamp01((a - 0.15f) / 0.6f) * Mathf.PI) * 0.1f * Rig.Height;
+                }
                 // the target shaking in place while the hit holds
                 if (Freeze > 0f && Hit > 0f) lunge += (Mathf.PerlinNoise(time * 60f, Z * 7f) - 0.5f) * 2f * FreezeShake;
                 // an enemy on the heroes' skeleton goes down the way BA's do: knocked up and back, spinning,
@@ -1715,7 +1776,7 @@ namespace ExcelHeroes.World
                     Rig.Sheet.localPosition = new Vector3(X + lunge, 0.02f, Z) + facing;
                     Rig.Sheet.localRotation = Quaternion.Euler(90f, QuarterYaw * (1f - closeUp), 0f);
                 }
-                var flash = Hit > 0.08f ? 0.8f : 0f;
+                var flash = Hit > 0.11f ? 1f : Hit > 0.08f ? 0.45f : 0f;
                 SetFlash(flash, mpb);
                 if (Rig.Sheet != null && !Rig.SheetWorn)
                 {
