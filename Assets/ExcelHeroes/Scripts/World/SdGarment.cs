@@ -34,6 +34,8 @@ namespace ExcelHeroes.World
 
         static readonly Dictionary<Color, Texture2D> Solids = new();
 
+        public static Texture2D SolidOf(Color c) => Solid(c);
+
         static Texture2D Solid(Color c)
         {
             if (Solids.TryGetValue(c, out var t) && t != null) return t;

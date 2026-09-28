@@ -642,6 +642,8 @@ namespace ExcelHeroes.World
                     var n = subNames[i];
                     var eye = parts[i] is SdFace.Part.White or SdFace.Part.Iris or SdFace.Part.IrisFree or SdFace.Part.Highlight or SdFace.Part.Line or SdFace.Part.Mouth or SdFace.Part.Brow;
                     var sheet = n.Contains("eyemouth") ? tex.EyeMouth : n.Contains("hair") ? tex.Hair : n.Contains("face") || n.Contains("eyebrow") ? face : n.Contains("alpha") ? tex.Body : tex.Body;
+                    // brows in the hair's own dark tone, as BA draws them (a donor face kept Mika's pink ones)
+                    if (parts[i] == SdFace.Part.Brow && !_raw) sheet = SdGarment.SolidOf(Color.Lerp(k.Hair, Color.black, 0.45f));
                     var m = MeshKit.NewToon(eye ? 0f : 0.005f, sheet);
                     m.SetFloat("_Cutoff", 0f);
                     if (eye) { m.SetFloat("_OutlineWidth", 0f); m.SetFloat("_ShadeStrength", 0.02f); m.SetFloat("_Rim", 0f); }
