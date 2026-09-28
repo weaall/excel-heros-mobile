@@ -191,6 +191,22 @@ namespace ExcelHeroes.World
             rig.SheetWorn = true;
         }
 
+        /// <summary>
+        /// In battle the sheet lies flat under the feet instead of behind the shoulder: from the
+        /// quarter-view camera a sheet on the back is hidden by the body and tangles with the next
+        /// member's, while one on the floor reads clearly, marks the member's cell in the formation
+        /// and is the squad standing on the spreadsheet. (The lobby and the detail page keep it
+        /// behind, where a portrait is seen from the front.) Placed each frame by BattleWorld.
+        /// </summary>
+        public static void FloorSheet(ChibiRig rig, float scale)
+        {
+            if (rig.Sheet == null) return;
+            rig.Sheet.SetParent(rig.Root.parent, false);
+            rig.Sheet.localScale = Vector3.one * scale;
+            rig.SheetFloor = true;
+            rig.SheetWorn = true;     // no other per-frame placement
+        }
+
         /// <summary>The hero's role (tank / melee / ranged / healer), "ranged" when the defs are not loaded.</summary>
         public static string RoleOf(string heroId)
         {

@@ -83,16 +83,23 @@ namespace ExcelHeroes.World
         /// <summary>Victory: bring the camera down onto the party, who turn to it and cheer.</summary>
         public void Celebrate(bool on) => _closeUpTarget = on ? 1f : 0f;
 
+        public static float QuarterPitch = 40f, QuarterYaw = 28f, QuarterDist = 10.5f;
+
         void PlaceCamera(float shake)
         {
             var k = Mathf.SmoothStep(0f, 1f, _closeUp);
             // The reference's battle camera (temp_images/712980) is HIGH: about 32° above the
             // street, looking down onto the road, the sidewalk and the storefronts — no sky. The
             // close-up for the win drops lower and nearer to the squad's centre.
-            var target = Vector3.Lerp(new Vector3(0f, 0.4f, 0.9f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
-            var pitch = Mathf.Lerp(32f, 14f, k) * Mathf.Deg2Rad;
-            var dist = Mathf.Lerp(9.2f, 5.8f, k);
-            var pos = target + new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
+            // Quarter view (after the reference RPG's QuarterView camera, offset (0, 4, -5) = 39 deg
+            // down): high AND turned, from the front-left, so the lane runs diagonally up the
+            // picture as on target_3 — the squad near and low on the left, the errors further up
+            // on the right. The close-up swings back square onto the party.
+            var target = Vector3.Lerp(new Vector3(-0.2f, 0.4f, 0.1f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
+            var pitch = Mathf.Lerp(QuarterPitch, 14f, k) * Mathf.Deg2Rad;
+            var yaw = Mathf.Lerp(QuarterYaw, 0f, k);
+            var dist = Mathf.Lerp(QuarterDist, 5.8f, k);
+            var pos = target + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
             _cam.transform.localRotation = Quaternion.LookRotation(target - pos, Vector3.up);
@@ -250,7 +257,7 @@ namespace ExcelHeroes.World
                 // a 2D SD already has its sheet painted in; the 3D one carries it on the back
                 if (!a.Rig.Sprite) ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
                 if (a.Rig.Model3D) a.Rig.Sheet.localScale = Vector3.one * 0.9f;
-                if (a.Rig.RefModel) SdRef.WearSheet(a.Rig, 0.9f);
+                if (a.Rig.RefModel) SdRef.FloorSheet(a.Rig, 1.8f);
                 a.Scale = c.role == "tank" ? 1.06f : 1f;
                 a.Accent = spec.Accent;
             }
@@ -1341,7 +1348,8 @@ namespace ExcelHeroes.World
                 // The reference's squads FACE the enemy (right), seen from behind-and-above; they only
                 // turn to the camera for the win close-up. Root rotation 180 = facing the camera,
                 // 90 = facing +x (the enemies): heroes at 105, enemies mirrored at 255.
-                var yaw = hero ? Mathf.Lerp(-75f, -10f, closeUp) : 75f;
+                // turned with the quarter-view camera, so each keeps the same angle to the lens
+                var yaw = (hero ? Mathf.Lerp(-75f, -10f, closeUp) : 75f) + QuarterYaw * (1f - closeUp);
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad
                 var lunge = 0f;
                 if (Rig.ArmR == null && Attack > 0f)
@@ -1371,6 +1379,13 @@ namespace ExcelHeroes.World
                     if (Rig.LegR != null) Rig.LegR.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
                 }
                 root.localPosition = new Vector3(X + lunge, y, Z) + facing;
+                if (Rig.SheetFloor && Rig.Sheet != null)
+                {
+                    // flat on the street under the member, square to the camera's turn, gone when down
+                    Rig.Sheet.gameObject.SetActive(C.Alive && Dying <= 0f);
+                    Rig.Sheet.localPosition = new Vector3(X + lunge, 0.02f, Z) + facing;
+                    Rig.Sheet.localRotation = Quaternion.Euler(90f, QuarterYaw * (1f - closeUp), 0f);
+                }
                 var flash = Hit > 0.08f ? 0.8f : 0f;
                 foreach (var r in Rig.Renderers)
                 {
