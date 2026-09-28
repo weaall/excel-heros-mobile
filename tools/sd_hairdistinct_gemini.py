@@ -54,6 +54,7 @@ if __name__ == "__main__":
         pairs = [(int(p[0]), int(p[1])) for p in (a or {}).get("pairs", []) if len(p) == 2 and 1 <= int(p[0]) <= len(ids) and 1 <= int(p[1]) <= len(ids)]
     print("near-duplicates:", [(ids[x - 1], ids[y - 1]) for x, y in pairs])
     spec = json.load(open(sb.SPEC, encoding="utf-8")); rows = {r["id"]: r for r in spec["items"]}
+    like = json.load(open(lk.OUT, encoding="utf-8")) if os.path.exists(lk.OUT) else {}
     changed = set()
     for x, y in pairs:
         h1, h2 = ids[x - 1], ids[y - 1]
@@ -67,7 +68,8 @@ if __name__ == "__main__":
                       {"inlineData": {"mimeType": "image/png", "data": lk.png64(crop(i))}}]
         q = (f"Images 1-2: character A's illustration and our 3D chibi of her (front, back). Images 3-4: the same for character B. "
              f"Their 3D hairs look too alike. A's recipe: {rows[h1]['hairParts']}. B's recipe: {rows[h2]['hairParts']}. "
-             f"Change ONE of them so they differ clearly, moving that one closer to HER OWN illustration. Knobs: {KNOBS}. "
+             + (f"Change character {'A' if like.get(h1, {}).get('hair', 5) <= like.get(h2, {}).get('hair', 5) else 'B'} (the weaker likeness) " if h1 in like and h2 in like else "Change ONE of them ")
+             + f"so they differ clearly, moving that one closer to HER OWN illustration. Knobs: {KNOBS}. "
              'Answer JSON only: {"who": "A" | "B", "set": {knob: value, ...}, "why": ""}')
         r = call(key, parts + [{"text": q}])
         if not r or r.get("who") not in ("A", "B") or not isinstance(r.get("set"), dict): continue
