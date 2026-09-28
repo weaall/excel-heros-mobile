@@ -120,6 +120,41 @@ namespace ExcelHeroes.World
                     else Tri(centre, first + j, first + j + 1);
             }
 
+            /// <summary>
+            /// A rounded box (a superellipsoid): size like Box, `round` 0.15 (nearly square) .. 1 (an
+            /// ellipsoid). Smooth normals, so a toy's panel reads soft under the toon shading.
+            /// </summary>
+            public void RoundBox(Vector3 c, Vector3 size, Color col, float round = 0.4f, int seg = 14)
+            {
+                var h = size * 0.5f; var e = Mathf.Clamp(round, 0.08f, 1f);
+                float P(float v) => Mathf.Sign(v) * Mathf.Pow(Mathf.Abs(v), e);
+                var rings = seg / 2 + 2;
+                var start = _v.Count;
+                for (var j = 0; j <= seg; j++)
+                {
+                    var phi = j / (float)seg * Mathf.PI * 2f;
+                    for (var i = 0; i <= rings; i++)
+                    {
+                        var th = i / (float)rings * Mathf.PI;
+                        var st = Mathf.Sin(th); var ct = Mathf.Cos(th);
+                        var x = P(st) * P(Mathf.Cos(phi)); var y = P(ct); var z = P(st) * P(Mathf.Sin(phi));
+                        var p = c + new Vector3(x * h.x, y * h.y, z * h.z);
+                        // the superellipsoid's normal: the gradient of |x|^(2/e) + ...
+                        float G(float v, float r) => Mathf.Sign(v) * Mathf.Pow(Mathf.Abs(v), 2f / e - 1f) / Mathf.Max(1e-5f, r);
+                        var n = new Vector3(G(x, h.x), G(y, h.y), G(z, h.z));
+                        if (n.sqrMagnitude < 1e-10f) n = new Vector3(x, y, z);
+                        Add(p, n, col, new Vector2(j / (float)seg, i / (float)rings));
+                    }
+                }
+                var stride = rings + 1;
+                for (var j = 0; j < seg; j++)
+                    for (var i = 0; i < rings; i++)
+                    {
+                        var a = start + j * stride + i; var b = start + (j + 1) * stride + i;
+                        Tri(a, b, a + 1); Tri(b, b + 1, a + 1);
+                    }
+            }
+
             /// <summary>An axis-aligned box with flat faces (split normals).</summary>
             public void Box(Vector3 c, Vector3 size, Color col)
             {

@@ -127,7 +127,7 @@ namespace ExcelHeroes.World
                         break;
                     default:   // metal, wood: a box with a panel band
                         b.M = Matrix4x4.TRS(a + d * 0.5f, rot, Vector3.one);
-                        b.Box(Vector3.zero, new Vector3((r0 + r1), len * 0.96f, (r0 + r1) * 0.86f), col);
+                        b.RoundBox(Vector3.zero, new Vector3((r0 + r1), len * 1.02f, (r0 + r1) * 0.86f), col, 0.45f);
                         b.Box(new Vector3(0f, len * 0.22f, 0f), new Vector3((r0 + r1) * 1.06f, len * 0.08f, (r0 + r1) * 0.92f), mat == "wood" ? Color.Lerp(col, dark, 0.5f) : Color.Lerp(col, dark, 0.35f));
                         break;
                 }
@@ -184,7 +184,7 @@ namespace ExcelHeroes.World
                 var floor = root.position.y + rig.RestFootY;
                 var ay = an.y - floor;
                 var bw = legR * 2.3f; var bl = legR * 3.0f; var bh = Mathf.Max(legR * 2.2f, ay + legR * 0.9f);
-                b6.Box(new Vector3(0f, -ay + bh * 0.5f, legR * 0.7f), new Vector3(bw, bh, bl), mat == "energy" ? second : dark);
+                b6.RoundBox(new Vector3(0f, -ay + bh * 0.5f, legR * 0.7f), new Vector3(bw, bh, bl), mat == "energy" ? second : dark, 0.35f);
                 b6.Box(new Vector3(0f, -ay + legR * 0.18f, legR * 0.8f), new Vector3(bw * 1.06f, legR * 0.36f, bl * 1.04f), Color.Lerp(dark, Color.black, 0.4f));
                 b6.Box(new Vector3(0f, -ay + bh * 0.72f, legR * 0.7f + bl * 0.5f), new Vector3(bw * 0.7f, legR * 0.25f, legR * 0.2f), accent);
                 Emit(foot, b6, an);
@@ -202,7 +202,7 @@ namespace ExcelHeroes.World
                         for (var i = 0; i < 6; i++)
                         {
                             b.M = Matrix4x4.TRS(c + new Vector3(0f, -tH * 0.42f + i * tH * 0.16f, 0f), Quaternion.Euler(0f, (i % 3 - 1) * 5f, 0f), Vector3.one);
-                            b.Box(Vector3.zero, new Vector3(tW * (1f - i * 0.02f), tH * 0.15f, tD), i % 2 == 0 ? Color.Lerp(Color.white, main, 0.3f) : main);
+                            b.RoundBox(Vector3.zero, new Vector3(tW * (1f - i * 0.02f), tH * 0.17f, tD), i % 2 == 0 ? Color.Lerp(Color.white, main, 0.3f) : main, 0.3f);
                         }
                         b.M = Matrix4x4.identity;
                         b.Box(c + new Vector3(0f, tH * 0.05f, tD * 0.52f), new Vector3(tW * 0.55f, tH * 0.4f, tD * 0.08f), second);
@@ -216,7 +216,7 @@ namespace ExcelHeroes.World
                         b.Ellipsoid(c + new Vector3(0f, 0f, tD * 0.3f), Vector3.one * tW * 0.2f, accent, 12);
                         break;
                     default:
-                        b.Box(c, new Vector3(tW, tH, tD), main);
+                        b.RoundBox(c, new Vector3(tW, tH, tD), main, 0.32f, 18);
                         b.Box(c + new Vector3(0f, tH * 0.08f, tD * 0.5f), new Vector3(tW * 0.62f, tH * 0.5f, tD * 0.06f), second);
                         b.Box(c + new Vector3(tW * 0.18f, tH * 0.18f, tD * 0.54f), new Vector3(tW * 0.16f, tH * 0.1f, tD * 0.04f), accent);
                         b.Box(c + new Vector3(0f, -tH * 0.44f, 0f), new Vector3(tW * 1.04f, tH * 0.12f, tD * 1.04f), dark);
@@ -226,7 +226,7 @@ namespace ExcelHeroes.World
                 Emit(spine ?? pelvis, b, neckP);
                 // the pelvis: a dark block under the torso
                 var bp = new MeshKit.Builder();
-                bp.Box(new Vector3(0f, -tH * 0.06f, 0f), new Vector3(tW * 0.8f, tH * 0.32f, tD * 0.9f), mat == "soft" ? second : dark);
+                bp.RoundBox(new Vector3(0f, -tH * 0.06f, 0f), new Vector3(tW * 0.8f, tH * 0.34f, tD * 0.9f), mat == "soft" ? second : dark, 0.4f);
                 Emit(pelvis, bp, pelP);
             }
 

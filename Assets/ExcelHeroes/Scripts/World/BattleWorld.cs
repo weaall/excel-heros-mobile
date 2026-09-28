@@ -362,6 +362,10 @@ namespace ExcelHeroes.World
                     if (e.target != null && _actors.TryGetValue(e.target, out var t))
                     {
                         t.Hit = 0.16f;
+                        t.Freeze = Mathf.Max(t.Freeze, e.crit ? 0.11f : 0.065f); t.FreezeShake = e.crit ? 0.045f : 0.025f;
+                        if (e.actor != null && _actors.TryGetValue(e.actor, out var att) && (e.actor.side == Side.Monster || e.actor.role is "melee" or "tank"))
+                            att.Freeze = Mathf.Max(att.Freeze, e.crit ? 0.08f : 0.05f);
+                        if (e.crit) AddShakeLocal(0.18f);
                         // shoved back along the line: an enemy further than a hero, a crit twice as far
                         t.Knock = e.target.side == Side.Hero ? (e.crit ? -0.16f : -0.08f) : (e.crit ? 0.34f : 0.2f);
                         Spark(t, e.crit ? new Color(1f, 0.85f, 0.3f) : Color.white, e.crit ? 0.7f : 0.45f);
@@ -436,6 +440,7 @@ namespace ExcelHeroes.World
                 if (c.side == Side.Monster) a.Rig.Root.gameObject.SetActive(_closeUp < 0.05f);
                 a._enemyX = nearestEnemyX; a._heroX = nearestHeroX;
                 a.Update(dt, _time, WX(drawX(c)), _cam.transform, _mpb, _closeUp);
+                if (a.Rig.RefModel && c.side == Side.Monster && a.Dying > 0.7f && !a.Popped) { a.Popped = true; DeathPop(a); }
             }
 
             SyncShots();
@@ -803,6 +808,32 @@ namespace ExcelHeroes.World
             var glow = MeshKit.Part("glow", root, Quad, GlowMat(accent), Layer).transform;
             glow.localScale = Vector3.one * (shot.Kind == "slash" ? 1.1f : 0.55f);
             return root;
+        }
+
+        /// <summary>An enemy's end: a flash, a ring on the street and its body's cells flying off in its colours.</summary>
+        void DeathPop(Actor a)
+        {
+            var centre = a.Rig.Root.position + Vector3.up * a.Rig.Height * 0.4f;
+            Spark(a, Color.white, a.C.boss != null ? 3.2f : 1.9f);
+            var ringCol = new Color(1f, 0.55f, 0.4f, 0.95f);
+            if (!RingMats.TryGetValue(ringCol, out var ring) || ring == null) RingMats[ringCol] = ring = MeshKit.NewGlass(RingTex, ringCol);
+            var floor = FxPart("ring", FloorQuad, ring, Layer).transform;
+            floor.position = new Vector3(centre.x, a.Rig.Root.parent != null ? a.Rig.Root.parent.position.y + 0.02f : 0.02f, centre.z);
+            _fx.Add(new Fx { T = floor, Life = 0.5f, Max = 0.5f, Grow0 = 0.3f, Grow1 = 2.4f, Flat = true });
+            var cols = new[] { new Color(0.95f, 0.95f, 0.98f), a.Accent, new Color(1f, 0.85f, 0.4f) };
+            var n = a.C.boss != null ? 22 : 12;
+            for (var i = 0; i < n; i++)
+            {
+                var shard = FxPart("shard", Cell, MeshKit.Toon, Layer).transform;
+                var mpb = new MaterialPropertyBlock();
+                mpb.SetColor("_Color", MeshKit.Lin(cols[i % cols.Length]));
+                shard.GetComponent<MeshRenderer>().SetPropertyBlock(mpb);
+                shard.position = centre;
+                var ang = i / (float)n * Mathf.PI * 2f;
+                var vel = new Vector3(Mathf.Cos(ang) * 2.4f, 2.2f + (i % 4) * 0.6f, Mathf.Sin(ang) * 1.4f);
+                _fx.Add(new Fx { T = shard, Life = 0.7f, Max = 0.7f, Vel = vel, Gravity = true, Grow0 = 1.1f, Grow1 = 0.3f, Spin = true });
+            }
+            AddShakeLocal(a.C.boss != null ? 0.6f : 0.16f);
         }
 
         void Spark(Actor at, Color c, float size, bool rise = false)
@@ -1661,6 +1692,21 @@ namespace ExcelHeroes.World
                     if (Rig.LegL != null) Rig.LegL.localRotation = Quaternion.Euler(legSwing, 0f, 0f);
                     if (Rig.LegR != null) Rig.LegR.localRotation = Quaternion.Euler(-legSwing, 0f, 0f);
                 }
+                // the target shaking in place while the hit holds
+                if (Freeze > 0f && Hit > 0f) lunge += (Mathf.PerlinNoise(time * 60f, Z * 7f) - 0.5f) * 2f * FreezeShake;
+                // an enemy on the heroes' skeleton goes down the way BA's do: knocked up and back, spinning,
+                // then bursting into cells (BattleWorld.DeathPop, at 0.72 s) as it shrinks away
+                if (Rig.RefModel && !hero && Dying > 0f)
+                {
+                    if (_deathScale == Vector3.zero) _deathScale = root.localScale;
+                    var k = Mathf.Clamp01(Dying / 0.72f);
+                    y += Mathf.Sin(k * Mathf.PI) * 0.8f * Mathf.Sqrt(_deathScale.y);
+                    lunge += Mathf.SmoothStep(0f, 1f, k) * 1.4f;
+                    root.localRotation *= Quaternion.Euler(-35f * k, k * 420f, 0f);
+                    var shrink = Mathf.Clamp01((Dying - 0.62f) / 0.2f);
+                    root.localScale = _deathScale * (1f - shrink * 0.95f);
+                }
+                if (Rig.RefModel && Rig.HandR != null) SwingTrail(hero);
                 root.localPosition = new Vector3(X + lunge, y, Z) + facing;
                 if (Rig.SheetFloor && Rig.Sheet != null)
                 {
@@ -1677,6 +1723,39 @@ namespace ExcelHeroes.World
                     Rig.Sheet.localRotation = Quaternion.Euler(0f, 180f, Rig.SheetSide * 12f);
                 }
             }
+
+            /// <summary>
+            /// A streak of light behind the striking hand while a blow is in the air — in the hero's
+            /// accent, red on an enemy. Melee and tank strikes, and every enemy blow; not the shooters.
+            /// </summary>
+            void SwingTrail(bool hero)
+            {
+                var melee = !hero || C.role is "melee" or "tank";
+                if (!melee) return;
+                if (_trail == null)
+                {
+                    var go = new GameObject("trail") { layer = Rig.Root.gameObject.layer };
+                    go.transform.SetParent(Rig.HandR, false);
+                    _trail = go.AddComponent<TrailRenderer>();
+                    _trail.time = 0.14f; _trail.minVertexDistance = 0.02f;
+                    _trail.widthCurve = new AnimationCurve(new Keyframe(0f, 0.16f * Rig.Height), new Keyframe(1f, 0f));
+                    var c = hero ? Accent : new Color(1f, 0.35f, 0.3f);
+                    var g = new Gradient();
+                    g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(c, 0.35f), new GradientColorKey(c, 1f) },
+                              new[] { new GradientAlphaKey(0.95f, 0f), new GradientAlphaKey(0.6f, 0.4f), new GradientAlphaKey(0f, 1f) });
+                    _trail.colorGradient = g;
+                    _trail.sharedMaterial = TrailMat;
+                    _trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    _trail.receiveShadows = false;
+                    _trail.emitting = false;
+                }
+                // the middle of the swing, where the hand is fastest
+                var a = Attack > 0f ? 1f - Attack / 0.32f : -1f;
+                _trail.emitting = (a > 0.18f && a < 0.8f) || (Skill > 0f && Skill < 0.6f);
+            }
+
+            static Material _trailMat;
+            static Material TrailMat => _trailMat != null ? _trailMat : (_trailMat = MeshKit.NewGlass(MeshKit.Blob, Color.white));
 
             /// <summary>
             /// A limbless 3D mascot moves the way the 2D one did: it breathes, crouches before a lunge
@@ -1821,7 +1900,7 @@ namespace ExcelHeroes.World
                          || (walking != (_clips.Current == p.Walk)) && !acting)
                     _clips.Play(walking ? p.Walk : p.Stance, 0.18f, Random.value * 0.5f, p.Speed);
                 _lastAttack = Attack; _lastHit = Hit; _lastSkill = Skill;
-                _clips.Tick(dt);
+                _clips.Tick(Freeze > 0f ? dt * 0.05f : dt);
                 // the hero's posture over whatever the clip does: a lean, a head tilt, the chest up or down
                 if (Rig.Spine != null) Rig.Spine.localRotation *= Quaternion.Euler(0f, 0f, p.Chest);
                 if (Rig.Head != null && Rig.Head != Rig.Body) Rig.Head.localRotation *= Quaternion.Euler(0f, p.Tilt, 0f);
@@ -1940,6 +2019,12 @@ namespace ExcelHeroes.World
             public float Scale = 1f, X, Z;
             public Color Accent;
             public float Attack, Hit, Skill, Dying, Cheer, Knock;
+            // hitstop: the clip all but stops for a few frames when a blow lands (the attacker's too, for a
+            // melee blow), the target shaking in place — the weight a hit has in BA's fights
+            public float Freeze, FreezeShake;
+            public bool Popped;
+            Vector3 _deathScale;
+            TrailRenderer _trail;
             public float LastRing = -1f;     // world time of the last hit ring on this actor (HitRing throttle)
             public float Enter;             // 1 → 0: running in from the left at the start of a run
             float _walk, _lastX;
@@ -1963,6 +2048,7 @@ namespace ExcelHeroes.World
                 _walk += walking ? (Rig.RefModel ? moved / Mathf.Max(0.05f, SdPose.WalkCycle * Rig.Root.localScale.x) * Mathf.PI * 2f : dt * 11f) : 0f;
 
                 Attack = Mathf.Max(0f, Attack - dt);
+                Freeze = Mathf.Max(0f, Freeze - dt);
                 Hit = Mathf.Max(0f, Hit - dt);
                 Skill = Mathf.Max(0f, Skill - dt);
                 Cheer = Mathf.Max(0f, Cheer - dt);
