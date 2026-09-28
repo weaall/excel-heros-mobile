@@ -200,6 +200,16 @@ namespace ExcelHeroes.Core
                         yield return Shoot($"{n:00}-Boss0");
                         yield return new WaitForSeconds(0.2f);
                         yield return Shoot($"{n:00}-Boss1");
+                        // every member's EX, one after another, against the boss (deep enough not to fall)
+                        for (var hi = 0; hi < 5; hi++)
+                        {
+                            var st = BattleScreen.Current?.DebugSkill(hi);
+                            Debug.Log($"[shots] skill {hi}: {st ?? "not fired"}");
+                            if (st == null) continue;
+                            yield return new WaitForSeconds(0.16f);
+                            yield return Shoot($"{n:00}-Skill{hi}-{st}");
+                            yield return new WaitForSeconds(0.6f);
+                        }
                         // -burst: a run of close frames (24 × 0.07 s) to judge the motion in time —
                         // joint pops, parts coming loose, the springs settling — on a contact sheet
                         if (ArgValue("-burst") != null || System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-burst") >= 0)

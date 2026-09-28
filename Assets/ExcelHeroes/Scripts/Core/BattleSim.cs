@@ -1023,6 +1023,14 @@ namespace ExcelHeroes.Core
         }
 
         /// <summary>Player-facing: fire a charged EX skill. Safe to call when not ready — it no-ops.</summary>
+        /// <summary>Capture pass only: fire member i's EX now, cost and cooldown aside.</summary>
+        public bool DebugFire(int i)
+        {
+            if (i < 0 || i >= Heroes.Count || !Heroes[i].Alive) return false;
+            Cost = MaxCost; Heroes[i].skillTimer = 0f;
+            return FireSkill(Heroes[i]);
+        }
+
         public bool FireSkill(Combatant h)
         {
             if (!h.SkillReady || !CanAfford(h)) return false;

@@ -345,17 +345,23 @@ namespace ExcelHeroes.World
                         t.Knock = e.target.side == Side.Hero ? (e.crit ? -0.16f : -0.08f) : (e.crit ? 0.34f : 0.2f);
                         Spark(t, e.crit ? new Color(1f, 0.85f, 0.3f) : Color.white, e.crit ? 0.7f : 0.45f);
                         HitRing(t, e.crit);
+                        if (_cast.A != null && e.actor != null && _actors.TryGetValue(e.actor, out var ca) && ca == _cast.A) SkillHit(_cast.Type, ca, t);
                     }
                     break;
                 case EventKind.Heal:
                     if (e.target != null && _actors.TryGetValue(e.target, out var hl))
+                    {
                         Spark(hl, new Color(0.45f, 1f, 0.6f), 0.6f, rise: true);
+                        if (_cast.A != null) SkillHeal(_cast.Type, hl);
+                    }
                     break;
                 case EventKind.Skill:
                     if (e.actor != null && _actors.TryGetValue(e.actor, out var s))
                     {
                         s.Skill = 0.75f;
-                        SkillBurst(s);
+                        var st = _cast.A == s ? _cast.Type : null;
+                        if (st == null || st == "ult") SkillBurst(s);
+                        if (st != null) SkillCast(s, st);
                     }
                     break;
                 case EventKind.Death:
@@ -421,6 +427,7 @@ namespace ExcelHeroes.World
                 _actors.TryGetValue(shot.From, out var from);
                 _actors.TryGetValue(shot.To, out var to);
                 if (from == null || to == null) continue;
+                if (_volleys.TryGetValue(shot, out var vol)) { DrawVolley(shot, vol, from, to); continue; }
 
                 var k = shot.Progress;
                 var start = from.Rig.Sheet != null && shot.From.side == Side.Hero
@@ -454,6 +461,236 @@ namespace ExcelHeroes.World
                 if (_sim.Shots.Contains(pair.Key)) continue;
                 Object.Destroy(pair.Value.gameObject);
                 _shots.Remove(pair.Key);
+                _volleys.Remove(pair.Key);
+            }
+        }
+
+        // ------------------------------------------------------------------ fire profiles --
+        // The sim fires one Shot per attack and lands it on arrival. How that one blow LOOKS depends
+        // on the hero's division, and the squad attacks with the spreadsheet itself: IT fills a
+        // column down (five cells in a stream), marketing pastes a range (a fan of cells), finance
+        // charges =SUM( and throws the total, the executives trace precedents (Excel's blue arrow),
+        // admin / ops / people type three values in. Healers lob coffee. Melee either cuts the
+        // target out (marching ants, then the cut) or strikes across it. The last round arrives
+        // when the Shot does, so the number and the flinch still land on it. (Rhythms after the
+        // reference RPG's ability compositions: Repeat 5 x 0.1 s, Spread 5 x 20 deg, charge then orb.)
+
+        enum Fire { Single, Type3, Fill5, Paste5, Sum, Trace, Lob, SlashH, SlashD, SlashX, Cut }
+
+        class Volley { public Fire F; public Transform[] Parts; public bool[] Landed; public float Seed; }
+        readonly Dictionary<Shot, Volley> _volleys = new();
+
+        static Fire FireOf(Combatant c, string kind)
+        {
+            if (c == null || c.side != Side.Hero) return Fire.Single;
+            var div = GameData.Hero(c.heroId)?.division;
+            if (kind == "slash")
+                return div switch { "finance" or "admin" or "exec" => Fire.Cut, "tech" => Fire.SlashX, "ops" => Fire.SlashD, _ => Fire.SlashH };
+            if (c.role == "healer") return Fire.Lob;
+            if (kind != "shot") return Fire.Single;
+            return div switch { "tech" => Fire.Fill5, "market" => Fire.Paste5, "finance" => Fire.Sum, "exec" => Fire.Trace, _ => Fire.Type3 };
+        }
+
+        static readonly Dictionary<string, Material> FxMats = new();
+        static Material FxMat(string name)
+        {
+            if (FxMats.TryGetValue(name, out var m) && m != null) return m;
+            var tex = Resources.Load<Texture2D>("Art/Fx/" + name);
+            return FxMats[name] = MeshKit.NewGlass(tex != null ? tex : MeshKit.Blob, Color.white);
+        }
+
+        Transform Card(Transform parent, string tex, float w, float h)
+        {
+            var q = MeshKit.Part("card", parent, Quad, FxMat(tex), Layer).transform;
+            q.localScale = new Vector3(w, h, 1f);
+            q.gameObject.SetActive(false);
+            return q;
+        }
+
+        Transform Bullet(Transform parent, Color c, float size)
+        {
+            var b = new GameObject("b") { layer = Layer }.transform;
+            b.SetParent(parent, false);
+            var part = MeshKit.Part("cell", b, Cell, MeshKit.Toon, Layer);
+            var mpb = new MaterialPropertyBlock(); mpb.SetColor("_Color", MeshKit.Lin(c));
+            part.GetComponent<MeshRenderer>().SetPropertyBlock(mpb);
+            part.transform.localScale = Vector3.one * size;
+            var glow = MeshKit.Part("glow", b, Quad, GlowMat(c), Layer).transform;
+            glow.localScale = Vector3.one * 0.55f * size;
+            b.gameObject.SetActive(false);
+            return b;
+        }
+
+        Transform Streak(Transform parent, Color c)
+        {
+            var q = MeshKit.Part("streak", parent, Quad, GlowMat(c), Layer).transform;
+            q.gameObject.SetActive(false);
+            return q;
+        }
+
+        Transform Strip(Transform parent, string tex)
+        {
+            var q = MeshKit.Part("strip", parent, Quad, FxMat(tex), Layer).transform;
+            q.gameObject.SetActive(false);
+            return q;
+        }
+
+        /// <summary>Lays a camera-facing quad along a to b, `width` thick.</summary>
+        void Lay(Transform q, Vector3 a, Vector3 b, float width)
+        {
+            var cam = _cam.transform; var d = b - a;
+            var ang = Mathf.Atan2(Vector3.Dot(d, cam.up), Vector3.Dot(d, cam.right)) * Mathf.Rad2Deg;
+            q.position = (a + b) * 0.5f;
+            q.rotation = Quaternion.LookRotation(q.position - cam.position, cam.up) * Quaternion.Euler(0f, 0f, ang);
+            q.localScale = new Vector3(Mathf.Max(0.01f, d.magnitude), width, 1f);
+        }
+
+        /// <summary>A camera-facing card at p, turned `roll` degrees in the picture plane.</summary>
+        void Billboard(Transform q, Vector3 p, float roll)
+        {
+            q.position = p;
+            q.rotation = Quaternion.LookRotation(p - _cam.transform.position, _cam.transform.up) * Quaternion.Euler(0f, 0f, roll);
+        }
+
+        Volley MakeVolley(Shot shot, Transform root, Color accent)
+        {
+            var f = FireOf(shot.From, shot.Kind);
+            if (f == Fire.Single) return null;
+            var v = new Volley { F = f, Seed = Random.value * 100f };
+            const float cw = 0.46f, ch = 0.23f;   // readable at the battle camera's distance
+            Transform C(int i) => Card(root, "cell_" + (i % 3), cw, ch);
+            switch (f)
+            {
+                case Fire.Type3: v.Parts = new[] { C(0), C(1), C(2) }; break;
+                case Fire.Fill5: v.Parts = new Transform[5]; for (var i = 0; i < 5; i++) v.Parts[i] = C(i); break;
+                case Fire.Paste5: v.Parts = new Transform[5]; for (var i = 0; i < 5; i++) v.Parts[i] = C(i + 1); break;
+                case Fire.Sum: v.Parts = new[] { Card(root, "formula", 0.7f, 0.24f), Card(root, "result", 0.56f, 0.28f) }; break;
+                case Fire.Trace: v.Parts = new[] { Strip(root, "solid"), Card(root, "trace_dot", 0.18f, 0.18f), Card(root, "trace_head", 0.28f, 0.28f) }; break;
+                case Fire.Lob: v.Parts = new[] { Bullet(root, new Color(0.62f, 0.42f, 0.26f), 0.9f) }; break;
+                case Fire.Cut: v.Parts = new[] { Strip(root, "ants"), Strip(root, "ants"), Strip(root, "ants"), Strip(root, "ants"), Streak(root, Color.white) }; break;
+                case Fire.SlashX: v.Parts = new[] { Streak(root, accent), Streak(root, accent), Streak(root, Color.white) }; break;
+                default: v.Parts = new[] { Streak(root, accent), Streak(root, Color.white) }; break;
+            }
+            v.Landed = new bool[v.Parts.Length];
+            _volleys[shot] = v;
+            return v;
+        }
+
+        void DrawVolley(Shot shot, Volley v, Actor from, Actor to)
+        {
+            var k = shot.Progress;
+            var start = from.Rig.Sheet != null && shot.From.side == Side.Hero ? from.Rig.Sheet.position
+                      : from.Rig.Root.position + Vector3.up * from.Rig.Height * from.Scale * 0.55f;
+            var end = to.Rig.Root.position + Vector3.up * to.Rig.Height * to.Scale * 0.5f;
+            var cam = _cam.transform;
+            var side = Vector3.Cross((end - start).normalized, cam.forward).normalized;
+            void Fly(int i, float ki, float arc, float spin)
+            {
+                var q = v.Parts[i];
+                var live = ki > 0f && ki < 1f;
+                q.gameObject.SetActive(live);
+                // the rounds before the last spark on arrival; the last one is the Shot landing (HitRing)
+                if (ki >= 1f && !v.Landed[i]) { v.Landed[i] = true; if (i < v.Parts.Length - 1) Spark(to, Color.white, 0.35f); }
+                if (!live) return;
+                var p = Vector3.Lerp(start, end, ki) + Vector3.up * Mathf.Sin(ki * Mathf.PI) * arc;
+                if (q.Find("glow") != null)
+                {
+                    q.position = p; q.rotation = Quaternion.Euler(_time * 720f, _time * 360f, 0f);
+                    var g = q.Find("glow"); g.rotation = Quaternion.LookRotation(g.position - cam.position);
+                }
+                else Billboard(q, p, Mathf.Sin(_time * 9f + i * 1.7f + v.Seed) * spin);
+            }
+            switch (v.F)
+            {
+                case Fire.Type3:
+                case Fire.Fill5:
+                {
+                    var n = v.Parts.Length; var gap = v.F == Fire.Type3 ? 0.2f : 0.12f; var g = gap * (n - 1);
+                    for (var i = 0; i < n; i++) Fly(i, k * (1f + g) - i * gap, v.F == Fire.Fill5 ? 0.05f : 0.14f, 18f);
+                    break;
+                }
+                case Fire.Paste5:
+                    for (var i = 0; i < 5; i++)
+                    {
+                        Fly(i, k, 0.08f, 10f);
+                        if (k < 1f) v.Parts[i].position += side * (i - 2) * 0.17f * Mathf.Sin(k * Mathf.PI * 0.9f) + Vector3.up * ((i % 2) - 0.5f) * 0.12f * k;
+                    }
+                    break;
+                case Fire.Sum:
+                {
+                    // =SUM( gathers at the tablet, then the total flies
+                    var fm = v.Parts[0]; var rs = v.Parts[1];
+                    fm.gameObject.SetActive(k < 0.45f); rs.gameObject.SetActive(k >= 0.45f && k < 1f);
+                    if (k < 0.45f)
+                    {
+                        var c = k / 0.45f;
+                        Billboard(fm, start + Vector3.up * (0.12f + c * 0.08f), Mathf.Sin(_time * 30f) * 3f * c);
+                        fm.localScale = new Vector3(0.7f, 0.24f, 1f) * Mathf.Lerp(0.5f, 1.25f, c * c);
+                    }
+                    else
+                    {
+                        var c = (k - 0.45f) / 0.55f;
+                        Billboard(rs, Vector3.Lerp(start, end, c * c) + Vector3.up * Mathf.Sin(c * Mathf.PI) * 0.2f, -c * 25f);
+                        rs.localScale = new Vector3(0.56f, 0.28f, 1f) * (1.2f + Mathf.Sin(c * Mathf.PI) * 0.3f);
+                    }
+                    break;
+                }
+                case Fire.Trace:
+                {
+                    // Excel's trace-precedents arrow: a dot on the source, the blue line drawn out to the
+                    // target, the arrowhead riding its tip; it holds a beat, then thins away
+                    var grow = Mathf.Clamp01(k / 0.55f); var tip = Vector3.Lerp(start, end, grow);
+                    var fade = k < 0.55f ? 1f : 1f - (k - 0.55f) / 0.45f;
+                    var line = v.Parts[0]; line.gameObject.SetActive(k < 1f); Lay(line, start, tip, 0.045f * (0.4f + fade * 0.6f));
+                    var dot = v.Parts[1]; dot.gameObject.SetActive(k < 1f); Billboard(dot, start, 0f);
+                    var d = tip - start; var ang = Mathf.Atan2(Vector3.Dot(d, cam.up), Vector3.Dot(d, cam.right)) * Mathf.Rad2Deg;
+                    var head = v.Parts[2]; head.gameObject.SetActive(k < 1f); Billboard(head, tip, ang);
+                    break;
+                }
+                case Fire.Lob: Fly(0, k, 1.1f, 0f); break;
+                case Fire.Cut:
+                {
+                    // the target selected with marching ants, then cut through
+                    var ctr = end + new Vector3(0f, 0.02f, -0.3f);
+                    var hw = 0.42f * to.Scale; var hh = 0.52f * to.Scale;
+                    var r = cam.right; var u = cam.up;
+                    var c0 = ctr - r * hw - u * hh; var c1 = ctr + r * hw - u * hh; var c2 = ctr + r * hw + u * hh; var c3 = ctr - r * hw + u * hh;
+                    var corners = new[] { c0, c1, c2, c3 };
+                    var sel = k < 0.72f;
+                    var mpb = new MaterialPropertyBlock();
+                    for (var j = 0; j < 4; j++)
+                    {
+                        var q = v.Parts[j]; q.gameObject.SetActive(sel);
+                        if (!sel) continue;
+                        var a0 = corners[j]; var a1 = corners[(j + 1) % 4];
+                        Lay(q, a0, a1, 0.03f);
+                        var mr = q.GetComponent<MeshRenderer>(); mr.GetPropertyBlock(mpb);
+                        mpb.SetVector("_MainTex_ST", new Vector4((a1 - a0).magnitude / 0.08f, 1f, -_time * 3f, 0f));
+                        mr.SetPropertyBlock(mpb);
+                    }
+                    var cut = v.Parts[4]; var on = !sel && k < 1f; cut.gameObject.SetActive(on);
+                    if (on) { var cc = (k - 0.72f) / 0.28f; Lay(cut, c3 + (c1 - c3) * 0f, c3 + (c1 - c3) * Mathf.SmoothStep(0f, 1f, cc * 1.4f), 0.06f * (1.3f - cc)); }
+                    break;
+                }
+                default:
+                {
+                    // blades: a streak drawn across the target as the cut goes through it
+                    var c = Mathf.SmoothStep(0f, 1f, k); var len = 0.9f * to.Scale; var ctr = end + new Vector3(0f, 0.05f, -0.25f);
+                    var angles = v.F == Fire.SlashH ? new[] { 8f, 8f } : v.F == Fire.SlashD ? new[] { -38f, -38f } : new[] { -40f, 40f, 40f };
+                    for (var j = 0; j < v.Parts.Length; j++)
+                    {
+                        var ang = angles[j] * Mathf.Deg2Rad; var dir = cam.right * Mathf.Cos(ang) + cam.up * Mathf.Sin(ang);
+                        var delay = v.F == Fire.SlashX && j > 0 ? 0.35f : 0f;
+                        var cj = Mathf.Clamp01((c - delay) / (1f - delay));
+                        var show = cj > 0f && k < 1f;
+                        v.Parts[j].gameObject.SetActive(show);
+                        if (!show) continue;
+                        var a = ctr - dir * len * 0.5f; var b = a + dir * len * cj;
+                        var core = j == v.Parts.Length - 1;
+                        Lay(v.Parts[j], a, b, (core ? 0.05f : 0.16f) * (1.2f - cj * 0.6f));
+                    }
+                    break;
+                }
             }
         }
 
@@ -497,6 +734,7 @@ namespace ExcelHeroes.World
                 : from?.Accent ?? new Color(0.3f, 0.8f, 1f);
             var root = new GameObject("shot:" + shot.Kind) { layer = Layer }.transform;
             root.SetParent(_root, false);
+            if (MakeVolley(shot, root, accent) != null) return root;
             if (shot.Kind != "slash" && shot.Kind != "heal")
             {
                 // the projectile is a cell torn off the sheet
@@ -585,6 +823,203 @@ namespace ExcelHeroes.World
         /// the camera. Gold on a crit. At most one pair per target every 0.12 s, so a flurry reads
         /// as rhythm rather than a pile of rings.
         /// </summary>
+        // ------------------------------------------------------------------ skills --
+        // Every EX skill looked the same (one generic burst). Each now has its own, in the sheet's
+        // own vocabulary: a beam for strike, a crosshair and #DIV/0! for execute, a row selected
+        // across the whole enemy line for sweep, Ctrl+A over everything for ult, trace arrows
+        // hopping target to target for chain, red cells flying home for drain, red conditional
+        // formatting on the burning, + cells for heals, arrows up for buff and haste, a green cell
+        // border round each member for barrier, a red ! for taunt, a gold pillar for revive.
+        // The sim queues a skill's damage BEFORE its Skill event, so the screen marks the caster
+        // first (MarkSkill) and the batch's hits and heals pick the skill up.
+
+        (Actor A, string Type, Actor Prev, int N) _cast;
+
+        public void MarkSkill(Combatant actor, string text)
+        {
+            if (actor == null || actor.side != Side.Hero || !_actors.TryGetValue(actor, out var a)) return;
+            var def = GameData.Hero(actor.heroId);
+            if (def == null || def.skillName != text) return;   // 엄호 (the tank covering) is a Skill event too, not an EX
+            _cast = (a, def.skillType, a, 0);
+        }
+
+        public void EndSkillBatch() => _cast = default;
+
+        static readonly Color Green = new(0.2f, 0.72f, 0.42f), Red = new(1f, 0.33f, 0.3f), Gold = new(1f, 0.82f, 0.3f), Cyan = new(0.35f, 0.85f, 1f), Blue = new(0.2f, 0.5f, 0.95f);
+
+        Vector3 Mid(Actor a) => a.Rig.Root.position + Vector3.up * a.Rig.Height * a.Scale * 0.55f + new Vector3(0f, 0f, -0.3f);
+
+        void TintFx(Transform t, Color c, float alpha)
+        {
+            var mr = t.GetComponent<MeshRenderer>(); if (mr == null) return;
+            var mb = new MaterialPropertyBlock(); mr.GetPropertyBlock(mb);
+            var l = MeshKit.Lin(c); l.a = c.a * Mathf.Clamp01(alpha);
+            mb.SetColor("_Color", l); mr.SetPropertyBlock(mb);
+        }
+
+        void FxCard(string tex, Vector3 p, float w, float h, float life, Vector3 vel, Color tint, float delay = 0f, float g0 = 0.6f, float g1 = 1f, float roll = 0f)
+        {
+            var q = MeshKit.Part("fxcard", _root, Quad, FxMat(tex), Layer).transform;
+            q.position = p; q.gameObject.SetActive(delay <= 0f);
+            TintFx(q, tint, 1f);
+            _fx.Add(new Fx { T = q, Life = life, Max = life, Vel = vel, Aspect = new Vector2(w, h), Grow0 = g0, Grow1 = g1, Fade = true, Tint = tint, Delay = delay, Roll = roll });
+        }
+
+        void FxLine(string tex, Vector3 a, Vector3 b, float w, float life, Color tint, float delay = 0f)
+        {
+            var q = MeshKit.Part("fxline", _root, Quad, tex == null ? GlowMat(tint) : FxMat(tex), Layer).transform;
+            q.gameObject.SetActive(delay <= 0f);
+            Lay(q, a, b, w);
+            if (tex != null) TintFx(q, tint, 1f);
+            _fx.Add(new Fx { T = q, Life = life, Max = life, Line = true, A = a, B = b, W = w, Fade = tex != null, Tint = tint, Delay = delay });
+        }
+
+        void FxRect(Vector3 c, float hw, float hh, float w, float life, Color tint, float delay = 0f)
+        {
+            var r = _cam.transform.right; var u = _cam.transform.up;
+            var p = new[] { c - r * hw - u * hh, c + r * hw - u * hh, c + r * hw + u * hh, c - r * hw + u * hh };
+            for (var i = 0; i < 4; i++) FxLine("white", p[i], p[(i + 1) % 4], w, life, tint, delay);
+        }
+
+        void FloorRing(Vector3 at, Color c, float life, float g0, float g1)
+        {
+            if (!RingMats.TryGetValue(c, out var ring) || ring == null) RingMats[c] = ring = MeshKit.NewGlass(RingTex, c);
+            var floor = MeshKit.Part("ring", _root, FloorQuad, ring, Layer).transform;
+            floor.position = at + Vector3.up * 0.03f;
+            _fx.Add(new Fx { T = floor, Life = life, Max = life, Grow0 = g0, Grow1 = g1, Flat = true });
+        }
+
+        // the skill's own hits may just have killed them: those falling still count as its targets
+        IEnumerable<Actor> Living(Side side) => _actors.Values.Where(x => x.C.side == side && (x.C.Alive || x.Dying > 0f));
+
+        void SkillCast(Actor a, string type)
+        {
+            var up = Vector3.up;
+            switch (type)
+            {
+                case "sweep":
+                {
+                    var foes = Living(Side.Monster).ToList(); if (foes.Count == 0) break;
+                    var y = foes.Average(f => Mid(f).y); var z = foes.Average(f => Mid(f).z);
+                    var x0 = foes.Min(f => Mid(f).x) - 0.5f; var x1 = foes.Max(f => Mid(f).x) + 0.5f;
+                    if (x1 - x0 < 3.2f) { var cx = (x0 + x1) * 0.5f; x0 = cx - 1.6f; x1 = cx + 1.6f; }   // one big target still reads as a row
+                    // the whole row selected: a green band across the line, a white core through it
+                    FxLine("white", new Vector3(x0, y, z), new Vector3(x1, y, z), 0.42f, 0.4f, new Color(Green.r, Green.g, Green.b, 0.4f));
+                    FxLine(null, new Vector3(x0, y, z), new Vector3(x1, y, z), 0.1f, 0.3f, Color.white);
+                    AddShakeLocal(0.3f);
+                    break;
+                }
+                case "ult":
+                {
+                    var foes = Living(Side.Monster).ToList(); if (foes.Count == 0) break;
+                    var c = foes.Aggregate(Vector3.zero, (s, f) => s + Mid(f)) / foes.Count;
+                    var hw = (foes.Max(f => Mid(f).x) - foes.Min(f => Mid(f).x)) * 0.5f + 0.7f;
+                    // Ctrl+A: the selection over everything, a pale blue fill inside a blue border
+                    FxCard("white", c, hw * 2f, 1.6f, 0.55f, Vector3.zero, new Color(0.55f, 0.75f, 1f, 0.32f), g0: 1f, g1: 1f);
+                    FxRect(c, hw, 0.8f, 0.05f, 0.55f, Blue);
+                    AddShakeLocal(0.55f);
+                    break;
+                }
+                case "burn":
+                    foreach (var f in Living(Side.Monster))
+                    {
+                        var m = Mid(f);
+                        // red conditional formatting on every burning target, flickering out
+                        FxCard("white", m, 0.9f * f.Scale, 1.1f * f.Scale, 1.4f, Vector3.zero, new Color(1f, 0.35f, 0.25f, 0.34f), g0: 0.9f, g1: 1.05f);
+                        for (var i = 0; i < 4; i++) Spark(f, new Color(1f, 0.55f, 0.2f), 0.5f, rise: true);
+                    }
+                    break;
+                case "buff":
+                case "haste":
+                {
+                    var c = type == "buff" ? Gold : Cyan;
+                    foreach (var h in Living(Side.Hero))
+                        for (var i = 0; i < 3; i++)
+                            FxCard("arrow_up", Mid(h) + new Vector3((i - 1) * 0.28f, -0.3f, 0f), 0.2f, 0.2f, 0.7f, up * 1.6f, c, delay: i * 0.08f);
+                    break;
+                }
+                case "barrier":
+                    foreach (var h in Living(Side.Hero))
+                    {
+                        // a thick green cell border round each member, left up a beat
+                        FxRect(Mid(h), 0.34f * h.Scale, 0.55f * h.Scale, 0.06f, 1.3f, Green);
+                        FxCard("white", Mid(h), 0.68f * h.Scale, 1.1f * h.Scale, 1.3f, Vector3.zero, new Color(0.6f, 1f, 0.75f, 0.16f), g0: 1f, g1: 1f);
+                    }
+                    break;
+                case "taunt":
+                    FxCard("bang", Mid(a) + up * 0.7f, 0.42f, 0.42f, 1f, up * 0.5f, Color.white, g0: 0.4f, g1: 1.1f);
+                    FloorRing(a.Rig.Root.position, new Color(1f, 0.35f, 0.3f, 0.9f), 0.7f, 0.5f, 4f);
+                    AddShakeLocal(0.3f);
+                    break;
+                case "cleanse":
+                    foreach (var h in Living(Side.Hero)) { FloorRing(h.Rig.Root.position, new Color(1f, 1f, 1f, 0.9f), 0.5f, 0.3f, 1.8f); Spark(h, Color.white, 1.2f, rise: true); }
+                    break;
+                case "heal":
+                case "drain":
+                case "revive":
+                    FloorRing(a.Rig.Root.position, new Color(0.45f, 1f, 0.6f, 0.9f), 0.6f, 0.4f, 3f);
+                    break;
+                case "strike":
+                case "execute":
+                case "chain":
+                    FloorRing(a.Rig.Root.position, new Color(a.Accent.r, a.Accent.g, a.Accent.b, 0.9f), 0.45f, 0.4f, 2.2f);
+                    break;
+            }
+        }
+
+        void SkillHit(string type, Actor a, Actor t)
+        {
+            var from = Mid(a); var to = Mid(t);
+            switch (type)
+            {
+                case "strike":
+                    FxLine(null, from, to, 0.34f, 0.28f, a.Accent);
+                    FxLine(null, from, to, 0.1f, 0.22f, Color.white);
+                    AddShakeLocal(0.35f);
+                    break;
+                case "execute":
+                {
+                    var r = _cam.transform.right; var u = _cam.transform.up;
+                    FxLine("white", to - r * 0.55f, to + r * 0.55f, 0.03f, 0.45f, Red);
+                    FxLine("white", to - u * 0.55f, to + u * 0.55f, 0.03f, 0.45f, Red);
+                    FxLine(null, from, to, 0.06f, 0.2f, Color.white);
+                    FxCard("err_div0", to + Vector3.up * 0.55f, 0.6f, 0.3f, 1f, Vector3.up * 0.45f, Color.white, g0: 0.5f, g1: 1.1f, roll: -6f);
+                    break;
+                }
+                case "chain":
+                {
+                    // hop by hop, each a trace arrow from the last target
+                    var p = Mid(_cast.Prev); var d = _cast.N * 0.09f;
+                    FxLine("solid", p, to, 0.05f, 0.45f, Color.white, d);
+                    var dd = to - p; var ang = Mathf.Atan2(Vector3.Dot(dd, _cam.transform.up), Vector3.Dot(dd, _cam.transform.right)) * Mathf.Rad2Deg;
+                    FxCard("trace_head", to, 0.3f, 0.3f, 0.45f, Vector3.zero, Color.white, d, 1f, 1f, ang);
+                    FxCard("trace_dot", p, 0.2f, 0.2f, 0.45f, Vector3.zero, Color.white, d, 1f, 1f);
+                    _cast.Prev = t;
+                    break;
+                }
+                case "drain":
+                    FxCard("cell_1", to, 0.4f, 0.2f, 0.5f, (from - to) / 0.5f, Red, _cast.N * 0.05f, 0.8f, 0.6f);
+                    break;
+                case "ult":
+                    FloorRing(t.Rig.Root.position, new Color(0.7f, 0.85f, 1f, 0.9f), 0.4f, 0.3f, 2f);
+                    break;
+            }
+            _cast.N++;
+        }
+
+        void SkillHeal(string type, Actor h)
+        {
+            if (type == "revive")
+            {
+                var b = h.Rig.Root.position;
+                FxLine(null, b, b + Vector3.up * 3f, 0.7f, 0.9f, Gold);
+                FxLine(null, b, b + Vector3.up * 3f, 0.2f, 0.8f, Color.white);
+                return;
+            }
+            if (type is "heal" or "cleanse" or "drain")
+                FxCard("plus_cell", Mid(h) + Vector3.up * 0.3f, 0.3f, 0.24f, 0.9f, Vector3.up * 0.7f, Color.white, _cast.N++ * 0.05f, 0.5f, 1f);
+        }
+
         void HitRing(Actor at, bool crit)
         {
             if (at.LastRing >= 0f && _time - at.LastRing < 0.12f) return;
@@ -625,6 +1060,9 @@ namespace ExcelHeroes.World
             public Vector3 Vel;
             public bool Gravity, Flat, Face, Spin;
             public float Roll; public Vector2 Aspect;   // a camera-facing streak: turned in the picture plane, stretched along its length
+            public bool Line; public Vector3 A, B; public float W;   // laid along A to B each frame, thinning out
+            public float Delay;                                    // hidden until this has run out (a chain's later hops)
+            public bool Fade; public Color Tint;                   // a card: fades its alpha instead of glowing white
         }
 
         readonly List<Fx> _fx = new();
@@ -646,6 +1084,13 @@ namespace ExcelHeroes.World
             for (var i = _fx.Count - 1; i >= 0; i--)
             {
                 var f = _fx[i];
+                if (f.Delay > 0f)
+                {
+                    f.Delay -= dt;
+                    if (f.T != null) f.T.gameObject.SetActive(f.Delay <= 0f);
+                    _fx[i] = f;
+                    continue;
+                }
                 f.Life -= dt;
                 if (f.Life <= 0f || f.T == null)
                 {
@@ -654,6 +1099,23 @@ namespace ExcelHeroes.World
                     continue;
                 }
                 var k = 1f - f.Life / f.Max;
+                if (f.Line)
+                {
+                    Lay(f.T, f.A, f.B, f.W * (1f - k * 0.75f));
+                    if (f.Fade) TintFx(f.T, f.Tint, 1f - k * k);
+                    _fx[i] = f;
+                    continue;
+                }
+                if (f.Fade)
+                {
+                    f.T.position += f.Vel * dt;
+                    var sc2 = Mathf.Lerp(f.Grow0, f.Grow1, 1f - (1f - k) * (1f - k));
+                    f.T.localScale = new Vector3(sc2 * f.Aspect.x, sc2 * f.Aspect.y, 1f);
+                    f.T.rotation = Quaternion.LookRotation(f.T.position - _cam.transform.position, _cam.transform.up) * Quaternion.Euler(0f, 0f, f.Roll);
+                    TintFx(f.T, f.Tint, k < 0.7f ? 1f : 1f - (k - 0.7f) / 0.3f);
+                    _fx[i] = f;
+                    continue;
+                }
                 if (f.Gravity) f.Vel += Vector3.down * 9f * dt;
                 f.T.position += f.Vel * dt;
                 var sc = Mathf.Lerp(f.Grow0, f.Grow1, 1f - (1f - k) * (1f - k));

@@ -46,6 +46,9 @@ namespace ExcelHeroes.EditorTools
         /// <summary>The 3D monsters' textures (tools/mon3d_pack.py): wrapped on a mesh, so a plain texture with mipmaps.</summary>
         const string Sd3dmRoot = ArtRoot + "SD3DM/";
 
+        /// <summary>The Excel attack sprites (tools/gen_fx_tex.py): alpha cards on quads; the ants dash tiles along x.</summary>
+        const string FxRoot = ArtRoot + "Fx/";
+
         /// <summary>
         /// The UI skin from tools/gen-ui-skin.py. It lives OUTSIDE Resources/Art because nothing
         /// loads it by name at runtime — App.uss references it by path — and it needs the opposite
@@ -92,6 +95,21 @@ namespace ExcelHeroes.EditorTools
                 importer.alphaIsTransparency = true;
                 importer.isReadable = false;
                 importer.maxTextureSize = 256;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                ClearPlatformOverrides(importer);
+                importer.userData = Stamp;
+                return;
+            }
+
+            if (assetPath.StartsWith(FxRoot))
+            {
+                importer.textureType = TextureImporterType.Default;
+                importer.mipmapEnabled = true;
+                importer.filterMode = FilterMode.Bilinear;
+                importer.wrapMode = assetPath.EndsWith("ants.png") ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
+                importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                importer.alphaIsTransparency = true;
+                importer.isReadable = false;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 ClearPlatformOverrides(importer);
                 importer.userData = Stamp;

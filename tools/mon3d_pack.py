@@ -157,11 +157,29 @@ def main(ids):
         iou, yaw, mirror = best_view(v, f, src)
         v = fit(v @ rot(yaw, mirror).T)
         if mirror: f = f[:, ::-1].copy()      # a mirror turns the winding inside out
+        # a mascot is about as deep as it is wide; TRELLIS sometimes returns a relief (the cloud, the
+        # cat came back paper-thin from the side)
+        width = v[:, 0].max() - v[:, 0].min(); depth = v[:, 2].max() - v[:, 2].min()
+        if depth < width * 0.3:
+            # a card, not a figure (the cloud, the flame-framed boss): inflating it only makes a
+            # black-sided slab. Left for mon3d_fix.py (toy render); the game keeps the 2D mascot.
+            print(f"  {i}: FLAT (depth {depth / width:.2f} of width) -- skipped, retry with mon3d_fix.py")
+            scores[i] = 0.5
+            for ext in (".bytes", "_tex.png"):
+                q = os.path.join(OUT, i + ext)
+                if ext == "_tex.png" and os.path.exists(q): os.remove(q)
+            continue
+        if depth < width * 0.62:
+            k = min(3.0, width * 0.62 / max(1e-6, depth)); v[:, 2] *= k
+            print(f"  {i}: depth x{k:.2f}")
         m = trimesh.Trimesh(v, f, process=False)
         n = np.asarray(m.vertex_normals, np.float64)
         img = bake(v, n, f, uv, tex, src)
         img.save(os.path.join(OUT, i + "_tex.png"))
-        write(os.path.join(OUT, i + ".bytes"), v.astype(np.float32), n.astype(np.float32), uv.astype(np.float32), f)
+        # glTF/trimesh is right-handed, Unity left-handed: mirror x (and the winding) or the drawing
+        # reads backwards in game (HR boss's TERMINATION came out mirrored)
+        vu = v * [-1, 1, 1]; nu = n * [-1, 1, 1]
+        write(os.path.join(OUT, i + ".bytes"), vu.astype(np.float32), nu.astype(np.float32), uv.astype(np.float32), f[:, ::-1].copy())
         # preview from the packed result
         pm = trimesh.Trimesh(v, f, process=False,
                              visual=trimesh.visual.TextureVisuals(uv=uv, material=trimesh.visual.material.PBRMaterial(baseColorTexture=img)))

@@ -89,6 +89,13 @@ namespace ExcelHeroes.UI
         Label _costWords;     // the result overlay on screen, if any (NewRun takes it down)
         public string DebugState() => _sim == null ? "no sim" : $"P{_sim.Stage} wave {_sim.Wave}/{_sim.WaveCount} t {_sim.Elapsed:F1} finished {_sim.Finished} boss {(_sim.Monsters.FirstOrDefault(m => m.boss != null) is { } b ? $"{b.hp}/{b.maxHp}" : "-")} bar {(_bossBar == null ? "null" : _bossBar.ClassListContains("hidden") ? "hidden" : "shown")}";
 
+        public string DebugSkill(int i)
+        {
+            if (_sim == null || _sim.Finished || i >= _sim.Heroes.Count) return null;
+            var h = _sim.Heroes[i];
+            return _sim.DebugFire(i) ? GameData.Hero(h.heroId)?.skillType : null;
+        }
+
         public void DebugCutIn()
         {
             var h = _sim?.Heroes.OrderByDescending(x => GameData.GradeRank(GameData.Hero(x.heroId)?.grade)).FirstOrDefault();
@@ -822,11 +829,11 @@ namespace ExcelHeroes.UI
             if (_restartIn <= 0f) NewRun();
         }
 
-        // The sim resolves a hit the instant it is swung. Drawn that way the target flinches while
-        // the attacker is still winding up, so the swing starts now and everything else (the flinch,
-        // the ring, the number, a death) lands ImpactLag later, on the swing's contact frame.
-        // Every event waits the same time, so their order holds.
-        const float ImpactLag = 0.1f;
+        // No lag: the sim already lands a blow when its Shot arrives (BattleSim.Land), and the swing
+        // starts when the Shot is fired (BattleWorld.SyncShots), so the damage event IS the contact
+        // frame. (A 0.1 s lag here drew the flinch after the projectile had gone, and restarted the
+        // monsters' 0.5 s swings.) The queue stays for effects that want to trail an event.
+        const float ImpactLag = 0f;
         readonly Queue<(float due, BattleSim sim, BattleEvent e)> _lag = new();
 
         void DrainEvents()
@@ -835,7 +842,8 @@ namespace ExcelHeroes.UI
             while (_sim.Events.Count > 0)
             {
                 var ev = _sim.Events.Dequeue();
-                if (ev.kind == EventKind.Damage) _world?.Swing(ev.actor);
+                // a skill's hits are queued before its Skill event: mark the caster first
+                if (ev.kind == EventKind.Skill) _world?.MarkSkill(ev.actor, ev.text);
                 _lag.Enqueue((now + ImpactLag, _sim, ev));
             }
             while (_lag.Count > 0 && _lag.Peek().due <= now)
@@ -907,6 +915,7 @@ namespace ExcelHeroes.UI
                         break;
                 }
             }
+            _world?.EndSkillBatch();
         }
 
         /// <summary>
