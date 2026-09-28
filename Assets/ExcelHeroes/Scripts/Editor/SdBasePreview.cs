@@ -227,6 +227,9 @@ namespace ExcelHeroes.EditorTools
                 // SD_MON=1: the ids are monster type ids, built as 3D mascots (SdModel.BuildMonster)
                 // SD_GLASSES=square,round,…: force a glasses style per column (the look is mutable and read at build)
                 // SD_IRIS=miku,kayoko,…: force a sample iris per column (the look is read at build)
+                // SD_HAIRX=wave=1|spread=0.8,…: extra hair-recipe keys per column ('|' between keys)
+                var hxEnv = System.Environment.GetEnvironmentVariable("SD_HAIRX");
+                if (!string.IsNullOrEmpty(hxEnv)) System.Environment.SetEnvironmentVariable("SD_HAIRADD", hxEnv.Split(',')[i % hxEnv.Split(',').Length].Replace('|', ';'));
                 var irEnv = System.Environment.GetEnvironmentVariable("SD_IRIS");
                 if (!string.IsNullOrEmpty(irEnv)) { var ir = irEnv.Split(','); SdLook.For(ids[i]).Iris = ir[i % ir.Length]; }
                 var hlEnv = System.Environment.GetEnvironmentVariable("SD_HAIRLIB");

@@ -158,15 +158,29 @@ namespace ExcelHeroes.World
         /// </summary>
         public static float Volume = 1f, Fall = 1f;
 
+        /// <summary>
+        /// The long hair's own cut, on top of volume and fall (all 0 = the sample's): Wave — soft S waves
+        /// down the length (0.5 wavy, 1 curly); Spread — the tips fan out (+) or fall close (−);
+        /// Gather — the back hair drawn together below the nape into a low ponytail (1 fully tied);
+        /// Curl — the ends turn in under (+, a J) or flick out (−). Recipe wave= / spread= / gather= / curl=.
+        /// </summary>
+        public static float Wave, Spread, Gather, Curl;
+
         static Mesh Shape(Mesh src, Matrix4x4 toWorld, ChibiRig rig)
         {
-            if (Mathf.Abs(Volume - 1f) < 0.005f && Mathf.Abs(Fall - 1f) < 0.005f) return src;
+            if (Mathf.Abs(Volume - 1f) < 0.005f && Mathf.Abs(Fall - 1f) < 0.005f && Wave == 0f && Spread == 0f && Gather == 0f && Curl == 0f) return src;
             var m = src == null ? null : Object.Instantiate(src); if (m == null) return src;
             var toLocal = toWorld.inverse;
             var v = m.vertices;
             var head = rig.Head.position; var h = rig.Height;
             var skull = head + Vector3.up * h * 0.1f;           // the middle of the big chibi head
             var jaw = rig.Neck != null ? rig.Neck.position.y : head.y - h * 0.02f;
+            var fwd = rig.Root.forward; var right = rig.Root.right;
+            var lowest = float.MaxValue;
+            for (var i = 0; i < v.Length; i++) lowest = Mathf.Min(lowest, toWorld.MultiplyPoint3x4(v[i]).y);
+            var reach = Mathf.Max(h * 0.05f, (jaw - lowest) * Fall);   // how far the hair hangs below the jaw, after the fall
+            // the tie of a low ponytail: behind the nape, a little below the jaw
+            var tie = new Vector3(skull.x, jaw - h * 0.03f, skull.z) - fwd * h * 0.1f;
             for (var i = 0; i < v.Length; i++)
             {
                 var w = toWorld.MultiplyPoint3x4(v[i]);
@@ -174,7 +188,38 @@ namespace ExcelHeroes.World
                 var along = Mathf.Clamp01(1f - Mathf.Abs(w.y - skull.y) / (h * 0.3f));
                 var s = 1f + (Volume - 1f) * (0.4f + 0.6f * along);
                 w.x = skull.x + (w.x - skull.x) * s; w.z = skull.z + (w.z - skull.z) * s;
-                if (w.y < jaw) w.y = jaw - (jaw - w.y) * Fall;
+                if (w.y < jaw)
+                {
+                    w.y = jaw - (jaw - w.y) * Fall;
+                    var d = jaw - w.y; var t = Mathf.Clamp01(d / reach);
+                    var radial = new Vector3(w.x - skull.x, 0f, w.z - skull.z);
+                    var rn = radial.sqrMagnitude > 1e-10f ? radial.normalized : -fwd;
+                    // how much a strand is BEHIND (1) or at the side / front (0), smoothly: a hard split tore the gathered hair from the side locks
+                    var behind = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.15f, -0.55f, Vector3.Dot(rn, fwd)));
+                    // tips out / close
+                    w += rn * (Spread * t * t * h * 0.08f);
+                    // waves: along the strand, phase by its heading so neighbours ripple together
+                    if (Wave != 0f)
+                    {
+                        var ang = Mathf.Atan2(Vector3.Dot(rn, right), Vector3.Dot(rn, fwd));
+                        var wv = Mathf.Sin(d / (h * (0.11f - 0.03f * Mathf.Clamp01(Wave))) * Mathf.PI * 2f + ang * 1.5f);
+                        w += rn * (Wave * h * 0.014f * wv * Mathf.Clamp01(d / (h * 0.04f)));
+                    }
+                    // the ends: turned under toward the body (+) or flicked out (−), the last third of the length
+                    if (Curl != 0f)
+                    {
+                        var e = Mathf.Clamp01((t - 0.66f) / 0.34f);
+                        w += -rn * (Curl * e * e * h * 0.11f) + Vector3.up * (Mathf.Abs(Curl) * e * e * h * 0.05f);
+                    }
+                    // a low ponytail: the back hair drawn in to the tie, then hanging from it
+                    if (Gather > 0f && behind > 0f)
+                    {
+                        var g = Gather * behind * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(d / (h * 0.06f)));
+                        var off = new Vector3(w.x - tie.x, 0f, w.z - tie.z);
+                        var keep2 = Mathf.Lerp(1f, 0.28f + 0.12f * t, g);
+                        w = new Vector3(tie.x, w.y, tie.z) + off * keep2;
+                    }
+                }
                 v[i] = toLocal.MultiplyPoint3x4(w);
             }
             m.vertices = v; m.RecalculateBounds();

@@ -17,13 +17,13 @@ import sd_likeness_gemini as lk
 import sdspec_hair_gemini as hg
 
 # the samples whose hair has a back fall once the tails are their own region (SdRefHairLib.TailTags)
-BACKS = ["haruka", "hikari", "mika", "yuuka"]
+BACKS = ["haruka", "hikari", "mika", "yuuka", "kayoko"]
 FIXES = {"bangs", "hair_len_shorter", "hair_len_longer", "add_bun", "remove_tails", "add_tails"}
 ASK = ("Image 1: a character illustration. Image 2: our 3D chibi of her (full body front, then the face). "
        "Image 3: the 3D hair parts we build from (red labels; top row front views, bottom row back views). "
        "Our current recipe is: {recipe}. A reviewer says the hair's worst problem is: '{worst}'. "
        "Give a corrected recipe that fixes it, changing as little as needed. Parts: front (fringe), side (locks by the face), "
-       "back (the fall: only haruka, hikari, mika or yuuka have one), extra ('mika' a small bun, 'haruka' a big bow, 'none'), tails ('reisa' twin tails, 'miku' very long twin tails, "
+       "back (the fall: only haruka, hikari, mika, yuuka or kayoko — a straight heavy curtain — have one; kayoko never as front), extra ('mika' a small bun, 'haruka' a big bow, 'none'), tails ('reisa' twin tails, 'miku' very long twin tails, "
        "'natsu' one side ponytail, 'none'), len ('short' jaw, 'bob' below chin, 'shoulder', 'long'). "
        f"Names: {', '.join(hg.LIBS)}. Answer JSON only: " + '{"front":"","side":"","back":"","extra":"","tails":"","len":"","why":""}')
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
             if not a: print("  ?", hid); continue
             def ok(x, allowed, fb): return x if x in allowed else fb
             keep = dict(p.split("=") for p in rec.split(";") if "=" in p)
-            new = {"front": ok(a.get("front"), hg.LIBS, keep.get("front", "haruka")), "side": ok(a.get("side"), hg.LIBS, keep.get("side", "haruka")),
+            new = {"front": ok(a.get("front"), hg.LIBS, keep.get("front", "haruka")), "side": ok(a.get("side"), hg.LIBS + ["kayoko"], keep.get("side", "haruka")),
                    "back": ok(a.get("back"), BACKS, keep.get("back", "haruka")), "extra": ok(a.get("extra"), ["mika", "haruka", "none"], "none"),
                    "len": ok(a.get("len"), ["short", "bob", "shoulder", "long"], keep.get("len", "long"))}
             tails = ok(a.get("tails"), ["reisa", "miku", "natsu", "none"], "none")

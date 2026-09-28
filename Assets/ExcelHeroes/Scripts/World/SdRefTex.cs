@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -66,6 +67,9 @@ namespace ExcelHeroes.World
             {
                 var tex = source != null ? source : Resources.Load<Texture2D>("Art/SDBase/base_hair");
                 var pxs = tex.GetPixels();
+                // a two-tone sheet (Kayoko's black / white halves) flattened to one tone: each texel's
+                // luminance taken relative to its neighbourhood's (a wide box), so only the strokes remain
+                if (srcName.ToLowerInvariant().Contains("kayoko") || srcName.ToLowerInvariant().Contains("ch0239")) pxs = LocalTone(pxs, tex.width, tex.height);
                 var sum = 0f; foreach (var c in pxs) sum += Lum(c);
                 src = (pxs, tex.width, Mathf.Max(0.02f, sum / pxs.Length));
                 HairSrcs[srcName] = src;
@@ -98,6 +102,30 @@ namespace ExcelHeroes.World
             return Hairs[id] = t;
         }
         static float Lum(Color c) => 0.3f * c.r + 0.59f * c.g + 0.11f * c.b;
+
+        static Color[] LocalTone(Color[] px, int w, int h)
+        {
+            var r = Mathf.Max(4, w / 24);
+            var lum = px.Select(Lum).ToArray();
+            // summed-area table for the box mean
+            var sat = new double[(w + 1) * (h + 1)];
+            for (var y = 0; y < h; y++)
+            {
+                double row = 0;
+                for (var x = 0; x < w; x++) { row += lum[y * w + x]; sat[(y + 1) * (w + 1) + x + 1] = sat[y * (w + 1) + x + 1] + row; }
+            }
+            var mean = lum.Average();
+            var o = new Color[px.Length];
+            for (var y = 0; y < h; y++)
+                for (var x = 0; x < w; x++)
+                {
+                    int x0 = Mathf.Max(0, x - r), x1 = Mathf.Min(w, x + r + 1), y0 = Mathf.Max(0, y - r), y1 = Mathf.Min(h, y + r + 1);
+                    var box = (sat[y1 * (w + 1) + x1] - sat[y0 * (w + 1) + x1] - sat[y1 * (w + 1) + x0] + sat[y0 * (w + 1) + x0]) / ((x1 - x0) * (y1 - y0));
+                    var l = (float)(lum[y * w + x] / System.Math.Max(0.03, box) * mean);
+                    o[y * w + x] = new Color(l, l, l, px[y * w + x].a);
+                }
+            return o;
+        }
         static Color[] _bodySrc; static int _bodyN;
 
         /// <summary>

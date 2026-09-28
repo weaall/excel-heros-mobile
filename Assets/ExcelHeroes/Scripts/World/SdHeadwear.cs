@@ -62,13 +62,13 @@ namespace ExcelHeroes.World
             // the scalp: a shell just inside the hair, in its shadow tone, so a gap between parts from
             // different samples (Yuuka's parting) shows hair and not the black of the outline hull behind
             {
-                var scalp = Color.Lerp(k.Hair, Color.black, 0.3f); scalp.a = 1f;
+                var scalp = System.Environment.GetEnvironmentVariable("SD_SCALPDBG") == "1" ? Color.red : Color.Lerp(k.Hair, Color.black, 0.18f); scalp.a = 1f;
                 var sb2 = new MeshKit.Builder();
                 sb2.Grid(24, 10, (u, t) =>
                 {
                     var phi = u * Mathf.PI * 2f;
                     var back = Mathf.Max(0f, -Mathf.Cos(phi));
-                    var th = t * Mathf.Lerp(1.05f, 1.75f, back);
+                    var th = t * Mathf.Lerp(1.05f, 2.35f, back * back);   // down to the nape behind
                     var dir = new Vector3(Mathf.Sin(th) * Mathf.Sin(phi), Mathf.Cos(th), Mathf.Sin(th) * Mathf.Cos(phi));
                     return (dir * Inner(dir) * 0.96f, dir, new Vector2(u, t));
                 }, scalp);

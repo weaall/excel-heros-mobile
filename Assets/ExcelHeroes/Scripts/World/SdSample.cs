@@ -55,7 +55,10 @@ namespace ExcelHeroes.World
         {
             var text = System.Environment.GetEnvironmentVariable("SD_HAIR") ?? k.HairRecipe;
             if (string.IsNullOrEmpty(text)) return false;
-            var r = text.Split(';').Select(x => x.Split('=')).Where(x => x.Length == 2).ToDictionary(x => x[0].Trim(), x => x[1].Trim());
+            var add = System.Environment.GetEnvironmentVariable("SD_HAIRADD");   // preview: extra keys for this build (later keys win)
+            if (!string.IsNullOrEmpty(add)) text += ";" + add;
+            var r = new Dictionary<string, string>();
+            foreach (var kv2 in text.Split(';').Select(x => x.Split('=')).Where(x => x.Length == 2)) r[kv2[0].Trim()] = kv2[1].Trim();
             string Get(string key2, string fallback) => r.TryGetValue(key2, out var v) && v != "" ? v : fallback;
             var front = Get("front", "haruka");
             if (!SdRefHairLib.Has(front)) return false;
@@ -82,7 +85,8 @@ namespace ExcelHeroes.World
             Add(front == "yuuka" || back == "yuuka" ? "yuuka" : Get("side", front), SdRefHairLib.Region.Side);
             // tails (twin tails, a side ponytail) only when asked: they were riding in with sides and backs
             Add(Get("tails", "none"), SdRefHairLib.Region.Tails);
-            Add(Get("back", front), SdRefHairLib.Region.Back | SdRefHairLib.Region.Cap);   // its cap too: the back hangs off it
+            // its cap too: the back hangs off it — but not Kayoko's, whose crown keeps her two-tone streak
+            Add(Get("back", front), SdRefHairLib.Region.Back | (Get("back", front) == "kayoko" && front != "kayoko" ? 0 : SdRefHairLib.Region.Cap));
             Add(Get("extra", "none"), SdRefHairLib.Region.Extra);
             // the hero's own volume and fall (recipe vol= / fall=; unset: a stable spread by id), so two
             // heroes with the same parts still wear a different head of hair
@@ -90,6 +94,10 @@ namespace ExcelHeroes.World
             float Num(string key2, float fb) => float.TryParse(Get(key2, ""), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var f) ? f : fb;
             SdRefHairLib.Volume = Mathf.Clamp(Num("vol", 0.95f + hh % 9 * 0.022f), 0.9f, 1.18f);
             SdRefHairLib.Fall = Mathf.Clamp(Num("fall", Get("len", "long") == "long" ? 0.86f + hh / 9 % 8 * 0.055f : 1f), 0.75f, 1.35f);
+            SdRefHairLib.Wave = Mathf.Clamp(Num("wave", 0f), 0f, 1.2f);
+            SdRefHairLib.Spread = Mathf.Clamp(Num("spread", 0f), -1f, 1f);
+            SdRefHairLib.Gather = Mathf.Clamp(Num("gather", 0f), 0f, 1f);
+            SdRefHairLib.Curl = Mathf.Clamp(Num("curl", 0f), -1f, 1f);
             try
             {
                 foreach (var kv in parts)
@@ -103,7 +111,7 @@ namespace ExcelHeroes.World
                     if ((reg & SdRefHairLib.Region.Extra) != 0) { var fall = SdRefHairLib.Fall; SdRefHairLib.Fall = 1f; SdRefHairLib.MountParts(rig, kv.Key, k, layer, SdRefHairLib.Region.Extra); SdRefHairLib.Fall = fall; }
                 }
             }
-            finally { SdRefHairLib.Volume = 1f; SdRefHairLib.Fall = 1f; }
+            finally { SdRefHairLib.Volume = 1f; SdRefHairLib.Fall = 1f; SdRefHairLib.Wave = SdRefHairLib.Spread = SdRefHairLib.Gather = SdRefHairLib.Curl = 0f; }
             return true;
         }
 
