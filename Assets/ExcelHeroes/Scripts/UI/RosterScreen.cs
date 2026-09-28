@@ -459,7 +459,7 @@ namespace ExcelHeroes.UI
                 var acts = UiKit.Div("detail__acts", foot);
 
                 var fav = Game.Player.favorites.Contains(heroId);
-                UiKit.Btn(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기", "btn btn--ivory", () =>
+                UiKit.Btn(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기", "btn btn--primary", () =>
                 {
                     if (fav) Game.Player.favorites.Remove(heroId);
                     else Game.Player.favorites.Add(heroId);
@@ -469,7 +469,7 @@ namespace ExcelHeroes.UI
 
                 var inParty = Game.Player.party.Contains(heroId);
                 UiKit.Btn(inParty ? "편성에서 빼기" : "편성에 넣기",
-                    inParty ? "btn btn--ivory" : "btn btn--ivory btn--primary-ink", () =>
+                    "btn btn--primary", () =>
                 {
                     if (inParty) Game.Player.RemoveFromParty(heroId);
                     else Game.Player.AddToParty(heroId);

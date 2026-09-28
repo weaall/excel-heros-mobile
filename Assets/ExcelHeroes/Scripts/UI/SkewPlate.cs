@@ -76,7 +76,8 @@ namespace ExcelHeroes.UI
         /// </summary>
         static Look LookFor(Kind kind) => kind switch
         {
-            Kind.Primary => new Look(C(122, 223, 255), C(80, 196, 247), C(56, 156, 212, 0.55f), C(255, 255, 255, 0.55f), 1.5f,
+            // the Gemini button mock-up (tools/out/design/mock_btn_0): a brighter cyan into a deeper blue
+            Kind.Primary => new Look(C(104, 232, 255), C(38, 170, 240), C(30, 130, 200, 0.7f), C(255, 255, 255, 0.7f), 1.5f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0.2f),
             Kind.Navy or Kind.Glow => new Look(C(54, 74, 118), C(34, 50, 88), C(16, 26, 54, 0.7f), C(120, 150, 200, 0.45f), 1.5f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0.07f),
@@ -206,6 +207,22 @@ namespace ExcelHeroes.UI
             };
             UiPaint.Fill(ctx, UiPaint.Clip(topBand, UiPaint.Offset(outer, -1f)), look.Rim, 0.6f);
             UiPaint.Stroke(ctx, outer, look.Edge, look.RimWidth);
+
+            // the mock-up's marks: two short slanted ticks inside the top-left, a small solid corner
+            // wedge at the bottom-right — they make a plate read as a game button, not a web one
+            if (accents && kind != Kind.Off && h >= 40f)
+            {
+                var ink = kind is Kind.Navy or Kind.Glow ? C(255, 255, 255, 0.55f) : kind == Kind.Primary ? C(255, 255, 255, 0.85f) : UiPaint.WithAlpha(look.Edge, 0.9f);
+                var tl = new Vector2(r.xMin + slant + h * 0.16f, r.yMin + h * 0.16f);
+                for (var i = 0; i < 2; i++)
+                {
+                    var x0 = tl.x + i * h * 0.1f; var len = h * 0.2f; var sk = len * Mathf.Tan(12f * Mathf.Deg2Rad);
+                    UiPaint.Fill(ctx, new List<Vector2> { new(x0 + sk, tl.y), new(x0 + sk + h * 0.045f, tl.y), new(x0 + h * 0.045f, tl.y + len), new(x0, tl.y + len) }, ink);
+                }
+                var br = new Vector2(r.xMax - slant * 0.5f - h * 0.1f, r.yMax - h * 0.1f);
+                var wedge = kind == Kind.Primary ? C(16, 70, 140, 0.55f) : UiPaint.WithAlpha(look.Edge, 0.75f);
+                UiPaint.Fill(ctx, new List<Vector2> { new(br.x, br.y - h * 0.2f), new(br.x, br.y), new(br.x - h * 0.2f, br.y) }, wedge);
+            }
         }
 
         /// <summary>

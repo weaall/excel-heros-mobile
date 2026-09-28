@@ -66,6 +66,10 @@ namespace ExcelHeroes.UI
             UiPaint.Fill(ctx, outer, C(255, 255, 255, 0.92f), 1.2f);
             var body = UiPaint.Offset(outer, -3f);
             UiPaint.Fill(ctx, body, UiPaint.Vertical(C(246, 250, 254, 0.86f), C(228, 238, 248, 0.84f), r.yMin, r.yMax));
+            // faint facets in the corners, the mock-up's glass
+            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMin, r.yMin), new(r.xMin + r.width * 0.22f, r.yMin), new(r.xMin, r.yMin + r.height * 0.4f) }, body), C(200, 228, 248, 0.45f), 0.8f);
+            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMax, r.yMax), new(r.xMax - r.width * 0.28f, r.yMax), new(r.xMax, r.yMax - r.height * 0.45f) }, body), C(200, 228, 248, 0.45f), 0.8f);
+            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMax, r.yMax - r.height * 0.45f), new(r.xMax - r.width * 0.12f, r.yMax - r.height * 0.2f), new(r.xMax, r.yMax - r.height * 0.1f) }, body), C(214, 236, 250, 0.4f), 0.8f);
 
             // L-brackets, 10px outside each corner.
             const float len = 46f, t = 6f, gap = 10f;
@@ -97,29 +101,20 @@ namespace ExcelHeroes.UI
         /// </summary>
         public static void DrawHead(MeshGenerationContext ctx, Rect r)
         {
+            // The Gemini modal mock-up (tools/out/design/mock_modal_0): a navy slanted strip set IN from
+            // the frame, with pale slashes at both ends, on the white glass — not a full-width band
             var h = r.height;
-            var band = UiPaint.RoundRect(r, 13f, 6);
-            var shade = UiPaint.Vertical(C(242, 251, 255), C(196, 232, 248), r.yMin, r.yMax);
-            UiPaint.Fill(ctx, band, shade, 0.8f);
-            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.center.y, r.xMax, r.yMax), 0f), shade, 0f);
-
-            var slant = SkewPlate.SlantFor(h);
-            // Left: a navy wedge and a thin yellow slash beside it.
-            var wedge = new List<Vector2>
-            {
-                new Vector2(r.xMin, r.yMin + 8f), new Vector2(r.xMin + 70f + slant, r.yMin),
-                new Vector2(r.xMin + 70f, r.yMax), new Vector2(r.xMin, r.yMax),
-            };
-            UiPaint.Fill(ctx, UiPaint.Clip(wedge, band.Count > 0 ? Expand(r) : wedge), UiPaint.Vertical(C(46, 70, 118), C(26, 42, 78), r.yMin, r.yMax));
-            Slash(ctx, r, r.xMin + 88f, 12f, slant, Yellow);
-            Slash(ctx, r, r.xMin + 112f, 5f, slant, C(28, 44, 80, 0.55f));
-
-            // Right, mirrored and set in from the close button.
-            Slash(ctx, r, r.xMax - 200f, 12f, slant, Yellow);
-            Slash(ctx, r, r.xMax - 172f, 30f, slant, C(255, 255, 255, 0.75f));
-
-            // The yellow foot line.
-            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMax - 6f, r.xMax, r.yMax), 0f), Yellow, 0.8f);
+            var strip = Rect.MinMaxRect(r.xMin + r.width * 0.05f, r.yMin + h * 0.2f, r.xMax - r.width * 0.05f, r.yMax - h * 0.06f);
+            var slant = SkewPlate.SlantFor(strip.height);
+            var band = UiPaint.SkewRect(strip, slant, 4f);
+            UiPaint.Shadow(ctx, band, new Vector2(0f, 3f), C(10, 20, 50, 0.22f), 6f);
+            UiPaint.Fill(ctx, band, UiPaint.Vertical(C(44, 66, 112), C(24, 40, 78), strip.yMin, strip.yMax));
+            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(strip.xMin - 4f, strip.yMin - 4f), new(strip.xMax + 4f, strip.yMin - 4f), new(strip.xMax + 4f, strip.yMin + 3f), new(strip.xMin - 4f, strip.yMin + 3f) }, band), C(120, 150, 210, 0.7f), 0f);
+            var sr = Rect.MinMaxRect(r.xMin, strip.yMin, r.xMax, strip.yMax);
+            Slash(ctx, sr, strip.xMin + slant * 0.2f - 30f, 10f, slant, C(160, 186, 230, 0.9f));
+            Slash(ctx, sr, strip.xMin + slant * 0.2f - 14f, 5f, slant, C(160, 186, 230, 0.6f));
+            Slash(ctx, sr, strip.xMax - slant * 0.8f + 18f, 10f, slant, C(160, 186, 230, 0.9f));
+            Slash(ctx, sr, strip.xMax - slant * 0.8f + 34f, 5f, slant, C(160, 186, 230, 0.6f));
         }
 
         static List<Vector2> Expand(Rect r)

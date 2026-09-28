@@ -5960,3 +5960,40 @@
 .floater--crit { -unity-text-outline-width: 6px; text-shadow: 0 6px 0 rgba(110, 50, 0, 0.9); font-size: 82px; }
 .floater--taken { -unity-text-outline-width: 4px; text-shadow: 0 4px 0 rgba(80, 10, 20, 0.85); }
 .combo { -unity-text-outline-width: 5px; text-shadow: 0 6px 0 rgba(10, 28, 64, 0.8); font-size: 90px; }
+
+
+/* ---------------------------------------------------------------- ten-pull v3 (Gemini card mock-up) */
+.reveal-grid { width: 92%; flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: center; height: 70%; }
+.reveal-grid__cell { width: 8.6%; height: 88%; margin: 0 0.35%; }
+.reveal-grid__body { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.reveal-grid__beam { position: absolute; left: -35%; right: -35%; top: -14%; bottom: -10%; }
+.reveal-grid__gtag { display: none; }
+.reveal-grid__gbig { position: absolute; top: 1%; left: 6%; font-size: 54px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255);
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(60, 70, 96); padding: 0; margin: 0; }
+.reveal-grid__gbig--s { -unity-text-outline-color: rgb(196, 120, 10); color: rgb(255, 246, 200); }
+.reveal-grid__gbig--a { -unity-text-outline-color: rgb(100, 50, 170); }
+.reveal-grid__gbig--b { -unity-text-outline-color: rgb(36, 80, 170); }
+.reveal-grid__stars2 { position: absolute; left: 0; right: 0; bottom: 19%; height: 30px; font-size: 24px; color: rgb(255, 214, 58);
+    -unity-text-align: middle-center; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(60, 40, 0, 0.6); padding: 0; margin: 0; }
+.reveal-grid__glabel { position: absolute; left: 0; right: 0; bottom: 12%; height: 22px; font-size: 16px; color: rgba(255, 255, 255, 0.85); -unity-text-align: middle-center; }
+.reveal-grid__name { position: absolute; left: 2%; right: 2%; bottom: 2%; height: 44px; font-size: 20px; color: rgb(255, 255, 255);
+    -unity-font-style: bold; -unity-text-align: middle-center; white-space: normal; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(10, 20, 40, 0.6); }
+.reveal-grid__new.reveal-grid__new--on { top: -5%; left: 30%; width: 80px; height: 30px; font-size: 18px; }
+
+
+/* ---------------------------------------------------------------- EX cut-in v3 (Gemini action mock-up) */
+.cutin__focus { position: absolute; left: 0; right: 0; top: 0; bottom: 0; opacity: 0; transition-property: opacity; transition-duration: 0.12s; }
+.cutin__focus--in { opacity: 1; }
+.cutin__sheets { position: absolute; left: 50%; right: 2%; top: 4%; bottom: 30%; opacity: 0; translate: 60px 0; transition-property: opacity, translate; transition-duration: 0.22s; }
+.cutin__sheets--in { opacity: 1; translate: 0 0; }
+.cutin__win { position: absolute; }
+.cutin__win--a { left: 0; top: 0; width: 46%; height: 62%; rotate: -6deg; }
+.cutin__win--b { right: 0; bottom: 0; width: 56%; height: 70%; rotate: 4deg; }
+.cutin__formula { position: absolute; left: 3%; right: 3%; top: 13%; height: 12%; font-size: 22px; color: rgb(20, 60, 40); -unity-font-style: bold; -unity-text-align: middle-left; padding: 0 8px; margin: 0; }
+.cutin__sub { margin-left: 44px; margin-top: 6px; font-size: 24px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); letter-spacing: 1px;
+    -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(10, 20, 40, 0.6); }
+
+
+/* ---------------------------------------------------------------- modal v3 (Gemini modal mock-up): white title on the navy strip */
+.modal__title { color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 48px; padding-top: 10px; }
+.modal__close { color: rgb(255, 255, 255); top: 18px; right: 34px; }

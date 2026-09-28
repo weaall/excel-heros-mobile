@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using ExcelHeroes.Core;
@@ -480,79 +481,87 @@ namespace ExcelHeroes.UI
             var view = UiKit.Div("reveal");
 
             var grid = UiKit.Div("reveal-grid", view);
-            foreach (var r in results)
+            // The Gemini card mock-up (tools/out/design/mock_card_0): all ten in ONE row of tall slanted
+            // cards, the best first, each card washed in its grade's colour (S gold, A violet, B blue,
+            // C / D slate) with a beam of light behind the top grades, the grade letter large in the
+            // corner, stars and the name on a dark foot band.
+            int Rank(string g) => g switch { "S" => 0, "A" => 1, "B" => 2, "C" => 3, _ => 4 };
+            var ordered = results.Select((r, n) => (r, n)).OrderBy(x => Rank(x.r.grade)).ThenBy(x => x.n).Select(x => x.r).ToList();
+            foreach (var r in ordered)
             {
                 var grade = GameData.Grade(r.grade);
                 var cell = UiKit.Div("reveal-grid__cell", grid);
-
-                // The reference's ten-pull card: a parallelogram, the portrait cut to the slant, a
-                // grey band of stars across the foot, and the rarity as a coloured glow round the
-                // whole card — pink for the top grade, gold for the next, none below.
                 var sprite = GameData.StandingArt(r.hero.id);
                 var card = sprite == null ? GameData.CardArt(r.hero.id) : null;
-                // Only S gets a show: the rainbow-pink glow, a sparkle burst and the shimmer over the
-                // art. Every other grade is a plain card with its grade on the band.
-                var isS = r.grade == "S";
-                var glow = isS ? UiPaint.C(255, 120, 220, 0.7f) : (Color?)null;
-                var gradeCol = grade?.Color ?? Color.gray;
-                ModalFrame.Painted(cell, (ctx, rect) =>
+                var isS = r.grade == "S"; var isA = r.grade == "A";
+                var (top, bot) = r.grade switch
                 {
-                    var slant = SkewPlate.SlantFor(rect.height) * 0.55f;
-                    var outer = UiPaint.SkewRect(rect, slant, 6f);
-                    if (glow.HasValue) UiPaint.Ring(ctx, outer, glow.Value, UiPaint.WithAlpha(glow.Value, 0f), 22f);
-                    UiPaint.Shadow(ctx, outer, new Vector2(0f, 5f), UiPaint.C(20, 40, 80, 0.28f), 10f);
-                    // S: a holographic rim — gold into pink across the top half, pink into cyan below
-                    // (ui_critique round 3, 21-Pull10 #1; the plain pink glow read as a hover state)
-                    if (isS)
+                    "S" => (UiPaint.C(255, 226, 120), UiPaint.C(244, 170, 40)),
+                    "A" => (UiPaint.C(206, 160, 250), UiPaint.C(128, 78, 206)),
+                    "B" => (UiPaint.C(140, 190, 250), UiPaint.C(60, 112, 204)),
+                    _ => (UiPaint.C(176, 188, 204), UiPaint.C(104, 118, 142)),
+                };
+                if (isS || isA)
+                {
+                    // the beam: a soft vertical shaft of the grade's light behind the card
+                    var beam = UiKit.Div("reveal-grid__beam", cell);
+                    beam.pickingMode = PickingMode.Ignore;
+                    var t0 = Time.realtimeSinceStartup;
+                    ModalFrame.Painted(beam, (ctx, rr) =>
                     {
-                        UiPaint.Fill(ctx, outer, UiPaint.Horizontal(UiPaint.C(255, 234, 122), UiPaint.C(255, 126, 219), rect.xMin, rect.xMax));
-                        var lower = UiPaint.Clip(outer, UiPaint.RoundRect(Rect.MinMaxRect(rect.xMin - 60f, rect.center.y, rect.xMax + 60f, rect.yMax + 60f), 0f));
-                        UiPaint.Fill(ctx, lower, UiPaint.Horizontal(UiPaint.C(255, 126, 219), UiPaint.C(92, 240, 255), rect.xMin, rect.xMax), 0f);
-                    }
-                    else UiPaint.Fill(ctx, outer, UiPaint.C(250, 252, 255));
-                    var inner = UiPaint.Offset(outer, -5f);
-                    var bandTop = rect.yMax - rect.height * 0.2f;
+                        var k = 0.75f + 0.25f * Mathf.Sin((Time.realtimeSinceStartup - t0) * 2.4f);
+                        var c = isS ? UiPaint.C(255, 236, 150) : UiPaint.C(230, 170, 255);
+                        // nested soft bands, widest faintest: a shaft of light with no hard edge
+                        for (var b = 0; b < 7; b++)
+                        {
+                            var f = 1f - b / 7f;
+                            var half = rr.width * 0.5f * f;
+                            var band = UiPaint.RoundRect(Rect.MinMaxRect(rr.center.x - half, rr.yMin, rr.center.x + half, rr.yMax), half * 0.9f);
+                            UiPaint.Fill(ctx, band, UiPaint.WithAlpha(c, 0.1f * k), 2f);
+                        }
+                    });
+                    beam.schedule.Execute(() => beam.MarkDirtyRepaint()).Every(50);
+                }
+                var bodyEl = UiKit.Div("reveal-grid__body", cell);
+                bodyEl.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(bodyEl, (ctx, rect) =>
+                {
+                    var slant = SkewPlate.SlantFor(rect.height) * 0.3f;
+                    var outer = UiPaint.SkewRect(rect, slant, 5f);
+                    if (isS) UiPaint.Ring(ctx, outer, UiPaint.C(255, 220, 110, 0.8f), UiPaint.C(255, 220, 110, 0f), 18f);
+                    UiPaint.Shadow(ctx, outer, new Vector2(0f, 5f), UiPaint.C(20, 40, 80, 0.3f), 10f);
+                    UiPaint.Fill(ctx, outer, Color.white);
+                    var inner = UiPaint.Offset(outer, -3f);
+                    var bandTop = rect.yMax - rect.height * 0.24f;
                     var artPoly = UiPaint.Clip(inner, new List<Vector2>
                     {
                         new Vector2(rect.xMin - 50f, rect.yMin - 50f), new Vector2(rect.xMax + 50f, rect.yMin - 50f),
                         new Vector2(rect.xMax + 50f, bandTop), new Vector2(rect.xMin - 50f, bandTop),
                     });
-                    var dest = Rect.MinMaxRect(rect.xMin, rect.yMin, rect.xMax, bandTop);
-                    if (sprite != null)
-                    {
-                        UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(UiPaint.C(236, 244, 252), UiPaint.C(200, 220, 242), dest.yMin, dest.yMax));
-                        UiKit.PaintPortrait(ctx, artPoly, sprite, r.hero.id, dest, UiKit.Crop.Bust);
-                    }
+                    var dest = Rect.MinMaxRect(rect.xMin, rect.yMin + rect.height * 0.04f, rect.xMax, bandTop);
+                    UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(Color.Lerp(top, Color.white, 0.55f), Color.Lerp(bot, Color.white, 0.25f), rect.yMin, bandTop));
+                    if (sprite != null) UiKit.PaintPortrait(ctx, artPoly, sprite, r.hero.id, dest, UiKit.Crop.Bust);
                     else UiPaint.Image(ctx, artPoly, card, dest, 0.1f);
+                    // the grade's colour washing up from the foot of the art
+                    UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(UiPaint.WithAlpha(bot, 0f), UiPaint.WithAlpha(bot, 0.45f), rect.yMin + rect.height * 0.5f, bandTop), 0f);
                     var band = UiPaint.Clip(inner, new List<Vector2>
                     {
                         new Vector2(rect.xMin - 50f, bandTop), new Vector2(rect.xMax + 50f, bandTop),
                         new Vector2(rect.xMax + 50f, rect.yMax + 50f), new Vector2(rect.xMin - 50f, rect.yMax + 50f),
                     });
-                    // the band carries the grade colour (navy for everything below A)
-                    var bandTopCol = isS ? UiPaint.C(255, 150, 210) : r.grade == "A" ? UiPaint.C(180, 120, 236) : UiPaint.C(52, 70, 108);
-                    var bandBotCol = isS ? UiPaint.C(236, 96, 176) : r.grade == "A" ? UiPaint.C(140, 84, 206) : UiPaint.C(34, 48, 80);
-                    UiPaint.Fill(ctx, band, UiPaint.Vertical(bandTopCol, bandBotCol, bandTop, rect.yMax), 0f);
-                    // Rarity wash over the art's foot, as the reference tints its top pulls.
-                    if (glow.HasValue)
-                        UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(UiPaint.WithAlpha(glow.Value, 0f), UiPaint.WithAlpha(glow.Value, 0.35f),
-                                                                     rect.yMin + rect.height * 0.45f, bandTop), 0f);
+                    UiPaint.Fill(ctx, band, UiPaint.Vertical(Color.Lerp(bot, UiPaint.C(20, 30, 60), 0.35f), Color.Lerp(bot, UiPaint.C(14, 20, 44), 0.6f), bandTop, rect.yMax), 0f);
+                    // a thin light line where the art meets the band
+                    UiPaint.Fill(ctx, UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(rect.xMin - 50f, bandTop - 1.5f, rect.xMax + 50f, bandTop + 1.5f), 0f)), UiPaint.WithAlpha(top, 0.95f), 0f);
+                    UiPaint.Stroke(ctx, outer, UiPaint.WithAlpha(bot, 0.9f), 2f);
                 });
-                // the grade, on the band — the letter the whole game uses, not a star count
-                var gtag = UiKit.Div("reveal-grid__gtag", cell);
-                gtag.pickingMode = PickingMode.Ignore;
-                ModalFrame.Painted(gtag, (ctx, rr) =>
-                {
-                    var d = UiPaint.RoundRect(rr, rr.height * 0.28f, 4);
-                    UiPaint.Fill(ctx, d, Color.white);
-                    UiPaint.Fill(ctx, UiPaint.Offset(d, -3f), gradeCol);
-                });
-                UiKit.Text(r.grade, "reveal-grid__gtext", gtag).pickingMode = PickingMode.Ignore;
+                // the grade, large, in the top corner
+                UiKit.Text(r.grade, "reveal-grid__gbig reveal-grid__gbig--" + r.grade.ToLowerInvariant(), cell).pickingMode = PickingMode.Ignore;
+                var stars = UiKit.Text(new string('★', Mathf.Clamp(r.starAfter, 1, 5)), "reveal-grid__stars2", cell);
+                stars.pickingMode = PickingMode.Ignore;
                 UiKit.Text(grade?.label ?? "", "reveal-grid__glabel", cell).pickingMode = PickingMode.Ignore;
 
                 if (isS)
                 {
-                    // sparkles round an S card, twinkling
                     var fx = UiKit.Div("reveal-grid__sfx", cell);
                     fx.pickingMode = PickingMode.Ignore;
                     var t0 = Time.realtimeSinceStartup;
@@ -565,13 +574,12 @@ namespace ExcelHeroes.UI
                             var c = rr.center + new Vector2(Mathf.Cos(a) * rr.width * 0.58f, Mathf.Sin(a) * rr.height * 0.56f);
                             var k = 0.5f + 0.5f * Mathf.Sin(t * 5f + i * 1.7f);
                             var sz = 8f + 10f * k;
-                            UiPaint.Fill(ctx, Star4(c, sz), UiPaint.C(255, 240, 255, 0.4f + 0.6f * k));
+                            UiPaint.Fill(ctx, Star4(c, sz), UiPaint.C(255, 244, 200, 0.4f + 0.6f * k));
                         }
                     });
                     fx.schedule.Execute(() => fx.MarkDirtyRepaint()).Every(33);
                 }
 
-                // "New", yellow italic over the card's corner — the reference's word for a first pull
                 if (r.isNew) UiKit.Text("NEW", "reveal-grid__new reveal-grid__new--on", cell).pickingMode = PickingMode.Ignore;
                 UiKit.Text(r.hero.name, "reveal-grid__name", cell).pickingMode = PickingMode.Ignore;
             }

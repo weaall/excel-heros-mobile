@@ -1405,6 +1405,64 @@ namespace ExcelHeroes.UI
                 UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2>
                     { new(r.xMin, r.yMax - 5f), new(r.xMax, r.yMax - 5f), new(r.xMax, r.yMax), new(r.xMin, r.yMax) }, band), UiPaint.C(255, 255, 255, 0.9f), 0f);
             });
+            // manga focus lines over the whole field, from the edges toward the band (the Gemini action
+            // mock-up, tools/out/design/mock_action_0)
+            var focus = UiKit.Div("cutin__focus", view);
+            focus.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(focus, (ctx, r) =>
+            {
+                var c = r.center; var R = Mathf.Max(r.width, r.height);
+                for (var i = 0; i < 46; i++)
+                {
+                    var a = i / 46f * Mathf.PI * 2f + ((i * 37) % 11) * 0.013f;
+                    var inner = R * (0.36f + ((i * 53) % 17) / 100f);
+                    var wdt = 0.012f + ((i * 29) % 7) * 0.003f;
+                    var p0 = c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * inner;
+                    var p1 = c + new Vector2(Mathf.Cos(a - wdt), Mathf.Sin(a - wdt)) * R;
+                    var p2 = c + new Vector2(Mathf.Cos(a + wdt), Mathf.Sin(a + wdt)) * R;
+                    UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2> { p0, p1, p2 }, UiPaint.C(20, 24, 40, 0.34f), 0f);
+                }
+            });
+            // floating spreadsheet windows: the Excel motif as the skill's energy
+            var sheets = UiKit.Div("cutin__sheets", view);
+            sheets.pickingMode = PickingMode.Ignore;
+            foreach (var (cls, formula, chart) in new[] { ("cutin__win cutin__win--a", "=SUM(A1:B10)", false), ("cutin__win cutin__win--b", "=VLOOKUP(\"EX\",A:F,3)", true) })
+            {
+                var win = UiKit.Div(cls, sheets);
+                win.pickingMode = PickingMode.Ignore;
+                var green = UiPaint.C(33, 163, 102);
+                ModalFrame.Painted(win, (ctx, r) =>
+                {
+                    var box = UiPaint.RoundRect(r, 8f);
+                    UiPaint.Ring(ctx, box, UiPaint.C(120, 255, 190, 0.55f), UiPaint.C(120, 255, 190, 0f), 14f);
+                    UiPaint.Fill(ctx, box, UiPaint.C(236, 252, 244, 0.9f));
+                    var title = UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + r.height * 0.13f), 0f));
+                    UiPaint.Fill(ctx, title, green, 0f);
+                    var fy0 = r.yMin + r.height * 0.13f; var fy1 = fy0 + r.height * 0.12f;
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 6f, fy0 + 4f, r.xMax - 6f, fy1 - 2f), 3f), Color.white);
+                    // the grid: column heads, row heads, cells
+                    var gx0 = r.xMin + r.width * 0.07f; var gy0 = fy1 + 4f; var cols = 6; var rows = 6;
+                    var cw = (r.xMax - 6f - gx0) / cols; var rh = (r.yMax - 6f - gy0) / (rows + 1);
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 6f, gy0, r.xMax - 6f, gy0 + rh), 0f), UiPaint.C(214, 236, 224));
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 6f, gy0, gx0, r.yMax - 6f), 0f), UiPaint.C(214, 236, 224));
+                    for (var i = 0; i <= cols; i++) UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0 + i * cw - 0.6f, gy0, gx0 + i * cw + 0.6f, r.yMax - 6f), 0f), UiPaint.C(150, 190, 170, 0.8f));
+                    for (var j = 0; j <= rows + 1; j++) UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 6f, gy0 + j * rh - 0.6f, r.xMax - 6f, gy0 + j * rh + 0.6f), 0f), UiPaint.C(150, 190, 170, 0.8f));
+                    if (chart)
+                    {
+                        // a small bar chart over the cells
+                        var bx = gx0 + cw * 0.5f; var by = r.yMax - 10f;
+                        float[] hs = { 0.35f, 0.6f, 0.45f, 0.8f, 0.62f };
+                        for (var i = 0; i < hs.Length; i++)
+                        {
+                            var x = bx + i * cw * 1.05f; var top = by - (r.yMax - gy0 - rh * 1.5f) * hs[i];
+                            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(x, top, x + cw * 0.6f, by), 2f), i % 2 == 0 ? UiPaint.C(70, 150, 230) : UiPaint.C(240, 140, 70));
+                        }
+                    }
+                    UiPaint.Stroke(ctx, box, UiPaint.C(33, 163, 102, 0.9f), 2f);
+                });
+                var fx = UiKit.Text("fx  " + formula, "cutin__formula", win);
+                fx.pickingMode = PickingMode.Ignore;
+            }
             var art = UiKit.Div("cutin__art", view);
             UiKit.SetPortrait(art, def.id, UiKit.Crop.Cut, false, new Color(0f, 0f, 0f, 0f));
             var flash = UiKit.Div("cutin__flash", view);
@@ -1417,6 +1475,8 @@ namespace ExcelHeroes.UI
                 UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height), 6f), UiPaint.C(20, 32, 64, 0.95f)));
             UiKit.Text("EX", "cutin__ex", namePlate);
             UiKit.Text(skillName ?? def.skillName, "cutin__skill", namePlate);
+            // the English sub-title under the name, as BA sets its EX names
+            UiKit.Text("EX-SKILL · " + def.id.Replace('_', ' ').ToUpperInvariant(), "cutin__sub", plate);
             if (!string.IsNullOrEmpty(def.ult)) UiKit.Text($"“{def.ult}”", "cutin__line", plate);
 
             view.schedule.Execute(() =>
@@ -1424,6 +1484,8 @@ namespace ExcelHeroes.UI
                 sweep.AddToClassList("cutin__sweep--in");
                 art.AddToClassList("cutin__art--in");
                 plate.AddToClassList("cutin__plate--in");
+                sheets.AddToClassList("cutin__sheets--in");
+                focus.AddToClassList("cutin__focus--in");
             }).ExecuteLater(16);
 
             view.schedule.Execute(() =>
@@ -1431,6 +1493,8 @@ namespace ExcelHeroes.UI
                 art.RemoveFromClassList("cutin__art--in");
                 plate.RemoveFromClassList("cutin__plate--in");
                 sweep.RemoveFromClassList("cutin__sweep--in");
+                sheets.RemoveFromClassList("cutin__sheets--in");
+                focus.RemoveFromClassList("cutin__focus--in");
             }).ExecuteLater(880);
 
             view.schedule.Execute(() =>
