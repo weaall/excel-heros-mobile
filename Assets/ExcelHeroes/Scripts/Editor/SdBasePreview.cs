@@ -348,6 +348,7 @@ namespace ExcelHeroes.EditorTools
                     lk.Eyes = saved;
                 }
                 var exprEnv = System.Environment.GetEnvironmentVariable("SD_EXPR");
+                if (!string.IsNullOrEmpty(exprEnv) && rig.Blink != null) rig.Blink.Express(exprEnv.Split(',')[i % exprEnv.Split(',').Length]);
                 if (!string.IsNullOrEmpty(exprEnv) && rig.RefModel && rig.EyeSub >= 0)
                 {
                     var exprs = exprEnv.Split(','); var ex = exprs[i % exprs.Length];

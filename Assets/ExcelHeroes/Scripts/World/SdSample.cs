@@ -77,8 +77,11 @@ namespace ExcelHeroes.World
             void Add(string lib, SdRefHairLib.Region reg) { if (lib == "none" || !SdRefHairLib.Has(lib)) return; parts[lib] = (parts.TryGetValue(lib, out var e) ? e : 0) | reg; }
             Add(front, SdRefHairLib.Region.Cap | SdRefHairLib.Region.Front);
             // Yuuka's cap is open where her side locks join it (a black hole of outline hull showed
-            // through there under anyone else's), so her fringe always brings her side locks
-            Add(front == "yuuka" ? "yuuka" : Get("side", front), SdRefHairLib.Region.Side);
+            // through there under anyone else's), so her fringe or her back always brings those locks
+            var back = Get("back", front);
+            Add(front == "yuuka" || back == "yuuka" ? "yuuka" : Get("side", front), SdRefHairLib.Region.Side);
+            // tails (twin tails, a side ponytail) only when asked: they were riding in with sides and backs
+            Add(Get("tails", "none"), SdRefHairLib.Region.Tails);
             Add(Get("back", front), SdRefHairLib.Region.Back | SdRefHairLib.Region.Cap);   // its cap too: the back hangs off it
             Add(Get("extra", "none"), SdRefHairLib.Region.Extra);
             // the hero's own volume and fall (recipe vol= / fall=; unset: a stable spread by id), so two
@@ -93,7 +96,10 @@ namespace ExcelHeroes.World
                 {
                     // the extras (a bun, a ribbon) are never cut: they sit where their sample put them
                     var reg = kv.Value;
-                    if ((reg & ~SdRefHairLib.Region.Extra) != 0) SdRefHairLib.MountParts(rig, kv.Key, k, layer, reg & ~SdRefHairLib.Region.Extra, cutY);
+                    // tails hang whatever the hair's length: never cut
+                    const SdRefHairLib.Region Uncut = SdRefHairLib.Region.Extra | SdRefHairLib.Region.Tails;
+                    if ((reg & ~Uncut) != 0) SdRefHairLib.MountParts(rig, kv.Key, k, layer, reg & ~Uncut, cutY);
+                    if ((reg & SdRefHairLib.Region.Tails) != 0) SdRefHairLib.MountParts(rig, kv.Key, k, layer, SdRefHairLib.Region.Tails);
                     if ((reg & SdRefHairLib.Region.Extra) != 0) { var fall = SdRefHairLib.Fall; SdRefHairLib.Fall = 1f; SdRefHairLib.MountParts(rig, kv.Key, k, layer, SdRefHairLib.Region.Extra); SdRefHairLib.Fall = fall; }
                 }
             }
@@ -255,6 +261,9 @@ namespace ExcelHeroes.World
                     var c = Vector3.zero; foreach (var t in piece) c += w[t]; c /= piece.Count;
                     var above = c.y > neckY + height * 0.02f;
                     var behind = Vector3.Dot(c, fwd) < hipZ - height * 0.14f && c.y < neckY;
+                    // wings (Mika's) and packs stand well off the back at the shoulders
+                    var off = 0f; foreach (var t in piece) off = Mathf.Max(off, hipZ - Vector3.Dot(w[t], fwd));
+                    if (off > height * 0.2f && c.y > pelvis.position.y) behind = true;
                     if (!above && !behind) keep.AddRange(piece);
                 }
                 mesh.SetTriangles(keep, s, false);
@@ -480,6 +489,7 @@ namespace ExcelHeroes.World
                            : SdSampleTex.For(key, k, Sheet(key, "body"), Sheet(key, "hair"), Sheet(key, "eyemouth"), Sheet(key, "face"));
             var face = tex.Face;
             var blinkBones = new List<(Transform bone, Transform lid, Vector3 drop)>();
+            Vector3? mouthAt = null;
             foreach (var r in kept)
             {
                 var names = r.sharedMaterials.Select(m => m ? m.name : "").ToArray();
@@ -516,6 +526,14 @@ namespace ExcelHeroes.World
                 r.updateWhenOffscreen = true;
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 if (!_raw) EyeBones(r, parts, Find("Bip001 Head"), root, blinkBones, layer);
+                if (!_raw && mouthAt == null)
+                {
+                    // where the (hidden) mouth plate sits: the expression mouths go there
+                    var mv = mesh.vertices; var l2w = r.transform.localToWorldMatrix; var acc = Vector3.zero; var cnt = 0;
+                    for (var si = 0; si < mesh.subMeshCount && si < parts.Length; si++)
+                        if (parts[si] == SdFace.Part.Mouth) foreach (var t in mesh.GetTriangles(si)) { acc += l2w.MultiplyPoint3x4(mv[t]); cnt++; }
+                    if (cnt > 0) mouthAt = acc / cnt;
+                }
             }
 
             var rig = new ChibiRig { Root = root, Height = SdRef.Height, Model3D = true, RefModel = true, Model = go.transform, ModelScale = go.transform.localScale, ModelPos = go.transform.localPosition };
@@ -554,7 +572,7 @@ namespace ExcelHeroes.World
             SdPose.Apply(rig, Pose.Rest);
             if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
             root.gameObject.AddComponent<SdSecondary>().Init(go.transform, "sample:" + key);
-            if (!_raw && blinkBones.Count > 0) rig.Blink = SdBlink.Attach(root.gameObject, blinkBones.ToArray(), System.Environment.GetEnvironmentVariable("SD_LID"));
+            if (!_raw && blinkBones.Count > 0) { rig.Blink = SdBlink.Attach(root.gameObject, blinkBones.ToArray(), System.Environment.GetEnvironmentVariable("SD_LID")); if (mouthAt != null) rig.Blink.AddMouth(Find("Bip001 Head"), mouthAt.Value, root, layer); }
             return rig;
         }
     }

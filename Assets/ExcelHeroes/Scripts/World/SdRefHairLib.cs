@@ -71,13 +71,31 @@ namespace ExcelHeroes.World
         /// straight fall becomes a bob or a short crop with the sample's own cap, fringe and strands —
         /// the samples have no short hair, and the base figure's trimmed cap looked lumpy beside them.
         /// </summary>
-        [System.Flags] public enum Region { Cap = 1, Front = 2, Side = 4, Back = 8, Extra = 16, All = 31 }
+        [System.Flags] public enum Region { Cap = 1, Front = 2, Side = 4, Back = 8, Extra = 16, Tails = 32, All = 63 }
+
+        // the chains that are TAILS (twin tails, a side ponytail) rather than locks or a fall, per sample by
+        // the tag after "hair_" — mounted only when a recipe asks for them (tails=), never with a side or back
+        static readonly Dictionary<string, string[]> TailTags = new()
+        {
+            ["yuuka"] = new[] { "l", "r" },            // her high twin tails; m_l / m_r are the side locks
+            ["reisa"] = new[] { "bl", "br" },
+            ["miku"] = new[] { "b_l", "b_r" },
+            ["natsu"] = new[] { "r", "r_m", "r_f" },   // the side ponytail
+        };
+
+        static string _lib = "";
 
         /// <summary>Which part of the head a hair bone moves (the samples' own names: f front, l/r/m sides, b back, dango / ribbon / t extras).</summary>
         public static Region RegionOf(string bone)
         {
             if (string.IsNullOrEmpty(bone) || bone.StartsWith("Bip001")) return Region.Cap;
             var n = bone.ToLowerInvariant().Replace("ch0242_", "");
+            var ti = n.IndexOf("hair_");
+            if (ti >= 0 && TailTags.TryGetValue(_lib, out var tails))
+            {
+                var full = System.Text.RegularExpressions.Regex.Replace(n.Substring(ti + 5), @"_?\d+$", "");
+                if (System.Array.IndexOf(tails, full) >= 0) return Region.Tails;
+            }
             if (n.Contains("dango") || n.Contains("ribbo") || n.Contains("shawl") || n.Contains("earing")) return Region.Extra;
             var m = System.Text.RegularExpressions.Regex.Match(n, @"hair_([a-z]+)");
             var tag = m.Success ? m.Groups[1].Value : "";
@@ -93,8 +111,8 @@ namespace ExcelHeroes.World
         /// <summary>Only the given regions of a sample's hair (a fringe from one sample, the back from another).</summary>
         public static bool MountParts(ChibiRig rig, string name, SdLook k, int layer, Region regions, float cutY = float.NaN)
         {
-            _regions = regions; _cutY = cutY;
-            try { return Mount(rig, name, k, layer); } finally { _regions = Region.All; _cutY = float.NaN; }
+            _regions = regions; _cutY = cutY; _lib = name;
+            try { return Mount(rig, name, k, layer); } finally { _regions = Region.All; _cutY = float.NaN; _lib = ""; }
         }
 
         static Mesh Filter(Mesh src, SdHairBones lib)
@@ -174,7 +192,9 @@ namespace ExcelHeroes.World
             {
                 var tris = m.GetTriangles(s); var keep = new List<int>(tris.Length);
                 for (var t = 0; t < tris.Length; t += 3)
-                    if (Mathf.Max(wy[tris[t]], Mathf.Max(wy[tris[t + 1]], wy[tris[t + 2]])) > _cutY)
+                    // a strand crossing the line goes when most of it hangs below (its centre): keeping
+                    // every crossing triangle left the ends a hand's width past the cut
+                    if ((wy[tris[t]] + wy[tris[t + 1]] + wy[tris[t + 2]]) / 3f > _cutY)
                     { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
                 m.SetTriangles(keep, s, false);
             }

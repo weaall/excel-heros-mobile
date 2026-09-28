@@ -127,8 +127,8 @@ namespace ExcelHeroes.World
                 {
                     Zone.Skirt when legs == "pants" => k.Bottom,
                     Zone.Hip => k.Bottom,
-                    Zone.Thigh when legs is "pants" or "tights" => legs == "pants" ? k.Bottom : Color.Lerp(k.Socks, k.Skin, 0.18f),
-                    Zone.Calf when legs is "pants" or "tights" or "socks" => legs == "pants" ? k.Bottom : legs == "socks" ? k.Socks : Color.Lerp(k.Socks, k.Skin, 0.18f),
+                    Zone.Thigh when legs is "pants" or "tights" => legs == "pants" ? k.Bottom : Color.Lerp(k.Socks, k.Skin, 0.12f),
+                    Zone.Calf when legs is "pants" or "tights" or "socks" => legs == "pants" ? k.Bottom : legs == "socks" ? k.Socks : Color.Lerp(k.Socks, k.Skin, 0.12f),
                     Zone.Foot => k.Shoes,
                     _ => null,
                 };
