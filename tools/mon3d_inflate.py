@@ -135,6 +135,12 @@ def inflate(src):
     # and outside the silhouette the nearest inside colour, so a texel sampled just past the edge is not grey
     idx = ndimage.distance_transform_edt(~al, return_distances=False, return_indices=True)
     fa[~al] = fa[idx[0][~al], idx[1][~al]]
+    # the steep rim of the plush stretches the drawing's strokes into streaks from the side: toward the
+    # edge the drawing fades into its own blurred colours (a toy's plain side), full detail inside
+    soft = np.stack([ndimage.gaussian_filter(fa[:, :, c], max(W, H) * 0.02) for c in range(3)], 2)
+    ring = max(W, H) * 0.11
+    wgt = np.clip(1 - din / ring, 0, 1)[:, :, None] ** 1.5
+    fa = fa * (1 - wgt) + soft * wgt
     front = Image.fromarray(np.clip(fa, 0, 255).astype(np.uint8)).resize((T // 2, T))
     # the back: the drawing's colours with its dark lines and features (eyes, mouth, outline) filled
     # from round about, then blurred — a plain toy back, not a smudged face
