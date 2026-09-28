@@ -1721,7 +1721,7 @@ namespace ExcelHeroes.World
                 // turned with the quarter-view camera, so each keeps the same angle to the lens
                 // a mascot is a drawing given depth: its face is the drawing's front, so it turns only a
                 // little toward the squad (28° off the lens) — side-on it showed its thin plush seam
-                var yaw = (hero ? Mathf.Lerp(-75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 180f + 38f : 75f) + QuarterYaw * (1f - closeUp);
+                var yaw = (hero ? Mathf.Lerp(-75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 38f : 75f) + QuarterYaw * (1f - closeUp);
                 // (an SdEnemy wears the heroes' skeleton and its clips' half turn: mirrored from the heroes,
                 // toward the squad and a little toward the lens, so its face shows)
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad
