@@ -17,6 +17,13 @@ Shader "ExcelHeroes/Toon"
         _Cutoff ("Alpha Cutoff", Range(0,1)) = 0.5
         _OutlineWidth ("Outline Width", Float) = 0.012
         _OutlineColor ("Outline Color", Color) = (0.106,0.114,0.145,1)
+        // BA's layered face: the eye white writes the stencil, the iris draws only inside it, and
+        // the brows / lash lines are pulled toward the camera so they read over the fringe.
+        [IntRange] _StencilRef ("Stencil Ref", Range(0,255)) = 0
+        [Enum(UnityEngine.Rendering.CompareFunction)] _StencilComp ("Stencil Comp", Float) = 8
+        [Enum(UnityEngine.Rendering.StencilOp)] _StencilPass ("Stencil Pass", Float) = 0
+        _DepthPull ("Depth Pull (world units toward camera)", Float) = 0
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Float) = 4
     }
 
     SubShader
@@ -36,6 +43,7 @@ Shader "ExcelHeroes/Toon"
             float _Cutoff;
             float _OutlineWidth;
             float4 _OutlineColor;
+            float _DepthPull;
         CBUFFER_END
 
         TEXTURE2D(_MainTex);
@@ -60,6 +68,8 @@ Shader "ExcelHeroes/Toon"
             Tags { "LightMode"="UniversalForward" }
             Cull Back
             ZWrite On
+            ZTest [_ZTest]
+            Stencil { Ref [_StencilRef] Comp [_StencilComp] Pass [_StencilPass] }
 
             HLSLPROGRAM
             #pragma vertex vert
@@ -78,7 +88,15 @@ Shader "ExcelHeroes/Toon"
             {
                 Varyings o;
                 float3 ws = TransformObjectToWorld(i.positionOS.xyz);
-                o.positionCS = TransformWorldToHClip(ws);
+                // pulled toward the camera for depth only (the brows over the fringe): the pixel
+                // stays where it is, only its depth moves
+                float4 cs = TransformWorldToHClip(ws);
+                if (_DepthPull > 0)
+                {
+                    float4 csNear = TransformWorldToHClip(ws + normalize(GetWorldSpaceViewDir(ws)) * _DepthPull);
+                    cs.z = csNear.z / csNear.w * cs.w;
+                }
+                o.positionCS = cs;
                 o.normalWS = TransformObjectToWorldNormal(i.normalOS);
                 o.viewWS = GetWorldSpaceViewDir(ws);
                 o.uv = TRANSFORM_TEX(i.uv, _MainTex);
@@ -110,6 +128,8 @@ Shader "ExcelHeroes/Toon"
             Tags { "LightMode"="Universal2D" }
             Cull Back
             ZWrite On
+            ZTest [_ZTest]
+            Stencil { Ref [_StencilRef] Comp [_StencilComp] Pass [_StencilPass] }
 
             HLSLPROGRAM
             #pragma vertex vert
@@ -128,7 +148,13 @@ Shader "ExcelHeroes/Toon"
             {
                 Varyings o;
                 float3 ws = TransformObjectToWorld(i.positionOS.xyz);
-                o.positionCS = TransformWorldToHClip(ws);
+                float4 cs = TransformWorldToHClip(ws);
+                if (_DepthPull > 0)
+                {
+                    float4 csNear = TransformWorldToHClip(ws + normalize(GetWorldSpaceViewDir(ws)) * _DepthPull);
+                    cs.z = csNear.z / csNear.w * cs.w;
+                }
+                o.positionCS = cs;
                 o.normalWS = TransformObjectToWorldNormal(i.normalOS);
                 o.viewWS = GetWorldSpaceViewDir(ws);
                 o.uv = TRANSFORM_TEX(i.uv, _MainTex);
