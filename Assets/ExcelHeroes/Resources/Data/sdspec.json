@@ -35,7 +35,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
    "head": "",
-   "scale": 0.971
+   "scale": 0.971,
+   "prop": "calculator"
   },
   {
    "id": "admin",
@@ -162,7 +163,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
    "head": "hairclip:#c4a35f:left",
-   "scale": 1.017
+   "scale": 1.017,
+   "prop": "tablet"
   },
   {
    "id": "audit_han",
@@ -199,7 +201,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.30;flare=-0.25;legs=tights",
    "head": "earring:#282531:right",
-   "scale": 0.964
+   "scale": 0.964,
+   "prop": "clipboard"
   },
   {
    "id": "barista",
@@ -236,7 +239,8 @@
    "acc": "",
    "garment": "pants=slim",
    "head": "",
-   "scale": 0.94
+   "scale": 0.94,
+   "prop": "cup"
   },
   {
    "id": "bd_lead",
@@ -273,7 +277,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.95;flare=-0.25;legs=tights",
    "head": "",
-   "scale": 1.019
+   "scale": 1.019,
+   "prop": "tablet"
   },
   {
    "id": "cco",
@@ -310,7 +315,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.85;flare=-0.15;legs=socks",
    "head": "headset:#e5ecf4:right,flower:#e27889:right",
-   "scale": 0.997
+   "scale": 0.997,
+   "prop": "tablet"
   },
   {
    "id": "cdo",
@@ -347,7 +353,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.95;flare=-0.25;legs=socks",
    "head": "",
-   "scale": 0.999
+   "scale": 0.999,
+   "prop": "tablet"
   },
   {
    "id": "ceo",
@@ -384,7 +391,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.35;flare=-0.30;legs=tights",
    "head": "",
-   "scale": 1.021
+   "scale": 1.021,
+   "prop": "tablet"
   },
   {
    "id": "cfo",
@@ -421,7 +429,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.90;flare=-0.20;legs=tights",
    "head": "earring:#caa34f:left",
-   "scale": 1.042
+   "scale": 1.042,
+   "prop": "calculator"
   },
   {
    "id": "chairman",
@@ -458,7 +467,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights",
    "head": "crown:#cca360:top",
-   "scale": 1.024
+   "scale": 1.024,
+   "prop": "folder"
   },
   {
    "id": "chairwoman",
@@ -495,7 +505,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.35;flare=0.35;legs=tights",
    "head": "earring:#cfae60:right",
-   "scale": 1.001
+   "scale": 1.001,
+   "prop": "tablet"
   },
   {
    "id": "chief_of_staff",
@@ -532,7 +543,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.40;flare=-0.20;legs=tights",
    "head": "",
-   "scale": 1.048
+   "scale": 1.048,
+   "prop": "tablet"
   },
   {
    "id": "chro",
@@ -569,7 +581,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=socks",
    "head": "earring:#dfb462:both",
-   "scale": 1.026
+   "scale": 1.026,
+   "prop": "clipboard"
   },
   {
    "id": "cleaner",
@@ -606,7 +619,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.85;flare=0.30;legs=bare",
    "head": "bandana:#bfd5e8:top",
-   "scale": 0.942
+   "scale": 0.942,
+   "prop": "clipboard"
   },
   {
    "id": "cmo",
@@ -643,7 +657,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
    "head": "earring:#d7ad48:both",
-   "scale": 1.028
+   "scale": 1.028,
+   "prop": "tablet"
   },
   {
    "id": "contract",
@@ -680,7 +695,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.40;flare=0.30;legs=bare",
    "head": "",
-   "scale": 0.952
+   "scale": 0.952,
+   "prop": "tablet"
   },
   {
    "id": "coo",
@@ -717,7 +733,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.85;flare=-0.20;legs=socks",
    "head": "",
-   "scale": 1.03
+   "scale": 1.03,
+   "prop": "tablet"
   },
   {
    "id": "courier",
@@ -754,7 +771,8 @@
    "acc": "nameplate",
    "garment": "pants=slim",
    "head": "cap:#335b9c:top",
-   "scale": 0.973
+   "scale": 0.973,
+   "prop": "clipboard"
   },
   {
    "id": "cpo",
@@ -791,7 +809,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.00;flare=-0.10;legs=socks",
    "head": "neckphones:#caa35f:both",
-   "scale": 0.975
+   "scale": 0.975,
+   "prop": "tablet"
   },
   {
    "id": "cro",
@@ -828,7 +847,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.70;flare=-0.30;legs=socks",
    "head": "",
-   "scale": 1.032
+   "scale": 1.032,
+   "prop": "tablet"
   },
   {
    "id": "cso",
@@ -865,7 +885,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.10;flare=-0.20;legs=tights",
    "head": "earring:#d9b34f:both",
-   "scale": 1.034
+   "scale": 1.034,
+   "prop": "tablet"
   },
   {
    "id": "cto",
@@ -902,7 +923,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.95;flare=-0.30;legs=tights",
    "head": "earring:#2c2d3a:left",
-   "scale": 0.977
+   "scale": 0.977,
+   "prop": "tablet"
   },
   {
    "id": "design_lead",
@@ -939,7 +961,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.60;flare=-0.10;legs=bare",
    "head": "beret:#2c94db:top",
-   "scale": 1.044
+   "scale": 1.044,
+   "prop": "tablet"
   },
   {
    "id": "dev_lead",
@@ -976,7 +999,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.35;flare=-0.20;legs=tights",
    "head": "headset:#80b6e1:both",
-   "scale": 0.954
+   "scale": 0.954,
+   "prop": "cup"
   },
   {
    "id": "finance",
@@ -1103,7 +1127,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=2.00;flare=-0.20;legs=tights",
    "head": "",
-   "scale": 1.05
+   "scale": 1.05,
+   "prop": "tablet"
   },
   {
    "id": "ga_lead",
@@ -1140,7 +1165,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.20;flare=-0.25;legs=tights",
    "head": "",
-   "scale": 0.979
+   "scale": 0.979,
+   "prop": "clipboard"
   },
   {
    "id": "guard",
@@ -1177,7 +1203,8 @@
    "acc": "",
    "garment": "pants=slim",
    "head": "",
-   "scale": 1.036
+   "scale": 1.036,
+   "prop": "clipboard"
   },
   {
    "id": "hacker",
@@ -1214,7 +1241,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
    "head": "headset:#6cd6d0:right",
-   "scale": 1.003
+   "scale": 1.003,
+   "prop": "laptop"
   },
   {
    "id": "helpdesk",
@@ -1251,7 +1279,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.40;flare=-0.10;legs=bare",
    "head": "neckphones:#5b9bc3:both",
-   "scale": 0.944
+   "scale": 0.944,
+   "prop": "laptop"
   },
   {
    "id": "hr_jung",
@@ -1288,7 +1317,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.00;flare=-0.25;legs=tights",
    "head": "earring:#e5e7eb:both",
-   "scale": 1.005
+   "scale": 1.005,
+   "prop": "pen"
   },
   {
    "id": "intern",
@@ -1356,7 +1386,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.70;flare=-0.20;legs=bare",
    "head": "ribbon:#eff0f4:both",
-   "scale": 0.981
+   "scale": 0.981,
+   "prop": "folder"
   },
   {
    "id": "intern_seo",
@@ -1393,7 +1424,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.70;flare=0.35;legs=bare",
    "head": "",
-   "scale": 0.946
+   "scale": 0.946,
+   "prop": "tablet"
   },
   {
    "id": "ir_lead",
@@ -1430,7 +1462,8 @@
    "acc": "",
    "garment": "pants=none;skirt=0.90;flare=-0.30;legs=socks",
    "head": "",
-   "scale": 1.046
+   "scale": 1.046,
+   "prop": "folder"
   },
   {
    "id": "lab_park",
@@ -1467,7 +1500,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.10;flare=-0.20;legs=tights",
    "head": "",
-   "scale": 1.007
+   "scale": 1.007,
+   "prop": "clipboard"
   },
   {
    "id": "labor_atty",
@@ -1504,7 +1538,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.00;flare=-0.25;legs=socks",
    "head": "",
-   "scale": 1.009
+   "scale": 1.009,
+   "prop": "folder"
   },
   {
    "id": "legal_yoon",
@@ -1541,7 +1576,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.35;flare=-0.30;legs=tights",
    "head": "",
-   "scale": 1.011
+   "scale": 1.011,
+   "prop": "folder"
   },
   {
    "id": "logistics_bae",
@@ -1578,7 +1614,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
    "head": "ahoge",
-   "scale": 0.983
+   "scale": 0.983,
+   "prop": "clipboard"
   },
   {
    "id": "macro",
@@ -1615,7 +1652,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.15;flare=-0.10;legs=tights",
    "head": "headset:#314d74:both",
-   "scale": 0.985
+   "scale": 0.985,
+   "prop": "laptop"
   },
   {
    "id": "mail_cho",
@@ -1652,7 +1690,8 @@
    "acc": "",
    "garment": "pants=slim",
    "head": "",
-   "scale": 0.987
+   "scale": 0.987,
+   "prop": "clipboard"
   },
   {
    "id": "main",
@@ -1719,7 +1758,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.00;flare=-0.20;legs=tights",
    "head": "",
-   "scale": 1.013
+   "scale": 1.013,
+   "prop": "clipboard"
   },
   {
    "id": "parttime",
@@ -1756,7 +1796,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare",
    "head": "",
-   "scale": 0.948
+   "scale": 0.948,
+   "prop": "clipboard"
   },
   {
    "id": "pivot",
@@ -1793,7 +1834,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.15;flare=-0.30;legs=tights",
    "head": "earring:#e2e5ea:left",
-   "scale": 0.989
+   "scale": 0.989,
+   "prop": "clipboard"
   },
   {
    "id": "pm_lead",
@@ -1830,7 +1872,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.40;flare=-0.25;legs=tights",
    "head": "",
-   "scale": 0.956
+   "scale": 0.956,
+   "prop": "tablet"
   },
   {
    "id": "pr_yoo",
@@ -1867,7 +1910,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.00;flare=-0.20;legs=tights",
    "head": "earring:#f1eff5:right",
-   "scale": 1.015
+   "scale": 1.015,
+   "prop": "phone"
   },
   {
    "id": "qa_lee",
@@ -1904,7 +1948,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=0.65;flare=-0.30;legs=tights",
    "head": "",
-   "scale": 0.95
+   "scale": 0.95,
+   "prop": "tablet"
   },
   {
    "id": "reception_go",
@@ -1941,7 +1986,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.00;flare=-0.20;legs=tights",
    "head": "headset:#2c3036:right",
-   "scale": 0.991
+   "scale": 0.991,
+   "prop": "clipboard"
   },
   {
    "id": "sales",
@@ -2008,7 +2054,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.35;flare=-0.15;legs=tights",
    "head": "",
-   "scale": 0.966
+   "scale": 0.966,
+   "prop": "tablet"
   },
   {
    "id": "sales_manager",
@@ -2105,7 +2152,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.20;flare=-0.30;legs=tights",
    "head": "earring:#d5b461:both",
-   "scale": 1.038
+   "scale": 1.038,
+   "prop": "clipboard"
   },
   {
    "id": "security_yang",
@@ -2142,7 +2190,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.40;flare=-0.10;legs=bare",
    "head": "",
-   "scale": 0.958
+   "scale": 0.958,
+   "prop": "clipboard"
   },
   {
    "id": "staff",
@@ -2209,7 +2258,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare",
    "head": "",
-   "scale": 0.96
+   "scale": 0.96,
+   "prop": "folder"
   },
   {
    "id": "trainer_seok",
@@ -2246,7 +2296,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.25;flare=-0.20;legs=tights",
    "head": "",
-   "scale": 0.993
+   "scale": 0.993,
+   "prop": "clipboard"
   },
   {
    "id": "translator_ji",
@@ -2283,7 +2334,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.40;flare=-0.30;legs=tights",
    "head": "",
-   "scale": 0.995
+   "scale": 0.995,
+   "prop": "document"
   },
   {
    "id": "union_chief",
@@ -2320,7 +2372,8 @@
    "acc": "",
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
    "head": "",
-   "scale": 1.04
+   "scale": 1.04,
+   "prop": "clipboard"
   },
   {
    "id": "vlookup",
@@ -2357,7 +2410,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
    "head": "",
-   "scale": 0.969
+   "scale": 0.969,
+   "prop": "pen"
   },
   {
    "id": "welfare",
@@ -2394,7 +2448,8 @@
    "acc": "nameplate",
    "garment": "pants=none;skirt=1.35;flare=-0.20;legs=tights",
    "head": "flower:#f1b2c6:right",
-   "scale": 0.962
+   "scale": 0.962,
+   "prop": "clipboard"
   }
  ]
 }

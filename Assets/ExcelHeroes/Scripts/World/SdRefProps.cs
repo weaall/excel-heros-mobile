@@ -565,8 +565,64 @@ namespace ExcelHeroes.World
             var accent = k.Accent; accent.a = 1f;
             var across = Quaternion.Euler(-90f, 0f, 0f);    // a frustum's +Y → the grip's −z (out of the thumb side)
             float lift, x;                                   // how far off the palm the prop's centre sits (m), and where along the hand
-            switch (role)
+            // the hero's own item from the illustration (sdspec "prop", tools/sdspec_prop_gemini.py), else by role
+            var kind = k.Prop switch { "document" => "melee", "cup" => "healer", "clipboard" => "tank", "tablet" => "ranged", null or "" => role, _ => k.Prop };
+            switch (kind)
             {
+                case "phone":
+                {
+                    // a phone on the palm, screen out: the slab, the lit screen, the camera dot
+                    const float t = 0.007f;
+                    b.Box(new Vector3(0.012f, 0f, -0.004f), new Vector3(0.085f, t, 0.045f), accent);
+                    b.Quad(new Vector3(0.012f, t * 0.5f + 0.0008f, -0.004f), new Vector3(0.038f, 0f, 0f), new Vector3(0f, 0f, 0.019f), new Color(0.82f, 0.93f, 1f));
+                    b.Box(new Vector3(0.045f, -t * 0.5f - 0.001f, 0.008f), new Vector3(0.008f, 0.002f, 0.008f), ink);
+                    lift = t * 0.5f + 0.002f; x = FlatX; rig.GripR = 0.2f;
+                    break;
+                }
+                case "pen":
+                {
+                    // a pen in the fist, the nib out past the thumb: barrel, clip, cap end
+                    const float r = 0.007f;
+                    b.M = Matrix4x4.Rotate(across);
+                    b.Frustum(new Vector3(0f, -0.05f, 0f), r, 0.12f, r, accent, 1f, 10);
+                    b.Frustum(new Vector3(0f, 0.07f, 0f), r, 0.018f, 0.001f, ink, 1f, 10);
+                    b.Box(new Vector3(r + 0.002f, -0.03f, 0f), new Vector3(0.003f, 0.04f, 0.004f), new Color(0.8f, 0.8f, 0.84f));
+                    b.M = Matrix4x4.identity;
+                    lift = r; x = FistX; rig.GripR = 0.85f;
+                    break;
+                }
+                case "folder":
+                {
+                    // a closed file folder on the palm: two covers, papers between, a tab
+                    const float t = 0.012f;
+                    b.Box(new Vector3(0.03f, 0f, -0.01f), new Vector3(0.16f, t, 0.12f), accent);
+                    b.Box(new Vector3(0.028f, 0f, -0.012f), new Vector3(0.155f, t * 0.7f, 0.118f), paper);
+                    b.Box(new Vector3(0.115f, 0f, 0.03f), new Vector3(0.02f, t, 0.03f), MeshKit.Shade(accent, 0.8f));
+                    lift = t * 0.5f + 0.002f; x = FlatX; rig.GripR = 0.15f;
+                    break;
+                }
+                case "calculator":
+                {
+                    // a desk calculator on the palm: body, the display, a grid of keys
+                    const float t = 0.012f;
+                    b.Box(new Vector3(0.02f, 0f, -0.006f), new Vector3(0.1f, t, 0.07f), new Color(0.3f, 0.32f, 0.38f));
+                    b.Quad(new Vector3(0.05f, t * 0.5f + 0.0008f, -0.006f), new Vector3(0.012f, 0f, 0f), new Vector3(0f, 0f, 0.028f), new Color(0.75f, 0.85f, 0.7f));
+                    for (var i = 0; i < 4; i++)
+                        for (var j = 0; j < 4; j++)
+                            b.Box(new Vector3(0.025f - i * 0.016f, t * 0.5f + 0.001f, -0.03f + j * 0.016f), new Vector3(0.011f, 0.003f, 0.011f), i == 3 && j == 3 ? accent : paper);
+                    lift = t * 0.5f + 0.002f; x = FlatX; rig.GripR = 0.15f;
+                    break;
+                }
+                case "laptop":
+                {
+                    // a closed laptop carried flat: the lid in the accent colour, a logo dot
+                    const float t = 0.014f;
+                    b.Box(new Vector3(0.04f, 0f, -0.012f), new Vector3(0.2f, t, 0.14f), new Color(0.75f, 0.77f, 0.8f));
+                    b.Box(new Vector3(0.04f, t * 0.5f + 0.001f, -0.012f), new Vector3(0.19f, 0.002f, 0.13f), accent);
+                    b.Disc(new Vector3(0.04f, t * 0.5f + 0.0025f, -0.012f), 0.012f, 0.012f, paper, true, 10);
+                    lift = t * 0.5f + 0.002f; x = FlatX; rig.GripR = 0.15f;
+                    break;
+                }
                 case "melee":
                 {
                     // a rolled-up document across the fist, the long end out past the thumb, a band near it
