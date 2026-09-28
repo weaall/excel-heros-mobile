@@ -1715,41 +1715,90 @@ namespace ExcelHeroes.World
             float _lastAttack, _lastHit, _lastSkill;
             public void DisposeClips() { _clips?.Dispose(); _clips = null; }
 
-            /// <summary>The fight's state as a clip: dead, cheering, EX, hit, attack, walk, ready.</summary>
+            /// <summary>
+            /// A hero's own way of moving, picked once from their role and a hash of their id, so 55
+            /// people in the same street do not move as one: a stance, a set of attacks they cycle
+            /// through, an EX, a victory, their tempo and a posture laid over every clip.
+            /// </summary>
+            class Profile
+            {
+                public string Stance, Idle, Ex, Win, Walk;
+                public (string clip, float contact)[] Attacks;
+                public float Speed, Lean, Tilt, Chest;
+            }
+
+            static readonly Dictionary<string, Profile> Profiles = new();
+
+            static Profile ProfileOf(Combatant c)
+            {
+                var key = c.heroId ?? c.typeId ?? "x";
+                if (Profiles.TryGetValue(key, out var p)) return p;
+                var h = (uint)SdPose.Hash(key);
+                T Pick<T>(int salt, params T[] xs) => xs[(int)((h / (uint)(salt * 7 + 1)) % (uint)xs.Length)];
+                var kind = AttackPose(c);
+                p = new Profile { Speed = 0.9f + (h % 23) / 100f, Lean = ((int)(h / 7 % 9) - 4) * 0.9f, Tilt = ((int)(h / 11 % 9) - 4) * 1.4f, Chest = ((int)(h / 13 % 7) - 3) * 1.2f, Walk = Pick(9, "Jog_Fwd_Loop", "Jog_Fwd_Loop", "Walk_Formal_Loop") };
+                switch (c.role)
+                {
+                    case "tank":
+                        p.Stance = Pick(1, "Idle_Shield_Loop", "Sword_Idle");
+                        p.Attacks = new[] { ("Shield_OneShot", 0.35f), ("Melee_Hook", 0.45f), ("Punch_Cross", 0.35f) };
+                        p.Ex = "Shield_Dash"; break;
+                    case "melee":
+                        p.Stance = "Sword_Idle";
+                        p.Attacks = Pick(2,
+                            new[] { ("Sword_Regular_A", 0.4f), ("Sword_Regular_B", 0.4f), ("Sword_Regular_C", 0.45f) },
+                            new[] { ("Punch_Jab", 0.3f), ("Punch_Cross", 0.35f), ("Melee_Hook", 0.45f) },
+                            new[] { ("Sword_Attack", 0.42f), ("Sword_Regular_B", 0.4f) });
+                        p.Ex = Pick(3, "Sword_Heavy_Combo", "Sword_Dash"); break;
+                    case "healer":
+                        p.Stance = "Spell_Simple_Idle_Loop";
+                        p.Attacks = kind == 8 ? new[] { ("OverhandThrow", 0.45f) } : new[] { ("Spell_Simple_Shoot", 0.3f), ("OverhandThrow", 0.45f) };
+                        p.Ex = "Spell_Simple_Shoot"; break;
+                    default:   // ranged
+                        p.Stance = kind is 3 or 4 or 7 ? "Pistol_Idle_Loop" : "Spell_Simple_Idle_Loop";
+                        p.Attacks = kind is 3 or 4 or 7 ? new[] { ("Pistol_Shoot", 0.12f) }
+                                  : kind == 5 ? new[] { ("OverhandThrow", 0.45f), ("Spell_Simple_Shoot", 0.3f) }
+                                  : new[] { ("Spell_Simple_Shoot", 0.3f) };
+                        p.Ex = Pick(4, "Spell_Simple_Shoot", "OverhandThrow"); break;
+                }
+                p.Idle = Pick(5, "Idle_Loop", "Idle_FoldArms_Loop", "Idle_Talking_Loop", "Idle_TalkingPhone_Loop");
+                p.Win = Pick(6, "Dance_Loop", "Yes", "Idle_FoldArms_Loop", "Dance_Loop");
+                return Profiles[key] = p;
+            }
+
+            int _attackN;
+            static readonly HashSet<string> OneShots = new() { "Hit_Chest", "Hit_Head", "Hit_Knockback" };
+
+            /// <summary>The fight's state as a clip: dead, cheering, EX, hit, attack, walk, stance.</summary>
             bool ClipMotion(float dt, bool walking, float closeUp)
             {
                 if (_clips == null) _clips = new SdClips(Rig, C.heroId ?? C.typeId ?? "sd");
-                var hero = C.side == Side.Hero;
-                var kind = AttackPose(C);
-                var ranged = C.role is "ranged" or "healer";
-                string ready = kind is 3 or 4 or 7 ? "Pistol_Idle_Loop" : ranged ? "Spell_Simple_Idle_Loop" : "Sword_Idle";
+                var p = ProfileOf(C);
                 var cheering = (Cheer > 0f || closeUp > 0.5f) && C.Alive;
+                var acting = _clips.Current != null && !_clips.Done && _clips.Current != p.Stance && _clips.Current != p.Walk && _clips.Current != p.Win;
                 if (Dying > 0f || !C.Alive) _clips.Play("Death01", 0.1f, 0f, 1.4f);
-                else if (cheering) _clips.Play("Dance_Loop", 0.25f);
-                else if (Skill > _lastSkill + 1e-4f) _clips.Play(ranged ? "Spell_Simple_Shoot" : "Sword_Attack", 0.06f, 0f, 1.2f, restart: true);
-                else if (Hit > _lastHit + 1e-4f && _clips.Current is not ("Spell_Simple_Shoot" or "Sword_Attack" or "Pistol_Shoot" or "Punch_Cross" or "Punch_Jab"))
-                    _clips.Play(Random.value < 0.5f ? "Hit_Chest" : "Hit_Head", 0.05f, 0f, 1f, restart: true);
+                else if (cheering) _clips.Play(p.Win, 0.25f, 0f, p.Speed);
+                else if (Skill > _lastSkill + 1e-4f) _clips.Play(p.Ex, 0.06f, 0f, 1.15f * p.Speed, restart: true);
+                else if (Hit > _lastHit + 1e-4f && !acting)
+                    _clips.Play(C.hp < C.maxHp * 0.3f ? "Hit_Knockback" : Random.value < 0.5f ? "Hit_Chest" : "Hit_Head", 0.05f, 0f, 1.1f, restart: true);
                 else if (Attack > _lastAttack + 1e-4f)
                 {
-                    // the clip's contact frame on the Shot's arrival: start it that much early
-                    var (clip, contact) = kind switch
-                    {
-                        3 or 4 or 7 => ("Pistol_Shoot", 0.12f),
-                        5 or 6 or 8 => ("Spell_Simple_Shoot", 0.3f),
-                        9 or 10 or 11 => ("Sword_Attack", 0.42f),
-                        12 => ("Punch_Jab", 0.3f),
-                        _ => ranged ? ("Spell_Simple_Shoot", 0.3f) : ("Punch_Cross", 0.35f),
-                    };
-                    const float speed = 1.35f;
+                    // the next of the hero's attacks, its contact frame on the Shot's arrival
+                    var (clip, contact) = p.Attacks[_attackN++ % p.Attacks.Length];
+                    var speed = 1.35f * p.Speed;
                     var len = SdClips.Clip(clip)?.length ?? 1f;
-                    var flight = ranged ? 0.28f : 0.16f;
+                    var flight = C.role is "ranged" or "healer" ? 0.28f : 0.16f;
                     _clips.Play(clip, 0.05f, Mathf.Max(0f, contact * len - flight * speed), speed, restart: true);
                 }
-                else if (_clips.Current is null || _clips.Done || _clips.Current is "Dance_Loop" && !cheering
-                         || (walking != (_clips.Current is "Jog_Fwd_Loop")) && _clips.Current is not ("Pistol_Shoot" or "Punch_Cross" or "Punch_Jab" or "Sword_Attack" or "Spell_Simple_Shoot" or "Hit_Chest" or "Hit_Head"))
-                    _clips.Play(walking ? "Jog_Fwd_Loop" : ready, 0.18f);
+                else if (_clips.Current is null || _clips.Done || (_clips.Current == p.Win && !cheering)
+                         || (walking != (_clips.Current == p.Walk)) && !acting)
+                    _clips.Play(walking ? p.Walk : p.Stance, 0.18f, Random.value * 0.5f, p.Speed);
                 _lastAttack = Attack; _lastHit = Hit; _lastSkill = Skill;
                 _clips.Tick(dt);
+                // the hero's posture over whatever the clip does: a lean, a head tilt, the chest up or down
+                if (Rig.Spine != null) Rig.Spine.localRotation *= Quaternion.Euler(0f, 0f, p.Chest);
+                if (Rig.Head != null && Rig.Head != Rig.Body) Rig.Head.localRotation *= Quaternion.Euler(0f, p.Tilt, 0f);
+                if (Rig.Pelvis != null) Rig.Pelvis.localRotation *= Quaternion.Euler(0f, 0f, p.Lean);
                 return true;
             }
 

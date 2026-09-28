@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -26,7 +27,7 @@ namespace ExcelHeroes.World
             if (_lib == null)
             {
                 _lib = new Dictionary<string, AnimationClip>();
-                foreach (var c in Resources.LoadAll<AnimationClip>("Anim/UAL1_Standard"))
+                foreach (var c in Resources.LoadAll<AnimationClip>("Anim/UAL1_Standard").Concat(Resources.LoadAll<AnimationClip>("Anim/UAL2_Standard")))
                 {
                     var n = c.name; var bar = n.LastIndexOf('|');
                     _lib[bar >= 0 ? n.Substring(bar + 1) : n] = c;

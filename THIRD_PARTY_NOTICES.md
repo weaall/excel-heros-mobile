@@ -16,5 +16,5 @@
 
 ## Universal Animation Library — Quaternius
 - Source: https://quaternius.com/packs/universalanimationlibrary.html (itch.io: quaternius/universal-animation-library)
-- License: CC0 1.0 (public domain). File: `Assets/ExcelHeroes/Resources/Anim/UAL1_Standard.fbx` (+ `UAL_License.txt`).
+- License: CC0 1.0 (public domain). Files: `Assets/ExcelHeroes/Resources/Anim/UAL1_Standard.fbx`, `UAL2_Standard.fbx` (Universal Animation Library 2, same author, CC0) (+ license texts).
 - Used for: the SD figures' keyframed motion (World/SdClips), retargeted through a Humanoid avatar (World/SdHumanoid).

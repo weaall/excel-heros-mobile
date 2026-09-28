@@ -16,8 +16,12 @@ namespace ExcelHeroes.EditorTools
     public static class UalImport
     {
         public const string Fbx = "Assets/ExcelHeroes/Resources/Anim/UAL1_Standard.fbx";
+        public const string Fbx2 = "Assets/ExcelHeroes/Resources/Anim/UAL2_Standard.fbx";
+        static readonly string[] All = { Fbx, Fbx2 };
 
-        public static void Setup()
+        public static void Setup() { foreach (var f in All) SetupOne(f); }
+
+        static void SetupOne(string Fbx)
         {
             var imp = (ModelImporter)AssetImporter.GetAtPath(Fbx);
             if (imp == null) { Debug.LogError("[UAL] no fbx at " + Fbx); return; }
@@ -45,7 +49,7 @@ namespace ExcelHeroes.EditorTools
 
         public static void List()
         {
-            var clips = AssetDatabase.LoadAllAssetsAtPath(Fbx).OfType<AnimationClip>().Where(c => !c.name.StartsWith("__preview")).ToList();
+            var clips = All.SelectMany(f => AssetDatabase.LoadAllAssetsAtPath(f).OfType<AnimationClip>()).Where(c => !c.name.StartsWith("__preview")).ToList();
             var sb = new StringBuilder();
             foreach (var c in clips.OrderBy(c => c.name)) sb.AppendLine($"{c.name}\t{c.length:F2}s\tloop {c.isLooping}\thuman {c.isHumanMotion}");
             File.WriteAllText(Path.Combine(Application.dataPath, "..", "tools", "out", "ual_clips.txt"), sb.ToString());
