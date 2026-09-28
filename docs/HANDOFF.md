@@ -908,6 +908,13 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
     - 하의 이식 시트 = 기증 시트 천 전체를 하의 색으로 틴트(`SdSampleTex.Tint`, 주름 음영 유지; 나츠 치마에 상의 색이 가던 것), 기증자의 엉덩이 소품(폰·가방 뼈) 제외, 삼각형은 꼭짓점 2개 이상이 하체일 때만.
     - **머리 장신구** `World/SdHeadwear`(sdspec `head` "hairclip:#c4a35f:left,ahoge", `tools/sdspec_head_gemini.py`, 25명): hairclip·headband·ribbon·flower·beret·cap·headset·crown·bandana·ahoge·earring(짧은 머리만). 실제로 씌운 머리카락 정점을 방향별로 재서(두상 중심에서 cos>.975 원뿔 최대 거리, 정수리는 98 백분위) 표면에 붙임. 미리보기 `SD_HEAD=` / `SD_GARMENT=` / `SD_GARMENTDBG=1`(부위별 색).
     - 편집기 일괄 실행 `bash tools/unity.sh <메서드> [로그]`(그래픽 있음).
+    - **얼굴 이식** `SdSample.SwapFace`(sdspec `face`): 다른 샘플의 face/eyemouth/eyebrow 서브메시를 머리뼈에 맞춰 옮기고 우리 뼈에 이름으로 재스킨(없으면 머리), 몸의 자기 얼굴 서브메시는 비움. 이후 SdFace 분할·눈꺼풀 리그를 똑같이 탐. `tools/sdspec_face_gemini.py`가 8가지 얼굴(`tools/out/face_reference.png`)을 일러와 0–10 채점 → 얼굴당 상한 배정(9/8/8/8/6/6/5/5). 미리보기 `SD_FACE=<샘플키>`. 눈썹은 머리색의 짙은 톤 단색.
+    - **깜빡임·표정** `World/SdBlink`: 눈마다 판(흰자·눈동자·하이라이트·속눈썹)을 새 뼈에 재스킨 + 눈 바로 위 피부가 타는 뼈 = 윗눈꺼풀(투표) → 깜빡이면 피부가 내려오고 판은 아래 눈꺼풀로 접힘(BA ^^). 뼈의 기본 스케일(머리 임포트 124배 보정)을 곱해서 눌러야 함 — 1로 덮으면 눈 판이 124배로 전투 화면을 덮는다. happy/dizzy 감은 눈, hurt 0.7, angry 0.3, 표정용 작은 입(웃음/물결/찌푸림). 미카 리그는 눈꺼풀 피부가 머리뼈라 깜빡임 생략.
+    - **머리 꼬리 영역**: `SdRefHairLib.TailTags`(유우카 l/r, 레이사 bl/br, 미쿠 b_l/b_r, 나츠 r) = Tails, recipe `tails=`일 때만(자르지 않음). 그래서 뒷머리 있는 샘플은 하루카·히카리·미카·유우카뿐. 유우카 앞머리/뒷머리는 유우카 옆머리(m_l/m_r)를 늘 동반(캡 구멍).
+    - **키** sdspec `scale`(0.94–1.05, `tools/sdspec_height_gemini.py` 체형 점수 순위), 하의 이식도 같은 배율. **손 소품** sdspec `prop`(문서·컵·클립보드·태블릿·폰·펜·파일철·계산기·노트북, `tools/sdspec_prop_gemini.py`).
+    - **조립은 부모 없이 원점·배율 1에서**, 끝에서 부착(전투 스폰이 배율 ~0에서 팝인해 월드 단위로 맞춘 조각이 100배가 되던 것).
+    - **닮음 루프**: `tools/sd_likeness_gemini.py <라인업 폴더> <ids>`(정면+얼굴 vs 일러 → 점수·가장 틀린 점, `tools/out/likeness.json`), `tools/sd_hairfix_gemini.py`(머리 지적만 레시피 수정 → 재채점해서 나아진 것만). 라인업은 `tools/out/lineup_ids.txt`(11명씩, **CRLF 주의** — 마지막 id에 이 붙으면 스펙을 못 찾아 기본 몸으로 나옴). 평균 4.1 → 4.45(머리 4.3 → 4.9) 시점 기록.
+    - 의상 칠하기 프롬프트: 일러에 없는 끈·하네스·파우치는 그 아래 옷 색으로 덮어 칠함(히카리 재킷의 대각선 끈은 메시 일부라 형상으로는 못 뺌).
 - **사람 모션**: 사용자가 Unity 모델·클립을 찾아주겠다고 함 → BA 원본 클립은 넥슨 저작권(출시 불가), **Mixamo 권장**(무료·게임 사용 허용). 받으면 런타임 Humanoid 아바타(`AvatarBuilder.BuildHumanAvatar` + Bip001 매핑)로 리타겟. 요청 목록: Rifle/Happy Idle, Running/Rifle Run, Pistol Shoot/Shooting/Punching/Sword Slash/Throw, Standing 1H Magic Attack, Hit Reaction, Standing Block, Dying, Victory/Cheering (FBX for Unity, Without Skin, 30fps).
 - 다음: 스킬 카드 2번(흰 머리 캐릭터) 초상이 머리카락만 잡힘(얼굴 박스), 전투 타격 스파크(시안의 노란 번개 파편), 보스 바 이름판 "보스 | 이름" 판 분리, 편성·모집 화면도 같은 유리 타일로, `ceo_chair`는 얼굴이 약함(재생성 후보).
 
