@@ -245,19 +245,48 @@ namespace ExcelHeroes.World
         /// normalised to the same height, so a Yuuka jacket over a Natsu skirt stands together.
         /// </summary>
         static void SwapLower(ChibiRig rig, SkinnedMeshRenderer body, string donorKey, SdLook k, Transform root, int layer)
+            => Transplant(rig, body, donorKey, Lower, true, false, k, root, layer);
+
+        /// <summary>The sample accessories, by the bones they ride (their own names in each sample).</summary>
+        static readonly Dictionary<string, (string donor, string[] bones)> Accessories = new()
+        {
+            ["choker"] = ("kayoko_dress_ver_", new[] { "choker" }),
+            ["nameplate"] = ("hayase_yuuka", new[] { "nameplate", "pocket" }),
+            ["shawl"] = ("haruka", new[] { "shawl" }),
+            ["ribbon"] = ("haruka", new[] { "ribborn" }),
+            ["bag"] = ("hikari", new[] { "bag", "acc_01", "acc_02" }),
+            ["bows"] = ("hatsune_miku", new[] { "ribbon_t" }),
+        };
+
+        static void Accessory(ChibiRig rig, SkinnedMeshRenderer body, string name, SdLook k, Transform root, int layer)
+        {
+            if (!Accessories.TryGetValue(name, out var a) || !Has(a.donor)) return;
+            Transplant(rig, body, a.donor, b => { var n = b.ToLowerInvariant(); return a.bones.Any(x => n.Contains(x)); }, false, true, k, root, layer);
+        }
+
+        /// <summary>
+        /// Moves the part of a donor sample skinned to the bones `take` accepts onto the hero: the
+        /// donor-only bones (skirt chains, a choker's, a bag's) rebuilt under our skeleton by name,
+        /// the donor's sheet in the hero's colours. `cutOwn` removes our own triangles of that kind
+        /// first (the lower body). An accessory takes every vertex with some weight on its bones.
+        /// </summary>
+        static void Transplant(ChibiRig rig, SkinnedMeshRenderer body, string donorKey, System.Func<string, bool> take, bool cutOwn, bool accessory, SdLook k, Transform root, int layer)
         {
             var prefab = Prefab(donorKey); if (prefab == null) return;
-            var mesh = body.sharedMesh; var bw = mesh.boneWeights; var bones = body.bones;
-            var isLow = bw.Select(w => Lower(Dominant(w, bones))).ToArray();
-            var cut = Object.Instantiate(mesh);
-            for (var s = 0; s < cut.subMeshCount; s++)
+            if (cutOwn)
             {
-                var tris = cut.GetTriangles(s); var keep = new List<int>(tris.Length);
-                for (var t = 0; t < tris.Length; t += 3)
-                    if (!(isLow[tris[t]] && isLow[tris[t + 1]] && isLow[tris[t + 2]])) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
-                cut.SetTriangles(keep, s, false);
+                var mesh = body.sharedMesh; var bw = mesh.boneWeights; var bones = body.bones;
+                var isLow = bw.Select(w => take(Dominant(w, bones))).ToArray();
+                var cut = Object.Instantiate(mesh);
+                for (var s = 0; s < cut.subMeshCount; s++)
+                {
+                    var tris = cut.GetTriangles(s); var keep = new List<int>(tris.Length);
+                    for (var t = 0; t < tris.Length; t += 3)
+                        if (!(isLow[tris[t]] && isLow[tris[t + 1]] && isLow[tris[t + 2]])) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                    cut.SetTriangles(keep, s, false);
+                }
+                body.sharedMesh = cut;
             }
-            body.sharedMesh = cut;
 
             var temp = new GameObject("donor").transform; temp.SetParent(root.parent, false);
             temp.position = root.position; temp.rotation = root.rotation;
@@ -272,11 +301,20 @@ namespace ExcelHeroes.World
             dgo.transform.localPosition = new Vector3(-(lo.x + hi.x) * 0.5f * sc, -lo.y * sc, -(lo.z + hi.z) * 0.5f * sc);
             var dpel = dgo.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Bip001 Pelvis");
             if (dpel != null) { var pl = temp.InverseTransformPoint(dpel.position); dgo.transform.localPosition -= new Vector3(pl.x, 0f, pl.z); }
-            // the donor's pelvis at our pelvis height, so the waistband meets the jacket
-            if (dpel != null && rig.Pelvis != null) dgo.transform.position += Vector3.up * (rig.Pelvis.position.y - dpel.position.y);
+            // the donor's pelvis at our pelvis height (the waistband meets the jacket); an accessory at
+            // our NECK height instead (a choker, a lanyard, a shawl hang from there)
+            var dneck = dgo.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Bip001 Neck");
+            if (accessory && dneck != null && rig.Neck != null) dgo.transform.position += Vector3.up * (rig.Neck.position.y - dneck.position.y);
+            else if (dpel != null && rig.Pelvis != null) dgo.transform.position += Vector3.up * (rig.Pelvis.position.y - dpel.position.y);
 
             var dm = dbody.sharedMesh; var dbw = dm.boneWeights; var dbones = dbody.bones;
-            var dLow = dbw.Select(w => Lower(Dominant(w, dbones))).ToArray();
+            bool Rides(BoneWeight w)
+            {
+                if (!accessory) return take(Dominant(w, dbones));
+                bool B(int i, float wt) => wt > 0.2f && i >= 0 && i < dbones.Length && dbones[i] != null && take(dbones[i].name);
+                return B(w.boneIndex0, w.weight0) || B(w.boneIndex1, w.weight1) || B(w.boneIndex2, w.weight2) || B(w.boneIndex3, w.weight3);
+            }
+            var dLow = dbw.Select(Rides).ToArray();
             var part = Object.Instantiate(dm);
             var dnames = dbody.sharedMaterials.Select(m => m ? m.name.ToLowerInvariant() : "").ToArray();
             for (var s = 0; s < part.subMeshCount; s++)
@@ -284,7 +322,7 @@ namespace ExcelHeroes.World
                 var tris = dm.GetTriangles(s); var keep = new List<int>();
                 if (s < dnames.Length && dnames[s].Contains("body"))
                     for (var t = 0; t < tris.Length; t += 3)
-                        if (dLow[tris[t]] || dLow[tris[t + 1]] || dLow[tris[t + 2]]) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                        if (accessory ? dLow[tris[t]] && dLow[tris[t + 1]] && dLow[tris[t + 2]] : dLow[tris[t]] || dLow[tris[t + 1]] || dLow[tris[t + 2]]) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
                 part.SetTriangles(keep, s, false);
             }
 
@@ -303,7 +341,7 @@ namespace ExcelHeroes.World
                 return map[d] = nb;
             }
             var newBones = dbones.Select(Map).ToArray();
-            var go = new GameObject("lower:" + donorKey) { layer = layer };
+            var go = new GameObject((accessory ? "acc:" : "lower:") + donorKey) { layer = layer };
             go.transform.SetParent(rig.Model, true);
             go.transform.position = dbody.transform.position; go.transform.rotation = dbody.transform.rotation;
             var ls = dbody.transform.lossyScale; var ps = rig.Model.lossyScale;
@@ -422,6 +460,8 @@ namespace ExcelHeroes.World
 
             var lowerKey = System.Environment.GetEnvironmentVariable("SD_LOWER") ?? k.Lower;
             if (!_raw && !string.IsNullOrEmpty(lowerKey) && lowerKey != key && Has(lowerKey)) SwapLower(rig, body, lowerKey, k, root, layer);
+            var accEnv = System.Environment.GetEnvironmentVariable("SD_ACC") ?? k.Accessories;
+            if (!_raw && !string.IsNullOrEmpty(accEnv)) foreach (var acc in accEnv.Split(',')) Accessory(rig, body, acc.Trim(), k, root, layer);
             if (!_raw) DressHair(rig, heroId, key, k, kept, layer);
 
             var sh = new MeshKit.Builder();

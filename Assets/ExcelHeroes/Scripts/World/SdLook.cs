@@ -27,7 +27,7 @@ namespace ExcelHeroes.World
         public string Legwear = "";             // skirts: bare (short socks) | socks (knee-high) | tights; "" = trousers
         public string Eyes = "almond";          // round | almond | sharp | droop
         public string GlassesStyle = "square";  // square | round | oval | half | cat | rimless
-        public string Body = "", Lower = "", HairRecipe = "";   // Lower: another sample for skirt / legs / shoes (SdSample.SwapLower)                // a sample body (SdSample) worn as-is; "" = the base with our outfit pieces
+        public string Body = "", Lower = "", HairRecipe = "", Accessories = "";   // Lower: another sample for skirt / legs / shoes (SdSample.SwapLower)                // a sample body (SdSample) worn as-is; "" = the base with our outfit pieces
         public string Iris = "";                // a sample's painted iris (SdRefTex.IrisOf); "" = by eye shape, "none" = our own painted one
         public string HairLib = "";             // a sample's hair mounted on the head (SdRefHairLib); "" = by style, "base" = the base cap only
         public Color GlassesColor = new(0.17f, 0.17f, 0.21f);
@@ -114,6 +114,7 @@ namespace ExcelHeroes.World
                 if (!string.IsNullOrEmpty(sp.body)) k.Body = sp.body;
                 if (!string.IsNullOrEmpty(sp.lower)) k.Lower = sp.lower;
                 if (!string.IsNullOrEmpty(sp.hairParts)) k.HairRecipe = sp.hairParts;
+                if (!string.IsNullOrEmpty(sp.acc)) k.Accessories = sp.acc;
                 if (!string.IsNullOrEmpty(sp.glassesColor)) k.GlassesColor = H(sp.glassesColor, k.GlassesColor);
                 // the spec row is the source of truth for whatever it carries; colours re-derived
                 // from it so the shirt / legs / shoes follow a hand edit

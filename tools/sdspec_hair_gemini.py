@@ -23,7 +23,7 @@ MODEL = os.environ.get("QA_MODEL", "gemini-3.8-flash")
 SPEC = os.path.join(g.ROOT, "Assets", "ExcelHeroes", "Resources", "Data", "sdspec.json")
 STAND = os.path.join(g.ROOT, "Assets", "ExcelHeroes", "Resources", "Art", "Standing")
 REF = os.path.join(g.ROOT, "tools", "out", "hair_reference.png")
-LIBS = ["haruka", "miku", "yuuka", "hikari", "kayoko", "mika", "reisa", "natsu"]
+LIBS = ["haruka", "miku", "yuuka", "hikari", "mika", "reisa", "natsu"]   # not kayoko: her black / white split survives any recolour
 ASK = ("Image 1 is a character illustration. Image 2 shows eight 3D hairstyles we can build from, labelled in red "
        "(top row from the front, bottom row from the back). Ignore colours, hats, horns and bodies; compare hair SHAPE only. "
        "Choose parts to rebuild image 1's hairstyle: 'front' = whose fringe/bangs is closest; 'side' = whose side locks by the face; "
@@ -31,7 +31,8 @@ ASK = ("Image 1 is a character illustration. Image 2 shows eight 3D hairstyles w
        "'extra' = 'mika' if the character has a bun, 'haruka' if a big bow at the back, else 'none'; "
        "'len' = the back hair's length in image 1: 'short' (to the jaw), 'bob' (just below the chin), 'shoulder', or 'long'. "
        "For short or bob hair choose a 'back' with a plain fall (hikari, mika or haruka), never tails. "
-       f"Names: {', '.join(LIBS)}. Answer JSON only: " + '{"front":"","side":"","back":"","extra":"","len":"","why":""}')
+       "Also: 'badge' = true if the character wears an ID badge / lanyard; 'bow' = true if a hair bow or ribbon in the hair. "
+       f"Names: {', '.join(LIBS)} (kayoko is not available). Answer JSON only: " + '{"front":"","side":"","back":"","extra":"","len":"","badge":false,"bow":false,"why":""}')
 
 
 def b64(path, side=1024):
@@ -72,5 +73,7 @@ if __name__ == "__main__":
         recipe = f"front={front};side={ok(a.get('side'), LIBS) or front};back={ok(a.get('back'), LIBS) or front};" \
                  f"extra={ok(a.get('extra'), ['mika', 'haruka']) or 'none'};len={ok(a.get('len'), ['short', 'bob', 'shoulder', 'long']) or 'long'}"
         row["hairParts"] = recipe
+        acc = (["nameplate"] if a.get("badge") else []) + (["ribbon"] if a.get("bow") and "haruka" not in recipe.split("extra=")[1][:6] else [])
+        row["acc"] = ",".join(acc)
         print(f"  {hid:16s} {recipe:60s} {a.get('why', '')[:60]}")
     with open(SPEC, "w", encoding="utf-8", newline="\n") as f: json.dump(spec, f, ensure_ascii=False, indent=1)

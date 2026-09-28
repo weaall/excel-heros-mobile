@@ -31,7 +31,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=mika;extra=mika;len=short"
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=mika;len=short",
+   "acc": "nameplate"
   },
   {
    "id": "admin",
@@ -154,7 +155,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=mika;back=mika;extra=mika;len=long"
+   "hairParts": "front=mika;side=mika;back=mika;extra=mika;len=long",
+   "acc": ""
   },
   {
    "id": "audit_han",
@@ -187,7 +189,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=kayoko;back=hikari;extra=none;len=short"
+   "hairParts": "front=haruka;side=haruka;back=hikari;extra=none;len=short",
+   "acc": "nameplate"
   },
   {
    "id": "barista",
@@ -220,7 +223,8 @@
    "manual": [],
    "body": "haruka",
    "lower": "",
-   "hairParts": "front=mika;side=mika;back=mika;extra=mika;len=short"
+   "hairParts": "front=hikari;side=mika;back=mika;extra=mika;len=short",
+   "acc": ""
   },
   {
    "id": "bd_lead",
@@ -253,7 +257,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=yuuka;side=kayoko;back=haruka;extra=none;len=short"
+   "hairParts": "front=yuuka;side=haruka;back=haruka;extra=none;len=short",
+   "acc": ""
   },
   {
    "id": "cco",
@@ -286,7 +291,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=haruka;extra=none;len=bob"
+   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob",
+   "acc": ""
   },
   {
    "id": "cdo",
@@ -319,7 +325,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=hikari;back=hikari;extra=none;len=long"
+   "hairParts": "front=hikari;side=hikari;back=hikari;extra=none;len=long",
+   "acc": ""
   },
   {
    "id": "ceo",
@@ -352,7 +359,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long",
+   "acc": ""
   },
   {
    "id": "cfo",
@@ -385,7 +393,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=kayoko;back=mika;extra=mika;len=short"
+   "hairParts": "front=yuuka;side=mika;back=mika;extra=mika;len=short",
+   "acc": ""
   },
   {
    "id": "chairman",
@@ -418,7 +427,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=hikari;extra=none;len=bob"
+   "hairParts": "front=hikari;side=haruka;back=haruka;extra=none;len=bob",
+   "acc": ""
   },
   {
    "id": "chairwoman",
@@ -451,7 +461,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=yuuka;side=mika;back=mika;extra=none;len=long",
+   "acc": ""
   },
   {
    "id": "chief_of_staff",
@@ -484,7 +495,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=natsu;extra=none;len=shoulder"
+   "hairParts": "front=haruka;side=hikari;back=haruka;extra=mika;len=short",
+   "acc": ""
   },
   {
    "id": "chro",
@@ -517,7 +529,8 @@
    "manual": [],
    "body": "kayoko_dress_ver_",
    "lower": "",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=yuuka;side=haruka;back=mika;extra=none;len=long",
+   "acc": ""
   },
   {
    "id": "cleaner",
@@ -550,7 +563,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "haruka",
-   "hairParts": "front=mika;side=kayoko;back=mika;extra=mika;len=short"
+   "hairParts": "front=mika;side=mika;back=haruka;extra=mika;len=short",
+   "acc": ""
   },
   {
    "id": "cmo",
@@ -583,7 +597,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=mika;side=haruka;back=mika;extra=none;len=long",
+   "acc": ""
   },
   {
    "id": "contract",
@@ -616,7 +631,8 @@
    "manual": [],
    "body": "haruka",
    "lower": "",
-   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob",
+   "acc": ""
   },
   {
    "id": "coo",
@@ -649,7 +665,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=haruka;side=hikari;back=haruka;extra=none;len=bob",
+   "acc": ""
   },
   {
    "id": "courier",
@@ -682,7 +699,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "hayase_yuuka",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
+   "hairParts": "front=haruka;side=hikari;back=hikari;extra=none;len=short",
+   "acc": "nameplate"
   },
   {
    "id": "cpo",
@@ -715,7 +733,8 @@
    "manual": [],
    "body": "kayoko_dress_ver_",
    "lower": "",
-   "hairParts": "front=kayoko;side=haruka;back=hikari;extra=none;len=short"
+   "hairParts": "front=yuuka;side=hikari;back=haruka;extra=none;len=short",
+   "acc": ""
   },
   {
    "id": "cro",
@@ -748,7 +767,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=yuuka;side=kayoko;back=haruka;extra=mika;len=short"
+   "hairParts": "front=yuuka;side=mika;back=haruka;extra=mika;len=short",
+   "acc": ""
   },
   {
    "id": "cso",
@@ -781,7 +801,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=mika;side=hikari;back=mika;extra=none;len=long",
+   "acc": ""
   },
   {
    "id": "cto",
@@ -814,7 +835,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=hikari;extra=none;len=short"
+   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short",
+   "acc": ""
   },
   {
    "id": "design_lead",
@@ -847,7 +869,8 @@
    "manual": [],
    "body": "yutori_natsu",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=haruka;extra=none;len=shoulder"
+   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=shoulder",
+   "acc": ""
   },
   {
    "id": "dev_lead",
@@ -880,7 +903,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
+   "hairParts": "front=haruka;side=hikari;back=haruka;extra=none;len=short",
+   "acc": "nameplate"
   },
   {
    "id": "finance",
@@ -1003,7 +1027,8 @@
    "manual": [],
    "body": "kayoko_dress_ver_",
    "lower": "",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=mika;side=natsu;back=mika;extra=none;len=long",
+   "acc": "nameplate"
   },
   {
    "id": "ga_lead",
@@ -1036,7 +1061,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=haruka;back=hikari;extra=none;len=bob"
+   "hairParts": "front=mika;side=hikari;back=haruka;extra=none;len=bob",
+   "acc": "nameplate"
   },
   {
    "id": "guard",
@@ -1069,7 +1095,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
+   "hairParts": "front=haruka;side=haruka;back=mika;extra=none;len=short",
+   "acc": ""
   },
   {
    "id": "hacker",
@@ -1102,7 +1129,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
+   "hairParts": "front=haruka;side=mika;back=haruka;extra=none;len=short",
+   "acc": ""
   },
   {
    "id": "helpdesk",
@@ -1135,7 +1163,8 @@
    "manual": [],
    "body": "reisa",
    "lower": "haruka",
-   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=mika;side=reisa;back=mika;extra=none;len=bob",
+   "acc": ""
   },
   {
    "id": "hr_jung",
@@ -1168,7 +1197,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=shoulder"
+   "hairParts": "front=mika;side=haruka;back=mika;extra=none;len=shoulder",
+   "acc": "nameplate"
   },
   {
    "id": "intern",
@@ -1232,7 +1262,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=reisa;extra=none;len=shoulder"
+   "hairParts": "front=haruka;side=haruka;back=reisa;extra=none;len=shoulder",
+   "acc": ""
   },
   {
    "id": "intern_seo",
@@ -1265,7 +1296,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "haruka",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=mika;side=yuuka;back=mika;extra=none;len=long",
+   "acc": "nameplate"
   },
   {
    "id": "ir_lead",
@@ -1298,7 +1330,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=haruka;back=haruka;extra=none;len=short"
+   "hairParts": "front=yuuka;side=mika;back=haruka;extra=none;len=short",
+   "acc": ""
   },
   {
    "id": "lab_park",
@@ -1331,7 +1364,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=mika;side=miku;back=mika;extra=none;len=long",
+   "acc": "nameplate"
   },
   {
    "id": "labor_atty",
@@ -1364,7 +1398,8 @@
    "manual": [],
    "body": "kayoko_dress_ver_",
    "lower": "",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=mika;side=reisa;back=mika;extra=none;len=long",
+   "acc": ""
   },
   {
    "id": "legal_yoon",
@@ -1397,7 +1432,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=hikari;extra=none;len=long"
+   "hairParts": "front=mika;side=hikari;back=hikari;extra=none;len=long",
+   "acc": "nameplate"
   },
   {
    "id": "logistics_bae",
@@ -1430,7 +1466,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
+   "hairParts": "front=haruka;side=natsu;back=haruka;extra=none;len=short",
+   "acc": ""
   },
   {
    "id": "macro",
@@ -1463,7 +1500,8 @@
    "manual": [],
    "body": "reisa",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=yuuka;side=yuuka;back=haruka;extra=none;len=short"
+   "hairParts": "front=haruka;side=yuuka;back=haruka;extra=none;len=short",
+   "acc": "nameplate"
   },
   {
    "id": "mail_cho",
@@ -1496,7 +1534,8 @@
    "manual": [],
    "body": "reisa",
    "lower": "yutori_natsu",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=mika;side=mika;back=haruka;extra=none;len=bob",
+   "acc": ""
   },
   {
    "id": "main",
@@ -1559,7 +1598,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=mika;extra=mika;len=short"
+   "hairParts": "front=mika;side=haruka;back=haruka;extra=mika;len=short",
+   "acc": "nameplate"
   },
   {
    "id": "parttime",
@@ -1592,7 +1632,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "haruka",
-   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=hikari;side=hikari;back=hikari;extra=none;len=bob",
+   "acc": ""
   },
   {
    "id": "pivot",
@@ -1625,7 +1666,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=kayoko;back=haruka;extra=none;len=bob"
+   "hairParts": "front=yuuka;side=yuuka;back=haruka;extra=none;len=bob",
+   "acc": "nameplate"
   },
   {
    "id": "pm_lead",
@@ -1658,7 +1700,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=mika;side=mika;back=haruka;extra=none;len=bob",
+   "acc": "nameplate"
   },
   {
    "id": "pr_yoo",
@@ -1691,7 +1734,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=mika;side=natsu;back=haruka;extra=none;len=bob",
+   "acc": "nameplate"
   },
   {
    "id": "qa_lee",
@@ -1724,7 +1768,8 @@
    "manual": [],
    "body": "reisa",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=hikari;side=hikari;back=hikari;extra=none;len=bob"
+   "hairParts": "front=haruka;side=mika;back=haruka;extra=none;len=bob",
+   "acc": "nameplate"
   },
   {
    "id": "reception_go",
@@ -1757,7 +1802,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=hikari;back=hikari;extra=none;len=long"
+   "hairParts": "front=mika;side=haruka;back=hikari;extra=none;len=long",
+   "acc": "nameplate"
   },
   {
    "id": "sales",
@@ -1820,7 +1866,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=reisa;back=hikari;extra=none;len=short"
+   "hairParts": "front=mika;side=haruka;back=hikari;extra=none;len=short",
+   "acc": "nameplate"
   },
   {
    "id": "sales_manager",
@@ -1913,7 +1960,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=kayoko;side=kayoko;back=haruka;extra=mika;len=short"
+   "hairParts": "front=yuuka;side=yuuka;back=haruka;extra=mika;len=short",
+   "acc": ""
   },
   {
    "id": "security_yang",
@@ -1946,7 +1994,8 @@
    "manual": [],
    "body": "hikari",
    "lower": "haruka",
-   "hairParts": "front=yuuka;side=kayoko;back=haruka;extra=none;len=bob"
+   "hairParts": "front=yuuka;side=haruka;back=hikari;extra=none;len=bob",
+   "acc": ""
   },
   {
    "id": "staff",
@@ -2009,7 +2058,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "haruka",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=haruka;side=natsu;back=haruka;extra=none;len=bob",
+   "acc": "nameplate"
   },
   {
    "id": "trainer_seok",
@@ -2042,7 +2092,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short"
+   "hairParts": "front=haruka;side=miku;back=haruka;extra=none;len=short",
+   "acc": "nameplate"
   },
   {
    "id": "translator_ji",
@@ -2075,7 +2126,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long"
+   "hairParts": "front=mika;side=haruka;back=mika;extra=none;len=long",
+   "acc": "nameplate"
   },
   {
    "id": "union_chief",
@@ -2108,7 +2160,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=yuuka;side=haruka;back=haruka;extra=none;len=short"
+   "hairParts": "front=haruka;side=reisa;back=haruka;extra=none;len=short",
+   "acc": ""
   },
   {
    "id": "vlookup",
@@ -2141,7 +2194,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob"
+   "hairParts": "front=haruka;side=yuuka;back=haruka;extra=none;len=bob",
+   "acc": "nameplate"
   },
   {
    "id": "welfare",
@@ -2174,7 +2228,8 @@
    "manual": [],
    "body": "hayase_yuuka",
    "lower": "kayoko_dress_ver_",
-   "hairParts": "front=yuuka;side=haruka;back=hikari;extra=none;len=bob"
+   "hairParts": "front=haruka;side=miku;back=haruka;extra=none;len=bob",
+   "acc": "nameplate"
   }
  ]
 }
