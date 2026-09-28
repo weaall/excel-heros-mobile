@@ -97,11 +97,50 @@ namespace ExcelHeroes.World
                 var shine = u * u * (3f - 2f * u);
                 px[i] = Color.Lerp(c, tip, shine * 0.65f);
             }
-            t = new Texture2D(_hairN, src.px.Length / _hairN, TextureFormat.RGBA32, true) { name = "hair:" + id, wrapMode = TextureWrapMode.Clamp };
+            var hw = _hairN; var hh2 = src.px.Length / _hairN;
+            // small sheets (Hikari's 256²) are seen magnified on the big chibi head and read soft:
+            // doubled (bicubic) and lightly sharpened, so the strand lines stay crisp
+            if (hw < 1024) { px = Upscale2(px, hw, hh2); hw *= 2; hh2 *= 2; }
+            t = new Texture2D(hw, hh2, TextureFormat.RGBA32, true) { name = "hair:" + id, wrapMode = TextureWrapMode.Clamp, anisoLevel = 4 };
             t.SetPixels(px); t.Apply(true);
             return Hairs[id] = t;
         }
         static float Lum(Color c) => 0.3f * c.r + 0.59f * c.g + 0.11f * c.b;
+
+        static float Cubic(float a, float b, float c, float d, float t)
+            => b + 0.5f * t * (c - a + t * (2f * a - 5f * b + 4f * c - d + t * (3f * (b - c) + d - a)));
+
+        /// <summary>Twice the size by Catmull-Rom, then a light unsharp mask.</summary>
+        public static Color[] Upscale2(Color[] px, int w, int h)
+        {
+            int W = w * 2, H = h * 2;
+            var o = new Color[W * H];
+            Color P(int x, int y) => px[Mathf.Clamp(y, 0, h - 1) * w + Mathf.Clamp(x, 0, w - 1)];
+            for (var y = 0; y < H; y++)
+                for (var x = 0; x < W; x++)
+                {
+                    float fx = (x + 0.5f) / 2f - 0.5f, fy = (y + 0.5f) / 2f - 0.5f;
+                    int ix = Mathf.FloorToInt(fx), iy = Mathf.FloorToInt(fy); float tx = fx - ix, ty = fy - iy;
+                    var c = new Color();
+                    for (var ch = 0; ch < 4; ch++)
+                    {
+                        var col = new float[4];
+                        for (var j = -1; j <= 2; j++) col[j + 1] = Cubic(P(ix - 1, iy + j)[ch], P(ix, iy + j)[ch], P(ix + 1, iy + j)[ch], P(ix + 2, iy + j)[ch], tx);
+                        c[ch] = Mathf.Clamp01(Cubic(col[0], col[1], col[2], col[3], ty));
+                    }
+                    o[y * W + x] = c;
+                }
+            var sh = (Color[])o.Clone();
+            for (var y = 1; y < H - 1; y++)
+                for (var x = 1; x < W - 1; x++)
+                {
+                    var i = y * W + x;
+                    var m = (o[i - 1] + o[i + 1] + o[i - W] + o[i + W]) * 0.25f;
+                    var c = o[i] + (o[i] - m) * 0.5f; c.a = o[i].a;
+                    sh[i] = new Color(Mathf.Clamp01(c.r), Mathf.Clamp01(c.g), Mathf.Clamp01(c.b), c.a);
+                }
+            return sh;
+        }
 
         static Color[] LocalTone(Color[] px, int w, int h)
         {

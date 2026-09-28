@@ -46,8 +46,12 @@ if __name__ == "__main__":
     ask = (f"These are {len(ids)} 3D chibi characters (numbered in red), front row and back row. List the PAIRS whose HAIR "
            "looks nearly the same (silhouette, length, fringe, waves, how the ends fall) — ignore colour. Only real near-duplicates. "
            'Answer JSON only: {"pairs": [[a, b], ...]}')
-    a = call(key, [{"inlineData": {"mimeType": "image/png", "data": lk.png64(lab, 2400)}}, {"text": ask}])
-    pairs = [(int(p[0]), int(p[1])) for p in (a or {}).get("pairs", []) if len(p) == 2 and 1 <= int(p[0]) <= len(ids) and 1 <= int(p[1]) <= len(ids)]
+    if len(sys.argv) > 3:
+        # the pairs given (id:id,…), e.g. the recipes closest by number (tools/sd_hairclose.py)
+        pairs = [(ids.index(x) + 1, ids.index(y) + 1) for x, y in (p.split(":") for p in sys.argv[3].split(",")) if x in ids and y in ids]
+    else:
+        a = call(key, [{"inlineData": {"mimeType": "image/png", "data": lk.png64(lab, 2400)}}, {"text": ask}])
+        pairs = [(int(p[0]), int(p[1])) for p in (a or {}).get("pairs", []) if len(p) == 2 and 1 <= int(p[0]) <= len(ids) and 1 <= int(p[1]) <= len(ids)]
     print("near-duplicates:", [(ids[x - 1], ids[y - 1]) for x, y in pairs])
     spec = json.load(open(sb.SPEC, encoding="utf-8")); rows = {r["id"]: r for r in spec["items"]}
     changed = set()
