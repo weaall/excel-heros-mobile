@@ -78,16 +78,22 @@ namespace ExcelHeroes.World
                 {
                     zone[i] = ZoneOf(Dom(bw[i], bones));
                     // the pelvis skin below the waist (the sample's under-shorts): the skirt's or trousers' colour
-                    if (zone[i] == Zone.Hip && l2w.MultiplyPoint3x4(v[i]).y > pelvis.y + h * 0.03f) zone[i] = Zone.None;
+                    if (zone[i] == Zone.Hip && l2w.MultiplyPoint3x4(v[i]).y > pelvis.y + h * (legs == "pants" ? 0.07f : 0.03f)) zone[i] = Zone.None;   // trousers come up to the waist
                 }
                 if (!zone.Any(z => z != Zone.None)) continue;
                 // a lower with no skirt chains (a dress hem skinned to the hips and thighs, Kayoko's,
                 // Haruka's): its hem is cloth on the pelvis and thigh bones, so there the legwear only
                 // goes on the SKIN texels, and the hips keep their own paint
                 var skirted = zone.Any(z => z == Zone.Skirt);
-                if (!skirted) for (var i = 0; i < zone.Length; i++) if (zone[i] == Zone.Hip) zone[i] = Zone.None;
+                if (!skirted && legs != "pants") for (var i = 0; i < zone.Length; i++) if (zone[i] == Zone.Hip) zone[i] = Zone.None;   // trousers cover the hips whatever the lower
                 var uv = mesh.uv;
                 var dbg = System.Environment.GetEnvironmentVariable("SD_GARMENTDBG") == "1";
+                if (dbg)
+                {
+                    var band = new Dictionary<string, int>();
+                    for (var i = 0; i < bw.Length; i++) { var y = l2w.MultiplyPoint3x4(v[i]).y; if (Mathf.Abs(y - pelvis.y) < h * 0.06f) { var d0 = Dom(bw[i], bones) + ":" + zone[i]; band[d0] = band.TryGetValue(d0, out var c1) ? c1 + 1 : 1; } }
+                    Debug.Log($"[garmentband] {k.Id} {r.name}: " + string.Join(", ", band.OrderByDescending(x => x.Value).Select(x => $"{x.Key}={x.Value}")));
+                }
                 if (dbg)
                 {
                     var names = new Dictionary<string, int>();
@@ -203,7 +209,6 @@ namespace ExcelHeroes.World
                             if (c0 != null && c1 != null && c2 != null) c = (Zone)Mathf.Max((int)z, Mathf.Max((int)z1, (int)z2)) == z ? c0 : (Zone)Mathf.Max((int)z1, (int)z2) == z1 ? c1 : c2;
                             // on a skirt-less lower the thighs' cloth (the dress hem) is left as painted
                             if (c != null && !skirted && legs != "pants" && (z == Zone.Thigh || z1 == Zone.Thigh || z2 == Zone.Thigh) && !Skin(tris[t], tris[t + 1], tris[t + 2])) c = null;
-                            else if (z == Zone.Hip || z1 == Zone.Hip || z2 == Zone.Hip) c = null;
                         }
                         if (c == null) { keep[s].Add(tris[t]); keep[s].Add(tris[t + 1]); keep[s].Add(tris[t + 2]); continue; }
                         if (!groups.TryGetValue(c.Value, out var g)) groups[c.Value] = g = new List<int>();

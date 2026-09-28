@@ -69,6 +69,7 @@ namespace ExcelHeroes.World
                 var neckY = rig.Neck.position.y; var headY = rig.Head.position.y; var span = headY - neckY;
                 cutY = Get("len", "long") switch
                 {
+                    "crop" => neckY + span * 0.42f,     // a man's short cut: above the ears' lobes
                     "short" => neckY + span * 0.15f,
                     "bob" => neckY - span * 0.35f,
                     "shoulder" => neckY - span * 0.9f,
