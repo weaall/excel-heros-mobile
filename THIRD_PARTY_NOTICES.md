@@ -13,3 +13,8 @@
 
 ## UniTask — Cysharp
 - Source: https://github.com/Cysharp/UniTask (MIT License), via Packages/manifest.json, tag 2.5.10.
+
+## Universal Animation Library — Quaternius
+- Source: https://quaternius.com/packs/universalanimationlibrary.html (itch.io: quaternius/universal-animation-library)
+- License: CC0 1.0 (public domain). File: `Assets/ExcelHeroes/Resources/Anim/UAL1_Standard.fbx` (+ `UAL_License.txt`).
+- Used for: the SD figures' keyframed motion (World/SdClips), retargeted through a Humanoid avatar (World/SdHumanoid).

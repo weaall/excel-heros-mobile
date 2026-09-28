@@ -1,3 +1,4 @@
+using UnityEditor;
 using System.IO;
 using System.Linq;
 using ExcelHeroes.World;
@@ -188,6 +189,26 @@ namespace ExcelHeroes.EditorTools
             return (ExcelHeroes.World.Pose)boxed;
         }
 
+        static void SampleClip(ChibiRig rig, string id, string clipName, float k)
+        {
+            var clip = AssetDatabase.LoadAllAssetsAtPath(UalImport.Fbx).OfType<AnimationClip>()
+                .FirstOrDefault(c => c.name == clipName || c.name.EndsWith("|" + clipName));
+            if (clip == null) { Debug.LogWarning("[SD_ANIM] no clip " + clipName); return; }
+            if (!rig.Model.gameObject.TryGetComponent<Animator>(out var anim)) anim = rig.Model.gameObject.AddComponent<Animator>();
+            anim.avatar = SdHumanoid.Build(rig.Model, id);
+            anim.applyRootMotion = false;
+            // a humanoid clip sampled on a humanoid Animator retargets through the avatar
+            // the model carries a 114.8x import scale, so the clip's body position lands 44 m up: keep the
+            // clip's rotations only, the pelvis at its rest place, and plant the feet as SdPose does
+            var pelvisRest = rig.Pelvis.localPosition;
+            clip.SampleAnimation(rig.Model.gameObject, clip.length * k);
+            rig.Pelvis.localPosition = pelvisRest;
+            // the sample faces the model's −Z, Mecanim drives the body toward +Z: turn it back round
+            rig.Pelvis.rotation = Quaternion.AngleAxis(180f, Vector3.up) * rig.Pelvis.rotation;
+            var lowest = Mathf.Min(rig.FootL.position.y, rig.FootR.position.y);
+            rig.Root.localPosition = new Vector3(0f, rig.RestFootY - lowest, 0f);
+        }
+
         public static void Run()
         {
             var outDir = System.Environment.GetEnvironmentVariable("SD_PREVIEW_OUT") ?? Path.Combine(Application.dataPath, "..", "tools", "out", "sd3d");
@@ -289,6 +310,10 @@ namespace ExcelHeroes.EditorTools
                 }
                 if (System.Environment.GetEnvironmentVariable("SD_BONES") == "1" && i == 0)
                     foreach (var tr in rig.Root.GetComponentsInChildren<Transform>(true)) if (tr.name.StartsWith("Bip")) Debug.Log("[SdBones] " + tr.name);
+                // SD_ANIM=Clip_Name — a UAL clip (Anim/UAL) retargeted onto the figure through SdHumanoid,
+                // sampled across the columns in time
+                var animEnv = System.Environment.GetEnvironmentVariable("SD_ANIM");
+                if (!string.IsNullOrEmpty(animEnv) && rig.RefModel) SampleClip(rig, ids[i], animEnv, (i + 0.5f) / ids.Length);
                 var poseEnv = System.Environment.GetEnvironmentVariable("SD_POSE");
                 if (!string.IsNullOrEmpty(poseEnv) && rig.RefModel)
                 {

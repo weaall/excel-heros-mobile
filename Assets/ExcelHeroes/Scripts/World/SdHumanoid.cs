@@ -47,11 +47,17 @@ namespace ExcelHeroes.World
                 if (!byName.ContainsKey(b)) continue;
                 human.Add(new HumanBone { humanName = h, boneName = b, limit = new HumanLimit { useDefaultValues = true } });
             }
-            // the skeleton: every transform from the root down, at its rest pose
+            // The skeleton description must be a T-pose: Mecanim measures every muscle from it. The
+            // samples rest in an A-pose (arms ~40° down, a little forward), which made every clip's
+            // arms cross in front of the chest. So the limbs are straightened into a T for the
+            // description only, and put back.
+            var saved = all.ToDictionary(t => t, t => t.localRotation);
+            TPose(byName, modelRoot);
             var skeleton = all.Select(t => new SkeletonBone
             {
                 name = t.name, position = t.localPosition, rotation = t.localRotation, scale = t.localScale,
             }).ToArray();
+            foreach (var kv in saved) kv.Key.localRotation = kv.Value;
             var desc = new HumanDescription
             {
                 human = human.ToArray(), skeleton = skeleton,
@@ -62,6 +68,31 @@ namespace ExcelHeroes.World
             avatar.name = "sdhuman:" + cacheKey;
             Cache[cacheKey] = avatar;
             return avatar;
+        }
+
+        static void Aim(Transform bone, Transform child, Vector3 worldDir)
+        {
+            if (bone == null || child == null) return;
+            var cur = child.position - bone.position;
+            if (cur.sqrMagnitude < 1e-12f) return;
+            bone.rotation = Quaternion.FromToRotation(cur, worldDir) * bone.rotation;
+        }
+
+        static void TPose(Dictionary<string, Transform> b, Transform root)
+        {
+            Transform T(string n) => b.TryGetValue(n, out var t) ? t : null;
+            var pelvis = T("Bip001 Pelvis"); var head = T("Bip001 Head");
+            if (pelvis == null || head == null) return;
+            var up = (head.position - pelvis.position).normalized;
+            var lr = (T("Bip001 L UpperArm").position - T("Bip001 R UpperArm").position);
+            var left = Vector3.ProjectOnPlane(lr, up).normalized;             // toward the figure's left
+            foreach (var (side, dir) in new[] { ("L", left), ("R", -left) })
+            {
+                Aim(T($"Bip001 {side} UpperArm"), T($"Bip001 {side} Forearm"), dir);
+                Aim(T($"Bip001 {side} Forearm"), T($"Bip001 {side} Hand"), dir);
+                Aim(T($"Bip001 {side} Thigh"), T($"Bip001 {side} Calf"), -up);
+                Aim(T($"Bip001 {side} Calf"), T($"Bip001 {side} Foot"), -up);
+            }
         }
 
         public static IEnumerable<string> MissingBones(Transform modelRoot)

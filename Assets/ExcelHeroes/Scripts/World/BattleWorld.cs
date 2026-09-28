@@ -118,7 +118,7 @@ namespace ExcelHeroes.World
             _sim = sim;
             ResetAbilities();
             _closeUp = _closeUpTarget = 0f;
-            foreach (var a in _actors.Values) Object.Destroy(a.Rig.Root.gameObject);
+            foreach (var a in _actors.Values) { a.DisposeClips(); Object.Destroy(a.Rig.Root.gameObject); };
             _actors.Clear();
             foreach (var s in _shots.Values) Object.Destroy(s.gameObject);
             _shots.Clear();
@@ -420,7 +420,7 @@ namespace ExcelHeroes.World
                 var gone = c.side == Side.Monster && !_sim.Monsters.Contains(c);
                 if (gone && (a.Dying <= 0f || a.Dying > 1.1f))
                 {
-                    Object.Destroy(a.Rig.Root.gameObject);
+                    { a.DisposeClips(); Object.Destroy(a.Rig.Root.gameObject); };
                     _actors.Remove(c);
                     continue;
                 }
@@ -1633,7 +1633,9 @@ namespace ExcelHeroes.World
                 // bones first (offsets onto the rest pose), then the root: planting the feet needs the pose
                 if (Rig.RefModel)
                 {
-                    SdPose.Apply(Rig, _shown);
+                    // keyframed clips (SdClips) when the library is there; the hand-written poses otherwise
+                    if (SdClips.Available && ClipMotion(dt, walking, closeUp)) { }
+                    else SdPose.Apply(Rig, _shown);
                     SdExpr.Tick(Rig, C.heroId, _shown.Expr, time);
                     y += Rig.FootDrop * root.localScale.y;
                 }
@@ -1706,6 +1708,49 @@ namespace ExcelHeroes.World
                     if (!on) { r.SetPropertyBlock(null); continue; }
                     mpb.Clear(); mpb.SetFloat("_Flash", flash); r.SetPropertyBlock(mpb);
                 }
+            }
+
+            // ---- keyframed motion ------------------------------------------------------------
+            SdClips _clips;
+            float _lastAttack, _lastHit, _lastSkill;
+            public void DisposeClips() { _clips?.Dispose(); _clips = null; }
+
+            /// <summary>The fight's state as a clip: dead, cheering, EX, hit, attack, walk, ready.</summary>
+            bool ClipMotion(float dt, bool walking, float closeUp)
+            {
+                if (_clips == null) _clips = new SdClips(Rig, C.heroId ?? C.typeId ?? "sd");
+                var hero = C.side == Side.Hero;
+                var kind = AttackPose(C);
+                var ranged = C.role is "ranged" or "healer";
+                string ready = kind is 3 or 4 or 7 ? "Pistol_Idle_Loop" : ranged ? "Spell_Simple_Idle_Loop" : "Sword_Idle";
+                var cheering = (Cheer > 0f || closeUp > 0.5f) && C.Alive;
+                if (Dying > 0f || !C.Alive) _clips.Play("Death01", 0.1f, 0f, 1.4f);
+                else if (cheering) _clips.Play("Dance_Loop", 0.25f);
+                else if (Skill > _lastSkill + 1e-4f) _clips.Play(ranged ? "Spell_Simple_Shoot" : "Sword_Attack", 0.06f, 0f, 1.2f, restart: true);
+                else if (Hit > _lastHit + 1e-4f && _clips.Current is not ("Spell_Simple_Shoot" or "Sword_Attack" or "Pistol_Shoot" or "Punch_Cross" or "Punch_Jab"))
+                    _clips.Play(Random.value < 0.5f ? "Hit_Chest" : "Hit_Head", 0.05f, 0f, 1f, restart: true);
+                else if (Attack > _lastAttack + 1e-4f)
+                {
+                    // the clip's contact frame on the Shot's arrival: start it that much early
+                    var (clip, contact) = kind switch
+                    {
+                        3 or 4 or 7 => ("Pistol_Shoot", 0.12f),
+                        5 or 6 or 8 => ("Spell_Simple_Shoot", 0.3f),
+                        9 or 10 or 11 => ("Sword_Attack", 0.42f),
+                        12 => ("Punch_Jab", 0.3f),
+                        _ => ranged ? ("Spell_Simple_Shoot", 0.3f) : ("Punch_Cross", 0.35f),
+                    };
+                    const float speed = 1.35f;
+                    var len = SdClips.Clip(clip)?.length ?? 1f;
+                    var flight = ranged ? 0.28f : 0.16f;
+                    _clips.Play(clip, 0.05f, Mathf.Max(0f, contact * len - flight * speed), speed, restart: true);
+                }
+                else if (_clips.Current is null || _clips.Done || _clips.Current is "Dance_Loop" && !cheering
+                         || (walking != (_clips.Current is "Jog_Fwd_Loop")) && _clips.Current is not ("Pistol_Shoot" or "Punch_Cross" or "Punch_Jab" or "Sword_Attack" or "Spell_Simple_Shoot" or "Hit_Chest" or "Hit_Head"))
+                    _clips.Play(walking ? "Jog_Fwd_Loop" : ready, 0.18f);
+                _lastAttack = Attack; _lastHit = Hit; _lastSkill = Skill;
+                _clips.Tick(dt);
+                return true;
             }
 
             /// <summary>Swaps the eye/mouth sheet on the face renderer's eye submesh (SdRef only).</summary>
