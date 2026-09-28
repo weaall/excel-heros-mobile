@@ -19,7 +19,8 @@ import sdspec_body_gemini as sb
 KNOBS = ("front (haruka|hikari|mika|yuuka|natsu|reisa|miku), side (the same names or kayoko), back (haruka|hikari|mika|yuuka|kayoko), "
          "len (short|bob|shoulder|long), extra (mika a bun|haruka a bow|none), tails (reisa twin|miku long twin|natsu side ponytail|none), "
          "vol 0.9-1.18, fall 0.8-1.3, wave 0-1.2, spread -1..1, gather 0-1 (low ponytail), curl -1..1 (+ ends in, - flick out), "
-         "slant -1..1 (a slanted cut: + longer in front, - longer behind)")
+         "slant -1..1 (a slanted cut: + longer in front, - longer behind), "
+         "bang 0.7-1.3 (fringe length: short above the brows .. long into the eyes), sweep -1..1 (fringe swept to her right .. her left), split 0-1 (fringe parted in the middle)")
 
 
 def call(key, parts):
@@ -76,7 +77,7 @@ if __name__ == "__main__":
         h = h1 if r["who"] == "A" else h2
         rec = rows[h]["hairParts"]; new = rec
         for k, v in r["set"].items():
-            if k not in ("front", "side", "back", "len", "extra", "tails", "vol", "fall", "wave", "spread", "gather", "curl", "slant"): continue
+            if k not in ("front", "side", "back", "len", "extra", "tails", "vol", "fall", "wave", "spread", "gather", "curl", "slant", "bang", "sweep", "split"): continue
             v = str(v)
             if k == "front" and v == "kayoko": continue
             if k == "back" and v not in ("haruka", "hikari", "mika", "yuuka", "kayoko"): continue

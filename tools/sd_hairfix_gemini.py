@@ -24,8 +24,9 @@ ASK = ("Image 1: a character illustration. Image 2: our 3D chibi of her (full bo
        "Our current recipe is: {recipe}. A reviewer says the hair's worst problem is: '{worst}'. "
        "Give a corrected recipe that fixes it, changing as little as needed. Parts: front (fringe), side (locks by the face), "
        "back (the fall: only haruka, hikari, mika, yuuka or kayoko — a straight heavy curtain — have one; kayoko never as front), extra ('mika' a small bun, 'haruka' a big bow, 'none'), tails ('reisa' twin tails, 'miku' very long twin tails, "
-       "'natsu' one side ponytail, 'none'), len ('short' jaw, 'bob' below chin, 'shoulder', 'long'). "
-       f"Names: {', '.join(hg.LIBS)}. Answer JSON only: " + '{"front":"","side":"","back":"","extra":"","tails":"","len":"","why":""}')
+       "'natsu' one side ponytail, 'none'), len ('short' jaw, 'bob' below chin, 'shoulder', 'long'); and the fringe's cut: "
+       "bang 0.7-1.3 (its length: short above the brows .. long into the eyes), sweep -1..1 (swept to her right .. her left), split 0-1 (parted at the middle). "
+       f"Names: {', '.join(hg.LIBS)}. Answer JSON only: " + '{"front":"","side":"","back":"","extra":"","tails":"","len":"","bang":1,"sweep":0,"split":0,"why":""}')
 
 
 def crops(folder, ids, hid):
@@ -68,7 +69,11 @@ if __name__ == "__main__":
             tails = ok(a.get("tails"), ["reisa", "miku", "natsu", "none"], "none")
             out = ";".join(f"{k}={v2}" for k, v2 in new.items())
             if tails != "none": out += f";tails={tails}"
-            for k in ("vol", "fall"):
+            for k2, lo, hi, dv in (("bang", 0.7, 1.3, 1.0), ("sweep", -1, 1, 0.0), ("split", 0, 1, 0.0)):
+                try: x = max(lo, min(hi, float(a.get(k2, dv))))
+                except (TypeError, ValueError): continue
+                if abs(x - dv) >= 0.08: out += f";{k2}={x:.2f}"
+            for k in ("vol", "fall", "wave", "spread", "gather", "curl", "slant"):
                 if k in keep and (k != "fall" or new["len"] == "long"): out += f";{k}={keep[k]}"
             if out != rec:
                 row["hairPrev"] = rec; row["hairParts"] = out
