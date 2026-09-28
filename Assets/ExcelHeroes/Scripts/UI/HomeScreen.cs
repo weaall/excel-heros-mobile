@@ -30,6 +30,7 @@ namespace ExcelHeroes.UI
 
         public VisualElement Build()
         {
+            _dots.Clear();
             _root = UiKit.Div("home");
 
             // No picture behind the lobby yet: home_bg was an orange sunset, and every reference
@@ -72,10 +73,14 @@ namespace ExcelHeroes.UI
             // round white buttons this had read as a toolbar; the reference's read as things
             // lying on the desk.
             var icons = UiKit.Div("home__icons", _root);
-            LobbyIcon(icons, "notice", Icons.Chart, "공지", "home__glyph--blue", AppRoot.Sheet.Chart);
-            LobbyIcon(icons, "messenger", Icons.Story, "메신저", "home__glyph--pink", AppRoot.Sheet.Story);
-            LobbyIcon(icons, "tasks", Icons.Tasks, "업무", "home__glyph--blue", AppRoot.Sheet.Quests);
-            LobbyIcon(icons, "shop", Icons.Gacha, "상점", "home__glyph--cyan", AppRoot.Sheet.Gacha);
+            // 공지 and 우편 are panels over the lobby (InboxPanels); 상점 its own screen (ShopScreen).
+            // Each carries a red dot while something waits — an unread notice, unclaimed mail, today's free goods.
+            MailService.Seed(Game.Player);
+            LobbyIcon(icons, "notice", Icons.Chart, "공지", "home__glyph--blue", () => InboxPanels.OpenNotice(_app, RefreshDots), () => NoticeService.Unread(Game.Player) > 0);
+            LobbyIcon(icons, "mail", Icons.Chart, "우편", "home__glyph--blue", () => InboxPanels.OpenMail(_app, RefreshDots), () => MailService.Unclaimed(Game.Player) > 0);
+            LobbyIcon(icons, "messenger", Icons.Story, "메신저", "home__glyph--pink", () => _app.Show(AppRoot.Sheet.Story));
+            LobbyIcon(icons, "tasks", Icons.Tasks, "업무", "home__glyph--blue", () => _app.Show(AppRoot.Sheet.Quests));
+            LobbyIcon(icons, "shop", Icons.Gacha, "상점", "home__glyph--cyan", () => _app.Show(AppRoot.Sheet.Shop), () => ShopService.HasFree(Game.Player));
 
             // ---- Right-Floating Speech Bubble ---------------------------------------------
             _bubble = UiKit.Div("home__bubble", _root);
@@ -152,7 +157,11 @@ namespace ExcelHeroes.UI
             ShowNextDialogue(playTap: false);
         }
 
-        void LobbyIcon(VisualElement parent, string art, string glyph, string label, string tint, AppRoot.Sheet target)
+        readonly List<(VisualElement dot, System.Func<bool> on)> _dots = new();
+
+        void RefreshDots() { foreach (var (dot, on) in _dots) dot.EnableInClassList("hidden", !on()); }
+
+        void LobbyIcon(VisualElement parent, string art, string glyph, string label, string tint, System.Action open, System.Func<bool> badge = null)
         {
             var btn = UiKit.Div("home__icon", parent);
             ModalFrame.Painted(btn, (ctx, r) => Chrome.DrawGlassTile(ctx, r, false));   // target_1: a glass tile, icon and word in a row
@@ -161,10 +170,15 @@ namespace ExcelHeroes.UI
             else UiKit.Text(glyph, "icon home__glyph " + tint, btn);
             Juice.Press(btn);
             UiKit.Text(label, "home__icon-label", btn);
+            if (badge != null)
+            {
+                var dot = UiKit.Div("home__dot", btn); dot.pickingMode = PickingMode.Ignore;
+                _dots.Add((dot, badge)); dot.EnableInClassList("hidden", !badge());
+            }
             btn.RegisterCallback<ClickEvent>(_ =>
             {
                 AudioService.Play("nav", 0.5f);
-                _app.Show(target);
+                open();
             });
         }
 

@@ -161,6 +161,13 @@ namespace ExcelHeroes.Core
         /// </summary>
         public List<string> redeemedCodes = new();
 
+        // 상점 (ShopService): today's purchases "goodId:count", reset when the day changes
+        public string shopDate = "";
+        public List<string> shopBought = new();
+        // 우편함 (MailService) and 공지 (NoticeService)
+        public List<MailItem> mail = new();
+        public List<string> readNotices = new();
+
         /// <summary>지분 — permanent, never reset. Each one adds to attack and to gold.</summary>
         public int prestigeShares;
         public int prestigeCount;

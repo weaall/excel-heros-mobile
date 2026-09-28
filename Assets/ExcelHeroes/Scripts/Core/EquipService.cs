@@ -94,6 +94,14 @@ namespace ExcelHeroes.Core
             return item;
         }
 
+        /// <summary>A piece of a set slot and grade (the shop's boxes, mail gifts).</summary>
+        public static EquipItem Make(PlayerState p, string slot, string grade)
+        {
+            var item = new EquipItem { id = p.nextItemId++, slot = slot, grade = grade, lv = 0 };
+            p.items.Add(item);
+            return item;
+        }
+
         // ------------------------------------------------------------------ wearing
 
         public static EquipItem Worn(PlayerState p, string heroId, string slot) =>

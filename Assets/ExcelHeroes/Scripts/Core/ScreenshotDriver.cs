@@ -318,6 +318,16 @@ namespace ExcelHeroes.Core
                 yield return Shoot($"{n++:00}-Pull10");
                 app.CloseOverlay();
 
+                app.Show(AppRoot.Sheet.Home);
+                UI.InboxPanels.OpenMail(app, null);
+                yield return null; yield return null;
+                yield return Shoot($"{n++:00}-Mail");
+                app.CloseOverlay();
+                UI.InboxPanels.OpenNotice(app, null);
+                yield return null; yield return null;
+                yield return Shoot($"{n++:00}-Notice");
+                app.CloseOverlay();
+
                 app.OpenOverlay(UiGallery.BuildSheets(app.CloseOverlay));
                 yield return null;
                 yield return null;

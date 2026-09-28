@@ -49,7 +49,7 @@ namespace ExcelHeroes.UI
     [RequireComponent(typeof(UIDocument))]
     public class AppRoot : MonoBehaviour
     {
-        public enum Sheet { Home, Battle, Roster, Party, Gacha, Quests, Progress, Story, Album, Codex, Chart }
+        public enum Sheet { Home, Battle, Roster, Party, Gacha, Quests, Progress, Story, Album, Codex, Chart, Shop }
 
         public VisualElement Overlay { get; private set; }
 
@@ -100,6 +100,7 @@ namespace ExcelHeroes.UI
             _screens[Sheet.Album] = new AlbumScreen(this);
             _screens[Sheet.Codex] = new CodexScreen(this);
             _screens[Sheet.Chart] = new ChartScreen(this);
+            _screens[Sheet.Shop] = new ShopScreen(this);
             _detail = new HeroDetail(this);
 
             // Every screen on the bar, which is how the reference arranges its lobby: 카페,
@@ -373,6 +374,7 @@ namespace ExcelHeroes.UI
             Sheet.Album => "사원 앨범",
             Sheet.Codex => "오류 도감",
             Sheet.Chart => "통계",
+            Sheet.Shop => "상점",
             _ => "로비",
         };
 
