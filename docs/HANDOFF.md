@@ -901,6 +901,13 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
   - **일러스트 의상 칠하기**: `Editor/SampleRepaint.Views`(전신 4방향 평면 렌더) → `tools/gen_samplepaint_gemini.py`(일러스트의 옷으로, 정면 먼저) → `SampleRepaint.Bake`(깊이 검사 투영, 옷 서브메시만) → `Resources/Art/SDBase/painted/<id>.png`(git 밖), 있으면 `SdSampleTex`가 이걸 입음.
   - 안경: `SdRefProps.Glasses.Enabled = false`(사용자 요청). 비교 도구 `_Ref/Editor/SampleCatalog`(샘플 원본 9벌), `SideBySide`(샘플 | 캐릭터), `EyeParts`, `RendList`.
   - 남은 것: 주인공(남성)은 기본 체육복 몸체(남성 샘플 없음), 새 얼굴에 표정 전환 미연결, 옷 배정이 유우카 원본에 쏠림(31명).
+  - **캐릭터마다 다른 모델링**(2026-09-28, 사용자: "샘플에서 색만 바꾼 느낌 — 캐릭터마다 모델링이 다 달라야"). 부품 조립 + 재단 + 장신구:
+    - 머리 = 샘플 머리 부위 조합(`hairParts` "front=;side=;back=;extra=;len=", `tools/sdspec_hair_gemini.py`) + **볼륨·길이 개인화**(`vol=`/`fall=`, 없으면 id 해시: 볼륨 0.95–1.13, 긴 머리 늘어짐 0.86–1.25 — `SdRefHairLib.Volume/Fall`, 두상 중심 기준 옆으로 부풀리기·턱 아래 늘이기). 유우카 앞머리는 옆머리를 항상 같이(캡 구멍으로 외곽선 헐이 검게 보였다).
+    - 상·하의 = 샘플 9 × 6 조합: `tools/sdspec_diverse_gemini.py`가 옵션 전부를 0–10점 채점(`tools/out/sdscores.json` 캐시) → (상의, 하의) 쌍 단위 헝가리안 배정(쌍당 3명, n번째 사용 +1.2 비용) → 31가지. 몸체가 바뀐 캐릭터는 의상 칠하기(Views → gemini → Bake)를 다시.
+    - **재단** `World/SdGarment`(sdspec `garment` "pants=none;skirt=1.3;flare=-0.2;legs=tights", `tools/sdspec_garment_gemini.py`): 바인드 포즈에서 정점 이동 — 치마 길이·플레어(펜슬 −0.15까지), 바지(치마를 엉덩이로 줄이고 다리를 두껍게, 하의 색), 스타킹(허벅지+종아리)·양말(종아리)·신발 색은 부위별 새 서브메시(단색). 부위 = 지배 뼈(skirt/thigh/calf+knee/foot+toe/pelvis). 무릎 띠 방지로 삼각형 색은 가장 아래 부위 것. 치마 뼈가 없는 하의(카요코 드레스 밑단)는 엉덩이 칠 안 함 + 허벅지는 피부 텍셀만. 긴 펜슬스커트 13명은 카요코 → 치마 있는 하의로(점수 최고).
+    - 하의 이식 시트 = 기증 시트 천 전체를 하의 색으로 틴트(`SdSampleTex.Tint`, 주름 음영 유지; 나츠 치마에 상의 색이 가던 것), 기증자의 엉덩이 소품(폰·가방 뼈) 제외, 삼각형은 꼭짓점 2개 이상이 하체일 때만.
+    - **머리 장신구** `World/SdHeadwear`(sdspec `head` "hairclip:#c4a35f:left,ahoge", `tools/sdspec_head_gemini.py`, 25명): hairclip·headband·ribbon·flower·beret·cap·headset·crown·bandana·ahoge·earring(짧은 머리만). 실제로 씌운 머리카락 정점을 방향별로 재서(두상 중심에서 cos>.975 원뿔 최대 거리, 정수리는 98 백분위) 표면에 붙임. 미리보기 `SD_HEAD=` / `SD_GARMENT=` / `SD_GARMENTDBG=1`(부위별 색).
+    - 편집기 일괄 실행 `bash tools/unity.sh <메서드> [로그]`(그래픽 있음).
 - **사람 모션**: 사용자가 Unity 모델·클립을 찾아주겠다고 함 → BA 원본 클립은 넥슨 저작권(출시 불가), **Mixamo 권장**(무료·게임 사용 허용). 받으면 런타임 Humanoid 아바타(`AvatarBuilder.BuildHumanAvatar` + Bip001 매핑)로 리타겟. 요청 목록: Rifle/Happy Idle, Running/Rifle Run, Pistol Shoot/Shooting/Punching/Sword Slash/Throw, Standing 1H Magic Attack, Hit Reaction, Standing Block, Dying, Victory/Cheering (FBX for Unity, Without Skin, 30fps).
 - 다음: 스킬 카드 2번(흰 머리 캐릭터) 초상이 머리카락만 잡힘(얼굴 박스), 전투 타격 스파크(시안의 노란 번개 파편), 보스 바 이름판 "보스 | 이름" 판 분리, 편성·모집 화면도 같은 유리 타일로, `ceo_chair`는 얼굴이 약함(재생성 후보).
 
