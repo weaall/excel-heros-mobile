@@ -20,6 +20,9 @@ BATCH = [
     ("eq_monitor",  "a computer monitor with a glowing light blue screen"),
     ("eq_badge",    "an employee ID badge on a light blue lanyard"),
 ]
+# another batch without editing this file: ICON_BATCH="name=description|name=description|…" (exactly four)
+if os.environ.get("ICON_BATCH"):
+    BATCH = [tuple(x.split("=", 1)) for x in os.environ["ICON_BATCH"].split("|")]
 REF = ["lobby", "tasks", "gem", "messenger"]
 SHEET = os.path.join(g.ROOT, "tools", "out", "icon_sheet_more.png")
 

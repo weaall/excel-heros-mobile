@@ -5885,3 +5885,18 @@
 .power-readout--strip { justify-content: center; height: auto; overflow: visible; }
 .power-readout--strip .power-readout__value { -unity-text-align: middle-left; }
 .power-readout--strip { flex-direction: column; justify-content: center; align-items: flex-start; }
+
+/* ================================================================ UI round 10 */
+/* growth rows: icon, words, cost slot, button (17-Enhance #1) */
+.skin-row { align-items: center; }
+.skin-row__icon { width: 76px; height: 76px; flex-shrink: 0; margin-right: 16px; -unity-background-scale-mode: scale-to-fit; }
+.cost-slot { flex-direction: column; align-items: center; flex-shrink: 0; margin: 0 14px; }
+.cost-slot__box { width: 64px; height: 64px; border-radius: 10px; border-width: 2px; border-color: rgb(192, 211, 229); background-color: rgb(238, 244, 250); align-items: center; justify-content: center; }
+.cost-slot__icon { width: 48px; height: 48px; -unity-background-scale-mode: scale-to-fit; }
+.cost-slot__n { font-size: 18px; -unity-font-style: bold; color: rgb(45, 62, 86); padding: 0; margin: 4px 0 0 0; }
+.cost-slot__n--short { color: rgb(236, 64, 64); }
+.skin-row__btn.plate--primary, .skin-row__btn.plate--gold, .skin-row__btn.plate--light { background-color: rgba(0, 0, 0, 0); border-width: 0; min-width: 150px; height: 64px; font-size: 24px; -unity-font-style: bold; color: rgb(22, 38, 63); }
+.skin-row__btn.plate--off { background-color: rgba(0, 0, 0, 0); border-width: 0; color: rgb(150, 162, 178); }
+/* 10-pull: the S-floor count as a navy bubble above the button, not tucked behind it (09-Gacha #1) */
+.gpulls .pull-btn { overflow: visible; }
+.gpulls__ribbon { top: -54px; right: 30px; height: 44px; padding: 0 22px; border-radius: 22px; border-width: 2px; border-color: rgb(40, 80, 130); font-size: 22px; }

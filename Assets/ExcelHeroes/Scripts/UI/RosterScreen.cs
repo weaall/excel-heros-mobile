@@ -724,7 +724,8 @@ namespace ExcelHeroes.UI
             }
 
             var cost = StatMath.LevelUpCost(owned);
-            var row = Row(body, $"레벨 {owned.level} / {cap}", $"다음 ₩{cost:N0} · 보유 ₩{p.gold:N0}");
+            var row = Row(body, $"레벨 {owned.level} / {cap}", $"다음 ₩{cost:N0} · 보유 ₩{p.gold:N0}", "levelup");
+            CostSlot(row, "gold", p.gold, cost);
 
             var one = UiKit.Btn("+1", "skin-row__btn skin-row__btn--narrow", () =>
             {
@@ -734,6 +735,7 @@ namespace ExcelHeroes.UI
                 Game.Touch(); Reopen(heroId, onClose);
             }, row);
             one.SetEnabled(p.gold >= cost);
+            SkewPlate.Apply(one, SkewPlate.Kind.Light);
 
             var max = UiKit.Btn("골드 소진", "skin-row__btn skin-row__btn--buy", () =>
             {
@@ -744,7 +746,24 @@ namespace ExcelHeroes.UI
                 Game.Touch(); Reopen(heroId, onClose);
             }, row);
             max.SetEnabled(p.gold >= cost);
+            SkewPlate.Apply(max, SkewPlate.Kind.Primary);
         }
+
+        /// <summary>
+        /// What a button will spend, before it: the currency's drawn icon in a small square, and
+        /// have / need under it — red when short (ui_critique round 9, 17-Enhance #1).
+        /// </summary>
+        static void CostSlot(VisualElement row, string icon, long have, long need)
+        {
+            var slot = UiKit.Div("cost-slot", row);
+            var art = GameData.Icon(icon);
+            var box = UiKit.Div("cost-slot__box", slot);
+            if (art != null) UiKit.SetArt(UiKit.Div("cost-slot__icon", box), art);
+            var n = UiKit.Text($"{Short(have)} / {Short(need)}", "cost-slot__n", slot);
+            n.EnableInClassList("cost-slot__n--short", have < need);
+        }
+
+        static string Short(long v) => v >= 1_000_000 ? $"{v / 1_000_000f:0.#}M" : v >= 10_000 ? $"{v / 1000f:0.#}K" : v.ToString("N0");
 
         /// <summary>
         /// 스킬 레벨 — the 강화 카드 sink that scales with use rather than rarity: +10% power and
@@ -764,11 +783,12 @@ namespace ExcelHeroes.UI
             var row = Row(body, $"{def?.skillName} · Lv {owned.skillLv} / {b.skillLevelMax}",
                 locked ? $"★{b.skillUnlockStar}에서 열립니다 · {GameData.SkillText(def)}"
                 : max ? $"최대 레벨 · {GameData.SkillText(def)}"
-                : $"위력 +{owned.skillLv * b.skillPowerPerLevel:P0} · 충전 -{owned.skillLv * b.skillCooldownPerLevel:P0}");
+                : $"위력 +{owned.skillLv * b.skillPowerPerLevel:P0} · 충전 -{owned.skillLv * b.skillCooldownPerLevel:P0}", "card");
 
             if (locked || max) return;
 
             var cost = StatMath.SkillUpCost(owned);
+            CostSlot(row, "card", p.cards, cost);
             var up = UiKit.Btn($"카드 {cost:N0}", "skin-row__btn", () =>
             {
                 if (!StatMath.UpgradeSkill(owned, p)) return;
@@ -777,6 +797,7 @@ namespace ExcelHeroes.UI
                 Reopen(heroId, onClose);
             }, row);
             up.SetEnabled(StatMath.CanUpgradeSkill(owned, p));
+            SkewPlate.Apply(up, SkewPlate.Kind.Primary);
         }
 
         /// <summary>
@@ -784,9 +805,13 @@ namespace ExcelHeroes.UI
         /// The same shape 스킨 and 승진 use — three stacked panels ran 496px off the bottom of a
         /// landscape sheet, and this tab now holds three things instead of one.
         /// </summary>
-        VisualElement Row(VisualElement body, string name, string desc)
+        VisualElement Row(VisualElement body, string name, string desc, string icon = null)
         {
             var row = UiKit.Div("skin-row", body);
+            // the row's own drawn icon at its left end, as the reference's growth panels have
+            // (ui_critique round 9, 17-Enhance #1)
+            var art = icon != null ? GameData.Icon(icon) : null;
+            if (art != null) UiKit.SetArt(UiKit.Div("skin-row__icon", row), art);
             var text = UiKit.Div("skin-row__text", row);
             UiKit.Text(name, "skin-row__name", text);
             UiKit.Text(desc, "skin-row__desc", text);
@@ -814,7 +839,8 @@ namespace ExcelHeroes.UI
 
             var cost = StatMath.AwakenCost(owned);
             var row = Row(body, "각성",
-                $"+{b.awakenAtk:P0} · 특성 x{b.awakenTrait} · 상한 +{b.awakenLevelCap} · 되돌릴 수 없음");
+                $"+{b.awakenAtk:P0} · 특성 x{b.awakenTrait} · 상한 +{b.awakenLevelCap} · 되돌릴 수 없음", "awaken");
+            CostSlot(row, "card", p.cards, cost);
             var go = UiKit.Btn($"카드 {cost:N0}", "skin-row__btn skin-row__btn--buy", () =>
             {
                 if (!StatMath.Awaken(owned, p)) return;
@@ -824,6 +850,7 @@ namespace ExcelHeroes.UI
                 Reopen(heroId, onClose);
             }, row);
             go.SetEnabled(StatMath.CanAwaken(owned, p));
+            SkewPlate.Apply(go, SkewPlate.Kind.Gold);
         }
 
         /// <summary>
