@@ -111,7 +111,7 @@ namespace ExcelHeroes.EditorTools
             }
 
             // the sample bodies (git-ignored, third-party): read at runtime to recolour the hair and iris
-            if (assetPath.StartsWith(ArtRoot + "SDBase/bodies/"))
+            if (assetPath.StartsWith(ArtRoot + "SDBase/bodies/") || assetPath.StartsWith(ArtRoot + "SDBase/painted/"))
             {
                 importer.textureType = TextureImporterType.Default;
                 importer.mipmapEnabled = true;

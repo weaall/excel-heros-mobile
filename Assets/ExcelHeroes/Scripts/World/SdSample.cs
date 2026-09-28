@@ -147,6 +147,9 @@ namespace ExcelHeroes.World
         }
 
         /// <summary>The sample exactly as made (its own colours, hair, kit) — for side-by-side comparisons.</summary>
+        /// <summary>Set by the repaint tool while it renders the recolour it repaints from.</summary>
+        public static bool SkipPainted;
+
         public static ChibiRig BuildRaw(string key, Transform parent, int layer)
         {
             _raw = true;
@@ -275,12 +278,15 @@ namespace ExcelHeroes.World
 
         public static Set For(string key, SdLook k, Texture2D body, Texture2D hair, Texture2D eyemouth, Texture2D face = null)
         {
-            var id = key + ":" + k.Id;
+            var id = key + ":" + k.Id + (SdSample.SkipPainted ? ":raw" : "");
             if (Cache.TryGetValue(id, out var set)) return set;
             set = new Set { EyeMouthSrc = eyemouth };
             set.Hair = hair != null && hair.isReadable ? GradientMap(hair, k.Hair) : hair;
             set.EyeMouth = eyemouth != null && eyemouth.isReadable ? IrisHue(eyemouth, k.Eye) : eyemouth;
             set.Body = body != null && body.isReadable ? Outfit(body, k) : body;
+            // the hero's own outfit painted from the illustration onto this sheet (Editor/SampleRepaint), when there is one
+            var painted = SdSample.SkipPainted ? null : Resources.Load<Texture2D>("Art/SDBase/painted/" + k.Id);
+            if (painted != null) set.Body = painted;
             set.Face = face != null && face.isReadable ? Swatches(face, k.Hair) : face;
             return Cache[id] = set;
         }
@@ -290,7 +296,7 @@ namespace ExcelHeroes.World
         static Texture2D Copy(Texture2D src, Color[] px, string name)
         {
             var t = new Texture2D(src.width, src.height, TextureFormat.RGBA32, true) { name = name, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            t.SetPixels(px); t.Apply(true, true);
+            t.SetPixels(px); t.Apply(true, !Application.isEditor);   // readable in the editor (SampleRepaint bakes from it)
             return t;
         }
 
