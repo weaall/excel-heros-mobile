@@ -5948,3 +5948,15 @@
 .arow__gem { width: 36px; height: 36px; -unity-background-scale-mode: scale-to-fit; margin-right: 6px; }
 .arow__amount { font-size: 26px; -unity-font-style: bold; padding: 0; margin: 0; }
 .arow__claim:disabled .arow__gem { opacity: 0.4; }
+
+/* ================================================================ UI round 13 */
+/* ten-pull: the name inside the card's band beside the grade, the grade word small above it,
+   New as a ribbon locked to the top-left corner (21-Pull10 #1, #2) */
+.reveal-grid__name { bottom: 5%; left: 34%; right: 5%; height: 36px; color: rgb(255, 255, 255); font-size: 24px; -unity-text-align: middle-left; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(10, 20, 40, 0.5); padding: 0; margin: 0; }
+.reveal-grid__glabel { bottom: 13%; height: 24px; font-size: 15px; color: rgba(255, 255, 255, 0.8); letter-spacing: 1px; }
+.reveal-grid__new.reveal-grid__new--on { top: 4%; left: -3%; width: 92px; height: 34px; font-size: 20px; -unity-font-style: bold-and-italic; color: rgb(30, 30, 40); background-color: rgb(255, 222, 40); border-width: 2px; border-color: rgb(255, 255, 255); -unity-text-align: middle-center; rotate: -8deg; letter-spacing: 1px; }
+/* battle numbers: heavier — a thick navy edge and a hard drop under it (07-Fight1 #3) */
+.floater { -unity-text-outline-width: 5px; text-shadow: 0 5px 0 rgba(10, 28, 64, 0.85); font-size: 60px; }
+.floater--crit { -unity-text-outline-width: 6px; text-shadow: 0 6px 0 rgba(110, 50, 0, 0.9); font-size: 82px; }
+.floater--taken { -unity-text-outline-width: 4px; text-shadow: 0 4px 0 rgba(80, 10, 20, 0.85); }
+.combo { -unity-text-outline-width: 5px; text-shadow: 0 6px 0 rgba(10, 28, 64, 0.8); font-size: 90px; }

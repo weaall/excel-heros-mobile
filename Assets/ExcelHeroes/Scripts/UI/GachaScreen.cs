@@ -572,7 +572,7 @@ namespace ExcelHeroes.UI
                 }
 
                 // "New", yellow italic over the card's corner — the reference's word for a first pull
-                if (r.isNew) UiKit.Text("New", "reveal-grid__new reveal-grid__new--on", cell).pickingMode = PickingMode.Ignore;
+                if (r.isNew) UiKit.Text("NEW", "reveal-grid__new reveal-grid__new--on", cell).pickingMode = PickingMode.Ignore;
                 UiKit.Text(r.hero.name, "reveal-grid__name", cell).pickingMode = PickingMode.Ignore;
             }
 
