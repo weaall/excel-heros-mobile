@@ -36,7 +36,7 @@ namespace ExcelHeroes.World
             return id != null && _rows.TryGetValue(id, out var r) ? r : null;
         }
 
-        public static bool Has(string id) => id != null && RowOf(id) != null && SdModel.Textured("head_" + id).mesh != null && SdSample.Has(Skeleton);
+        public static bool Has(string id) => id != null && RowOf(id) != null && (SdEnemyHead.For(id) != null || SdModel.Textured("head_" + id).mesh != null) && SdSample.Has(Skeleton);
 
         sealed class Piece { public string Bone; public Vector3 Pos; public Quaternion Rot; public Vector3 Scale; public Mesh Mesh; public Material Mat; }
         static readonly Dictionary<string, List<Piece>> Built = new();
@@ -232,8 +232,23 @@ namespace ExcelHeroes.World
 
             // ---- the head: the object with its face, bottom at the neck
             {
+                var recipe = System.Environment.GetEnvironmentVariable("SD_OLDHEAD") == "1" ? null : SdEnemyHead.For(id);
                 var (hm, hmat) = SdModel.Textured("head_" + id);
-                if (hm != null)
+                if (recipe != null)
+                {
+                    // a real 3D head from primitives (enemies v4), its bottom on the neck
+                    var want = (h - (neckP.y - root.position.y)) * 1.05f;
+                    var mesh = SdEnemyHead.Build(recipe, want, h * 0.8f);
+                    var go = new GameObject("tmp").transform;
+                    go.position = neckP - up * h * 0.02f; go.rotation = root.rotation;
+                    go.SetParent(head, true);
+                    list.Add(new Piece { Bone = head.name, Pos = go.localPosition, Rot = go.localRotation, Scale = go.localScale, Mesh = mesh, Mat = toon });
+                    Object.DestroyImmediate(go.gameObject);
+                    var bn = new MeshKit.Builder();
+                    bn.Frustum(Vector3.zero - up * h * 0.03f, h * 0.045f, h * 0.06f, h * 0.04f, dark, 1f, 12);
+                    Emit(neck, bn, neckP);
+                }
+                else if (hm != null)
                 {
                     var bb = hm.bounds;
                     var want = (h - (neckP.y - root.position.y)) * 1.02f;

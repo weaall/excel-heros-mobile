@@ -1,0 +1,1709 @@
+{
+ "items": [
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 1.25,
+   "sz": 0.35,
+   "round": 0.25,
+   "color": "#FFF1DF",
+   "color2": "#FFB885",
+   "dark": "#2C344A",
+   "bands": [
+    {
+     "y": 0.72,
+     "h": 0.14,
+     "color": "#FAD4BA"
+    },
+    {
+     "y": 0.22,
+     "h": 0.04,
+     "color": "#FAD4BA"
+    },
+    {
+     "y": 0.15,
+     "h": 0.04,
+     "color": "#FAD4BA"
+    }
+   ],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "flame",
+     "at": "back",
+     "color": "#FF9800",
+     "size": 0.6
+    },
+    {
+     "kind": "flame",
+     "at": "top",
+     "color": "#FF5722",
+     "size": 0.45
+    },
+    {
+     "kind": "spike",
+     "at": "top",
+     "color": "#D32F2F",
+     "size": 0.25
+    },
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#FFC107",
+     "size": 0.2
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#C62828",
+    "size": 0.24,
+    "y": 0.52,
+    "gap": 0.38
+   },
+   "brows": false,
+   "mouth": "teeth",
+   "mouth_y": 0.34,
+   "cheeks": false,
+   "id": "boss"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.1,
+   "sz": 1.0,
+   "round": 1,
+   "color": "#e85247",
+   "color2": "#f87568",
+   "dark": "#9b251e",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "antenna",
+     "at": "top",
+     "color": "#e85247",
+     "size": 0.32
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#a32e27",
+    "size": 0.28,
+    "y": 0.58,
+    "gap": 0.38
+   },
+   "brows": true,
+   "mouth": "fangs",
+   "mouth_y": 0.44,
+   "cheeks": false,
+   "id": "boss_approval"
+  },
+  {
+   "shape": "cylinder",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 0.4,
+   "round": 0.85,
+   "color": "#BFD7EA",
+   "color2": "#7B9AB6",
+   "dark": "#233246",
+   "bands": [],
+   "panel": {
+    "y": 0.5,
+    "w": 0.72,
+    "h": 0.72,
+    "color": "#E5A8A0"
+   },
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#F3C246",
+     "size": 0.24
+    },
+    {
+     "kind": "spike",
+     "at": "top",
+     "color": "#DC4943",
+     "size": 0.22
+    },
+    {
+     "kind": "handle",
+     "at": "right",
+     "color": "#4A6178",
+     "size": 0.45
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#523B38",
+    "size": 0.24,
+    "y": 0.55,
+    "gap": 0.28
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.42,
+   "cheeks": true,
+   "id": "boss_audit"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.05,
+   "sz": 0.95,
+   "round": 0.95,
+   "color": "#d5dde5",
+   "color2": "#98a6b5",
+   "dark": "#1f2937",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#cbd5e1",
+     "size": 0.28
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#f59e0b",
+    "size": 0.22,
+    "y": 0.58,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.44,
+   "cheeks": false,
+   "id": "boss_cabinet"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 1.25,
+   "sz": 0.9,
+   "round": 0.3,
+   "color": "#e5edf4",
+   "color2": "#b5c9da",
+   "dark": "#2a374b",
+   "bands": [
+    {
+     "y": 0.12,
+     "h": 0.12,
+     "color": "#d6e3ee"
+    },
+    {
+     "y": 0.28,
+     "h": 0.12,
+     "color": "#d6e3ee"
+    }
+   ],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#f8c842",
+     "size": 0.25
+    },
+    {
+     "kind": "lid",
+     "at": "top",
+     "color": "#c8d9e6",
+     "size": 0.45
+    },
+    {
+     "kind": "screen",
+     "at": "front",
+     "color": "#7eaecb",
+     "size": 0.35
+    },
+    {
+     "kind": "paper",
+     "at": "front",
+     "color": "#ffffff",
+     "size": 0.28
+    },
+    {
+     "kind": "handle",
+     "at": "front",
+     "color": "#6e8499",
+     "size": 0.25
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#273244",
+    "size": 0.22,
+    "y": 0.58,
+    "gap": 0.32
+   },
+   "brows": true,
+   "mouth": "frown",
+   "mouth_y": 0.46,
+   "cheeks": true,
+   "id": "boss_copier"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 1.05,
+   "sz": 0.95,
+   "round": 0.5,
+   "color": "#a4b1c0",
+   "color2": "#d8e1ea",
+   "dark": "#2d3148",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#e24c48",
+     "size": 0.38
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#fed754",
+    "size": 0.26,
+    "y": 0.58,
+    "gap": 0.35
+   },
+   "brows": true,
+   "mouth": "teeth",
+   "mouth_y": 0.32,
+   "cheeks": false,
+   "id": "boss_elevator"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.15,
+   "sz": 0.85,
+   "round": 0.85,
+   "color": "#c28f68",
+   "color2": "#deb28e",
+   "dark": "#3d2b24",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "handle",
+     "at": "top",
+     "color": "#bebcba",
+     "size": 0.35
+    },
+    {
+     "kind": "crown",
+     "at": "left",
+     "color": "#e13e31",
+     "size": 0.26
+    },
+    {
+     "kind": "spike",
+     "at": "right",
+     "color": "#e13e31",
+     "size": 0.22
+    },
+    {
+     "kind": "paper",
+     "at": "front",
+     "color": "#f5f3e9",
+     "size": 0.55
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#382923",
+    "size": 0.22,
+    "y": 0.72,
+    "gap": 0.32
+   },
+   "brows": true,
+   "mouth": "frown",
+   "mouth_y": 0.6,
+   "cheeks": false,
+   "id": "boss_hr"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 1.15,
+   "sz": 0.85,
+   "round": 0.45,
+   "color": "#BF8F85",
+   "color2": "#EDE0CB",
+   "dark": "#382633",
+   "bands": [
+    {
+     "y": 0.88,
+     "h": 0.1,
+     "color": "#EDE0CB"
+    }
+   ],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#F6C542",
+     "size": 0.35
+    },
+    {
+     "kind": "paper",
+     "at": "top",
+     "color": "#EDE0CB",
+     "size": 0.3
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#F3D35B",
+    "size": 0.28,
+    "y": 0.52,
+    "gap": 0.32
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.4,
+   "cheeks": false,
+   "id": "boss_ledger"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.9,
+   "round": 1,
+   "color": "#FFEC6D",
+   "color2": "#E8A26A",
+   "dark": "#2E2B42",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#F3BD35",
+     "size": 0.35
+    },
+    {
+     "kind": "ear_round",
+     "at": "both",
+     "color": "#C4967A",
+     "size": 0.55
+    },
+    {
+     "kind": "tray",
+     "at": "both",
+     "color": "#B5846B",
+     "size": 0.3
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#3A3952",
+    "size": 0.26,
+    "y": 0.56,
+    "gap": 0.32
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.44,
+   "cheeks": true,
+   "id": "boss_legal"
+  },
+  {
+   "shape": "blob",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.95,
+   "round": 0.85,
+   "color": "#88d4f7",
+   "color2": "#bcebff",
+   "dark": "#2a4975",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#f0b848",
+     "size": 0.35
+    },
+    {
+     "kind": "ear_pointed",
+     "at": "both",
+     "color": "#88d4f7",
+     "size": 0.4
+    },
+    {
+     "kind": "snout",
+     "at": "front",
+     "color": "#76c6f0",
+     "size": 0.28
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#c42828",
+    "size": 0.22,
+    "y": 0.58,
+    "gap": 0.32
+   },
+   "brows": true,
+   "mouth": "fangs",
+   "mouth_y": 0.26,
+   "cheeks": false,
+   "id": "boss_ogre"
+  },
+  {
+   "shape": "cylinder",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 0.35,
+   "round": 0.3,
+   "color": "#B4BDC9",
+   "color2": "#FF5959",
+   "dark": "#2B3242",
+   "bands": [
+    {
+     "y": 0.5,
+     "h": 0.25,
+     "color": "#FF5959"
+    }
+   ],
+   "panel": {
+    "y": 0.5,
+    "w": 0.88,
+    "h": 0.88,
+    "color": "#F4F6F9"
+   },
+   "parts": [
+    {
+     "kind": "cap",
+     "at": "top",
+     "color": "#FF5959",
+     "size": 0.22
+    },
+    {
+     "kind": "spike",
+     "at": "right",
+     "color": "#E64C3C",
+     "size": 0.35
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#252B3B",
+    "size": 0.22,
+    "y": 0.58,
+    "gap": 0.26
+   },
+   "brows": true,
+   "mouth": "teeth",
+   "mouth_y": 0.33,
+   "cheeks": false,
+   "id": "boss_target"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.15,
+   "sz": 0.95,
+   "round": 0.95,
+   "color": "#9ed5b3",
+   "color2": "#bce5cb",
+   "dark": "#23283b",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#f2b930",
+     "size": 0.35
+    },
+    {
+     "kind": "spike",
+     "at": "top",
+     "color": "#e03732",
+     "size": 0.22
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#523d35",
+    "size": 0.3,
+    "y": 0.55,
+    "gap": 0.28
+   },
+   "brows": true,
+   "mouth": "fangs",
+   "mouth_y": 0.42,
+   "cheeks": false,
+   "id": "boss_zombie"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 1.0,
+   "round": 1,
+   "color": "#8ceba0",
+   "color2": "#bcfcd0",
+   "dark": "#232646",
+   "bands": [],
+   "panel": null,
+   "parts": [],
+   "eyes": {
+    "style": "angry",
+    "iris": "#e64e26",
+    "size": 0.28,
+    "y": 0.52,
+    "gap": 0.3
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.38,
+   "cheeks": true,
+   "id": "bug"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.15,
+   "sz": 0.95,
+   "round": 0.85,
+   "color": "#e85d58",
+   "color2": "#fae7c2",
+   "dark": "#23263b",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "horn",
+     "at": "both",
+     "color": "#fae7c2",
+     "size": 0.45
+    },
+    {
+     "kind": "ear_pointed",
+     "at": "both",
+     "color": "#e85d58",
+     "size": 0.25
+    },
+    {
+     "kind": "snout",
+     "at": "front",
+     "color": "#fae7c2",
+     "size": 0.32
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#23263b",
+    "size": 0.26,
+    "y": 0.52,
+    "gap": 0.32
+   },
+   "brows": true,
+   "mouth": "frown",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "bull"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.95,
+   "round": 0.95,
+   "color": "#444655",
+   "color2": "#5d5f73",
+   "dark": "#1c1b26",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "ear_pointed",
+     "at": "both",
+     "color": "#383745",
+     "size": 0.36
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#fbe554",
+    "size": 0.27,
+    "y": 0.55,
+    "gap": 0.3
+   },
+   "brows": true,
+   "mouth": "fangs",
+   "mouth_y": 0.36,
+   "cheeks": false,
+   "id": "cat"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 1.35,
+   "sz": 0.55,
+   "round": 0.55,
+   "color": "#6e8093",
+   "color2": "#97aab9",
+   "dark": "#222d38",
+   "bands": [],
+   "panel": {
+    "y": 0.5,
+    "w": 0.85,
+    "h": 0.88,
+    "color": "#5d6f81"
+   },
+   "parts": [
+    {
+     "kind": "spike",
+     "at": "both",
+     "color": "#dbe4ed",
+     "size": 0.35
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#ff3030",
+    "size": 0.22,
+    "y": 0.65,
+    "gap": 0.38
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.52,
+   "cheeks": false,
+   "id": "ceo_chair"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 0.95,
+   "round": 1,
+   "color": "#8de075",
+   "color2": "#5cafe9",
+   "dark": "#1d2238",
+   "bands": [
+    {
+     "y": 0,
+     "h": 0.14,
+     "color": "#63b364"
+    }
+   ],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "antenna",
+     "at": "left",
+     "color": "#1d2238",
+     "size": 0.5
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#464c67",
+    "size": 0.24,
+    "y": 0.5,
+    "gap": 0.3
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.4,
+   "cheeks": false,
+   "id": "chart"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.1,
+   "sz": 0.95,
+   "round": 0.85,
+   "color": "#F8E66F",
+   "color2": "#FFF38D",
+   "dark": "#232845",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "crown",
+     "at": "top",
+     "color": "#EE605A",
+     "size": 0.35
+    },
+    {
+     "kind": "beak",
+     "at": "front",
+     "color": "#F5B446",
+     "size": 0.22
+    },
+    {
+     "kind": "tongue",
+     "at": "front",
+     "color": "#EE605A",
+     "size": 0.18
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#252C48",
+    "size": 0.26,
+    "y": 0.55,
+    "gap": 0.28
+   },
+   "brows": true,
+   "mouth": "none",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "chicken"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 1.0,
+   "round": 1,
+   "color": "#76c4f7",
+   "color2": "#c3e9fe",
+   "dark": "#1d2e50",
+   "bands": [],
+   "panel": null,
+   "parts": [],
+   "eyes": {
+    "style": "angry",
+    "iris": "#253b62",
+    "size": 0.28,
+    "y": 0.52,
+    "gap": 0.32
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.4,
+   "cheeks": false,
+   "id": "circ"
+  },
+  {
+   "shape": "blob",
+   "sx": 1.0,
+   "sy": 0.75,
+   "sz": 0.75,
+   "round": 0.95,
+   "color": "#DDE3EB",
+   "color2": "#B8C1D1",
+   "dark": "#25293B",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "tuft",
+     "at": "top",
+     "color": "#EAF0F7",
+     "size": 0.35
+    },
+    {
+     "kind": "ear_round",
+     "at": "both",
+     "color": "#DDE3EB",
+     "size": 0.3
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#333A4A",
+    "size": 0.25,
+    "y": 0.58,
+    "gap": 0.38
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.44,
+   "cheeks": true,
+   "id": "cloud"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 0.9,
+   "sz": 1.05,
+   "round": 0.2,
+   "color": "#dbe2eb",
+   "color2": "#b2bdcc",
+   "dark": "#2d3545",
+   "bands": [
+    {
+     "y": 0.75,
+     "h": 0.25,
+     "color": "#c7d2de"
+    }
+   ],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "lid",
+     "at": "top",
+     "color": "#8b98a8",
+     "size": 0.45
+    },
+    {
+     "kind": "tray",
+     "at": "top",
+     "color": "#637182",
+     "size": 0.35
+    },
+    {
+     "kind": "slot",
+     "at": "front",
+     "color": "#333d4d",
+     "size": 0.5
+    },
+    {
+     "kind": "paper",
+     "at": "front",
+     "color": "#f0f4f8",
+     "size": 0.45
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#252c38",
+    "size": 0.18,
+    "y": 0.56,
+    "gap": 0.32
+   },
+   "brows": false,
+   "mouth": "wavy",
+   "mouth_y": 0.51,
+   "cheeks": false,
+   "id": "copier"
+  },
+  {
+   "shape": "drop",
+   "sx": 1.0,
+   "sy": 1.15,
+   "sz": 0.95,
+   "round": 0.9,
+   "color": "#EAF4FD",
+   "color2": "#C4E0FB",
+   "dark": "#202E5C",
+   "bands": [],
+   "panel": null,
+   "parts": [],
+   "eyes": {
+    "style": "angry",
+    "iris": "#25A5FF",
+    "size": 0.26,
+    "y": 0.52,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.36,
+   "cheeks": true,
+   "id": "cursor"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 1.0,
+   "round": 1,
+   "color": "#b8a4e3",
+   "color2": "#9c86ce",
+   "dark": "#4a356b",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "wing",
+     "at": "both",
+     "color": "#513a70",
+     "size": 0.35
+    }
+   ],
+   "eyes": {
+    "style": "cyclops",
+    "iris": "#e37926",
+    "size": 0.35,
+    "y": 0.55,
+    "gap": 0.15
+   },
+   "brows": false,
+   "mouth": "wavy",
+   "mouth_y": 0.25,
+   "cheeks": false,
+   "id": "eyeball"
+  },
+  {
+   "shape": "drop",
+   "sx": 1.0,
+   "sy": 1.15,
+   "sz": 0.95,
+   "round": 0.85,
+   "color": "#ff9348",
+   "color2": "#ffe17c",
+   "dark": "#232039",
+   "bands": [],
+   "panel": {
+    "y": 0.48,
+    "w": 0.78,
+    "h": 0.7,
+    "color": "#ffe17c"
+   },
+   "parts": [
+    {
+     "kind": "flame",
+     "at": "top",
+     "color": "#ff8d3f",
+     "size": 0.5
+    },
+    {
+     "kind": "spike",
+     "at": "right",
+     "color": "#ff9348",
+     "size": 0.38
+    },
+    {
+     "kind": "tuft",
+     "at": "back",
+     "color": "#ff7b2c",
+     "size": 0.32
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#232039",
+    "size": 0.28,
+    "y": 0.48,
+    "gap": 0.34
+   },
+   "brows": false,
+   "mouth": "wavy",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "flame"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.05,
+   "sz": 1.0,
+   "round": 1,
+   "color": "#e8f4fc",
+   "color2": "#8db7d2",
+   "dark": "#1d253f",
+   "bands": [],
+   "panel": null,
+   "parts": [],
+   "eyes": {
+    "style": "angry",
+    "iris": "#1d253f",
+    "size": 0.22,
+    "y": 0.58,
+    "gap": 0.26
+   },
+   "brows": false,
+   "mouth": "wavy",
+   "mouth_y": 0.46,
+   "cheeks": false,
+   "id": "ghost"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.95,
+   "round": 0.2,
+   "color": "#cca074",
+   "color2": "#faea9d",
+   "dark": "#7d5032",
+   "bands": [
+    {
+     "y": 0.8,
+     "h": 0.15,
+     "color": "#faea9d"
+    }
+   ],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "paper",
+     "at": "top",
+     "color": "#faea9d",
+     "size": 0.35
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#ffaa22",
+    "size": 0.24,
+    "y": 0.58,
+    "gap": 0.32
+   },
+   "brows": false,
+   "mouth": "wavy",
+   "mouth_y": 0.34,
+   "cheeks": false,
+   "id": "golem"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 0.95,
+   "round": 1,
+   "color": "#F3F5FA",
+   "color2": "#EAD7E1",
+   "dark": "#1B223D",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "snout",
+     "at": "front",
+     "color": "#F6C8D0",
+     "size": 0.18
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#253457",
+    "size": 0.26,
+    "y": 0.56,
+    "gap": 0.32
+   },
+   "brows": false,
+   "mouth": "wavy",
+   "mouth_y": 0.38,
+   "cheeks": true,
+   "id": "hand"
+  },
+  {
+   "shape": "cone",
+   "sx": 1.0,
+   "sy": 0.9,
+   "sz": 0.85,
+   "round": 0.4,
+   "color": "#b8e6f5",
+   "color2": "#e5bd68",
+   "dark": "#1d2a44",
+   "bands": [
+    {
+     "y": 0.15,
+     "h": 0.35,
+     "color": "#e5bd68"
+    }
+   ],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "lid",
+     "at": "top",
+     "color": "#8c5c32",
+     "size": 0.25
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#2d4e78",
+    "size": 0.26,
+    "y": 0.65,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "teeth",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "hourglass"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.6,
+   "round": 0.55,
+   "color": "#FCD358",
+   "color2": "#E8A735",
+   "dark": "#23263E",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "handle",
+     "at": "top",
+     "color": "#B4C2D3",
+     "size": 0.55
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#252B44",
+    "size": 0.26,
+    "y": 0.56,
+    "gap": 0.35
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.44,
+   "cheeks": false,
+   "id": "lock"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.95,
+   "round": 0.35,
+   "color": "#c2ecfa",
+   "color2": "#8bb5d6",
+   "dark": "#202a4e",
+   "bands": [],
+   "panel": null,
+   "parts": [],
+   "eyes": {
+    "style": "angry",
+    "iris": "#2b3856",
+    "size": 0.24,
+    "y": 0.45,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.3,
+   "cheeks": false,
+   "id": "merged"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.95,
+   "round": 0.9,
+   "color": "#aa6c42",
+   "color2": "#f7d0a5",
+   "dark": "#1f2237",
+   "bands": [],
+   "panel": {
+    "y": 0.42,
+    "w": 0.85,
+    "h": 0.65,
+    "color": "#f7d0a5"
+   },
+   "parts": [
+    {
+     "kind": "ear_round",
+     "at": "both",
+     "color": "#f7d0a5",
+     "size": 0.45
+    },
+    {
+     "kind": "tuft",
+     "at": "top",
+     "color": "#aa6c42",
+     "size": 0.25
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#4aa4df",
+    "size": 0.24,
+    "y": 0.54,
+    "gap": 0.28
+   },
+   "brows": true,
+   "mouth": "fangs",
+   "mouth_y": 0.3,
+   "cheeks": false,
+   "id": "monkey"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.1,
+   "sz": 0.95,
+   "round": 0.9,
+   "color": "#fcf5e3",
+   "color2": "#edd0c0",
+   "dark": "#212239",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "cap",
+     "at": "top",
+     "color": "#ee4343",
+     "size": 0.6
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#24283d",
+    "size": 0.28,
+    "y": 0.62,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "frown",
+   "mouth_y": 0.45,
+   "cheeks": false,
+   "id": "mushroom"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 0.95,
+   "round": 1,
+   "color": "#76e5f8",
+   "color2": "#c2f7ff",
+   "dark": "#1d2340",
+   "bands": [],
+   "panel": null,
+   "parts": [],
+   "eyes": {
+    "style": "angry",
+    "iris": "#2b3558",
+    "size": 0.28,
+    "y": 0.52,
+    "gap": 0.28
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "orb"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.95,
+   "round": 1,
+   "color": "#f0f4fa",
+   "color2": "#ea9193",
+   "dark": "#232545",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "ear_long",
+     "at": "both",
+     "color": "#f0f4fa",
+     "size": 0.55
+    },
+    {
+     "kind": "tuft",
+     "at": "top",
+     "color": "#f0f4fa",
+     "size": 0.2
+    },
+    {
+     "kind": "snout",
+     "at": "front",
+     "color": "#ea9193",
+     "size": 0.12
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#232545",
+    "size": 0.24,
+    "y": 0.58,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.44,
+   "cheeks": false,
+   "id": "rabbit"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.95,
+   "round": 0.85,
+   "color": "#9aa3b5",
+   "color2": "#f29fa9",
+   "dark": "#202336",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "ear_round",
+     "at": "both",
+     "color": "#f29fa9",
+     "size": 0.48
+    },
+    {
+     "kind": "snout",
+     "at": "front",
+     "color": "#f29fa9",
+     "size": 0.22
+    },
+    {
+     "kind": "tuft",
+     "at": "top",
+     "color": "#9aa3b5",
+     "size": 0.16
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#202336",
+    "size": 0.24,
+    "y": 0.58,
+    "gap": 0.32
+   },
+   "brows": true,
+   "mouth": "teeth",
+   "mouth_y": 0.28,
+   "cheeks": true,
+   "id": "rat"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.05,
+   "sz": 0.95,
+   "round": 0.95,
+   "color": "#cf90f8",
+   "color2": "#eed4ff",
+   "dark": "#23153c",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "chain",
+     "at": "front",
+     "color": "#c0c5cf",
+     "size": 0.55
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#1b1935",
+    "size": 0.28,
+    "y": 0.48,
+    "gap": 0.28
+   },
+   "brows": false,
+   "mouth": "wavy",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "ref"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 0.85,
+   "sz": 0.9,
+   "round": 0.35,
+   "color": "#E8EEF5",
+   "color2": "#BACDE0",
+   "dark": "#202534",
+   "bands": [],
+   "panel": {
+    "y": 0.5,
+    "w": 0.82,
+    "h": 0.75,
+    "color": "#2A1F24"
+   },
+   "parts": [
+    {
+     "kind": "ear_round",
+     "at": "right",
+     "color": "#7EAAD4",
+     "size": 0.36
+    },
+    {
+     "kind": "antenna",
+     "at": "right",
+     "color": "#283446",
+     "size": 0.45
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#FF3B26",
+    "size": 0.22,
+    "y": 0.58,
+    "gap": 0.34
+   },
+   "brows": false,
+   "mouth": "wavy",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "robot"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 0.82,
+   "sz": 0.35,
+   "round": 0.15,
+   "color": "#eaf2fb",
+   "color2": "#2e415b",
+   "dark": "#1b2838",
+   "bands": [
+    {
+     "y": 0.73,
+     "h": 0.08,
+     "color": "#5b9fe3"
+    }
+   ],
+   "panel": {
+    "y": 0.5,
+    "w": 0.88,
+    "h": 0.82,
+    "color": "#f4f8fd"
+   },
+   "parts": [],
+   "eyes": {
+    "style": "angry",
+    "iris": "#2c3b52",
+    "size": 0.2,
+    "y": 0.5,
+    "gap": 0.28
+   },
+   "brows": true,
+   "mouth": "frown",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "sheet"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 0.85,
+   "sz": 1.0,
+   "round": 0.35,
+   "color": "#cbd7e3",
+   "color2": "#2e3646",
+   "dark": "#1b202a",
+   "bands": [
+    {
+     "y": 0,
+     "h": 0.42,
+     "color": "#2e3646"
+    }
+   ],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "slot",
+     "at": "top",
+     "color": "#1a1e28",
+     "size": 0.45
+    },
+    {
+     "kind": "paper",
+     "at": "top",
+     "color": "#f1e7f0",
+     "size": 0.45
+    },
+    {
+     "kind": "button",
+     "at": "right",
+     "color": "#4da1a3",
+     "size": 0.12
+    },
+    {
+     "kind": "spike",
+     "at": "front",
+     "color": "#eae2ed",
+     "size": 0.35
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#f1be4e",
+    "size": 0.28,
+    "y": 0.56,
+    "gap": 0.36
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.42,
+   "cheeks": false,
+   "id": "shredder"
+  },
+  {
+   "shape": "box",
+   "sx": 1.0,
+   "sy": 0.95,
+   "sz": 0.3,
+   "round": 0.18,
+   "color": "#e8eef5",
+   "color2": "#5b6674",
+   "dark": "#1f2735",
+   "bands": [
+    {
+     "y": 0.86,
+     "h": 0.14,
+     "color": "#5b6674"
+    }
+   ],
+   "panel": {
+    "y": 0.43,
+    "w": 0.92,
+    "h": 0.8,
+    "color": "#f1f6fc"
+   },
+   "parts": [
+    {
+     "kind": "lid",
+     "at": "top",
+     "color": "#5b6674",
+     "size": 0.2
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#252d3a",
+    "size": 0.26,
+    "y": 0.53,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "frown",
+   "mouth_y": 0.38,
+   "cheeks": false,
+   "id": "slide"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.1,
+   "sz": 0.95,
+   "round": 0.95,
+   "color": "#8fe55f",
+   "color2": "#6cbd3e",
+   "dark": "#1d293d",
+   "bands": [],
+   "panel": null,
+   "parts": [],
+   "eyes": {
+    "style": "angry",
+    "iris": "#ffd542",
+    "size": 0.28,
+    "y": 0.6,
+    "gap": 0.42
+   },
+   "brows": true,
+   "mouth": "wavy",
+   "mouth_y": 0.36,
+   "cheeks": false,
+   "id": "snake"
+  },
+  {
+   "shape": "egg",
+   "sx": 1.0,
+   "sy": 1.05,
+   "sz": 0.95,
+   "round": 0.8,
+   "color": "#F05858",
+   "color2": "#FFA29D",
+   "dark": "#B8333D",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "snout",
+     "at": "front",
+     "color": "#C6D3DE",
+     "size": 0.45
+    },
+    {
+     "kind": "tray",
+     "at": "front",
+     "color": "#DF4E52",
+     "size": 0.4
+    },
+    {
+     "kind": "wing",
+     "at": "both",
+     "color": "#ED5557",
+     "size": 0.22
+    },
+    {
+     "kind": "lens",
+     "at": "top",
+     "color": "#282B40",
+     "size": 0.24
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#282B40",
+    "size": 0.16,
+    "y": 0.33,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "frown",
+   "mouth_y": 0.24,
+   "cheeks": false,
+   "id": "stapler"
+  },
+  {
+   "shape": "sphere",
+   "sx": 1.0,
+   "sy": 1.0,
+   "sz": 1.0,
+   "round": 1,
+   "color": "#96E582",
+   "color2": "#5CA756",
+   "dark": "#233342",
+   "bands": [],
+   "panel": null,
+   "parts": [
+    {
+     "kind": "spike",
+     "at": "top",
+     "color": "#96E582",
+     "size": 0.4
+    },
+    {
+     "kind": "spike",
+     "at": "both",
+     "color": "#88DC74",
+     "size": 0.35
+    },
+    {
+     "kind": "spike",
+     "at": "front",
+     "color": "#96E582",
+     "size": 0.25
+    },
+    {
+     "kind": "spike",
+     "at": "back",
+     "color": "#5CA756",
+     "size": 0.3
+    }
+   ],
+   "eyes": {
+    "style": "angry",
+    "iris": "#D9363A",
+    "size": 0.28,
+    "y": 0.48,
+    "gap": 0.34
+   },
+   "brows": true,
+   "mouth": "teeth",
+   "mouth_y": 0.28,
+   "cheeks": false,
+   "id": "virus"
+  }
+ ]
+}
