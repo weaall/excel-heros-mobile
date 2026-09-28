@@ -202,6 +202,9 @@ namespace ExcelHeroes.UI
             // 야근 — the one fight in this game a player chooses to start.
             _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn", StartOvertime, toggles);
             foreach (var t in toggles.Query<Button>(className: "auto-toggle").ToList()) SkewPlate.Apply(t, SkewPlate.Kind.Light);
+            // the fight has no top band (as in the reference), so the way back to the lobby is here
+            var leave = UiKit.Btn("로비로 나가기", "btn bmenu__leave", () => { AudioService.Play("back", 0.55f); _app.Show(AppRoot.Sheet.Home); }, _menu);
+            SkewPlate.Apply(leave, SkewPlate.Kind.Navy);
             UiKit.Text("사무실 개선", "bmenu__sub", _menu);
             _upgradeBar = UiKit.Div("upgrades bmenu__upgrades", _menu);
 

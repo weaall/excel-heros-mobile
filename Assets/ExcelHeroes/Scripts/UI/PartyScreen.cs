@@ -121,6 +121,14 @@ namespace ExcelHeroes.UI
             var power = p.PartyMembers().Sum(StatMath.Power);
             var strip = UiKit.Div("party-strip", left);
             var readout = UiKit.Div("power-readout power-readout--strip", strip);
+            ModalFrame.Painted(readout, (ctx, r) =>
+            {
+                var plate = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin, r.yMin + 8f, r.xMax, r.yMax - 8f), SkewPlate.SlantFor(r.height) * 0.4f, 6f);
+                UiPaint.Shadow(ctx, plate, new Vector2(0f, 4f), UiPaint.C(0, 10, 30, 0.3f), 8f);
+                UiPaint.Fill(ctx, plate, UiPaint.Vertical(UiPaint.C(34, 52, 90, 0.96f), UiPaint.C(16, 28, 54, 0.96f), r.yMin, r.yMax));
+                UiPaint.Fill(ctx, UiPaint.Clip(plate, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMin + 16f, r.yMax), 0f)), UiPaint.C(255, 208, 40));
+                UiPaint.Stroke(ctx, plate, UiPaint.C(90, 120, 170, 0.6f), 1.2f);
+            });
             UiKit.Text(power.ToString("N0"), "power-readout__value", readout);
             UiKit.Text("총 전투력", "power-readout__label", readout);
 

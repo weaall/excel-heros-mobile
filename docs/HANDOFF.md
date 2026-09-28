@@ -888,6 +888,9 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
   - 텍스처 `tools/gen_fx_tex.py` → `Resources/Art/Fx`(Fx 임포트 분기). 캡처: `07-Skill{i}-{type}`(`BattleSim.DebugFire`), `07-Tele-{kind}`(`BattleWorld.DebugTelegraph`), 적 생존 장면용 `DebugTanky`.
   - 앞 커밋의 ImpactLag 0.1 s는 되돌림(ImpactLag=0): 시뮬이 이미 Shot 도착에 착탄, 스윙은 Shot 생성에 — 지연은 이중이었다.
   - 다음 후보: 원거리 적(탄창·재장전 리듬), 보스 방사·산개 패턴 연출(보스 스킬 데이터에 모양 추가), 마크→버프→폭딜 역할 연쇄(시뮬 변경이라 웹과 맞춰야 함), 지속 장판(burn을 바닥 장판으로).
+- **OperationKivotos 어빌리티 이식**(사용자: 작성자에게 전화로 허락받음, 2026-09-28 → `THIRD_PARTY_NOTICES.md`, 서면 라이선스 요청 권장): `Scripts/Ability/`(출처 헤더, `ExcelHeroes.Ability`, `Make` 팩토리, 프리팹·물리 → `IAbilityPresenter` = BattleWorld). UniTask 2.5.10(MIT, git 패키지). 우리 추가: `ForkEffect`(패턴은 각 지점 효과를 await하므로 기다리는 AreaStrike는 Fork로 감싸야 동시에 떨어짐). 기본 공격 = `Book(Fire)` 조합, 보스 특수기 = `BossStrikes`(Warn 시점에 다음 스윙 + 0.5 s에 마지막 폭발). 주의: 전투 무대 `_root`는 y = −300 — 월드 높이를 직접 쓰면 공중에 뜬다.
+- **쿼터뷰**: `BattleWorld.QuarterPitch/Yaw/Dist` = 40° / 28° / 10.5, 캐릭터 방향도 +QuarterYaw. 전투 중 시트는 발밑(`SdRef.FloorSheet`), 로비·상세는 등 뒤.
+- **UI 라운드 9**(ui_critique): 전투 상단 밴드 제거(`.shell--battle .topbar`) + 전투 메뉴에 "로비로 나가기", 상세 탭 활성 = 시안 + 흰 글자 + 꼭지, 편성 총 전투력 남색 판 + 금색 바, 퀘스트 행 카드화 + 굵은 진행 바, 출근 도장 날짜 카드(보석 아이콘, TODAY, 빨간 승인 도장). 비평 전문 `tools/out/ui_critique.md` — 남은 큰 것: 인사 목록 페이지 → 세로 스크롤, 모집 좌측 배너 탭 도킹·천장 표시 분리, 패널 헤더 영문 서브라벨, 메신저 목록 아이템 위계, 강화 패널 재화 슬롯 + 큰 CTA.
 - **사람 모션**: 사용자가 Unity 모델·클립을 찾아주겠다고 함 → BA 원본 클립은 넥슨 저작권(출시 불가), **Mixamo 권장**(무료·게임 사용 허용). 받으면 런타임 Humanoid 아바타(`AvatarBuilder.BuildHumanAvatar` + Bip001 매핑)로 리타겟. 요청 목록: Rifle/Happy Idle, Running/Rifle Run, Pistol Shoot/Shooting/Punching/Sword Slash/Throw, Standing 1H Magic Attack, Hit Reaction, Standing Block, Dying, Victory/Cheering (FBX for Unity, Without Skin, 30fps).
 - 다음: 스킬 카드 2번(흰 머리 캐릭터) 초상이 머리카락만 잡힘(얼굴 박스), 전투 타격 스파크(시안의 노란 번개 파편), 보스 바 이름판 "보스 | 이름" 판 분리, 편성·모집 화면도 같은 유리 타일로, `ceo_chair`는 얼굴이 약함(재생성 후보).
 

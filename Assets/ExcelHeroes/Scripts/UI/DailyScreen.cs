@@ -119,7 +119,10 @@ namespace ExcelHeroes.UI
                 cell.EnableInClassList("stamp-day--today", today);
 
                 UiKit.Text(i > file.streakMaxDays ? "이후" : $"{i}일", "stamp-day__n", cell);
-                UiKit.Text($"◈{file.loginGems + bonus * file.streakGemsPerDay}", "stamp-day__gems", cell);
+                var gem = GameData.Icon("gem");
+                if (gem != null) UiKit.SetArt(UiKit.Div("stamp-day__icon", cell), gem);
+                UiKit.Text($"{file.loginGems + bonus * file.streakGemsPerDay}", "stamp-day__gems", cell);
+                if (today) UiKit.Text("TODAY", "stamp-day__today", cell);
                 if (stamped) UiKit.Text("승인", "stamp-day__mark", cell);
             }
 

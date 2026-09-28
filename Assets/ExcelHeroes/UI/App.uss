@@ -5857,3 +5857,31 @@
 .bboss { left: 430px; }
 .bigstat__key { font-size: 26px; }
 .kittile__sock { background-color: rgb(232, 240, 248); border-radius: 8px; }
+
+/* ================================================================ UI round 9 (ui_critique vs BA) */
+/* the fight: no top band, the HUD owns the top edge */
+.shell--battle .topbar { display: none; }
+.bmenu__leave { height: 76px; margin: 10px 0 6px 0; font-size: 28px; -unity-font-style: bold; }
+/* tabs: white type on the lit one */
+.dtab--on .dtab__label { color: rgb(255, 255, 255); -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 80, 130, 0.5); }
+.dtab__label { color: rgb(70, 92, 124); }
+/* party power on its plate */
+.power-readout--strip { padding-left: 34px; align-items: flex-start; }
+.power-readout__value { color: rgb(255, 255, 255); font-size: 58px; -unity-font-style: bold-and-italic; padding: 0; margin: 0; }
+.power-readout__label { color: rgb(160, 186, 220); font-size: 22px; -unity-font-style: bold; padding: 0; margin: -4px 0 0 0; }
+/* quests: each row its own card, a thicker bar */
+.qrow { height: 84px; margin-bottom: 10px; padding: 0 14px; border-radius: 10px; border-width: 1.5px; border-color: rgb(214, 226, 238); border-bottom-width: 3px; border-bottom-color: rgb(196, 212, 228); background-color: rgba(255, 255, 255, 0.94); }
+.qrow__track { height: 12px; border-radius: 6px; margin-top: 7px; background-color: rgb(226, 236, 245); }
+.qrow__fill { border-radius: 6px; background-color: rgb(40, 190, 245); }
+/* attendance: day cards */
+.stamp-day { height: 150px; border-radius: 10px; border-width: 2px; border-color: rgb(210, 222, 236); background-color: rgb(244, 248, 252); align-items: center; justify-content: space-between; padding: 10px 0 10px 0; margin-right: 6px; }
+.stamp-day--today { border-width: 4px; border-color: rgb(255, 204, 40); background-color: rgb(255, 255, 255); }
+.stamp-day--on { background-color: rgb(232, 238, 245); }
+.stamp-day__n { font-size: 22px; -unity-font-style: bold; color: rgb(98, 117, 138); padding: 0; margin: 0; }
+.stamp-day__icon { width: 52px; height: 52px; -unity-background-scale-mode: scale-to-fit; }
+.stamp-day__gems { font-size: 24px; -unity-font-style: bold; color: rgb(30, 40, 55); padding: 0; margin: 0; }
+.stamp-day__today { position: absolute; top: -16px; left: 10px; right: 10px; height: 28px; border-radius: 6px; background-color: rgb(255, 204, 40); color: rgb(30, 40, 55); font-size: 16px; -unity-font-style: bold; -unity-text-align: middle-center; padding: 0; margin: 0; }
+.stamp-day__mark { position: absolute; left: 6px; right: 6px; top: 44px; height: 50px; border-width: 3px; border-color: rgba(214, 48, 48, 0.85); border-radius: 25px; color: rgba(214, 48, 48, 0.9); font-size: 24px; -unity-font-style: bold; -unity-text-align: middle-center; rotate: -14deg; background-color: rgba(255, 255, 255, 0.4); padding: 0; margin: 0; }
+.power-readout--strip { justify-content: center; height: auto; overflow: visible; }
+.power-readout--strip .power-readout__value { -unity-text-align: middle-left; }
+.power-readout--strip { flex-direction: column; justify-content: center; align-items: flex-start; }
