@@ -413,6 +413,57 @@ namespace ExcelHeroes.World
         /// <summary>Set by the repaint tool while it renders the recolour it repaints from.</summary>
         public static bool SkipPainted;
 
+        /// <summary>
+        /// A sample's skeleton only, its skin hidden, at the heroes' height — the frame World/SdEnemy
+        /// hangs an enemy's parts on. Cheap: no face split, no textures, no hair (enemies spawn by the wave).
+        /// </summary>
+        public static ChibiRig BuildSkeleton(string key, Transform parent, int layer, string name)
+        {
+            var prefab = Prefab(key);
+            if (prefab == null) return null;
+            var root = new GameObject(name) { layer = layer }.transform;
+            var go = Object.Instantiate(prefab, root);
+            go.name = "model";
+            var rends = go.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            var body = rends.OrderByDescending(r => r.sharedMesh.subMeshCount).ThenByDescending(r => r.sharedMesh.vertexCount).First();
+            go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.identity; go.transform.localScale = Vector3.one;
+            body.updateWhenOffscreen = true;
+            var wb = body.bounds;
+            var lo = root.InverseTransformPoint(wb.min); var hi = root.InverseTransformPoint(wb.max);
+            var s = SdRef.Height / Mathf.Max(1e-5f, hi.y - lo.y);
+            go.transform.localScale = Vector3.one * s;
+            go.transform.localPosition = new Vector3(-(lo.x + hi.x) * 0.5f * s, -lo.y * s, -(lo.z + hi.z) * 0.5f * s);
+            foreach (var r in rends) r.gameObject.SetActive(false);
+            foreach (var mr in go.GetComponentsInChildren<MeshRenderer>(true)) mr.gameObject.SetActive(false);
+            var all = go.GetComponentsInChildren<Transform>(true);
+            foreach (var t in all) t.gameObject.layer = layer;
+            Transform Find(string n) => all.FirstOrDefault(t => t.name == n);
+            var pelvis = Find("Bip001 Pelvis");
+            if (pelvis != null) { var pl = root.InverseTransformPoint(pelvis.position); go.transform.localPosition -= new Vector3(pl.x, 0f, pl.z); }
+            var rig = new ChibiRig { Root = root, Height = SdRef.Height, Model3D = true, RefModel = true, Model = go.transform, ModelScale = go.transform.localScale, ModelPos = go.transform.localPosition };
+            rig.Body = pelvis ?? root; rig.Head = Find("Bip001 Head") ?? rig.Body;
+            rig.ArmL = Find("Bip001 L UpperArm"); rig.ArmR = Find("Bip001 R UpperArm");
+            rig.LegL = Find("Bip001 L Thigh"); rig.LegR = Find("Bip001 R Thigh");
+            rig.Spine = Find("Bip001 Spine1") ?? Find("Bip001 Spine");
+            rig.ForearmL = Find("Bip001 L Forearm"); rig.ForearmR = Find("Bip001 R Forearm");
+            rig.CalfL = Find("Bip001 L Calf"); rig.CalfR = Find("Bip001 R Calf");
+            rig.HandL = Find("Bip001 L Hand"); rig.HandR = Find("Bip001 R Hand");
+            rig.FootL = Find("Bip001 L Foot"); rig.FootR = Find("Bip001 R Foot");
+            rig.Pelvis = pelvis;
+            rig.ClavL = Find("Bip001 L Clavicle"); rig.ClavR = Find("Bip001 R Clavicle"); rig.Neck = Find("Bip001 Neck");
+            rig.FingersL = new[] { "Bip001 L Finger0", "Bip001 L Finger01", "Bip001 L Finger1", "Bip001 L Finger11", "Bip001 L Finger2", "Bip001 L Finger21" }.Select(Find).ToArray();
+            rig.FingersR = new[] { "Bip001 R Finger0", "Bip001 R Finger01", "Bip001 R Finger1", "Bip001 R Finger11", "Bip001 R Finger2", "Bip001 R Finger21" }.Select(Find).ToArray();
+            if (rig.Pelvis != null) rig.PelvisRest = rig.Pelvis.localPosition;
+            rig.EyeSub = -1;
+            SdPose.Apply(rig, Pose.Rest);
+            if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
+            var sh = new MeshKit.Builder();
+            sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
+            MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
+            root.SetParent(parent, false);
+            return rig;
+        }
+
         public static ChibiRig BuildRaw(string key, Transform parent, int layer)
         {
             _raw = true;

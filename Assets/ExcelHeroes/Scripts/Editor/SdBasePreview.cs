@@ -244,7 +244,9 @@ namespace ExcelHeroes.EditorTools
                     var gcEnv = System.Environment.GetEnvironmentVariable("SD_GLASSES_COLOR");
                     if (!string.IsNullOrEmpty(gcEnv)) { var cs = gcEnv.Split(','); lk.GlassesColor = MeshKit.Hex(cs[i % cs.Length], lk.GlassesColor); }
                 }
-                var rig = System.Environment.GetEnvironmentVariable("SD_MON") == "1" ? SdModel.BuildMonster(ids[i], holder, 0)
+                // SD_ENEMY=1: the ids are monster type ids, built as object-headed chibi enemies (SdEnemy)
+                var rig = System.Environment.GetEnvironmentVariable("SD_ENEMY") == "1" ? SdEnemy.Build(ids[i], holder, 0)
+                        : System.Environment.GetEnvironmentVariable("SD_MON") == "1" ? SdModel.BuildMonster(ids[i], holder, 0)
                         : System.Environment.GetEnvironmentVariable("SD_RAW") == "1" ? RawSample(holder)
                         : SdRef.Build(ids[i], holder, 0) ?? SdBase.Build(ids[i], holder, 0);
                 if (rig == null) { Debug.LogWarning("[SdBasePreview] no figure for " + ids[i]); Object.DestroyImmediate(holder.gameObject); continue; }

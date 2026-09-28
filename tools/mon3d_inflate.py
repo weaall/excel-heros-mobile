@@ -51,7 +51,7 @@ def inflate(src):
     t = np.clip(d / (dmax * 0.55), 0, 1)
     prof = np.sqrt(1 - (1 - t) ** 2) * (0.75 + 0.25 * np.sqrt(np.clip(d / dmax, 0, 1)))
     prof = np.where(mask, np.maximum(prof, FLOOR), 0.0)
-    depth = prof * DEPTH * gw
+    depth = prof * globals()['DEPTH'] * gw
 
     # vertices at the grid corners: a corner's depth is the mean of the cells round it
     cd = np.zeros((gh + 1, gw + 1)); cm = np.zeros((gh + 1, gw + 1), bool)
@@ -151,10 +151,11 @@ def inflate(src):
     return v, f, np.asarray(uvs, float), tex
 
 
-def main(ids):
+def main(ids, src_dir=None, prefix=""):
     os.makedirs(mp.OUT, exist_ok=True); os.makedirs(mp.PREV, exist_ok=True)
-    for i in ids:
-        src = os.path.join(mp.SRC, i + ".png")
+    for i0 in ids:
+        i = prefix + i0
+        src = os.path.join(src_dir or mp.SRC, i0 + ".png")
         if not os.path.exists(src): print("  no sprite", i); continue
         v, f, uv, tex = inflate(src)
         v = mp.fit(v)
@@ -175,6 +176,13 @@ def main(ids):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    if "--heads" in args:
+        # the enemy heads (tools/gen_enemyhead_gemini.py) -> SD3DM/head_<id>, worn by World/SdEnemy
+        HEADS = os.path.join(HERE, "..", "Assets", "ExcelHeroes", "Resources", "Art", "SDEnemyHeads")
+        rest = [a for a in args if a != "--heads"]
+        DEPTH = 0.62   # a head is seen turned toward the squad: rounder than a front-on mascot
+        main(rest or sorted(p[:-4] for p in os.listdir(HEADS) if p.endswith(".png")), HEADS, "head_")
+        sys.exit(0)
     if not args:
         have = {p[:-8] for p in os.listdir(mp.OUT) if p.endswith("_tex.png")}   # textured (SDM2) ones; the old SDM1 meshes are not worn
         args = sorted(p[:-4] for p in os.listdir(mp.SRC) if p.endswith(".png") and p[:-4] not in have)

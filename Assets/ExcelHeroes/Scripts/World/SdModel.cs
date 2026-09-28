@@ -139,6 +139,24 @@ namespace ExcelHeroes.World
             return rig;
         }
 
+        /// <summary>A textured SD3DM mesh (SDM2) and its toon material by key, or nulls (World/SdEnemy's heads).</summary>
+        public static (Mesh mesh, Material mat) Textured(string key)
+        {
+            var asset = Resources.Load<TextAsset>($"Art/SD3DM/{key}");
+            if (asset == null || asset.bytes.Length < 4 || asset.bytes[3] != (byte)'2') return (null, null);
+            var mesh = LoadMesh("m:" + key, asset.bytes);
+            var tex = Resources.Load<Texture2D>($"Art/SD3DM/{key}_tex");
+            if (mesh == null || tex == null) return (null, null);
+            if (!TexMats.TryGetValue(key, out var mat) || mat == null)
+            {
+                mat = MeshKit.NewToon(0.0035f, tex);
+                mat.SetFloat("_ShadeStrength", 0.22f);
+                mat.SetFloat("_Rim", 0.14f);
+                TexMats[key] = mat;
+            }
+            return (mesh, mat);
+        }
+
         static Mesh LoadMesh(string key, byte[] bytes)
         {
             if (Cache.TryGetValue(key, out var m) && m != null) return m;

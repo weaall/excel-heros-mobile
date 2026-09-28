@@ -1,0 +1,391 @@
+{
+ "items": [
+  {
+   "id": "boss",
+   "material": "paper",
+   "main": "#F8D4AD",
+   "second": "#F57C2C",
+   "dark": "#232644",
+   "accent": "#D83A2A",
+   "part": "tape"
+  },
+  {
+   "id": "boss_approval",
+   "material": "metal",
+   "main": "#e85550",
+   "second": "#fff5e6",
+   "dark": "#2b222c",
+   "accent": "#ad3931",
+   "part": "spring"
+  },
+  {
+   "id": "boss_audit",
+   "material": "metal",
+   "main": "#B8D2EB",
+   "second": "#ECA79C",
+   "dark": "#2E3B4E",
+   "accent": "#F6C444",
+   "part": "bolt"
+  },
+  {
+   "id": "boss_cabinet",
+   "material": "metal",
+   "main": "#C2CBD4",
+   "second": "#8F9EAF",
+   "dark": "#252B3E",
+   "accent": "#EBAF35",
+   "part": "paper"
+  },
+  {
+   "id": "boss_copier",
+   "material": "metal",
+   "main": "#E2E8F0",
+   "second": "#8EA7C0",
+   "dark": "#262D42",
+   "accent": "#EB4B4B",
+   "part": "paper"
+  },
+  {
+   "id": "boss_elevator",
+   "material": "metal",
+   "main": "#9CA6B5",
+   "second": "#DC4E46",
+   "dark": "#2D2C46",
+   "accent": "#FDE25D",
+   "part": "panel"
+  },
+  {
+   "id": "boss_hr",
+   "material": "wood",
+   "main": "#C49A75",
+   "second": "#FDFAE7",
+   "dark": "#2B2331",
+   "accent": "#DE3C35",
+   "part": "paper"
+  },
+  {
+   "id": "boss_ledger",
+   "material": "paper",
+   "main": "#B98D85",
+   "second": "#ECE0CB",
+   "dark": "#2B2135",
+   "accent": "#DE4543",
+   "part": "tape"
+  },
+  {
+   "id": "boss_legal",
+   "material": "wood",
+   "main": "#F7DB69",
+   "second": "#BE8B6E",
+   "dark": "#2C223B",
+   "accent": "#E02E38",
+   "part": "bolt"
+  },
+  {
+   "id": "boss_ogre",
+   "material": "soft",
+   "main": "#8ED5FA",
+   "second": "#FFFFFF",
+   "dark": "#1E284A",
+   "accent": "#F5B041",
+   "part": "fur"
+  },
+  {
+   "id": "boss_target",
+   "material": "metal",
+   "main": "#EA4C46",
+   "second": "#A7B3C4",
+   "dark": "#242838",
+   "accent": "#FBE29F",
+   "part": "bolt"
+  },
+  {
+   "id": "boss_zombie",
+   "material": "soft",
+   "main": "#A1D4B8",
+   "second": "#7BA791",
+   "dark": "#23293D",
+   "accent": "#E53835",
+   "part": "tape"
+  },
+  {
+   "id": "bug",
+   "material": "energy",
+   "main": "#83eaa3",
+   "second": "#baf8cb",
+   "dark": "#1d2342",
+   "accent": "#eb532d",
+   "part": "glow"
+  },
+  {
+   "id": "bull",
+   "material": "soft",
+   "main": "#E85D5D",
+   "second": "#F4DFB9",
+   "dark": "#25283D",
+   "accent": "#FFFFFF",
+   "part": "fur"
+  },
+  {
+   "id": "cat",
+   "material": "soft",
+   "main": "#494754",
+   "second": "#353441",
+   "dark": "#1b1926",
+   "accent": "#f6e053",
+   "part": "fur"
+  },
+  {
+   "id": "ceo_chair",
+   "material": "wood",
+   "main": "#6a8194",
+   "second": "#b3c4d1",
+   "dark": "#202a3a",
+   "accent": "#e63333",
+   "part": "spring"
+  },
+  {
+   "id": "chart",
+   "material": "paper",
+   "main": "#98dc78",
+   "second": "#63b4e6",
+   "dark": "#202543",
+   "accent": "#e75855",
+   "part": "paper"
+  },
+  {
+   "id": "chicken",
+   "material": "soft",
+   "main": "#FFE566",
+   "second": "#F06060",
+   "dark": "#232946",
+   "accent": "#FFA726",
+   "part": "fur"
+  },
+  {
+   "id": "circ",
+   "material": "energy",
+   "main": "#7ec6f8",
+   "second": "#c8ecfd",
+   "dark": "#18264e",
+   "accent": "#ffffff",
+   "part": "glow"
+  },
+  {
+   "id": "cloud",
+   "material": "energy",
+   "main": "#C7CED9",
+   "second": "#F6C744",
+   "dark": "#2A2D40",
+   "accent": "#FFA3AC",
+   "part": "glow"
+  },
+  {
+   "id": "copier",
+   "material": "metal",
+   "main": "#d8dee9",
+   "second": "#8f9cb0",
+   "dark": "#252b41",
+   "accent": "#ffffff",
+   "part": "paper"
+  },
+  {
+   "id": "cursor",
+   "material": "energy",
+   "main": "#E6F3FB",
+   "second": "#3AA8ED",
+   "dark": "#1C2951",
+   "accent": "#FF9EB1",
+   "part": "glow"
+  },
+  {
+   "id": "eyeball",
+   "material": "soft",
+   "main": "#B89EE3",
+   "second": "#EA802B",
+   "dark": "#3A2B52",
+   "accent": "#FDB94E",
+   "part": "fur"
+  },
+  {
+   "id": "flame",
+   "material": "energy",
+   "main": "#FF944D",
+   "second": "#FED96D",
+   "dark": "#1C1D38",
+   "accent": "#FFFFFF",
+   "part": "glow"
+  },
+  {
+   "id": "ghost",
+   "material": "energy",
+   "main": "#DCEEF6",
+   "second": "#8CB8D4",
+   "dark": "#232F4D",
+   "accent": "#FFFFFF",
+   "part": "glow"
+  },
+  {
+   "id": "golem",
+   "material": "paper",
+   "main": "#c79668",
+   "second": "#fae596",
+   "dark": "#5e3e2b",
+   "accent": "#ff9e24",
+   "part": "tape"
+  },
+  {
+   "id": "hand",
+   "material": "energy",
+   "main": "#EDF0F5",
+   "second": "#D9D0DC",
+   "dark": "#1C203C",
+   "accent": "#F7A8B4",
+   "part": "glow"
+  },
+  {
+   "id": "hourglass",
+   "material": "metal",
+   "main": "#9ce2f3",
+   "second": "#f3c765",
+   "dark": "#1e2249",
+   "accent": "#a17048",
+   "part": "spring"
+  },
+  {
+   "id": "lock",
+   "material": "metal",
+   "main": "#F7D04B",
+   "second": "#9EAAB9",
+   "dark": "#25283E",
+   "accent": "#FFA066",
+   "part": "bolt"
+  },
+  {
+   "id": "merged",
+   "material": "paper",
+   "main": "#B5E5F8",
+   "second": "#62A0D4",
+   "dark": "#1B264A",
+   "accent": "#FFFFFF",
+   "part": "tape"
+  },
+  {
+   "id": "monkey",
+   "material": "soft",
+   "main": "#A66E43",
+   "second": "#FACFA6",
+   "dark": "#272C4C",
+   "accent": "#D72A2F",
+   "part": "fur"
+  },
+  {
+   "id": "mushroom",
+   "material": "soft",
+   "main": "#EB4E4E",
+   "second": "#FFF0DB",
+   "dark": "#1F243B",
+   "accent": "#FFFFFF",
+   "part": "fur"
+  },
+  {
+   "id": "orb",
+   "material": "energy",
+   "main": "#7ae7f8",
+   "second": "#4fbfe3",
+   "dark": "#182243",
+   "accent": "#ffffff",
+   "part": "glow"
+  },
+  {
+   "id": "rabbit",
+   "material": "soft",
+   "main": "#F0F4FC",
+   "second": "#E89498",
+   "dark": "#1F2746",
+   "accent": "#E4AF38",
+   "part": "fur"
+  },
+  {
+   "id": "rat",
+   "material": "soft",
+   "main": "#95A1B5",
+   "second": "#EBF0F7",
+   "dark": "#232438",
+   "accent": "#F5A3B3",
+   "part": "fur"
+  },
+  {
+   "id": "ref",
+   "material": "soft",
+   "main": "#c587f2",
+   "second": "#b9c2ce",
+   "dark": "#231e3d",
+   "accent": "#ffffff",
+   "part": "cable"
+  },
+  {
+   "id": "robot",
+   "material": "metal",
+   "main": "#E4ECF6",
+   "second": "#6692C6",
+   "dark": "#2C3240",
+   "accent": "#FF382E",
+   "part": "cable"
+  },
+  {
+   "id": "sheet",
+   "material": "paper",
+   "main": "#edf4fc",
+   "second": "#59a5e8",
+   "dark": "#27324c",
+   "accent": "#ea6554",
+   "part": "tape"
+  },
+  {
+   "id": "shredder",
+   "material": "metal",
+   "main": "#C2CCD8",
+   "second": "#363C48",
+   "dark": "#1D222A",
+   "accent": "#F1B846",
+   "part": "paper"
+  },
+  {
+   "id": "slide",
+   "material": "paper",
+   "main": "#e5edf5",
+   "second": "#646d79",
+   "dark": "#24293c",
+   "accent": "#569ded",
+   "part": "tape"
+  },
+  {
+   "id": "snake",
+   "material": "soft",
+   "main": "#8FE063",
+   "second": "#F6E6AC",
+   "dark": "#1F233B",
+   "accent": "#F5B837",
+   "part": "fur"
+  },
+  {
+   "id": "stapler",
+   "material": "metal",
+   "main": "#EE5857",
+   "second": "#B9C2CF",
+   "dark": "#23263B",
+   "accent": "#FFA69E",
+   "part": "spring"
+  },
+  {
+   "id": "virus",
+   "material": "energy",
+   "main": "#90dc7c",
+   "second": "#58a857",
+   "dark": "#202c42",
+   "accent": "#db3b3b",
+   "part": "glow"
+  }
+ ]
+}

@@ -290,6 +290,14 @@ namespace ExcelHeroes.World
             // than the TripoSR meshes made from the first set, which stay as the fallback
             // 3D when the textured mesh exists (TRELLIS + the drawing, tools/mon3d_pack.py) — the squad is
             // 3D and the errors stand in the same street
+            // enemies v3: the office object on the heroes' skeleton (World/SdEnemy) — same joints, same clips
+            else if (SdEnemy.Build(c.boss != null ? c.boss.id : c.typeId, _root, Layer) is { } sde)
+            {
+                a.Rig = sde;
+                a.Rig.Root.name = c.name;
+                a.Scale = c.boss != null ? 1.9f : c.elite ? 1.2f : 1.05f;
+                a.Accent = new Color(1f, 0.35f, 0.35f);
+            }
             else if ((SdModel.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer, texturedOnly: true)
                       ?? SdSprite.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer)
                       ?? SdModel.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer)) is { } sdm)
@@ -1595,12 +1603,12 @@ namespace ExcelHeroes.World
                     var cheering = (Cheer > 0f || closeUp > 0.5f) && C.Alive;
                     _winT = cheering ? _winT + dt : 0f;
                     if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f);
-                    else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(C.heroId), _winT);
-                    else if (Skill > 0f) _pose = SdPose.Skill(SdPose.AttackOf(C.heroId, C.role), 1f - Skill / 0.75f);
+                    else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(Pid), _winT);
+                    else if (Skill > 0f) _pose = SdPose.Skill(SdPose.AttackOf(Pid, C.role), 1f - Skill / 0.75f);
                     else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
                     else if (Attack > 0f) _pose = SdPose.Attack(AttackPose(C), 1f - Attack / 0.32f);
                     else if (walking) _pose = SdPose.Walk(_walk);
-                    else _pose = SdPose.Ready(SdPose.AttackOf(C.heroId, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
+                    else _pose = SdPose.Ready(SdPose.AttackOf(Pid, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
                     // the head looks at the fight: heroes toward the enemy line, enemies toward the squad
                     if (!cheering && (Attack <= 0f) && C.Alive)
                     {
@@ -1620,7 +1628,9 @@ namespace ExcelHeroes.World
                 // turned with the quarter-view camera, so each keeps the same angle to the lens
                 // a mascot is a drawing given depth: its face is the drawing's front, so it turns only a
                 // little toward the squad (28° off the lens) — side-on it showed its thin plush seam
-                var yaw = (hero ? Mathf.Lerp(-75f, -10f, closeUp) : Rig.Mascot ? 28f : 75f) + QuarterYaw * (1f - closeUp);
+                var yaw = (hero ? Mathf.Lerp(-75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 180f + 38f : 75f) + QuarterYaw * (1f - closeUp);
+                // (an SdEnemy wears the heroes' skeleton and its clips' half turn: mirrored from the heroes,
+                // toward the squad and a little toward the lens, so its face shows)
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad
                 var lunge = 0f;
                 if (Rig.ArmR == null && Attack > 0f)
@@ -1638,7 +1648,7 @@ namespace ExcelHeroes.World
                     // keyframed clips (SdClips) when the library is there; the hand-written poses otherwise
                     if (SdClips.Available && ClipMotion(dt, walking, closeUp)) { }
                     else SdPose.Apply(Rig, _shown);
-                    SdExpr.Tick(Rig, C.heroId, _shown.Expr, time);
+                    if (C.heroId != null) SdExpr.Tick(Rig, C.heroId, _shown.Expr, time);
                     y += Rig.FootDrop * root.localScale.y;
                 }
                 else
@@ -1739,6 +1749,19 @@ namespace ExcelHeroes.World
                 T Pick<T>(int salt, params T[] xs) => xs[(int)((h / (uint)(salt * 7 + 1)) % (uint)xs.Length)];
                 var kind = AttackPose(c);
                 p = new Profile { Speed = 0.9f + (h % 23) / 100f, Lean = ((int)(h / 7 % 9) - 4) * 0.9f, Tilt = ((int)(h / 11 % 9) - 4) * 1.4f, Chest = ((int)(h / 13 % 7) - 3) * 1.2f, Walk = Pick(9, "Jog_Fwd_Loop", "Jog_Fwd_Loop", "Walk_Formal_Loop") };
+                if (c.heroId == null)
+                {
+                    // an enemy (SdEnemy on the heroes' skeleton): a brawler — a guard, punches and a
+                    // hook, a heavier walk, the boss a shade slower and heavier
+                    var boss = c.boss != null;
+                    p.Stance = Pick(1, "Idle_Shield_Loop", "Sword_Idle", "Idle_Loop");
+                    p.Attacks = Pick(2, new[] { ("Punch_Jab", 0.3f), ("Punch_Cross", 0.35f) }, new[] { ("Melee_Hook", 0.45f), ("Punch_Cross", 0.35f) }, new[] { ("Sword_Regular_A", 0.4f), ("Punch_Jab", 0.3f) });
+                    p.Ex = boss ? "Sword_Heavy_Combo" : "Melee_Hook";
+                    p.Walk = boss ? "Walk_Formal_Loop" : Pick(3, "Jog_Fwd_Loop", "Walk_Formal_Loop");
+                    p.Idle = p.Stance; p.Win = Pick(4, "Dance_Loop", "Yes");
+                    if (boss) p.Speed *= 0.85f;
+                    return Profiles[key] = p;
+                }
                 switch (c.role)
                 {
                     case "tank":
@@ -1781,8 +1804,10 @@ namespace ExcelHeroes.World
                 if (Dying > 0f || !C.Alive) _clips.Play("Death01", 0.1f, 0f, 1.4f);
                 else if (cheering) _clips.Play(p.Win, 0.25f, 0f, p.Speed);
                 else if (Skill > _lastSkill + 1e-4f) _clips.Play(p.Ex, 0.06f, 0f, 1.15f * p.Speed, restart: true);
-                else if (Hit > _lastHit + 1e-4f && !acting)
-                    _clips.Play(C.hp < C.maxHp * 0.3f ? "Hit_Knockback" : Random.value < 0.5f ? "Hit_Chest" : "Hit_Head", 0.05f, 0f, 1.1f, restart: true);
+                // a boss does not flinch; an enemy only staggers (the knockback fall, replayed on every hit
+                // below 30 % hp, kept a boss upside down on the floor)
+                else if (Hit > _lastHit + 1e-4f && !acting && C.boss == null)
+                    _clips.Play(C.heroId != null && C.hp < C.maxHp * 0.3f ? "Hit_Knockback" : Random.value < 0.5f ? "Hit_Chest" : "Hit_Head", 0.05f, 0f, 1.1f, restart: true);
                 else if (Attack > _lastAttack + 1e-4f)
                 {
                     // the next of the hero's attacks, its contact frame on the Shot's arrival
@@ -1803,6 +1828,9 @@ namespace ExcelHeroes.World
                 if (Rig.Pelvis != null) Rig.Pelvis.localRotation *= Quaternion.Euler(0f, 0f, p.Lean);
                 return true;
             }
+
+            /// <summary>The id the pose library keys on: the hero's, or the enemy's type (SdEnemy wears the heroes' skeleton).</summary>
+            string Pid => C.heroId ?? "enemy_" + (C.typeId ?? "x");
 
             /// <summary>Swaps the eye/mouth sheet on the face renderer's eye submesh (SdRef only).</summary>
             void SetExpression(string expr)
