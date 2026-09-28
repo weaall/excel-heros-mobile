@@ -228,6 +228,8 @@ namespace ExcelHeroes.EditorTools
                 // SD_GLASSES=square,round,…: force a glasses style per column (the look is mutable and read at build)
                 // SD_IRIS=miku,kayoko,…: force a sample iris per column (the look is read at build)
                 // SD_HAIRX=wave=1|spread=0.8,…: extra hair-recipe keys per column ('|' between keys)
+                var gxEnv = System.Environment.GetEnvironmentVariable("SD_GARMENTX");   // SD_GARMENTX=sleeve=0.8|…,…: per column
+                if (!string.IsNullOrEmpty(gxEnv)) System.Environment.SetEnvironmentVariable("SD_GARMENTADD", gxEnv.Split(',')[i % gxEnv.Split(',').Length].Replace('|', ';'));
                 var hxEnv = System.Environment.GetEnvironmentVariable("SD_HAIRX");
                 if (!string.IsNullOrEmpty(hxEnv)) System.Environment.SetEnvironmentVariable("SD_HAIRADD", hxEnv.Split(',')[i % hxEnv.Split(',').Length].Replace('|', ';'));
                 var irEnv = System.Environment.GetEnvironmentVariable("SD_IRIS");

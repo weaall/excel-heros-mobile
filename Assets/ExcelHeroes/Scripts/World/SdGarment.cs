@@ -48,13 +48,17 @@ namespace ExcelHeroes.World
         public static void Apply(ChibiRig rig, SdLook k, IEnumerable<SkinnedMeshRenderer> renderers)
         {
             var text = System.Environment.GetEnvironmentVariable("SD_GARMENT") ?? k.Garment ?? "";
-            var p = text.Split(';').Select(x => x.Split('=')).Where(x => x.Length == 2).ToDictionary(x => x[0].Trim(), x => x[1].Trim());
+            var addG = System.Environment.GetEnvironmentVariable("SD_GARMENTADD");   // preview: extra keys for this build
+            if (!string.IsNullOrEmpty(addG)) text += ";" + addG;
+            var p = new Dictionary<string, string>(); foreach (var kv0 in text.Split(';').Select(x => x.Split('=')).Where(x => x.Length == 2)) p[kv0[0].Trim()] = kv0[1].Trim();
             float F(string key, float fb) => p.TryGetValue(key, out var v) && float.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var f) ? f : fb;
             string S(string key, string fb) => p.TryGetValue(key, out var v) && v != "" ? v : fb;
 
             var pants = S("pants", k.Pants && !k.Dress ? "slim" : "none");
             var legs = pants != "none" ? "pants" : S("legs", k.Legwear switch { "socks" => "socks", "tights" => "tights", _ => "bare" });
             var skirtLen = pants != "none" ? 0.3f : F("skirt", 1f);
+            // sleeves drawn in toward the arm (Yuuka's jacket has puffed sleeves that read as armour)
+            var sleeve = Mathf.Clamp(F("sleeve", 1f), 0.6f, 1.2f);
             // a pencil skirt drawn in no tighter than the thighs it covers
             var flare = pants != "none" ? -0.25f : Mathf.Max(float.Parse(System.Environment.GetEnvironmentVariable("SD_FLAREMIN") ?? "-0.15", System.Globalization.CultureInfo.InvariantCulture), F("flare", 0f));
             if (rig.Pelvis == null) return;
@@ -132,6 +136,29 @@ namespace ExcelHeroes.World
                         var ankle = zone[i] == Zone.Calf ? Mathf.Clamp01(1f - (w.y - (pelvis.y - h * 0.34f)) / (h * 0.2f)) : 0f;
                         w += n * h * (0.009f + wide * ankle);
                         v[i] = w2l.MultiplyPoint3x4(w);
+                    }
+                }
+                if (Mathf.Abs(sleeve - 1f) > 0.01f)
+                {
+                    // each vertex on an arm bone pulled toward that arm's bone line (shoulder → elbow → wrist)
+                    (Vector3 a, Vector3 b)? Seg(Transform x, Transform y) => x != null && y != null ? (x.position, y.position) : null;
+                    var segs = new[] { Seg(rig.ArmL, rig.ForearmL), Seg(rig.ForearmL, rig.HandL), Seg(rig.ArmR, rig.ForearmR), Seg(rig.ForearmR, rig.HandR) };
+                    for (var i = 0; i < v.Length; i++)
+                    {
+                        var dn = Dom(bw[i], bones).ToLowerInvariant();
+                        if (!(dn.Contains("upperarm") || dn.Contains("forearm") || dn.Contains("elbow"))) continue;
+                        var w = l2w.MultiplyPoint3x4(v[i]);
+                        Vector3? best = null; var bd = float.MaxValue;
+                        foreach (var sg in segs)
+                        {
+                            if (sg == null) continue;
+                            var (a, b) = sg.Value; var ab = b - a;
+                            var t = Mathf.Clamp01(Vector3.Dot(w - a, ab) / Mathf.Max(1e-8f, ab.sqrMagnitude));
+                            var q = a + ab * t; var dd = (w - q).sqrMagnitude;
+                            if (dd < bd) { bd = dd; best = q; }
+                        }
+                        if (best == null) continue;
+                        v[i] = w2l.MultiplyPoint3x4(best.Value + (w - best.Value) * sleeve);
                     }
                 }
                 mesh.vertices = v; mesh.RecalculateBounds();
