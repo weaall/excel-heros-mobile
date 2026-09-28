@@ -133,6 +133,36 @@ namespace ExcelHeroes.World
         }
         static float _cutY = float.NaN;
 
+        /// <summary>
+        /// The hero's own hair shape over a sample's: Volume puffs it out sideways around the skull
+        /// (0.94 sleek .. 1.14 fluffy), Fall stretches what hangs below the jaw (0.8 .. 1.3). Set by
+        /// SdSample.Recipe for the parts it mounts, identity otherwise.
+        /// </summary>
+        public static float Volume = 1f, Fall = 1f;
+
+        static Mesh Shape(Mesh src, Matrix4x4 toWorld, ChibiRig rig)
+        {
+            if (Mathf.Abs(Volume - 1f) < 0.005f && Mathf.Abs(Fall - 1f) < 0.005f) return src;
+            var m = src == null ? null : Object.Instantiate(src); if (m == null) return src;
+            var toLocal = toWorld.inverse;
+            var v = m.vertices;
+            var head = rig.Head.position; var h = rig.Height;
+            var skull = head + Vector3.up * h * 0.1f;           // the middle of the big chibi head
+            var jaw = rig.Neck != null ? rig.Neck.position.y : head.y - h * 0.02f;
+            for (var i = 0; i < v.Length; i++)
+            {
+                var w = toWorld.MultiplyPoint3x4(v[i]);
+                // sideways puff, strongest at the skull's height and fading toward the crown and the tips
+                var along = Mathf.Clamp01(1f - Mathf.Abs(w.y - skull.y) / (h * 0.3f));
+                var s = 1f + (Volume - 1f) * (0.4f + 0.6f * along);
+                w.x = skull.x + (w.x - skull.x) * s; w.z = skull.z + (w.z - skull.z) * s;
+                if (w.y < jaw) w.y = jaw - (jaw - w.y) * Fall;
+                v[i] = toLocal.MultiplyPoint3x4(w);
+            }
+            m.vertices = v; m.RecalculateBounds();
+            return m;
+        }
+
         static Mesh Cut(Mesh src, Matrix4x4 toWorld)
         {
             if (float.IsNaN(_cutY)) return src;
@@ -160,7 +190,7 @@ namespace ExcelHeroes.World
             if (Bones.TryGetValue(name, out var lib) && Skinned(rig, name, lib, mat, layer)) return true;
             var go = MeshKit.Part("hair:" + name, rig.Head, Meshes[name], mat, layer);
             go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.identity; go.transform.localScale = Vector3.one;
-            go.GetComponent<MeshFilter>().sharedMesh = Cut(Meshes[name], go.transform.localToWorldMatrix);
+            go.GetComponent<MeshFilter>().sharedMesh = Shape(Cut(Meshes[name], go.transform.localToWorldMatrix), go.transform.localToWorldMatrix, rig);
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
             return true;
         }
@@ -197,7 +227,7 @@ namespace ExcelHeroes.World
             // a per-rig copy: the bind poses belong to this rig's rest, not to the shared asset
             var toMesh = go.transform.localToWorldMatrix;
             var filtered = Filter(Meshes[name], lib);
-            var cut = Cut(filtered, toMesh);
+            var cut = Shape(Cut(filtered, toMesh), toMesh, rig);
             var mesh = cut != Meshes[name] ? cut : Object.Instantiate(Meshes[name]);
             var bind = new Matrix4x4[bones.Length];
             for (var i = 0; i < bones.Length; i++) bind[i] = bones[i].worldToLocalMatrix * toMesh;

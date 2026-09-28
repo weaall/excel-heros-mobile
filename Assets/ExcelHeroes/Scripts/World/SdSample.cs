@@ -76,16 +76,28 @@ namespace ExcelHeroes.World
             var parts = new Dictionary<string, SdRefHairLib.Region>();
             void Add(string lib, SdRefHairLib.Region reg) { if (lib == "none" || !SdRefHairLib.Has(lib)) return; parts[lib] = (parts.TryGetValue(lib, out var e) ? e : 0) | reg; }
             Add(front, SdRefHairLib.Region.Cap | SdRefHairLib.Region.Front);
-            Add(Get("side", front), SdRefHairLib.Region.Side);
+            // Yuuka's cap is open where her side locks join it (a black hole of outline hull showed
+            // through there under anyone else's), so her fringe always brings her side locks
+            Add(front == "yuuka" ? "yuuka" : Get("side", front), SdRefHairLib.Region.Side);
             Add(Get("back", front), SdRefHairLib.Region.Back | SdRefHairLib.Region.Cap);   // its cap too: the back hangs off it
             Add(Get("extra", "none"), SdRefHairLib.Region.Extra);
-            foreach (var kv in parts)
+            // the hero's own volume and fall (recipe vol= / fall=; unset: a stable spread by id), so two
+            // heroes with the same parts still wear a different head of hair
+            var hh = Mathf.Abs(SdPose.Hash(k.Id));
+            float Num(string key2, float fb) => float.TryParse(Get(key2, ""), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var f) ? f : fb;
+            SdRefHairLib.Volume = Mathf.Clamp(Num("vol", 0.95f + hh % 9 * 0.022f), 0.9f, 1.18f);
+            SdRefHairLib.Fall = Mathf.Clamp(Num("fall", Get("len", "long") == "long" ? 0.86f + hh / 9 % 8 * 0.055f : 1f), 0.75f, 1.35f);
+            try
             {
-                // the extras (a bun, a ribbon) are never cut: they sit where their sample put them
-                var reg = kv.Value;
-                if ((reg & ~SdRefHairLib.Region.Extra) != 0) SdRefHairLib.MountParts(rig, kv.Key, k, layer, reg & ~SdRefHairLib.Region.Extra, cutY);
-                if ((reg & SdRefHairLib.Region.Extra) != 0) SdRefHairLib.MountParts(rig, kv.Key, k, layer, SdRefHairLib.Region.Extra);
+                foreach (var kv in parts)
+                {
+                    // the extras (a bun, a ribbon) are never cut: they sit where their sample put them
+                    var reg = kv.Value;
+                    if ((reg & ~SdRefHairLib.Region.Extra) != 0) SdRefHairLib.MountParts(rig, kv.Key, k, layer, reg & ~SdRefHairLib.Region.Extra, cutY);
+                    if ((reg & SdRefHairLib.Region.Extra) != 0) { var fall = SdRefHairLib.Fall; SdRefHairLib.Fall = 1f; SdRefHairLib.MountParts(rig, kv.Key, k, layer, SdRefHairLib.Region.Extra); SdRefHairLib.Fall = fall; }
+                }
             }
+            finally { SdRefHairLib.Volume = 1f; SdRefHairLib.Fall = 1f; }
             return true;
         }
 
@@ -462,6 +474,7 @@ namespace ExcelHeroes.World
             if (!_raw && !string.IsNullOrEmpty(lowerKey) && lowerKey != key && Has(lowerKey)) SwapLower(rig, body, lowerKey, k, root, layer);
             var accEnv = System.Environment.GetEnvironmentVariable("SD_ACC") ?? k.Accessories;
             if (!_raw && !string.IsNullOrEmpty(accEnv)) foreach (var acc in accEnv.Split(',')) Accessory(rig, body, acc.Trim(), k, root, layer);
+            if (!_raw) SdGarment.Apply(rig, k, rig.Renderers.OfType<SkinnedMeshRenderer>().Where(r => r == body || r.name.StartsWith("lower:")).ToList());
             if (!_raw) DressHair(rig, heroId, key, k, kept, layer);
 
             var sh = new MeshKit.Builder();
