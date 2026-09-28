@@ -165,6 +165,20 @@ namespace ExcelHeroes.UI
                 // lines these rows were 108px each and the sixth quest of the day — there are
                 // always six — fell out of the bottom of the panel with no way to reach it,
                 // because a landscape build has no scrollbar to rescue it.
+                // the quest's icon on a glass tile at the left (the Gemini quests mock-up, tools/out/design/mock_quests_0)
+                var tile = UiKit.Div("qrow__tile", row);
+                ModalFrame.Painted(tile, (ctx, r) =>
+                {
+                    var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 6f);
+                    UiPaint.Fill(ctx, box, UiPaint.Vertical(UiPaint.C(255, 255, 255), UiPaint.C(226, 238, 250), r.yMin, r.yMax));
+                    UiPaint.Stroke(ctx, box, UiPaint.C(170, 196, 224), 1.5f);
+                });
+                var qicon = GameData.Icon(q.id switch
+                {
+                    "kills" or "clears" or "elite" => "sheets", "upgrades" or "enhance" => "levelup", "pull" => "recruit",
+                    "boss" => "bosskey", "chests" => "shop", "combo" => "chart", _ => "tasks",
+                });
+                if (qicon != null) UiKit.SetArt(UiKit.Div("qrow__tileicon", tile), qicon);
                 var text = UiKit.Div("qrow__text", row);
                 var head = UiKit.Div("qrow__head", text);
                 UiKit.Text(def.name, "qrow__name", head);
