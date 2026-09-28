@@ -496,6 +496,19 @@ namespace ExcelHeroes.World
         class Volley { public Fire F; public Transform[] Parts; public bool[] Landed; public float Seed; }
         readonly Dictionary<Shot, Volley> _volleys = new();
 
+        /// <summary>The body's attack for the hero's Excel attack (SdPose.Attack kinds 3–12); the old role pose otherwise.</summary>
+        static int AttackPose(Combatant c)
+        {
+            if (c == null || c.side != Side.Hero) return 0;
+            var f = FireOf(c, c.role is "ranged" or "healer" ? "shot" : "slash");
+            return f switch
+            {
+                Fire.Type3 => 3, Fire.Fill5 => 4, Fire.Paste5 => 5, Fire.Sum => 6, Fire.Trace => 7, Fire.Lob => 8,
+                Fire.SlashH => 9, Fire.SlashD => 10, Fire.SlashX => 11, Fire.Cut => 12,
+                _ => SdPose.AttackOf(c.heroId, c.role),
+            };
+        }
+
         static Fire FireOf(Combatant c, string kind)
         {
             if (c == null || c.side != Side.Hero) return Fire.Single;
@@ -1546,7 +1559,7 @@ namespace ExcelHeroes.World
                     else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(C.heroId), _winT);
                     else if (Skill > 0f) _pose = SdPose.Skill(SdPose.AttackOf(C.heroId, C.role), 1f - Skill / 0.75f);
                     else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
-                    else if (Attack > 0f) _pose = SdPose.Attack(SdPose.AttackOf(C.heroId, C.role), 1f - Attack / 0.32f);
+                    else if (Attack > 0f) _pose = SdPose.Attack(AttackPose(C), 1f - Attack / 0.32f);
                     else if (walking) _pose = SdPose.Walk(_walk);
                     else _pose = SdPose.Ready(SdPose.AttackOf(C.heroId, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
                     // the head looks at the fight: heroes toward the enemy line, enemies toward the squad

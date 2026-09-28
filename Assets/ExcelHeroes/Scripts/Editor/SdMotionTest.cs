@@ -83,7 +83,7 @@ namespace ExcelHeroes.EditorTools
             var kind = SdPose.AttackOf(id, SdRef.RoleOf(id));
             for (var v = 0; v < SdPose.IdleCount; v++) { var vv = v; yield return ($"idle{v}", t => SdPose.Idle(vv, t * 8f, 0f), false); }
             for (var k = 0; k < 3; k++) { var kk = k; yield return ($"ready{k}", t => SdPose.Ready(kk, t * 3f, 0f), false); }
-            for (var k = 0; k < 3; k++) { var kk = k; yield return ($"attack{k}", t => SdPose.Attack(kk, t), kk == 2); }   // the caster hops
+            for (var k = 0; k < 13; k++) { var kk = k; yield return ($"attack{k}", t => SdPose.Attack(kk, t), kk == 2); }   // the caster hops; 3–12 the Excel attacks
             yield return ("walk", t => SdPose.Walk(t * Mathf.PI * 4f), false);
             yield return ("hit", t => SdPose.Hit(1f - t), false);
             for (var k = 0; k < 3; k++) { var kk = k; yield return ($"skill{k}", t => SdPose.Skill(kk, t), true); }

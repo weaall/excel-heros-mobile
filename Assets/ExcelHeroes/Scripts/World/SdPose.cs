@@ -364,7 +364,11 @@ namespace ExcelHeroes.World
 
         // ------------------------------------------------------------------ fight --
 
-        /// <summary>0 melee punch · 1 ranged shot (arm thrown out, recoil) · 2 caster (both hands raised, thrust). a = 0..1.</summary>
+        /// <summary>
+        /// 0 melee punch · 1 ranged shot · 2 caster · and one per Excel attack (BattleWorld.FireOf):
+        /// 3 셀 입력 (three taps) · 4 자동 채우기 (five) · 5 범위 붙여넣기 (a wide sweep) · 6 =SUM (gather, push) ·
+        /// 7 참조 추적 (a point) · 8 커피 (an overhand lob) · 9 backhand cut · 10 chop down · 11 X · 12 잘라내기 (scissors). a = 0..1.
+        /// </summary>
         public static Pose Attack(int kind, float a)
         {
             var p = Pose.Rest; p.Expr = "angry";
@@ -413,6 +417,139 @@ namespace ExcelHeroes.World
                         p.HandFlexR = 10f; p.HandFlexL = 40f; p.FistR = 0.7f; p.FistL = 1f; p.Sway = 0.012f * up - kick * 0.02f; p.KneeL = 10f * up + kick * 6f;
                         p.SwingR -= anti * 30f; p.ElbowR += anti * 40f; p.Lean += -8f * anti + over * 6f; p.SpineBend += -6f * anti + over * 4f;
                         p.SpineTwist -= anti * 10f; p.HeadPitch += over * 3f; p.Squash = -0.04f * anti - 0.03f * kick + 0.02f * over;
+                        break;
+                    }
+                case 3:
+                case 4:
+                    {
+                        // 셀 입력 (3) / 자동 채우기 (4): the tablet held up in front of the chest, the
+                        // other hand tapping it — three taps, or five quick ones — eyes down on the
+                        // screen, then the tablet pushed at the target on the last tap
+                        var n = kind == 3 ? 3 : 5;
+                        var up = a < 0.18f ? EaseOutBack(a / 0.18f, 1.1f) : a < 0.8f ? 1f : 1f - EaseInOut((a - 0.8f) / 0.2f);
+                        var tapT = Mathf.Clamp01((a - 0.16f) / 0.6f) * n;
+                        var tap = a > 0.16f && a < 0.76f ? Mathf.Pow(Mathf.Abs(Mathf.Sin(tapT * Mathf.PI)), 0.6f) : 0f;
+                        var push = a > 0.62f && a < 0.9f ? Impulse((a - 0.62f) / 0.28f, 0.3f) : 0f;
+                        p.RaiseR = Mathf.Lerp(-36f, -22f, up); p.SwingR = Mathf.Lerp(3f, 40f, up) + push * 30f; p.ElbowR = Mathf.Lerp(14f, 62f, up) - push * 36f; p.InR = 26f * up;   // the tablet at the chest, not the face
+                        p.HandFlexR = 12f; p.FistR = 0.55f; p.ReachR = push * 10f;
+                        p.RaiseL = Mathf.Lerp(-36f, -16f, up); p.SwingL = Mathf.Lerp(3f, 38f, up) + tap * 8f; p.ElbowL = Mathf.Lerp(14f, 70f, up) - tap * 12f; p.InL = 50f * up;
+                        p.HandFlexL = 20f + tap * 38f; p.FistL = 0.3f;
+                        p.HeadPitch = 12f * up * (1f - push) - 2f * push; p.SpineBend = 4f * up; p.Lean = 3f * up + push * 6f;
+                        p.Twist = 6f * up; p.Squash = -0.015f * tap - 0.02f * push; p.KneeL = 6f * up;
+                        break;
+                    }
+                case 5:
+                    {
+                        // 범위 붙여넣기: the tablet arm drawn across the body, then swept wide and out
+                        // in one flat arc, the waist turning through it
+                        var wind = a < 0.26f ? EaseInOut(a / 0.26f) : 1f;
+                        var sweep = a < 0.26f ? 0f : a < 0.56f ? EaseOutBack((a - 0.26f) / 0.3f, 1.2f) : 1f;
+                        var rec = a < 0.62f ? 0f : EaseInOut((a - 0.62f) / 0.38f);
+                        p.SwingR = Mathf.Lerp(3f, 70f, wind); p.RaiseR = Mathf.Lerp(-36f, -8f, wind);
+                        p.InR = Mathf.Lerp(0f, 55f, wind); p.InR = Mathf.Lerp(p.InR, -35f, sweep); p.InR = Mathf.Lerp(p.InR, 0f, rec);
+                        p.SwingR = Mathf.Lerp(p.SwingR, 3f, rec); p.RaiseR = Mathf.Lerp(p.RaiseR, -36f, rec);
+                        p.ElbowR = Mathf.Lerp(Mathf.Lerp(14f, 70f, wind), 12f, sweep); p.ElbowR = Mathf.Lerp(p.ElbowR, 14f, rec);
+                        p.Twist = (Mathf.Lerp(0f, -16f, wind) + 34f * sweep) * (1f - rec); p.SpineTwist = (Mathf.Lerp(0f, -12f, wind) + 26f * sweep) * (1f - rec);
+                        p.Lean = (2f + 6f * sweep) * (1f - rec); p.Step = 0.08f * sweep * (1f - rec); p.KneeL = 16f * sweep * (1f - rec);
+                        p.RaiseL = -30f; p.SwingL = 12f; p.ElbowL = 40f; p.HandFlexR = 10f; p.FistR = 0.5f;
+                        p.HeadYaw = (-8f * wind + 10f * sweep) * (1f - rec);
+                        break;
+                    }
+                case 6:
+                    {
+                        // =SUM: both hands brought together low in front and held, trembling, as the
+                        // formula gathers (a small crouch), then pushed out with a step
+                        var gather = a < 0.45f ? EaseInOut(a / 0.45f) : 1f;
+                        var shake = a > 0.15f && a < 0.5f ? Mathf.Sin(a * 140f) * 0.5f : 0f;
+                        var push = a > 0.45f ? Impulse((a - 0.45f) / 0.55f, 0.28f) : 0f;
+                        p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, -18f, gather) + push * 14f;
+                        p.SwingL = p.SwingR = Mathf.Lerp(3f, 40f, gather) + push * 50f;
+                        p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 90f, gather) - push * 76f;
+                        p.InL = p.InR = 38f * gather * (1f - push * 0.6f);
+                        p.HandFlexL = p.HandFlexR = -10f * gather - 20f * push; p.FistL = p.FistR = 0.2f * (1f - push);
+                        p.KneeL = p.KneeR = 18f * gather * (1f - push) + 4f * shake; p.Squash = -0.05f * gather * (1f - push) + 0.03f * push;
+                        p.Lean = 4f * gather + 10f * push; p.SpineBend = 6f * gather * (1f - push); p.HeadPitch = 8f * gather * (1f - push) - 4f * push;
+                        p.Step = 0.12f * push; p.ReachL = p.ReachR = 12f * push;
+                        break;
+                    }
+                case 7:
+                    {
+                        // 참조 추적: a point — the arm straight out at the target and held while the
+                        // trace line draws, the other hand on the hip, a small head tilt
+                        var up = a < 0.2f ? EaseOutBack(a / 0.2f, 1.3f) : a < 0.78f ? 1f : 1f - EaseInOut((a - 0.78f) / 0.22f);
+                        p.SwingR = Mathf.Lerp(3f, 88f, up); p.RaiseR = Mathf.Lerp(-36f, 2f, up); p.ElbowR = Mathf.Lerp(14f, 2f, up); p.ReachR = 14f * up;
+                        p.HandFlexR = -6f; p.FistR = 0.8f;
+                        p.RaiseL = -8f * up - 36f * (1f - up); p.SwingL = -18f * up; p.ElbowL = Mathf.Lerp(14f, 95f, up); p.InL = -28f * up; p.HandFlexL = 30f * up;
+                        p.Twist = 18f * up; p.SpineTwist = 10f * up; p.HeadTilt = 5f * up; p.HeadYaw = 6f * up; p.Lean = -2f * up;
+                        p.KneeL = 4f * up; p.Sway = 0.01f * up;
+                        break;
+                    }
+                case 8:
+                    {
+                        // 커피 투척: an overhand lob — the cup drawn back over the shoulder, then the arm
+                        // whipped over and through, the body following
+                        var back = a < 0.32f ? EaseInOut(a / 0.32f) : 1f;
+                        var thr = a < 0.32f ? 0f : a < 0.58f ? EaseOutBack((a - 0.32f) / 0.26f, 1f) : 1f;
+                        var rec = a < 0.62f ? 0f : EaseInOut((a - 0.62f) / 0.38f);
+                        var sw = Mathf.Lerp(3f, 150f, back); sw = Mathf.Lerp(sw, 60f, thr); sw = Mathf.Lerp(sw, 3f, rec);
+                        p.SwingR = sw; p.RaiseR = Mathf.Lerp(Mathf.Lerp(-36f, -10f, back), -20f, thr); p.RaiseR = Mathf.Lerp(p.RaiseR, -36f, rec);
+                        p.ElbowR = Mathf.Lerp(Mathf.Lerp(14f, 100f, back), 10f, thr); p.ElbowR = Mathf.Lerp(p.ElbowR, 14f, rec);
+                        p.Lean = (Mathf.Lerp(0f, -8f, back) + 16f * thr) * (1f - rec); p.SpineBend = (-6f * back + 10f * thr) * (1f - rec);
+                        p.Twist = (-12f * back + 18f * thr) * (1f - rec); p.Step = 0.08f * thr * (1f - rec); p.KneeL = 14f * thr * (1f - rec);
+                        p.RaiseL = -20f; p.SwingL = 30f * back * (1f - thr); p.ElbowL = 40f; p.HandFlexR = 20f; p.FistR = 0.6f;
+                        p.HeadPitch = (-6f * back + 4f * thr) * (1f - rec);
+                        break;
+                    }
+                case 9:
+                case 10:
+                case 11:
+                    {
+                        // blades by hand: 9 a backhand cut across (the arm from the far shoulder out),
+                        // 10 a chop down from overhead, 11 two quick chops crossing (an X)
+                        float Chop(float t, bool down, bool mirror)
+                        {
+                            var w = t < 0.35f ? EaseInOut(t / 0.35f) : 1f;
+                            var c = t < 0.35f ? 0f : t < 0.62f ? EaseOutBack((t - 0.35f) / 0.27f, 1.1f) : 1f;
+                            var r = t < 0.66f ? 0f : EaseInOut((t - 0.66f) / 0.34f);
+                            if (down)
+                            {
+                                p.SwingR = Mathf.Lerp(Mathf.Lerp(3f, 160f, w), 40f, c); p.RaiseR = Mathf.Lerp(Mathf.Lerp(-36f, -6f, w), -24f, c);
+                                p.ElbowR = Mathf.Lerp(Mathf.Lerp(14f, 60f, w), 6f, c);
+                                p.Lean = -6f * w * (1f - c) + 16f * c; p.SpineBend = 10f * c; p.KneeL = p.KneeR = 18f * c; p.Squash = -0.04f * c;
+                            }
+                            else
+                            {
+                                var sgn = mirror ? -1f : 1f;
+                                p.SwingR = Mathf.Lerp(Mathf.Lerp(3f, 80f, w), 84f, c); p.RaiseR = Mathf.Lerp(-36f, -4f, w);
+                                p.InR = sgn * Mathf.Lerp(Mathf.Lerp(0f, 60f, w), -40f, c); p.ElbowR = Mathf.Lerp(Mathf.Lerp(14f, 90f, w), 8f, c);
+                                p.Twist = sgn * (-18f * w * (1f - c) + 26f * c); p.SpineTwist = sgn * (-14f * w * (1f - c) + 20f * c);
+                                p.Lean = 10f * c; p.KneeL = 16f * c;
+                            }
+                            p.HandFlexR = -10f; p.FistR = 0.1f;   // a flat hand, the edge leading
+                            p.Step = 0.14f * c;
+                            return r;
+                        }
+                        float rr;
+                        if (kind == 9) rr = Chop(a, false, false);
+                        else if (kind == 10) rr = Chop(a, true, false);
+                        else rr = a < 0.5f ? Chop(a * 2f, false, false) : Chop((a - 0.5f) * 2f, false, true);
+                        p.RaiseL = -24f; p.SwingL = 26f; p.ElbowL = 72f; p.InL = 36f; p.FistL = 1f; p.HandFlexL = 40f;
+                        // ease every channel home on the recovery
+                        var keep = 1f - rr;
+                        p.SwingR = Mathf.Lerp(3f, p.SwingR, keep); p.RaiseR = Mathf.Lerp(-36f, p.RaiseR, keep); p.ElbowR = Mathf.Lerp(14f, p.ElbowR, keep); p.InR *= keep;
+                        p.Twist *= keep; p.SpineTwist *= keep; p.Lean *= keep; p.SpineBend *= keep; p.KneeL *= keep; p.KneeR *= keep; p.Step *= keep; p.Squash *= keep;
+                        break;
+                    }
+                case 12:
+                    {
+                        // 잘라내기: both hands out crossed like closing scissors, snapped open and shut twice
+                        var up = a < 0.2f ? EaseOutBack(a / 0.2f, 1f) : a < 0.8f ? 1f : 1f - EaseInOut((a - 0.8f) / 0.2f);
+                        var snip = a > 0.2f && a < 0.8f ? Mathf.Abs(Mathf.Sin((a - 0.2f) / 0.6f * Mathf.PI * 2f)) : 0f;
+                        p.SwingL = p.SwingR = Mathf.Lerp(3f, 80f, up); p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, -6f, up);
+                        p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 20f, up);
+                        p.InL = p.InR = Mathf.Lerp(0f, 30f, up) + snip * 24f - (1f - snip) * 10f * up;
+                        p.HandFlexL = p.HandFlexR = -8f; p.FistL = p.FistR = 0.15f;
+                        p.Lean = 8f * up; p.Step = 0.1f * up; p.KneeL = 12f * up; p.HeadPitch = -3f * up; p.ReachL = p.ReachR = 8f * up;
                         break;
                     }
                 case 2:
@@ -594,7 +731,9 @@ namespace ExcelHeroes.World
             if (rig.ClavR != null) rig.Pose(rig.ClavR, Quaternion.Euler(0f, -p.ReachR, p.ShrugR));
             if (rig.ClavL != null) rig.Pose(rig.ClavL, Quaternion.Euler(0f, p.ReachL, -p.ShrugL));
             rig.Pose(rig.ArmR, Quaternion.Euler(0f, -p.RaiseR, p.SwingR));
-            rig.Pose(rig.ArmL, Quaternion.Euler(0f, p.RaiseL, -p.SwingL));
+            // NOT mirrored on the swing (measured, SD_POSE=set:SwingL=…): −SwingL here swung the left
+            // arm BACK, so every pose's left hand went behind the body and the walk swung both arms together
+            rig.Pose(rig.ArmL, Quaternion.Euler(0f, p.RaiseL, p.SwingL));
             rig.Pose(rig.ForearmR, Quaternion.Euler(0f, p.InR, p.ElbowR));
             rig.Pose(rig.ForearmL, Quaternion.Euler(0f, -p.InL, p.ElbowL));
             rig.Pose(rig.LegL, Quaternion.Euler(0f, 0f, -p.ThighL));

@@ -168,6 +168,26 @@ namespace ExcelHeroes.EditorTools
             }
         }
 
+        /// <summary>
+        /// SD_POSE=set:SwingL=0,30,60;ElbowL=40 — the rest pose with named Pose channels set per
+        /// column (a list is indexed by column, a single value holds for all): the calibration
+        /// tool for which channel moves which joint which way.
+        /// </summary>
+        static ExcelHeroes.World.Pose SetPose(string spec, int column)
+        {
+            object boxed = ExcelHeroes.World.Pose.Rest;
+            foreach (var part in spec.Split(';'))
+            {
+                var kv = part.Split('=');
+                if (kv.Length != 2) continue;
+                var f = typeof(ExcelHeroes.World.Pose).GetField(kv[0].Trim());
+                if (f == null || f.FieldType != typeof(float)) { Debug.LogWarning("[SetPose] no channel " + kv[0]); continue; }
+                var vals = kv[1].Split(',');
+                f.SetValue(boxed, float.Parse(vals[Mathf.Min(column, vals.Length - 1)], System.Globalization.CultureInfo.InvariantCulture));
+            }
+            return (ExcelHeroes.World.Pose)boxed;
+        }
+
         public static void Run()
         {
             var outDir = System.Environment.GetEnvironmentVariable("SD_PREVIEW_OUT") ?? Path.Combine(Application.dataPath, "..", "tools", "out", "sd3d");
@@ -272,7 +292,10 @@ namespace ExcelHeroes.EditorTools
                 var poseEnv = System.Environment.GetEnvironmentVariable("SD_POSE");
                 if (!string.IsNullOrEmpty(poseEnv) && rig.RefModel)
                 {
-                    var pz = poseEnv == "win" ? SdPose.Victory(i, 0.55f) : poseEnv == "attack" ? SdPose.Attack(i % 3, 0.5f)
+                    // SD_POSE=atk:K — attack kind K across the columns in time (a = (i+0.5)/n), one id repeated
+                    var pz = poseEnv.StartsWith("set:") ? SetPose(poseEnv.Substring(4), i)
+                           : poseEnv.StartsWith("atk:") ? SdPose.Attack(int.Parse(poseEnv.Substring(4)), (i + 0.5f) / ids.Length)
+                           : poseEnv == "win" ? SdPose.Victory(i, 0.55f) : poseEnv == "attack" ? SdPose.Attack(i % 3, 0.5f)
                            : poseEnv == "ready" ? SdPose.Ready(SdPose.AttackOf(ids[i], SdRef.RoleOf(ids[i])), 0.2f, 0f)
                            : poseEnv == "attackrole" ? SdPose.Attack(SdPose.AttackOf(ids[i], SdRef.RoleOf(ids[i])), 0.5f)
                            : poseEnv == "walk" ? SdPose.Walk(i * Mathf.PI / 3f)
