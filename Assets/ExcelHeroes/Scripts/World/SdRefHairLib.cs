@@ -42,7 +42,8 @@ namespace ExcelHeroes.World
             return style switch
             {
                 "twin" => h % 2 == 0 ? "miku" : "haruka",
-                "long" => (h % 3) switch { 0 => "kayoko", 1 => "hikari", _ => "mika" },
+                // not kayoko: her hair sheet is split black / white, which survives any recolour as a stripe
+                "long" => h % 2 == 0 ? "hikari" : "mika",
                 "side" => "natsu",
                 "ponytail" => h % 2 == 0 ? "yuuka" : null,
                 "curly" => "reisa",
