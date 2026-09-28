@@ -98,6 +98,7 @@ namespace ExcelHeroes.World
             SdRefHairLib.Spread = Mathf.Clamp(Num("spread", 0f), -1f, 1f);
             SdRefHairLib.Gather = Mathf.Clamp(Num("gather", 0f), 0f, 1f);
             SdRefHairLib.Curl = Mathf.Clamp(Num("curl", 0f), -1f, 1f);
+            SdRefHairLib.Slant = Mathf.Clamp(Num("slant", 0f), -1f, 1f);
             try
             {
                 foreach (var kv in parts)
@@ -111,7 +112,7 @@ namespace ExcelHeroes.World
                     if ((reg & SdRefHairLib.Region.Extra) != 0) { var fall = SdRefHairLib.Fall; SdRefHairLib.Fall = 1f; SdRefHairLib.MountParts(rig, kv.Key, k, layer, SdRefHairLib.Region.Extra); SdRefHairLib.Fall = fall; }
                 }
             }
-            finally { SdRefHairLib.Volume = 1f; SdRefHairLib.Fall = 1f; SdRefHairLib.Wave = SdRefHairLib.Spread = SdRefHairLib.Gather = SdRefHairLib.Curl = 0f; }
+            finally { SdRefHairLib.Volume = 1f; SdRefHairLib.Fall = 1f; SdRefHairLib.Wave = SdRefHairLib.Spread = SdRefHairLib.Gather = SdRefHairLib.Curl = SdRefHairLib.Slant = 0f; }
             return true;
         }
 

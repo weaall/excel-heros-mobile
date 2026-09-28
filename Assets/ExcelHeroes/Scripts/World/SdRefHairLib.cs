@@ -164,7 +164,8 @@ namespace ExcelHeroes.World
         /// Gather — the back hair drawn together below the nape into a low ponytail (1 fully tied);
         /// Curl — the ends turn in under (+, a J) or flick out (−). Recipe wave= / spread= / gather= / curl=.
         /// </summary>
-        public static float Wave, Spread, Gather, Curl;
+        public static float Wave, Spread, Gather, Curl, Slant;
+        static ChibiRig _rig;
 
         static Mesh Shape(Mesh src, Matrix4x4 toWorld, ChibiRig rig)
         {
@@ -232,7 +233,13 @@ namespace ExcelHeroes.World
             var m = Object.Instantiate(src);
             var v = src.vertices;
             var wy = new float[v.Length];
-            for (var i = 0; i < v.Length; i++) wy[i] = toWorld.MultiplyPoint3x4(v[i]).y;
+            // a slanted cut: Slant > 0 longer at the front (an A-line bob), < 0 longer behind; the line
+            // tilts by the vertex's forward offset from the skull axis (a head-width is ~0.1 of the height)
+            for (var i = 0; i < v.Length; i++)
+            {
+                var w = toWorld.MultiplyPoint3x4(v[i]);
+                wy[i] = w.y + (_rig != null ? Slant * Vector3.Dot(w - _rig.Head.position, _rig.Root.forward) * 1.2f : 0f);
+            }
             for (var s = 0; s < m.subMeshCount; s++)
             {
                 var tris = m.GetTriangles(s); var keep = new List<int>(tris.Length);
@@ -255,6 +262,7 @@ namespace ExcelHeroes.World
             if (Bones.TryGetValue(name, out var lib) && Skinned(rig, name, lib, mat, layer)) return true;
             var go = MeshKit.Part("hair:" + name, rig.Head, Meshes[name], mat, layer);
             go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.identity; go.transform.localScale = Vector3.one;
+            _rig = rig;
             go.GetComponent<MeshFilter>().sharedMesh = Shape(Cut(Meshes[name], go.transform.localToWorldMatrix), go.transform.localToWorldMatrix, rig);
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
             return true;
@@ -292,6 +300,7 @@ namespace ExcelHeroes.World
             // a per-rig copy: the bind poses belong to this rig's rest, not to the shared asset
             var toMesh = go.transform.localToWorldMatrix;
             var filtered = Filter(Meshes[name], lib);
+            _rig = rig;
             var cut = Shape(Cut(filtered, toMesh), toMesh, rig);
             var mesh = cut != Meshes[name] ? cut : Object.Instantiate(Meshes[name]);
             var bind = new Matrix4x4[bones.Length];

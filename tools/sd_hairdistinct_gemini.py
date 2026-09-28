@@ -17,7 +17,9 @@ import sd_likeness_gemini as lk
 import sdspec_body_gemini as sb
 
 KNOBS = ("front (haruka|hikari|mika|yuuka|natsu|reisa|miku), side (the same names or kayoko), back (haruka|hikari|mika|yuuka|kayoko), "
-         "vol 0.9-1.18, fall 0.8-1.3, wave 0-1.2, spread -1..1, gather 0-1 (low ponytail), curl -1..1 (+ ends in, - flick out)")
+         "len (short|bob|shoulder|long), extra (mika a bun|haruka a bow|none), tails (reisa twin|miku long twin|natsu side ponytail|none), "
+         "vol 0.9-1.18, fall 0.8-1.3, wave 0-1.2, spread -1..1, gather 0-1 (low ponytail), curl -1..1 (+ ends in, - flick out), "
+         "slant -1..1 (a slanted cut: + longer in front, - longer behind)")
 
 
 def call(key, parts):
@@ -68,10 +70,13 @@ if __name__ == "__main__":
         h = h1 if r["who"] == "A" else h2
         rec = rows[h]["hairParts"]; new = rec
         for k, v in r["set"].items():
-            if k not in ("front", "side", "back", "vol", "fall", "wave", "spread", "gather", "curl"): continue
+            if k not in ("front", "side", "back", "len", "extra", "tails", "vol", "fall", "wave", "spread", "gather", "curl", "slant"): continue
             v = str(v)
             if k == "front" and v == "kayoko": continue
             if k == "back" and v not in ("haruka", "hikari", "mika", "yuuka", "kayoko"): continue
+            if k == "len" and v not in ("short", "bob", "shoulder", "long"): continue
+            if k == "extra" and v not in ("mika", "haruka", "none"): continue
+            if k == "tails" and v not in ("reisa", "miku", "natsu", "none"): continue
             new = re.sub(rf"(^|;){k}=[^;]*", "", new)
             try: v = f"{float(v):.2f}"
             except ValueError: pass
