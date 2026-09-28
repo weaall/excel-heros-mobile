@@ -17,6 +17,7 @@ namespace ExcelHeroes.World
         public string id = "", style = "", hair = "", eye = "", skin = "", top = "", shirt = "", bottom = "", legs = "", shoes = "";
         public string outfit = "", bottomType = "", attack = "", tie = "", cap = "", legwear = "", eyes = "", glassesStyle = "", glassesColor = "", hairLib = "", body = "", lower = "", hairParts = "", acc = "", garment = "", head = "";   // hairParts: a recipe "front=miku;back=mika;extra=mika;len=long" (SdSample.DressHair)   // body: a sample body key (Resources/Art/SDBase/bodies/<key>), "" = the base
         public int fringe = -1, idle = -1, win = -1;
+        public float scale = 0f;   // the figure's height against the cast (tools/sdspec_height_gemini.py), 0 = 1
         public bool ahoge, glasses, sunglasses, headset;
         public string[] manual = Array.Empty<string>();
         public bool Has(string field) => manual != null && manual.Contains(field);

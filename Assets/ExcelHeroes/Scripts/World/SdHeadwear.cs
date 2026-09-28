@@ -117,6 +117,27 @@ namespace ExcelHeroes.World
                             }
                         }
                         break;
+                    case "neckphones":
+                        {
+                            // headphones resting round the neck: the cups under the jaw, the band behind the nape
+                            var dark = new Color(0.16f, 0.17f, 0.22f);
+                            var neckY = rig.Neck != null ? Vector3.Dot(rig.Neck.position - c, up) : -R * 0.9f;
+                            var y0 = neckY + R * 0.14f;   // at the jaw line, over the collar
+                            var path = new Vector3[13];
+                            for (var i = 0; i < path.Length; i++)
+                            {
+                                var a = Mathf.Lerp(-1.6f, 1.6f, i / (float)(path.Length - 1));
+                                path[i] = new Vector3(Mathf.Sin(a) * R * 0.5f, y0 + R * 0.04f, -Mathf.Cos(a) * R * 0.4f + R * 0.05f);
+                            }
+                            Tube(b, path, R * 0.035f, R * 0.035f, dark);
+                            foreach (var s in new[] { -1f, 1f })
+                            {
+                                b.M = Matrix4x4.TRS(new Vector3(s * R * 0.5f, y0, R * 0.14f), Quaternion.Euler(0f, s * 25f, s * 20f), Vector3.one);
+                                b.Ellipsoid(Vector3.zero, new Vector3(R * 0.1f, R * 0.17f, R * 0.17f), dark, 12);
+                                b.Ellipsoid(new Vector3(0f, 0f, R * 0.07f), new Vector3(R * 0.12f, R * 0.12f, R * 0.04f), col, 10);
+                            }
+                        }
+                        break;
                     case "beret":
                         {
                             var p = On(new Vector3(-sx * 0.25f, 1f, -0.1f), 0.84f);
@@ -150,18 +171,25 @@ namespace ExcelHeroes.World
                         break;
                     case "bandana":
                         {
-                            var wx = (Reach(new Vector3(1f, 0.5f, 0f)) + Reach(new Vector3(-1f, 0.5f, 0f))) * 0.5f;
-                            var wz = Reach(new Vector3(0f, 0.5f, 1f));
-                            var hH = R * 0.52f;
-                            b.M = Matrix4x4.TRS(Vector3.up * (R * 1.03f - hH), Quaternion.Euler(-12f, 0f, 0f), Vector3.one);
-                            b.Ellipsoid(Vector3.zero, new Vector3(wx * 0.97f, hH, wz * 0.99f), col, 20, _ => Mathf.PI * 0.5f);
-                            b.M = Matrix4x4.identity;
-                            var back = On(new Vector3(0f, 0.2f, -1f), 1.02f);
-                            b.M = Matrix4x4.TRS(back, Quaternion.identity, Vector3.one);
-                            b.Ellipsoid(Vector3.zero, Vector3.one * R * 0.09f, MeshKit.Shade(col, 0.85f), 8);
-                            foreach (var s in new[] { -1f, 1f })
+                            // a kerchief laid ON the hair: a shell over the crown that follows the hair's own
+                            // surface (a rigid dome stood off fluffy hair like a mushroom cap), down to the
+                            // brow at the front and lower behind, knotted at the nape
+                            const int nu = 20, nv = 8;
+                            b.Grid(nu, nv, (u, t) =>
                             {
-                                b.M = Matrix4x4.TRS(back + new Vector3(s * R * 0.08f, -R * 0.14f, -R * 0.02f), Quaternion.Euler(0f, 0f, s * 20f), Vector3.one);
+                                var phi = u * Mathf.PI * 2f;
+                                var back = Mathf.Max(0f, -Mathf.Cos(phi));             // 1 behind, 0 in front
+                                var th = t * Mathf.Lerp(0.95f, 1.35f, back);         // from the crown down
+                                var dir = new Vector3(Mathf.Sin(th) * Mathf.Sin(phi), Mathf.Cos(th), Mathf.Sin(th) * Mathf.Cos(phi));
+                                var p = On(dir, 1.03f);
+                                return (p, dir, new Vector2(u, t));
+                            }, col);
+                            var back2 = On(new Vector3(0f, 0.1f, -1f), 1.04f);
+                            b.M = Matrix4x4.TRS(back2, Quaternion.identity, Vector3.one);
+                            b.Ellipsoid(Vector3.zero, Vector3.one * R * 0.09f, MeshKit.Shade(col, 0.85f), 8);
+                            foreach (var s2 in new[] { -1f, 1f })
+                            {
+                                b.M = Matrix4x4.TRS(back2 + new Vector3(s2 * R * 0.08f, -R * 0.14f, -R * 0.02f), Quaternion.Euler(0f, 0f, s2 * 20f), Vector3.one);
                                 b.Box(Vector3.zero, new Vector3(R * 0.1f, R * 0.26f, R * 0.02f), col);
                             }
                         }

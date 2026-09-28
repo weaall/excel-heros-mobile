@@ -379,7 +379,7 @@ namespace ExcelHeroes.World
             dbody.updateWhenOffscreen = true;
             dgo.transform.localPosition = Vector3.zero; dgo.transform.localRotation = Quaternion.identity; dgo.transform.localScale = Vector3.one;
             var wb = dbody.bounds; var lo = temp.InverseTransformPoint(wb.min); var hi = temp.InverseTransformPoint(wb.max);
-            var sc = SdRef.Height / Mathf.Max(1e-5f, hi.y - lo.y);
+            var sc = SdRef.Height / Mathf.Max(1e-5f, hi.y - lo.y) * k.Scale;   // at the hero's own height, as the body
             dgo.transform.localScale = Vector3.one * sc;
             dgo.transform.localPosition = new Vector3(-(lo.x + hi.x) * 0.5f * sc, -lo.y * sc, -(lo.z + hi.z) * 0.5f * sc);
             var dpel = dgo.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Bip001 Pelvis");
@@ -505,7 +505,8 @@ namespace ExcelHeroes.World
             body.updateWhenOffscreen = true;
             var wb = body.bounds;
             var lo = root.InverseTransformPoint(wb.min); var hi = root.InverseTransformPoint(wb.max);
-            var s = SdRef.Height / Mathf.Max(1e-5f, hi.y - lo.y);
+            // the hero's own height against the cast (petite .. tall), the feet still on the floor
+            var s = SdRef.Height / Mathf.Max(1e-5f, hi.y - lo.y) * (_raw ? 1f : SdLook.For(heroId).Scale);
             go.transform.localScale = Vector3.one * s;
             go.transform.localPosition = new Vector3(-(lo.x + hi.x) * 0.5f * s, -lo.y * s, -(lo.z + hi.z) * 0.5f * s);
             var all = go.GetComponentsInChildren<Transform>(true);

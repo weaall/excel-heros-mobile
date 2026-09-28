@@ -9,7 +9,8 @@ the illustration wears in or on the hair, each with its colour and side —
     flower    a flower ornament
     beret     a beret / soft round hat
     cap       a peaked cap
-    headset   headphones / a headset
+    headset   headphones / a headset on the head
+    neckphones headphones resting around the neck
     ahoge     a single upright strand of hair on the crown
     earring   earrings visible below the hair
     crown     a crown or tiara
@@ -25,7 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_cards_gemini as g
 import sdspec_body_gemini as sb
 
-KINDS = ["hairclip", "headband", "ribbon", "flower", "beret", "cap", "headset", "ahoge", "earring", "crown", "bandana"]
+KINDS = ["hairclip", "headband", "ribbon", "flower", "beret", "cap", "headset", "neckphones", "ahoge", "earring", "crown", "bandana"]
 ASK = ("List the accessories this character wears ON THE HEAD OR IN THE HAIR (ignore glasses, clothes, badges, hand-held items). "
        f"Allowed kinds: {', '.join(KINDS)} ('ahoge' = a single upright/curled strand of hair sticking up from the crown). "
        "For each give its main colour as #rrggbb and its side: 'left' or 'right' (the CHARACTER's own left/right, i.e. the viewer's right is the character's left), "
