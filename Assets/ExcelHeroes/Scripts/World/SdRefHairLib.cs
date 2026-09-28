@@ -65,6 +65,37 @@ namespace ExcelHeroes.World
         }
 
         /// <summary>Mounts the named hair on the head bone in the character's colour. False when the library lacks it.</summary>
+        /// <summary>
+        /// A sample's hair cut shorter: triangles wholly below `cutY` (world height) go, so a long
+        /// straight fall becomes a bob or a short crop with the sample's own cap, fringe and strands —
+        /// the samples have no short hair, and the base figure's trimmed cap looked lumpy beside them.
+        /// </summary>
+        public static bool MountCut(ChibiRig rig, string name, SdLook k, int layer, float cutY)
+        {
+            _cutY = cutY;
+            try { return Mount(rig, name, k, layer); } finally { _cutY = float.NaN; }
+        }
+        static float _cutY = float.NaN;
+
+        static Mesh Cut(Mesh src, Matrix4x4 toWorld)
+        {
+            if (float.IsNaN(_cutY)) return src;
+            var m = Object.Instantiate(src);
+            var v = src.vertices;
+            var wy = new float[v.Length];
+            for (var i = 0; i < v.Length; i++) wy[i] = toWorld.MultiplyPoint3x4(v[i]).y;
+            for (var s = 0; s < m.subMeshCount; s++)
+            {
+                var tris = m.GetTriangles(s); var keep = new List<int>(tris.Length);
+                for (var t = 0; t < tris.Length; t += 3)
+                    if (Mathf.Max(wy[tris[t]], Mathf.Max(wy[tris[t + 1]], wy[tris[t + 2]])) > _cutY)
+                    { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                m.SetTriangles(keep, s, false);
+            }
+            m.RecalculateBounds();
+            return m;
+        }
+
         public static bool Mount(ChibiRig rig, string name, SdLook k, int layer)
         {
             if (rig.Head == null || !Has(name)) return false;
@@ -73,6 +104,7 @@ namespace ExcelHeroes.World
             if (Bones.TryGetValue(name, out var lib) && Skinned(rig, name, lib, mat, layer)) return true;
             var go = MeshKit.Part("hair:" + name, rig.Head, Meshes[name], mat, layer);
             go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.identity; go.transform.localScale = Vector3.one;
+            go.GetComponent<MeshFilter>().sharedMesh = Cut(Meshes[name], go.transform.localToWorldMatrix);
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
             return true;
         }
@@ -107,8 +139,9 @@ namespace ExcelHeroes.World
             go.transform.SetParent(rig.Head, false);
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             // a per-rig copy: the bind poses belong to this rig's rest, not to the shared asset
-            var mesh = Object.Instantiate(Meshes[name]);
             var toMesh = go.transform.localToWorldMatrix;
+            var cut = Cut(Meshes[name], toMesh);
+            var mesh = cut != Meshes[name] ? cut : Object.Instantiate(Meshes[name]);
             var bind = new Matrix4x4[bones.Length];
             for (var i = 0; i < bones.Length; i++) bind[i] = bones[i].worldToLocalMatrix * toMesh;
             mesh.bindposes = bind;

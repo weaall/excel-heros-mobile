@@ -56,6 +56,17 @@ namespace ExcelHeroes.World
                     if (mats[i] != null && mats[i].mainTexture != null && mats[i].mainTexture.name.Contains("+hair")) mats[i].SetFloat("_Cutoff", 2f);
             }
             if (lib != null && SdRefHairLib.Has(lib)) { SdRefHairLib.Mount(rig, lib, k, layer); return; }
+            // short styles: a sample's straight hair cut to length (the jaw for short / bun / spiky,
+            // a little below for a bob); the base figure's hair only if the library is missing
+            var donorLib = System.Environment.GetEnvironmentVariable("SD_SHORTLIB") ?? "haruka";   // haruka: one tone, a full fringe, strands that end cleanly when cut
+            if (SdRefHairLib.Has(donorLib) && rig.Neck != null && rig.Head != null)
+            {
+                var neckY = rig.Neck.position.y; var headY = rig.Head.position.y;
+                var jaw = neckY + (headY - neckY) * 0.15f;
+                var cutY = k.Style == "bob" ? neckY - (headY - neckY) * 0.35f : jaw;
+                SdRefHairLib.MountCut(rig, donorLib, k, layer, cutY);
+                return;
+            }
             // short styles: the base figure's hair for this hero, baked in its head bone's space
             var temp = new GameObject("hairdonor").transform;
             try
