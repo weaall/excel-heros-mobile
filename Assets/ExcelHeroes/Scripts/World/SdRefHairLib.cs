@@ -115,6 +115,21 @@ namespace ExcelHeroes.World
             try { return Mount(rig, name, k, layer); } finally { _regions = Region.All; _cutY = float.NaN; _lib = ""; }
         }
 
+        static Region[] Regions(Mesh src, SdHairBones lib)
+        {
+            var bw = src.boneWeights; if (lib?.bones == null || bw.Length != src.vertexCount) return null;
+            var reg = new Region[bw.Length];
+            for (var i = 0; i < bw.Length; i++)
+            {
+                var w = bw[i]; var bi = w.boneIndex0; var mx = w.weight0;
+                if (w.weight1 > mx) { bi = w.boneIndex1; mx = w.weight1; }
+                if (w.weight2 > mx) { bi = w.boneIndex2; mx = w.weight2; }
+                if (w.weight3 > mx) bi = w.boneIndex3;
+                reg[i] = bi >= 0 && bi < lib.bones.Length ? RegionOf(lib.bones[bi].n) : Region.Cap;
+            }
+            return reg;
+        }
+
         static Mesh Filter(Mesh src, SdHairBones lib)
         {
             if (_regions == Region.All || lib?.bones == null) return src;
@@ -165,11 +180,20 @@ namespace ExcelHeroes.World
         /// Curl — the ends turn in under (+, a J) or flick out (−). Recipe wave= / spread= / gather= / curl=.
         /// </summary>
         public static float Wave, Spread, Gather, Curl, Slant;
+
+        /// <summary>
+        /// The fringe's own cut (the Front region only; 1 / 0 = the sample's): Bang — its length down
+        /// the forehead (0.8 short, above the brows .. 1.2 long, into the eyes); Sweep — swept to one
+        /// side (−1 the character's right .. +1 her left); Split — parted at the middle (0..1, the two
+        /// halves pushed apart). Recipe bang= / sweep= / split=.
+        /// </summary>
+        public static float Bang = 1f, Sweep, Split;
         static ChibiRig _rig;
 
-        static Mesh Shape(Mesh src, Matrix4x4 toWorld, ChibiRig rig)
+        static Mesh Shape(Mesh src, Matrix4x4 toWorld, ChibiRig rig, Region[] vreg = null)
         {
-            if (Mathf.Abs(Volume - 1f) < 0.005f && Mathf.Abs(Fall - 1f) < 0.005f && Wave == 0f && Spread == 0f && Gather == 0f && Curl == 0f) return src;
+            var bangs = vreg != null && (Mathf.Abs(Bang - 1f) > 0.005f || Sweep != 0f || Split != 0f);
+            if (Mathf.Abs(Volume - 1f) < 0.005f && Mathf.Abs(Fall - 1f) < 0.005f && Wave == 0f && Spread == 0f && Gather == 0f && Curl == 0f && !bangs) return src;
             var m = src == null ? null : Object.Instantiate(src); if (m == null) return src;
             var toLocal = toWorld.inverse;
             var v = m.vertices;
@@ -182,9 +206,25 @@ namespace ExcelHeroes.World
             var reach = Mathf.Max(h * 0.05f, (jaw - lowest) * Fall);   // how far the hair hangs below the jaw, after the fall
             // the tie of a low ponytail: behind the nape, a little below the jaw
             var tie = new Vector3(skull.x, jaw - h * 0.03f, skull.z) - fwd * h * 0.1f;
+            // the fringe's pivot: the top of the Front region, and how far it hangs from there
+            float fTop = float.MinValue, fBot = float.MaxValue;
+            if (bangs)
+                for (var i = 0; i < v.Length; i++)
+                    if (vreg[i] == Region.Front) { var y = toWorld.MultiplyPoint3x4(v[i]).y; fTop = Mathf.Max(fTop, y); fBot = Mathf.Min(fBot, y); }
+            var fSpan = Mathf.Max(1e-4f, fTop - fBot);
             for (var i = 0; i < v.Length; i++)
             {
                 var w = toWorld.MultiplyPoint3x4(v[i]);
+                if (bangs && vreg[i] == Region.Front && fTop > float.MinValue)
+                {
+                    // only the fringe's lower 60 % moves, eased in from its pivot: moving it all from the top
+                    // tore it off the cap at the hairline
+                    var pivot = fBot + fSpan * 0.6f;
+                    var tb = Mathf.Clamp01((pivot - w.y) / Mathf.Max(1e-4f, pivot - fBot));   // 0 at the pivot, 1 at the ends
+                    if (w.y < pivot) w.y = pivot - (pivot - w.y) * Bang;
+                    var side = Vector3.Dot(w - skull, right);
+                    w += right * (-Sweep * tb * tb * h * 0.05f + Mathf.Sign(side) * Mathf.Clamp01(Mathf.Abs(side) / (h * 0.02f)) * Split * tb * tb * h * 0.035f);
+                }
                 // sideways puff, strongest at the skull's height and fading toward the crown and the tips
                 var along = Mathf.Clamp01(1f - Mathf.Abs(w.y - skull.y) / (h * 0.3f));
                 var s = 1f + (Volume - 1f) * (0.4f + 0.6f * along);
@@ -301,7 +341,7 @@ namespace ExcelHeroes.World
             var toMesh = go.transform.localToWorldMatrix;
             var filtered = Filter(Meshes[name], lib);
             _rig = rig;
-            var cut = Shape(Cut(filtered, toMesh), toMesh, rig);
+            var cut = Shape(Cut(filtered, toMesh), toMesh, rig, Regions(filtered, lib));
             var mesh = cut != Meshes[name] ? cut : Object.Instantiate(Meshes[name]);
             var bind = new Matrix4x4[bones.Length];
             for (var i = 0; i < bones.Length; i++) bind[i] = bones[i].worldToLocalMatrix * toMesh;
