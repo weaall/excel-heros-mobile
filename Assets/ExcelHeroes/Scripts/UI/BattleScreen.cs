@@ -87,6 +87,12 @@ namespace ExcelHeroes.UI
         float _pendingBoss;
         VisualElement _resultPopup;
         VisualElement _kills;
+        int _hudWave = -1, _hudEnrage = -1, _hudAlive = -1, _hudKills = -1, _hudTotal = -1, _hudTime = -1;
+        float _hudForecastAt;
+        int _hudCost = -1, _hudCostStep = -1, _hudBossN = -1, _hudBossStep = -1;
+        readonly List<Combatant> _viewKeys = new();
+        readonly List<Shot> _shotKeys = new();
+        readonly Dictionary<VisualElement, VisualElement> _hpFill = new();
         Label _costWords;     // the result overlay on screen, if any (NewRun takes it down)
         public string DebugState() => _sim == null ? "no sim" : $"P{_sim.Stage} wave {_sim.Wave}/{_sim.WaveCount} t {_sim.Elapsed:F1} finished {_sim.Finished} boss {(_sim.Monsters.FirstOrDefault(m => m.boss != null) is { } b ? $"{b.hp}/{b.maxHp}" : "-")} bar {(_bossBar == null ? "null" : _bossBar.ClassListContains("hidden") ? "hidden" : "shown")}";
 
@@ -479,8 +485,9 @@ namespace ExcelHeroes.UI
             else _bossTrail = Mathf.MoveTowards(_bossTrail, frac, dt * Mathf.Max(0.05f, (_bossTrail - frac) * 3f));
             _bossTrail = Mathf.Max(_bossTrail, frac);
             var n = Mathf.Max(1, Mathf.CeilToInt(frac * BossBars - 1e-4f));
-            _bossCount.text = $"x{n}";
-            _bossBar.MarkDirtyRepaint();
+            if (n != _hudBossN) { _hudBossN = n; _bossCount.text = $"x{n}"; }
+            var bstep = Mathf.RoundToInt(frac * 600f) * 1000 + Mathf.RoundToInt(_bossTrail * 600f);
+            if (bstep != _hudBossStep) { _hudBossStep = bstep; _bossBar.MarkDirtyRepaint(); }
         }
 
         /// <summary>
@@ -791,26 +798,45 @@ namespace ExcelHeroes.UI
             UpdateBrace(dt);
             UpdateUpgrades();
 
-            _waveLabel.text = _sim.Finished
-                ? (_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패")
-                : _sim.Enraged
-                    ? $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
-                    : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}";
-            if (_enemyLabel != null) _enemyLabel.text = _sim.Monsters.Count(m => m.Alive).ToString();
+            // The HUD's words are rebuilt only when what they say changes: formatted every frame they
+            // were most of the fight's managed garbage (PerfProbe).
+            var waveKey = (_sim.Finished ? 1 : 0) | (_sim.Won ? 2 : 0) | (_sim.TimedOut ? 4 : 0) | (_sim.Enraged ? 8 : 0)
+                        | (_sim.Wave << 4) | (_sim.WaveCount << 10) | (_sim.Stage << 16);
+            var enrage = Mathf.RoundToInt(_sim.EnrageMultiplier * 10f);
+            if (waveKey != _hudWave || enrage != _hudEnrage)
+            {
+                _hudWave = waveKey; _hudEnrage = enrage;
+                _waveLabel.text = _sim.Finished
+                    ? (_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패")
+                    : _sim.Enraged
+                        ? $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
+                        : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}";
+            }
+            if (_enemyLabel != null)
+            {
+                var alive = 0; foreach (var m in _sim.Monsters) if (m.Alive) alive++;
+                if (alive != _hudAlive) { _hudAlive = alive; _enemyLabel.text = alive.ToString(); }
+            }
             _kills?.EnableInClassList("hidden", _sim.Finished);   // the result screen has its own title there
-            if (_killLabel != null) _killLabel.text = _sim.EnemyTotal > 0 ? $"격파: {_sim.Kills} / {_sim.EnemyTotal}" : $"격파: {_sim.Kills}";
+            if (_killLabel != null && (_sim.Kills != _hudKills || _sim.EnemyTotal != _hudTotal))
+            {
+                _hudKills = _sim.Kills; _hudTotal = _sim.EnemyTotal;
+                _killLabel.text = _sim.EnemyTotal > 0 ? $"격파: {_sim.Kills} / {_sim.EnemyTotal}" : $"격파: {_sim.Kills}";
+            }
             if (_timeLabel != null)
             {
-                var left = Mathf.Max(0f, BattleSim.TimeLimit - _sim.Elapsed);
-                _timeLabel.text = $"{(int)left / 60:00}:{(int)left % 60:00}";
+                var left = (int)Mathf.Max(0f, BattleSim.TimeLimit - _sim.Elapsed);
+                if (left != _hudTime) { _hudTime = left; _timeLabel.text = $"{left / 60:00}:{left % 60:00}"; }
             }
             if (OvertimeService.Active != null) { UpdateOvertimeLabel(); return; }
             _waveLabel.EnableInClassList("battle__wave--enraged", !_sim.Finished && _sim.Enraged);
 
             // 승산 — the ETA rather than the odds. A stage's time grows continuously and that
             // growth is the wall; the win chance reads 유리 almost always and says nothing.
-            if (_forecastLabel != null)
+            // (the forecast sums the party each call: once a second is plenty, and only while the menu shows it)
+            if (_forecastLabel != null && !_menu.ClassListContains("hidden") && Time.unscaledTime >= _hudForecastAt)
             {
+                _hudForecastAt = Time.unscaledTime + 1f;
                 var f = ForecastService.For(Game.Player, _sim.Stage);
                 _forecastLabel.text = $"예상 {ForecastService.Eta(f.Eta)}";
             }
@@ -1025,11 +1051,12 @@ namespace ExcelHeroes.UI
                 el.style.top = _groundY - 46f - arc;
             }
 
-            foreach (var pair in _shotViews.ToList())
+            _shotKeys.Clear(); _shotKeys.AddRange(_shotViews.Keys);
+            foreach (var key in _shotKeys)
             {
-                if (_sim.Shots.Contains(pair.Key)) continue;
-                pair.Value.RemoveFromHierarchy();
-                _shotViews.Remove(pair.Key);
+                if (_sim.Shots.Contains(key)) continue;
+                _shotViews[key].RemoveFromHierarchy();
+                _shotViews.Remove(key);
             }
         }
 
@@ -1097,8 +1124,10 @@ namespace ExcelHeroes.UI
             LayoutShots(width, height);
             LayoutMotes(width, height, dt);
 
-            foreach (var (c, el) in _views.ToList())
+            _viewKeys.Clear(); _viewKeys.AddRange(_views.Keys);
+            foreach (var c in _viewKeys)
             {
+                var el = _views[c];
                 if (c.side == Side.Monster && !_sim.Monsters.Contains(c) && !c.Alive)
                 {
                     el.RemoveFromHierarchy();
@@ -1151,7 +1180,7 @@ namespace ExcelHeroes.UI
                 var feet = _groundY + (z - 0.5f) * DepthSpread * _scale;
                 el.style.top = feet - (c.boss != null ? 138f : 92f);
 
-                var fill = el.Q(className: "fighter__hpfill");
+                if (!_hpFill.TryGetValue(el, out var fill)) _hpFill[el] = fill = el.Q(className: "fighter__hpfill");
                 if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);
                 el.EnableInClassList("fighter--dead", !c.Alive);
             }
@@ -1207,8 +1236,10 @@ namespace ExcelHeroes.UI
                 _fx.OffsetY = a.y * height - BattleSim.GroundY * _fx.ScaleY;
             }
 
-            foreach (var (c, el) in _views.ToList())
+            _viewKeys.Clear(); _viewKeys.AddRange(_views.Keys);
+            foreach (var c in _viewKeys)
             {
+                var el = _views[c];
                 if (c.side == Side.Monster && !_sim.Monsters.Contains(c) && !c.Alive)
                 {
                     el.RemoveFromHierarchy();
@@ -1222,7 +1253,7 @@ namespace ExcelHeroes.UI
                 el.style.left = head.x * width - w * 0.5f;
                 el.style.top = head.y * height - 26f;
 
-                var fill = el.Q(className: "fighter__hpfill");
+                if (!_hpFill.TryGetValue(el, out var fill)) _hpFill[el] = fill = el.Q(className: "fighter__hpfill");
                 if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);
                 el.EnableInClassList("fighter--dead", !c.Alive);
             }
@@ -1748,12 +1779,16 @@ namespace ExcelHeroes.UI
                 var costPercent = (Mathf.Clamp(_sim.Cost, 0f, BattleSim.MaxCost) / BattleSim.MaxCost) * 100f;
                 _costFill.style.width = Length.Percent(costPercent);
             }
-            if (_costLabel != null)
+            var whole = Mathf.FloorToInt(_sim.Cost);
+            if (_costLabel != null && whole != _hudCost)
             {
-                _costLabel.text = Mathf.FloorToInt(_sim.Cost).ToString();
-                if (_costWords != null) _costWords.text = $"코스트 {Mathf.FloorToInt(_sim.Cost):00}/{(int)BattleSim.MaxCost}";
+                _hudCost = whole;
+                _costLabel.text = whole.ToString();
+                if (_costWords != null) _costWords.text = $"코스트 {whole:00}/{(int)BattleSim.MaxCost}";
             }
-            _costBar?.MarkDirtyRepaint();
+            // the painted gauge again only when its fill has moved a visible step (a repaint rebuilds its polygons)
+            var step = Mathf.RoundToInt(_sim.Cost / BattleSim.MaxCost * 240f);
+            if (step != _hudCostStep) { _hudCostStep = step; _costBar?.MarkDirtyRepaint(); }
 
             // Update EX Buttons
             foreach (var pair in _exButtons)

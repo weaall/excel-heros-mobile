@@ -185,6 +185,11 @@ namespace ExcelHeroes.Core
                         // wait it out and take a burst from the party's entrance onwards.
                         BattleSim.DebugTanky = 25;   // the capture party wipes a wave in a second: keep the monsters up to be seen
                         yield return new WaitForSeconds(2.9f);
+                        // the frame cost of an ordinary fight, measured with no capture in the window
+                        var probe = PerfProbe.Ensure();
+                        probe.Begin("fight (5 heroes, a wave)");
+                        yield return new WaitForSeconds(4f);
+                        var perf = probe.End();
                         for (var f = 0; f < 6; f++)
                         {
                             yield return new WaitForSeconds(0.45f);
@@ -195,7 +200,14 @@ namespace ExcelHeroes.Core
                         Debug.Log("[shots] before boss: " + BattleScreen.Current?.DebugState());
                         BattleSim.DebugTanky = 0;
                         BattleScreen.Current?.DebugBoss(0.63f);
-                        yield return new WaitForSeconds(2.6f);
+                        yield return new WaitForSeconds(0.6f);
+                        probe.Begin("boss wave (strikes, EX)");
+                        for (var hi = 0; hi < 5; hi++) BattleScreen.Current?.DebugSkill(hi);
+                        ExcelHeroes.World.BattleWorld.Instance?.DebugTelegraph("stomp");
+                        yield return new WaitForSeconds(2f);
+                        perf += probe.End();
+                        ExcelHeroes.World.BattleWorld.Instance?.DebugTelegraph("none");
+                        File.WriteAllText(Path.Combine(Directory, "..", "perf.txt"), perf);
                         Debug.Log("[shots] at Boss0: " + BattleScreen.Current?.DebugState());
                         yield return Shoot($"{n:00}-Boss0");
                         yield return new WaitForSeconds(0.2f);

@@ -485,7 +485,9 @@ namespace ExcelHeroes.Core
         public void DebugBossNow(float hpFrac)
         {
             if (Finished) return;
-            foreach (var m in Monsters.Where(m => m.Alive).ToList())
+            _tickMonsters.Clear();
+            foreach (var mm in Monsters) if (mm.Alive) _tickMonsters.Add(mm);
+            foreach (var m in _tickMonsters)
             {
                 m.hp = 0;
                 Events.Enqueue(new BattleEvent { kind = EventKind.Death, target = m });
@@ -529,6 +531,8 @@ namespace ExcelHeroes.Core
             Events.Enqueue(new BattleEvent { kind = EventKind.Spawn, actor = m });
         }
 
+        readonly List<Combatant> _tickMonsters = new();
+
         public void Tick(float dt)
         {
             if (Finished) return;
@@ -554,10 +558,14 @@ namespace ExcelHeroes.Core
 
             StepShots(dt);
 
-            foreach (var c in Heroes.Concat(Monsters)) TickStatus(c, dt);
+            // plain loops: the same order and the same checks as the LINQ this was, without the
+            // enumerator garbage every tick (PerfProbe: ~26 KB a frame across the fight)
+            for (var i = 0; i < Heroes.Count; i++) TickStatus(Heroes[i], dt);
+            for (var i = 0; i < Monsters.Count; i++) TickStatus(Monsters[i], dt);
 
-            foreach (var h in Heroes.Where(h => h.Alive))
+            foreach (var h in Heroes)
             {
+                if (!h.Alive) continue;
                 if (h.skillCooldown > 0f && h.skillTimer > 0f) h.skillTimer -= dt;
                 if (AutoSkill && h.SkillReady && CanAfford(h) && WorthFiring(h)) FireSkill(h);
                 StepHero(h, dt);

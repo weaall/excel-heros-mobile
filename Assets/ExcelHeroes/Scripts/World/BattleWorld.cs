@@ -612,6 +612,8 @@ namespace ExcelHeroes.World
             return v;
         }
 
+        static readonly float[] AnglesH = { 8f, 8f }, AnglesD = { -38f, -38f }, AnglesX = { -40f, 40f, 40f };
+
         void DrawVolley(Shot shot, Volley v, Actor from, Actor to)
         {
             if (v.F == Fire.Ability) return;
@@ -712,7 +714,7 @@ namespace ExcelHeroes.World
                 {
                     // blades: a streak drawn across the target as the cut goes through it
                     var c = Mathf.SmoothStep(0f, 1f, k); var len = 0.9f * to.Scale; var ctr = end + new Vector3(0f, 0.05f, -0.25f);
-                    var angles = v.F == Fire.SlashH ? new[] { 8f, 8f } : v.F == Fire.SlashD ? new[] { -38f, -38f } : new[] { -40f, 40f, 40f };
+                    var angles = v.F == Fire.SlashH ? AnglesH : v.F == Fire.SlashD ? AnglesD : AnglesX;
                     for (var j = 0; j < v.Parts.Length; j++)
                     {
                         var ang = angles[j] * Mathf.Deg2Rad; var dir = cam.right * Mathf.Cos(ang) + cam.up * Mathf.Sin(ang);
@@ -885,10 +887,12 @@ namespace ExcelHeroes.World
 
         Vector3 Mid(Actor a) => a.Rig.Root.position + Vector3.up * a.Rig.Height * a.Scale * 0.55f + new Vector3(0f, 0f, -0.3f);
 
+        static readonly MaterialPropertyBlock _fxBlock = new();   // reused: a new block per effect per frame was garbage
+
         void TintFx(Transform t, Color c, float alpha)
         {
             var mr = t.GetComponent<MeshRenderer>(); if (mr == null) return;
-            var mb = new MaterialPropertyBlock(); mr.GetPropertyBlock(mb);
+            var mb = _fxBlock; mr.GetPropertyBlock(mb);
             var l = MeshKit.Lin(c); l.a = c.a * Mathf.Clamp01(alpha);
             mb.SetColor("_Color", l); mr.SetPropertyBlock(mb);
         }
@@ -1478,7 +1482,7 @@ namespace ExcelHeroes.World
                 {
                     // streaks thin out and fade as they fly
                     var mr = f.T.GetComponent<MeshRenderer>();
-                    if (mr != null) { var mb = new MaterialPropertyBlock(); mr.GetPropertyBlock(mb); mb.SetFloat("_Glow", 1f - k); mr.SetPropertyBlock(mb); }
+                    if (mr != null) { var mb = _fxBlock; mr.GetPropertyBlock(mb); mb.SetFloat("_Glow", 1f - k); mr.SetPropertyBlock(mb); }
                 }
                 if (f.Spin) f.T.rotation = Quaternion.Euler(k * 720f, k * 540f, 0f);
                 _fx[i] = f;
@@ -1617,11 +1621,7 @@ namespace ExcelHeroes.World
                     Rig.Sheet.localRotation = Quaternion.Euler(90f, QuarterYaw * (1f - closeUp), 0f);
                 }
                 var flash = Hit > 0.08f ? 0.8f : 0f;
-                foreach (var r in Rig.Renderers)
-                {
-                    if (r == null || r == Rig.SheetRenderer) continue;
-                    r.GetPropertyBlock(mpb); mpb.SetFloat("_Flash", flash); r.SetPropertyBlock(mpb);
-                }
+                SetFlash(flash, mpb);
                 if (Rig.Sheet != null && !Rig.SheetWorn)
                 {
                     Rig.Sheet.localPosition = new Vector3(Rig.SheetSide * 0.12f, Rig.Height * 0.62f + Mathf.Sin(time * 1.7f) * 0.015f, -0.14f);
@@ -1653,6 +1653,24 @@ namespace ExcelHeroes.World
                 }
                 if (Hit > 0f) { var k = Hit / 0.16f; sx *= 1f + 0.12f * k; sy *= 1f - 0.12f * k; }
                 if (Rig.Body != null) Rig.Body.localScale = new Vector3(sx, sy, sx);
+            }
+
+            // The hit flash as a renderer property block only while it shows. A block on a renderer
+            // takes it out of the SRP Batcher, and writing _Flash = 0 every frame did that to all 35
+            // body renderers of a fight: SetPass calls ran ~130 (PerfProbe). At 0 the block goes.
+            bool _flashOn;
+            void SetFlash(float flash, MaterialPropertyBlock mpb, bool toonOnly = false)
+            {
+                var on = flash > 0.001f;
+                if (!on && !_flashOn) return;
+                _flashOn = on;
+                foreach (var r in Rig.Renderers)
+                {
+                    if (r == null || r == Rig.SheetRenderer) continue;
+                    if (toonOnly && (r.sharedMaterial == null || r.sharedMaterial.shader != MeshKit.ToonShader)) continue;
+                    if (!on) { r.SetPropertyBlock(null); continue; }
+                    mpb.Clear(); mpb.SetFloat("_Flash", flash); r.SetPropertyBlock(mpb);
+                }
             }
 
             /// <summary>Swaps the eye/mouth sheet on the face renderer's eye submesh (SdRef only).</summary>
@@ -1861,14 +1879,7 @@ namespace ExcelHeroes.World
 
                 // hit flash on the toon parts
                 var flash = Hit > 0.08f ? 0.85f : 0f;
-                foreach (var r in Rig.Renderers)
-                {
-                    if (r == null || r == Rig.SheetRenderer) continue;
-                    if (r.sharedMaterial == null || r.sharedMaterial.shader != MeshKit.ToonShader) continue;
-                    r.GetPropertyBlock(mpb);
-                    mpb.SetFloat("_Flash", flash);
-                    r.SetPropertyBlock(mpb);
-                }
+                SetFlash(flash, mpb, toonOnly: true);
             }
         }
     }
