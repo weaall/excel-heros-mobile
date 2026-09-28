@@ -355,9 +355,13 @@ namespace ExcelHeroes.World
                         if (_cast.A != null) SkillHeal(_cast.Type, hl);
                     }
                     break;
+                case EventKind.Warn:
+                    if (e.actor != null && _actors.TryGetValue(e.actor, out var wb)) Telegraph(wb, e.text);
+                    break;
                 case EventKind.Skill:
                     if (e.actor != null && _actors.TryGetValue(e.actor, out var s))
                     {
+                        if (s.C.boss != null) Resolve(s, e.text);
                         s.Skill = 0.75f;
                         var st = _cast.A == s ? _cast.Type : null;
                         if (st == null || st == "ult") SkillBurst(s);
@@ -408,6 +412,7 @@ namespace ExcelHeroes.World
             }
 
             SyncShots();
+            UpdateTelegraphs(dt);
             UpdateSparks(dt);
             UpdateFx(dt);
             _localShake = Mathf.MoveTowards(_localShake, 0f, dt * 1.5f);
@@ -1019,6 +1024,117 @@ namespace ExcelHeroes.World
             if (type is "heal" or "cleanse" or "drain")
                 FxCard("plus_cell", Mid(h) + Vector3.up * 0.3f, 0.3f, 0.24f, 0.9f, Vector3.up * 0.7f, Color.white, _cast.N++ * 0.05f, 0.5f, 1f);
         }
+
+        // ------------------------------------------------------------------ boss telegraphs --
+        // A boss announces its next special one swing ahead (EventKind.Warn); until it lands the
+        // floor says where: red conditional-format discs under whoever it will hit, #REF! over
+        // their heads, pulsing faster as it comes. The shapes follow what the move does in the sim
+        // (FireBossMove): volley = every member, sweep = the front two, stomp = one ring over the
+        // whole squad, throw = the backmost. A move that hits nobody (slow, shield, heal, summon)
+        // marks the boss itself. When the Skill event fires the marks flash and go.
+        // (After the reference RPG's AreaStrike: warning decal, a delay, then the hit.)
+
+        class Tele { public Actor Boss; public string Name; public bool Danger; public List<(Transform t, Actor on, float size)> Marks = new(); public float T; }
+        readonly List<Tele> _teles = new();
+        public int TelegraphCount => _teles.Count;
+
+        static Material _discMat;
+        static Material DiscMat => _discMat != null ? _discMat : _discMat = MeshKit.NewGlass(MeshKit.Blob, Color.white);
+
+        /// <summary>Capture pass only: the floor marks of `kind` for the boss on the field, replacing any shown.</summary>
+        public bool DebugTelegraph(string kind)
+        {
+            foreach (var t in _teles) Drop(t);
+            _teles.Clear();
+            var boss = _actors.Values.FirstOrDefault(a => a.C.boss != null && a.C.Alive);
+            if (boss == null || kind == "none") return boss != null;
+            Telegraph(boss, "debug:" + kind, kind);
+            return true;
+        }
+
+        void Telegraph(Actor boss, string name, string kindOverride = null)
+        {
+            var kind = kindOverride ?? boss.C.boss?.specials?.FirstOrDefault(x => x.name == name)?.kind;
+            if (kind == null || _teles.Any(t => t.Boss == boss && t.Name == name)) return;
+            var tele = new Tele { Boss = boss, Name = name };
+            var squad = Living(Side.Hero).Where(h => h.C.Alive).OrderByDescending(h => h.C.x).ToList();
+            List<Actor> on = kind switch
+            {
+                "volley" => squad,
+                "sweep" => squad.Take(2).ToList(),
+                "throw" => squad.Skip(Mathf.Max(0, squad.Count - 1)).ToList(),
+                _ => null,
+            };
+            void Mark(Actor a, float size, bool danger)
+            {
+                tele.Danger |= danger;
+                var disc = MeshKit.Part("tele", _root, FloorQuad, DiscMat, Layer).transform;
+                var ring = MeshKit.Part("tele", _root, FloorQuad, RingMat(danger ? new Color(1f, 0.3f, 0.28f, 0.95f) : new Color(0.7f, 0.45f, 1f, 0.95f)), Layer).transform;
+                tele.Marks.Add((disc, a, size)); tele.Marks.Add((ring, a, size * 1.05f));
+                if (danger)
+                {
+                    var card = MeshKit.Part("tele", _root, Quad, FxMat("err_ref"), Layer).transform;
+                    tele.Marks.Add((card, a, -1f));
+                }
+            }
+            if (kind == "stomp" && squad.Count > 0)
+            {
+                // one ring over the whole squad, centred between its ends
+                var span = squad.Max(h => h.X) - squad.Min(h => h.X);
+                Mark(squad[squad.Count / 2], Mathf.Max(3f, span * 1.3f + 1.5f), true);
+            }
+            else if (on != null) foreach (var a in on) Mark(a, 1.4f * a.Scale, true);
+            else Mark(boss, 2.4f * boss.Scale, false);
+            _teles.Add(tele);
+        }
+
+        Material RingMat(Color c)
+        {
+            if (!RingMats.TryGetValue(c, out var ring) || ring == null) RingMats[c] = ring = MeshKit.NewGlass(RingTex, c);
+            return ring;
+        }
+
+        void UpdateTelegraphs(float dt)
+        {
+            var cam = _cam.transform;
+            for (var i = _teles.Count - 1; i >= 0; i--)
+            {
+                var t = _teles[i];
+                t.T += dt;
+                if (t.Boss == null || !t.Boss.C.Alive || t.T > 12f) { Drop(t); _teles.RemoveAt(i); continue; }
+                var pulse = 0.5f + 0.5f * Mathf.Sin(t.T * Mathf.Lerp(7f, 20f, Mathf.Clamp01(t.T / 3f)));
+                foreach (var (tr, on, size) in t.Marks)
+                {
+                    if (tr == null || on == null) continue;
+                    var b = on.Rig.Root.position;
+                    if (size < 0f)
+                    {
+                        // the #REF! card over the head, bobbing
+                        tr.position = b + Vector3.up * (on.Rig.Height * on.Scale + 0.45f + pulse * 0.06f);
+                        tr.rotation = Quaternion.LookRotation(tr.position - cam.position, cam.up) * Quaternion.Euler(0f, 0f, Mathf.Sin(t.T * 9f) * 4f);
+                        tr.localScale = new Vector3(0.55f, 0.28f, 1f);
+                        continue;
+                    }
+                    tr.position = b + Vector3.up * 0.035f;
+                    tr.localScale = Vector3.one * size * (1f + pulse * 0.05f);
+                    if (tr.GetComponent<MeshRenderer>().sharedMaterial == DiscMat)
+                        TintFx(tr, t.Danger ? new Color(1f, 0.25f, 0.22f, 0.22f + pulse * 0.2f) : new Color(0.62f, 0.4f, 1f, 0.18f + pulse * 0.16f), 1f);
+                }
+            }
+        }
+
+        void Resolve(Actor boss, string name)
+        {
+            var t = _teles.FirstOrDefault(x => x.Boss == boss && x.Name == name);
+            if (t == null) return;
+            foreach (var (tr, on, size) in t.Marks)
+                if (tr != null && on != null && size > 0f && tr.GetComponent<MeshRenderer>().sharedMaterial == DiscMat)
+                    FloorRing(on.Rig.Root.position, new Color(1f, 0.45f, 0.35f, 0.95f), 0.35f, size * 0.6f, size * 1.4f);
+            AddShakeLocal(0.45f);
+            Drop(t); _teles.Remove(t);
+        }
+
+        void Drop(Tele t) { foreach (var (tr, _, _) in t.Marks) if (tr != null) Object.Destroy(tr.gameObject); t.Marks.Clear(); }
 
         void HitRing(Actor at, bool crit)
         {

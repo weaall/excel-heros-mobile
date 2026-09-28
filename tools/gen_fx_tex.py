@@ -69,6 +69,7 @@ if __name__ == "__main__":
     # skills: a white fill to tint, Excel's own error, a + cell, an up arrow, a warning bang
     save(Image.new("RGBA", (16, 16), (255, 255, 255, 255)), "white", (8, 8))
     cell("#DIV/0!", "err_div0", edge=(214, 48, 48, 255), width=5)
+    cell("#REF!", "err_ref", edge=(214, 48, 48, 255), width=5)
     W, H = 160, 128
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     d.rounded_rectangle((4, 4, W - 5, H - 5), 12, fill=(232, 250, 238, 255), outline=GREEN, width=8)
