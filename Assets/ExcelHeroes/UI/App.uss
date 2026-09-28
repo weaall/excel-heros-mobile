@@ -5900,3 +5900,13 @@
 /* 10-pull: the S-floor count as a navy bubble above the button, not tucked behind it (09-Gacha #1) */
 .gpulls .pull-btn { overflow: visible; }
 .gpulls__ribbon { top: -54px; right: 30px; height: 44px; padding: 0 22px; border-radius: 22px; border-width: 2px; border-color: rgb(40, 80, 130); font-size: 22px; }
+
+/* roster: one vertical scroll instead of pages (07-Roster #2) */
+.roster-scroll { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.roster-scroll > .unity-scroll-view__content-viewport { flex-grow: 1; }
+.roster-scroll .roster-grid { flex-grow: 0; padding-bottom: 40px; }
+.roster-scroll .unity-scroller--vertical { width: 12px; }
+.roster-scroll .unity-scroller__low-button, .roster-scroll .unity-scroller__high-button { display: none; }
+.roster-scroll .unity-base-slider__tracker { background-color: rgba(255, 255, 255, 0.25); border-width: 0; border-radius: 6px; }
+.roster-scroll .unity-base-slider__dragger { background-color: rgb(43, 91, 136); border-width: 0; border-radius: 6px; }
+.roster-empty { -unity-text-align: middle-center; font-size: 30px; color: rgb(90, 110, 140); height: 80px; }

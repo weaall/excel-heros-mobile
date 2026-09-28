@@ -65,14 +65,15 @@ namespace ExcelHeroes.UI
             // A fixed grid rather than a scroll. Held sideways there is room for fourteen cards at
             // a size a thumb can hit, and a page turn keeps a place the way a scroll position does
             // not — come back to 인사 and you are on the page you left, not at the top again.
-            _grid = UiKit.Div("roster-grid", _root);
-
-            var pager = UiKit.Div("pager", _root);
-            _prev = UiKit.Btn("◀", "pager__btn", () => Turn(-1), pager);
-            _pageLabel = UiKit.Text("", "pager__label", pager);
-            _next = UiKit.Btn("▶", "pager__btn", () => Turn(1), pager);
-            SkewPlate.Apply(_prev, SkewPlate.Kind.Glass);
-            SkewPlate.Apply(_next, SkewPlate.Kind.Glass);
+            // A vertical scroll, as the reference's student list: pages of ten with a "< 1 / 6 >"
+            // bar read as a web admin table (ui_critique round 9, 07-Roster #2). The scroll offset
+            // is kept across refreshes, so coming back from a card lands where it was.
+            _scroll = new ScrollView(ScrollViewMode.Vertical) { horizontalScrollerVisibility = ScrollerVisibility.Hidden };
+            _scroll.AddToClassList("roster-scroll");
+            _scroll.touchScrollBehavior = ScrollView.TouchScrollBehavior.Elastic;
+            _root.Add(_scroll);
+            _grid = UiKit.Div("roster-grid", _scroll);
+            _pageLabel = UiKit.Text("", "roster-empty hidden", _root);
 
             Refresh();
             return _root;
@@ -92,7 +93,6 @@ namespace ExcelHeroes.UI
         int _page;
         VisualElement _grid, _gradeRow;
         Button _filterBtn;
-        Button _prev, _next;
         Label _pageLabel;
 
         void Turn(int by)
@@ -186,20 +186,16 @@ namespace ExcelHeroes.UI
             UiKit.SetBtnText(_filterBtn, ActiveFilters > 0 ? $"필터 · {ActiveFilters}" : "필터");
             SkewPlate.Apply(_filterBtn, ActiveFilters > 0 ? SkewPlate.Kind.Primary : SkewPlate.Kind.Light);
 
-            var pages = Mathf.Max(1, Mathf.CeilToInt(shown.Count / (float)PageSize));
-            _page = Mathf.Clamp(_page, 0, pages - 1);
-
+            var offset = _scroll.scrollOffset;
             _grid.Clear();
-            foreach (var def in shown.Skip(_page * PageSize).Take(PageSize))
+            foreach (var def in shown)
                 _grid.Add(UiKit.Card(def, p.Find(def.id), () => _app.OpenDetail(def.id)));
+            // the last row padded so a short row keeps the grid's columns
+            for (var i = shown.Count; i % 5 != 0; i++) UiKit.Div("card card--ghost", _grid);
+            _scroll.schedule.Execute(() => _scroll.scrollOffset = offset);
 
-            // The last page is padded so four cards do not stretch across a row built for seven.
-            for (var i = shown.Count - _page * PageSize; i < PageSize; i++)
-                UiKit.Div("card card--ghost", _grid);
-
-            _pageLabel.text = shown.Count == 0 ? "조건에 맞는 사원이 없습니다" : $"{_page + 1} / {pages}";
-            _prev.SetEnabled(_page > 0);
-            _next.SetEnabled(_page < pages - 1);
+            _pageLabel.text = "조건에 맞는 사원이 없습니다";
+            _pageLabel.EnableInClassList("hidden", shown.Count > 0);
         }
     }
 
