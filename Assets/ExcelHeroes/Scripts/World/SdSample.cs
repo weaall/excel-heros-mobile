@@ -327,6 +327,13 @@ namespace ExcelHeroes.World
                 return B(w.boneIndex0, w.weight0) || B(w.boneIndex1, w.weight1) || B(w.boneIndex2, w.weight2) || B(w.boneIndex3, w.weight3);
             }
             var dLow = dbw.Select(Rides).ToArray();
+            // a lower never brings the donor's kit hanging at the hips (Natsu's phone, a bag)
+            if (!accessory)
+                for (var i = 0; i < dLow.Length; i++)
+                {
+                    var n = Dominant(dbw[i], dbones).ToLowerInvariant();
+                    if (n.Contains("acc") || n.Contains("phone") || n.Contains("bag")) dLow[i] = false;
+                }
             var part = Object.Instantiate(dm);
             var dnames = dbody.sharedMaterials.Select(m => m ? m.name.ToLowerInvariant() : "").ToArray();
             for (var s = 0; s < part.subMeshCount; s++)
@@ -334,7 +341,7 @@ namespace ExcelHeroes.World
                 var tris = dm.GetTriangles(s); var keep = new List<int>();
                 if (s < dnames.Length && dnames[s].Contains("body"))
                     for (var t = 0; t < tris.Length; t += 3)
-                        if (accessory ? dLow[tris[t]] && dLow[tris[t + 1]] && dLow[tris[t + 2]] : dLow[tris[t]] || dLow[tris[t + 1]] || dLow[tris[t + 2]]) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                        if (accessory ? dLow[tris[t]] && dLow[tris[t + 1]] && dLow[tris[t + 2]] : (dLow[tris[t]] ? 1 : 0) + (dLow[tris[t + 1]] ? 1 : 0) + (dLow[tris[t + 2]] ? 1 : 0) >= 2) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
                 part.SetTriangles(keep, s, false);
             }
 
@@ -365,10 +372,13 @@ namespace ExcelHeroes.World
             part.bindposes = bind;
             smr.sharedMesh = part; smr.bones = newBones; smr.rootBone = rig.Pelvis;
             var tex = SdSampleTex.For(donorKey, k, Sheet(donorKey, "body"), Sheet(donorKey, "hair"), Sheet(donorKey, "eyemouth"), null, paintedOk: false);
+            // a lower is the hero's SKIRT: its cloth all in the bottom colour, the pleats' shading kept
+            // (the outfit clusters put the top's colour on Natsu's skirt)
+            var sheetL = accessory ? tex.Body : SdSampleTex.Tint(Sheet(donorKey, "body"), k.Bottom, donorKey + ":" + k.Id) ?? tex.Body;
             var mats = new Material[part.subMeshCount];
             for (var i = 0; i < mats.Length; i++)
             {
-                var m = MeshKit.NewToon(0.005f, tex.Body);
+                var m = MeshKit.NewToon(0.005f, sheetL);
                 m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.24f); m.SetColor("_ShadeTint", SdRefLook.WarmShade); m.SetFloat("_Rim", 0.1f);
                 mats[i] = m;
             }
@@ -476,6 +486,8 @@ namespace ExcelHeroes.World
             if (!_raw && !string.IsNullOrEmpty(accEnv)) foreach (var acc in accEnv.Split(',')) Accessory(rig, body, acc.Trim(), k, root, layer);
             if (!_raw) SdGarment.Apply(rig, k, rig.Renderers.OfType<SkinnedMeshRenderer>().Where(r => r == body || r.name.StartsWith("lower:")).ToList());
             if (!_raw) DressHair(rig, heroId, key, k, kept, layer);
+            var hairEnv = System.Environment.GetEnvironmentVariable("SD_HAIR") ?? k.HairRecipe ?? "";
+            if (!_raw) SdHeadwear.Apply(rig, k, root, layer, hairEnv.Contains("len=short") || hairEnv.Contains("len=bob"));
 
             var sh = new MeshKit.Builder();
             sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
@@ -519,6 +531,31 @@ namespace ExcelHeroes.World
         }
 
         static float Luma(Color c) => c.r * 0.299f + c.g * 0.587f + c.b * 0.114f;
+
+        static readonly Dictionary<string, Texture2D> Tints = new();
+
+        /// <summary>Every cloth pixel of the sheet in one colour (its hue and saturation, the value
+        /// carried by each pixel's ratio to the sheet's mean); skin left as it is.</summary>
+        public static Texture2D Tint(Texture2D src, Color target, string id)
+        {
+            if (src == null || !src.isReadable) return null;
+            if (Tints.TryGetValue(id, out var t) && t != null) return t;
+            var px = src.GetPixels();
+            Color.RGBToHSV(target, out var th, out var ts, out var tv);
+            bool Skin(float h, float s, float v) => (h < 0.12f || h > 0.94f) && s > 0.04f && s < 0.5f && v > 0.5f;   // shaded skin too
+            float sum = 0f; var n = 0;
+            foreach (var c in px) { Color.RGBToHSV(c, out var h, out var s, out var v); if (!Skin(h, s, v)) { sum += v; n++; } }
+            var mean = n > 0 ? sum / n : 0.5f;
+            for (var i = 0; i < px.Length; i++)
+            {
+                Color.RGBToHSV(px[i], out var h, out var s, out var v);
+                if (Skin(h, s, v)) continue;
+                var ratio = Mathf.Clamp(v / Mathf.Max(0.05f, mean), 0.45f, 1.5f);
+                var c = Color.HSVToRGB(th, ts, Mathf.Clamp01(tv * ratio));
+                c.a = px[i].a; px[i] = c;
+            }
+            return Tints[id] = Copy(src, px, src.name + "+tint");
+        }
 
         static Texture2D Copy(Texture2D src, Color[] px, string name)
         {

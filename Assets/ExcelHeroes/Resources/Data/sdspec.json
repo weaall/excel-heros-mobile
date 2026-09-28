@@ -33,7 +33,8 @@
    "lower": "",
    "hairParts": "front=haruka;side=haruka;back=haruka;extra=mika;len=short",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
+   "head": ""
   },
   {
    "id": "admin",
@@ -158,7 +159,8 @@
    "lower": "yutori_natsu",
    "hairParts": "front=mika;side=mika;back=mika;extra=mika;len=long",
    "acc": "",
-   "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
+   "head": "hairclip:#c4a35f:left"
   },
   {
    "id": "audit_han",
@@ -193,7 +195,8 @@
    "lower": "",
    "hairParts": "front=haruka;side=haruka;back=hikari;extra=none;len=short",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=tights",
+   "head": "earring:#282531:right"
   },
   {
    "id": "barista",
@@ -228,7 +231,8 @@
    "lower": "",
    "hairParts": "front=hikari;side=mika;back=mika;extra=mika;len=short",
    "acc": "",
-   "garment": "pants=slim"
+   "garment": "pants=slim",
+   "head": ""
   },
   {
    "id": "bd_lead",
@@ -263,7 +267,8 @@
    "lower": "yutori_natsu",
    "hairParts": "front=yuuka;side=haruka;back=haruka;extra=none;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.10;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.10;legs=tights",
+   "head": ""
   },
   {
    "id": "cco",
@@ -298,7 +303,8 @@
    "lower": "yutori_natsu",
    "hairParts": "front=mika;side=haruka;back=haruka;extra=none;len=bob",
    "acc": "",
-   "garment": "pants=none;skirt=0.80;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=0.80;flare=-0.20;legs=tights",
+   "head": "headset:#e5ecf4:right,flower:#e27889:right"
   },
   {
    "id": "cdo",
@@ -333,7 +339,8 @@
    "lower": "yutori_natsu",
    "hairParts": "front=hikari;side=hikari;back=hikari;extra=none;len=long",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.25;legs=socks"
+   "garment": "pants=none;skirt=1.00;flare=-0.25;legs=socks",
+   "head": ""
   },
   {
    "id": "ceo",
@@ -365,10 +372,11 @@
    "hairLib": "",
    "manual": [],
    "body": "hikari",
-   "lower": "kayoko_dress_ver_",
+   "lower": "",
    "hairParts": "front=mika;side=mika;back=mika;extra=none;len=long",
    "acc": "",
-   "garment": "pants=none;skirt=1.30;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.30;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "cfo",
@@ -403,7 +411,8 @@
    "lower": "yutori_natsu",
    "hairParts": "front=yuuka;side=mika;back=mika;extra=mika;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=0.90;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=0.90;flare=-0.30;legs=tights",
+   "head": "earring:#caa34f:left"
   },
   {
    "id": "chairman",
@@ -435,10 +444,11 @@
    "hairLib": "",
    "manual": [],
    "body": "hikari",
-   "lower": "kayoko_dress_ver_",
+   "lower": "",
    "hairParts": "front=hikari;side=haruka;back=haruka;extra=none;len=bob",
    "acc": "",
-   "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights",
+   "head": "crown:#cca360:top"
   },
   {
    "id": "chairwoman",
@@ -473,7 +483,8 @@
    "lower": "",
    "hairParts": "front=yuuka;side=mika;back=mika;extra=none;len=long",
    "acc": "",
-   "garment": "pants=none;skirt=1.35;flare=0.35;legs=tights"
+   "garment": "pants=none;skirt=1.35;flare=0.35;legs=tights",
+   "head": "earring:#cfae60:right"
   },
   {
    "id": "chief_of_staff",
@@ -508,7 +519,8 @@
    "lower": "haruka",
    "hairParts": "front=haruka;side=hikari;back=haruka;extra=mika;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=tights",
+   "head": ""
   },
   {
    "id": "chro",
@@ -540,10 +552,11 @@
    "hairLib": "",
    "manual": [],
    "body": "kayoko_dress_ver_",
-   "lower": "",
+   "lower": "yutori_natsu",
    "hairParts": "front=yuuka;side=haruka;back=mika;extra=none;len=long",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": "earring:#dfb462:both"
   },
   {
    "id": "cleaner",
@@ -578,7 +591,8 @@
    "lower": "haruka",
    "hairParts": "front=mika;side=mika;back=haruka;extra=mika;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.80;flare=0.30;legs=bare"
+   "garment": "pants=none;skirt=1.80;flare=0.30;legs=bare",
+   "head": "bandana:#bfd5e8:top"
   },
   {
    "id": "cmo",
@@ -610,10 +624,11 @@
    "hairLib": "",
    "manual": [],
    "body": "yutori_natsu",
-   "lower": "kayoko_dress_ver_",
+   "lower": "",
    "hairParts": "front=mika;side=haruka;back=mika;extra=none;len=long",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": "earring:#d7ad48:both"
   },
   {
    "id": "contract",
@@ -648,7 +663,8 @@
    "lower": "haruka",
    "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=bob",
    "acc": "",
-   "garment": "pants=none;skirt=1.40;flare=0.30;legs=bare"
+   "garment": "pants=none;skirt=1.40;flare=0.30;legs=bare",
+   "head": ""
   },
   {
    "id": "coo",
@@ -683,7 +699,8 @@
    "lower": "hayase_yuuka",
    "hairParts": "front=haruka;side=hikari;back=haruka;extra=none;len=bob",
    "acc": "",
-   "garment": "pants=none;skirt=0.80;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=0.80;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "courier",
@@ -718,7 +735,8 @@
    "lower": "reisa",
    "hairParts": "front=haruka;side=hikari;back=hikari;extra=none;len=short",
    "acc": "nameplate",
-   "garment": "pants=slim"
+   "garment": "pants=slim",
+   "head": "cap:#335b9c:top"
   },
   {
    "id": "cpo",
@@ -750,10 +768,11 @@
    "hairLib": "",
    "manual": [],
    "body": "kayoko_dress_ver_",
-   "lower": "",
+   "lower": "yutori_natsu",
    "hairParts": "front=yuuka;side=hikari;back=haruka;extra=none;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.20;legs=socks"
+   "garment": "pants=none;skirt=1.00;flare=-0.20;legs=socks",
+   "head": "headset:#cfa24b:both"
   },
   {
    "id": "cro",
@@ -788,7 +807,8 @@
    "lower": "yutori_natsu",
    "hairParts": "front=yuuka;side=mika;back=haruka;extra=mika;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=0.90;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=0.90;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "cso",
@@ -823,7 +843,8 @@
    "lower": "hayase_yuuka",
    "hairParts": "front=mika;side=hikari;back=mika;extra=none;len=long",
    "acc": "",
-   "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights",
+   "head": "earring:#d9b34f:both"
   },
   {
    "id": "cto",
@@ -855,10 +876,11 @@
    "hairLib": "",
    "manual": [],
    "body": "hayase_yuuka",
-   "lower": "kayoko_dress_ver_",
+   "lower": "yutori_natsu",
    "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=socks"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=socks",
+   "head": "earring:#2c2d3a:left"
   },
   {
    "id": "design_lead",
@@ -893,7 +915,8 @@
    "lower": "kayoko_dress_ver_",
    "hairParts": "front=mika;side=mika;back=mika;extra=none;len=shoulder",
    "acc": "",
-   "garment": "pants=none;skirt=0.60;flare=-0.10;legs=bare"
+   "garment": "pants=none;skirt=0.60;flare=-0.10;legs=bare",
+   "head": "beret:#2c94db:top"
   },
   {
    "id": "dev_lead",
@@ -928,7 +951,8 @@
    "lower": "hayase_yuuka",
    "hairParts": "front=haruka;side=hikari;back=haruka;extra=none;len=short",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.20;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.20;flare=-0.20;legs=tights",
+   "head": "headset:#80b6e1:both"
   },
   {
    "id": "finance",
@@ -1053,7 +1077,8 @@
    "lower": "haruka",
    "hairParts": "front=mika;side=natsu;back=mika;extra=none;len=long",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=2.00;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=2.00;flare=-0.20;legs=tights",
+   "head": ""
   },
   {
    "id": "ga_lead",
@@ -1088,7 +1113,8 @@
    "lower": "hikari",
    "hairParts": "front=mika;side=hikari;back=haruka;extra=none;len=bob",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.20;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.20;flare=-0.20;legs=tights",
+   "head": ""
   },
   {
    "id": "guard",
@@ -1123,7 +1149,8 @@
    "lower": "",
    "hairParts": "front=haruka;side=haruka;back=mika;extra=none;len=short",
    "acc": "",
-   "garment": "pants=slim"
+   "garment": "pants=slim",
+   "head": ""
   },
   {
    "id": "hacker",
@@ -1155,10 +1182,11 @@
    "hairLib": "",
    "manual": [],
    "body": "haruka",
-   "lower": "kayoko_dress_ver_",
+   "lower": "hikari",
    "hairParts": "front=haruka;side=mika;back=haruka;extra=none;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": "headset:#6cd6d0:right"
   },
   {
    "id": "helpdesk",
@@ -1193,7 +1221,8 @@
    "lower": "haruka",
    "hairParts": "front=mika;side=reisa;back=mika;extra=none;len=bob",
    "acc": "",
-   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare"
+   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare",
+   "head": ""
   },
   {
    "id": "hr_jung",
@@ -1225,10 +1254,11 @@
    "hairLib": "",
    "manual": [],
    "body": "hayase_yuuka",
-   "lower": "kayoko_dress_ver_",
+   "lower": "hikari",
    "hairParts": "front=mika;side=haruka;back=mika;extra=none;len=shoulder",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": "earring:#e5e7eb:both"
   },
   {
    "id": "intern",
@@ -1294,7 +1324,8 @@
    "lower": "kayoko_dress_ver_",
    "hairParts": "front=haruka;side=haruka;back=reisa;extra=none;len=shoulder",
    "acc": "",
-   "garment": "pants=none;skirt=0.60;flare=-0.30;legs=bare"
+   "garment": "pants=none;skirt=0.60;flare=-0.30;legs=bare",
+   "head": "ribbon:#eff0f4:both"
   },
   {
    "id": "intern_seo",
@@ -1329,7 +1360,8 @@
    "lower": "haruka",
    "hairParts": "front=mika;side=yuuka;back=mika;extra=none;len=long",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.40;flare=0.30;legs=bare"
+   "garment": "pants=none;skirt=1.40;flare=0.30;legs=bare",
+   "head": ""
   },
   {
    "id": "ir_lead",
@@ -1361,10 +1393,11 @@
    "hairLib": "",
    "manual": [],
    "body": "hikari",
-   "lower": "kayoko_dress_ver_",
+   "lower": "",
    "hairParts": "front=yuuka;side=mika;back=haruka;extra=none;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "lab_park",
@@ -1399,7 +1432,8 @@
    "lower": "hayase_yuuka",
    "hairParts": "front=mika;side=miku;back=mika;extra=none;len=long",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "labor_atty",
@@ -1434,7 +1468,8 @@
    "lower": "",
    "hairParts": "front=mika;side=reisa;back=mika;extra=none;len=long",
    "acc": "",
-   "garment": "pants=none;skirt=0.90;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=0.90;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "legal_yoon",
@@ -1469,7 +1504,8 @@
    "lower": "hikari",
    "hairParts": "front=mika;side=hikari;back=hikari;extra=none;len=long",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.35;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.35;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "logistics_bae",
@@ -1501,10 +1537,11 @@
    "hairLib": "",
    "manual": [],
    "body": "hayase_yuuka_gym_ver_",
-   "lower": "kayoko_dress_ver_",
+   "lower": "yutori_natsu",
    "hairParts": "front=haruka;side=natsu;back=haruka;extra=none;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.25;legs=socks"
+   "garment": "pants=none;skirt=1.00;flare=-0.25;legs=socks",
+   "head": "ahoge"
   },
   {
    "id": "macro",
@@ -1536,10 +1573,11 @@
    "hairLib": "",
    "manual": [],
    "body": "reisa",
-   "lower": "kayoko_dress_ver_",
+   "lower": "hikari",
    "hairParts": "front=haruka;side=yuuka;back=haruka;extra=none;len=short",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.20;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.20;flare=-0.20;legs=tights",
+   "head": "headset:#314d74:both"
   },
   {
    "id": "mail_cho",
@@ -1574,7 +1612,8 @@
    "lower": "yutori_natsu",
    "hairParts": "front=mika;side=mika;back=haruka;extra=none;len=bob",
    "acc": "",
-   "garment": "pants=slim"
+   "garment": "pants=slim",
+   "head": ""
   },
   {
    "id": "main",
@@ -1639,7 +1678,8 @@
    "lower": "hikari",
    "hairParts": "front=mika;side=haruka;back=haruka;extra=mika;len=short",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "parttime",
@@ -1674,7 +1714,8 @@
    "lower": "haruka",
    "hairParts": "front=hikari;side=hikari;back=hikari;extra=none;len=bob",
    "acc": "",
-   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare"
+   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare",
+   "head": ""
   },
   {
    "id": "pivot",
@@ -1706,10 +1747,11 @@
    "hairLib": "",
    "manual": [],
    "body": "haruka",
-   "lower": "kayoko_dress_ver_",
+   "lower": "hikari",
    "hairParts": "front=yuuka;side=yuuka;back=haruka;extra=none;len=bob",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights",
+   "head": "earring:#e2e5ea:left"
   },
   {
    "id": "pm_lead",
@@ -1744,7 +1786,8 @@
    "lower": "haruka",
    "hairParts": "front=mika;side=mika;back=haruka;extra=none;len=bob",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.40;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.40;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "pr_yoo",
@@ -1779,7 +1822,8 @@
    "lower": "hikari",
    "hairParts": "front=mika;side=natsu;back=haruka;extra=none;len=bob",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": "earring:#f1eff5:right"
   },
   {
    "id": "qa_lee",
@@ -1814,7 +1858,8 @@
    "lower": "hikari",
    "hairParts": "front=haruka;side=mika;back=haruka;extra=none;len=bob",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=0.80;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=0.80;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "reception_go",
@@ -1849,7 +1894,8 @@
    "lower": "",
    "hairParts": "front=mika;side=haruka;back=hikari;extra=none;len=long",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": "headset:#2c3036:right"
   },
   {
    "id": "sales",
@@ -1914,7 +1960,8 @@
    "lower": "hikari",
    "hairParts": "front=mika;side=haruka;back=hikari;extra=none;len=short",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
+   "head": ""
   },
   {
    "id": "sales_manager",
@@ -2009,7 +2056,8 @@
    "lower": "hayase_yuuka",
    "hairParts": "front=yuuka;side=yuuka;back=haruka;extra=mika;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.30;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.30;flare=-0.30;legs=tights",
+   "head": "earring:#d5b461:both"
   },
   {
    "id": "security_yang",
@@ -2044,7 +2092,8 @@
    "lower": "haruka",
    "hairParts": "front=yuuka;side=haruka;back=hikari;extra=none;len=bob",
    "acc": "",
-   "garment": "pants=none;skirt=1.35;flare=-0.20;legs=bare"
+   "garment": "pants=none;skirt=1.35;flare=-0.20;legs=bare",
+   "head": ""
   },
   {
    "id": "staff",
@@ -2109,7 +2158,8 @@
    "lower": "haruka",
    "hairParts": "front=haruka;side=natsu;back=haruka;extra=none;len=bob",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare"
+   "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare",
+   "head": ""
   },
   {
    "id": "trainer_seok",
@@ -2144,7 +2194,8 @@
    "lower": "",
    "hairParts": "front=haruka;side=miku;back=haruka;extra=none;len=short",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.20;flare=-0.20;legs=tights"
+   "garment": "pants=none;skirt=1.20;flare=-0.20;legs=tights",
+   "head": ""
   },
   {
    "id": "translator_ji",
@@ -2176,10 +2227,11 @@
    "hairLib": "",
    "manual": [],
    "body": "hayase_yuuka",
-   "lower": "kayoko_dress_ver_",
+   "lower": "hikari",
    "hairParts": "front=mika;side=haruka;back=mika;extra=none;len=long",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.40;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.40;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "union_chief",
@@ -2214,7 +2266,8 @@
    "lower": "hikari",
    "hairParts": "front=haruka;side=reisa;back=haruka;extra=none;len=short",
    "acc": "",
-   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "vlookup",
@@ -2249,7 +2302,8 @@
    "lower": "reisa",
    "hairParts": "front=haruka;side=yuuka;back=haruka;extra=none;len=bob",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.30;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.30;flare=-0.30;legs=tights",
+   "head": ""
   },
   {
    "id": "welfare",
@@ -2284,7 +2338,8 @@
    "lower": "hikari",
    "hairParts": "front=haruka;side=miku;back=haruka;extra=none;len=bob",
    "acc": "nameplate",
-   "garment": "pants=none;skirt=1.40;flare=-0.30;legs=tights"
+   "garment": "pants=none;skirt=1.40;flare=-0.30;legs=tights",
+   "head": "flower:#f1b2c6:right"
   }
  ]
 }

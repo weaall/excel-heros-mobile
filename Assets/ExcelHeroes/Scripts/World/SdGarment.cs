@@ -75,6 +75,12 @@ namespace ExcelHeroes.World
                     if (zone[i] == Zone.Hip && l2w.MultiplyPoint3x4(v[i]).y > pelvis.y + h * 0.03f) zone[i] = Zone.None;
                 }
                 if (!zone.Any(z => z != Zone.None)) continue;
+                // a lower with no skirt chains (a dress hem skinned to the hips and thighs, Kayoko's,
+                // Haruka's): its hem is cloth on the pelvis and thigh bones, so there the legwear only
+                // goes on the SKIN texels, and the hips keep their own paint
+                var skirted = zone.Any(z => z == Zone.Skirt);
+                if (!skirted) for (var i = 0; i < zone.Length; i++) if (zone[i] == Zone.Hip) zone[i] = Zone.None;
+                var uv = mesh.uv;
                 var dbg = System.Environment.GetEnvironmentVariable("SD_GARMENTDBG") == "1";
                 if (dbg)
                 {
@@ -132,6 +138,15 @@ namespace ExcelHeroes.World
                 {
                     var tris = mesh.GetTriangles(s); keep[s] = new List<int>(tris.Length);
                     var eye = s < mats.Count && mats[s] != null && mats[s].renderQueue > 2001;   // the face layers
+                    var sheet = s < mats.Count && mats[s] != null ? mats[s].mainTexture as Texture2D : null;
+                    if (sheet != null && !sheet.isReadable) sheet = null;
+                    bool Skin(int a, int b2, int c2)
+                    {
+                        if (sheet == null || uv.Length != v.Length) return true;
+                        var col = sheet.GetPixelBilinear((uv[a].x + uv[b2].x + uv[c2].x) / 3f, (uv[a].y + uv[b2].y + uv[c2].y) / 3f);
+                        Color.RGBToHSV(col, out var hh, out var ss, out var vv);
+                        return (hh < 0.11f || hh > 0.95f) && ss > 0.06f && ss < 0.5f && vv > 0.6f;
+                    }
                     for (var t = 0; t < tris.Length; t += 3)
                     {
                         // painted when all three corners are; the colour of the lowest corner's zone
@@ -142,6 +157,8 @@ namespace ExcelHeroes.World
                             var z = zone[tris[t]]; var z1 = zone[tris[t + 1]]; var z2 = zone[tris[t + 2]];
                             var c0 = Paint(z); var c1 = Paint(z1); var c2 = Paint(z2);
                             if (c0 != null && c1 != null && c2 != null) c = (Zone)Mathf.Max((int)z, Mathf.Max((int)z1, (int)z2)) == z ? c0 : (Zone)Mathf.Max((int)z1, (int)z2) == z1 ? c1 : c2;
+                            // on a skirt-less lower the thighs' cloth (the dress hem) is left as painted
+                            if (c != null && !skirted && legs != "pants" && (z == Zone.Thigh || z1 == Zone.Thigh || z2 == Zone.Thigh) && !Skin(tris[t], tris[t + 1], tris[t + 2])) c = null;
                             else if (z == Zone.Hip || z1 == Zone.Hip || z2 == Zone.Hip) c = null;
                         }
                         if (c == null) { keep[s].Add(tris[t]); keep[s].Add(tris[t + 1]); keep[s].Add(tris[t + 2]); continue; }
