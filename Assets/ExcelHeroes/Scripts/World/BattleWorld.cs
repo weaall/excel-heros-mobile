@@ -89,7 +89,7 @@ namespace ExcelHeroes.World
         public void Celebrate(bool on) => _closeUpTarget = on ? 1f : 0f;
 
         public static float QuarterPitch = 40f, QuarterYaw = 28f, QuarterDist = 10.5f;
-        float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN;
+        float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN, _punch;
 
         void PlaceCamera(float shake)
         {
@@ -106,7 +106,7 @@ namespace ExcelHeroes.World
             var target = Vector3.Lerp(new Vector3(_camFocusX, 0.4f, 0.1f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
             var pitch = Mathf.Lerp(QuarterPitch, 14f, k) * Mathf.Deg2Rad;
             var yaw = Mathf.Lerp(QuarterYaw, 0f, k);
-            var dist = Mathf.Lerp(QuarterDist * _camZoom, 5.8f, k);
+            var dist = Mathf.Lerp(QuarterDist * _camZoom * (1f - 0.035f * _punch), 5.8f, k);
             var pos = target + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
@@ -463,6 +463,7 @@ namespace ExcelHeroes.World
             UpdateSparks(dt);
             UpdateFx(dt);
             _localShake = Mathf.MoveTowards(_localShake, 0f, dt * 1.5f);
+            _punch = Mathf.MoveTowards(_punch, 0f, dt * 7f);   // a crit's zoom-in, gone in 0.14 s
         }
 
         void SyncShots()
@@ -827,6 +828,18 @@ namespace ExcelHeroes.World
         void ImpactShards(Actor t, bool crit)
         {
             var at = Mid(t);
+            // the burst: a cross of light the size of the target (a crit bigger and gold), 0.1 s
+            var size = t.Rig.Height * t.Scale * (crit ? 1.1f : 0.8f);
+            var core = FxPart("impact", Quad, GlowMat(crit ? new Color(1f, 0.85f, 0.3f) : new Color(0.3f, 0.95f, 1f)), Layer).transform;
+            core.position = at;
+            _fx.Add(new Fx { T = core, Life = 0.1f, Max = 0.1f, Grow0 = size * 0.5f, Grow1 = size * 0.9f, Face = true });
+            foreach (var roll in new[] { 0f, 90f })
+            {
+                var q = FxPart("impact", Quad, GlowMat(Color.white), Layer).transform;
+                q.position = at;
+                _fx.Add(new Fx { T = q, Life = 0.09f, Max = 0.09f, Aspect = new Vector2(1f, 0.1f), Grow0 = size, Grow1 = size * 1.4f, Face = true, Roll = roll + (crit ? 45f : 15f) });
+            }
+            if (crit) _punch = 1f;
             var n = crit ? 8 : 5;
             var col = crit ? new Color(1f, 0.85f, 0.3f) : new Color(0.55f, 0.95f, 0.7f);
             for (var i = 0; i < n; i++)
@@ -1759,7 +1772,7 @@ namespace ExcelHeroes.World
                 // then bursting into cells (BattleWorld.DeathPop, at 0.72 s) as it shrinks away
                 if (Rig.RefModel && !hero && Dying > 0f)
                 {
-                    if (_deathScale == Vector3.zero) _deathScale = root.localScale;
+                    if (_deathScale == Vector3.zero) _deathScale = Vector3.one * Scale;
                     var k = Mathf.Clamp01(Dying / 0.72f);
                     y += Mathf.Sin(k * Mathf.PI) * 0.8f * Mathf.Sqrt(_deathScale.y);
                     lunge += Mathf.SmoothStep(0f, 1f, k) * 1.4f;
@@ -1768,6 +1781,14 @@ namespace ExcelHeroes.World
                     root.localScale = _deathScale * (1f - shrink * 0.95f);
                 }
                 if (Rig.RefModel && Rig.HandR != null) SwingTrail(hero);
+                // the flinch: squashed on the hit's first frames, springing back past round (not while dying)
+                if (Rig.RefModel && Dying <= 0f)
+                {
+                    _baseScale = Vector3.one * Scale;
+                    var hk = Hit > 0f ? 1f - Hit / 0.16f : 1f;
+                    var sq = Hit > 0f ? (hk < 0.3f ? -0.12f * Mathf.Sin(hk / 0.3f * Mathf.PI * 0.5f) : -0.12f * Mathf.Cos((hk - 0.3f) / 0.7f * Mathf.PI * 1.5f) * (1f - hk)) : 0f;
+                    root.localScale = new Vector3(_baseScale.x * (1f - sq * 0.6f), _baseScale.y * (1f + sq), _baseScale.z * (1f - sq * 0.6f));
+                }
                 root.localPosition = new Vector3(X + lunge, y, Z) + facing;
                 if (Rig.SheetFloor && Rig.Sheet != null)
                 {
@@ -2084,7 +2105,7 @@ namespace ExcelHeroes.World
             // melee blow), the target shaking in place — the weight a hit has in BA's fights
             public float Freeze, FreezeShake;
             public bool Popped;
-            Vector3 _deathScale;
+            Vector3 _deathScale, _baseScale;
             TrailRenderer _trail;
             public float LastRing = -1f;     // world time of the last hit ring on this actor (HitRing throttle)
             public float Enter;             // 1 → 0: running in from the left at the start of a run
