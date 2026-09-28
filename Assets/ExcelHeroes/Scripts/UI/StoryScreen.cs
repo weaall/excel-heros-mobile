@@ -66,9 +66,16 @@ namespace ExcelHeroes.UI
                     UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(i * r.width * 0.2f, -3f), 3.5f, 3.5f), UiPaint.C(250, 128, 150));
             });
             UiKit.Text("사내 메신저", "mt__title", head);
+            UiKit.Text("// TALK ARCHIVE", "mt__title-en", head);
             UiKit.Div("spacer", head);
             var read = GameData.Episodes.Count(e => p.readEpisodes.Contains(e.id));
-            UiKit.Text($"읽음 {read} / {GameData.Episodes.Count} · 처음 읽으면 보석 {GameData.Balance.storyGems}", "mt__count", head);
+            // progress and the reward as one pill, the gem drawn (12-Story #2)
+            var pill = UiKit.Div("mt__pill", head);
+            UiKit.Text($"읽음 {read}/{GameData.Episodes.Count}", "mt__pill-text", pill);
+            UiKit.Div("mt__pill-rule", pill);
+            var gemArt = GameData.Icon("gem");
+            if (gemArt != null) UiKit.SetArt(UiKit.Div("mt__pill-icon", pill), gemArt);
+            UiKit.Text($"+{GameData.Balance.storyGems}", "mt__pill-gems", pill);
 
             var cols = UiKit.Div("mt__cols", win);
             var list = UiKit.Scroll("mt__list", cols);
@@ -86,10 +93,20 @@ namespace ExcelHeroes.UI
                 var who = ep.lines.Select(l => l.who).FirstOrDefault(w => w != GameData.MainId && GameData.Hero(w) != null);
                 if (unlocked && who != null) UiKit.SetPortrait(face, who, UiKit.Crop.Face, round: true);
 
+                if (!unlocked)
+                {
+                    var lk = UiKit.Div("mt-room__lock", face);
+                    ModalFrame.Painted(lk, UiKit.DrawLock);
+                }
+
+                // "#01" as its own cyan chapter label over the title (12-Story #3)
                 var text = UiKit.Div("mt-room__text", row);
-                UiKit.Text(ep.title, "mt-room__title", text);
+                var m = System.Text.RegularExpressions.Regex.Match(ep.title ?? "", @"^(#\d+)\s*(.*)$");
+                if (m.Success) UiKit.Text(m.Groups[1].Value, "mt-room__chapter", text);
+                UiKit.Text(m.Success ? m.Groups[2].Value : ep.title, "mt-room__title", text);
                 var last = ep.lines.LastOrDefault(l => l.who != "sys")?.text ?? ep.room;
-                UiKit.Text(unlocked ? last : $"Phase {ep.phase} 도달 시 해금", "mt-room__last", text);
+                if (unlocked) UiKit.Text(last, "mt-room__last", text);
+                else UiKit.Text($"Phase {ep.phase} 도달 시 해금", "mt-room__cond", text);
 
                 if (unlocked && !wasRead)
                 {

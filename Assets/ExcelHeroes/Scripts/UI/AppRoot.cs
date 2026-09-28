@@ -293,6 +293,7 @@ namespace ExcelHeroes.UI
         {
             UpdateStatus();
             _current?.Refresh();
+            if (_content != null) UiKit.TitleSubs(_content);
         }
 
         void UpdateStatus()
@@ -331,6 +332,7 @@ namespace ExcelHeroes.UI
             _content.Add(built);
             Juice.Enter(built);
             Juice.PressAll(built);
+            UiKit.TitleSubs(built);
             UpdateStatus();
 
             foreach (var pair in _tabs)
@@ -534,6 +536,7 @@ namespace ExcelHeroes.UI
             Overlay.AddToClassList("overlay--page");
             Overlay.Add(_detail.Build(heroId, CloseOverlay));
             Juice.PressAll(Overlay);
+            UiKit.TitleSubs(Overlay);
         }
 
         /// <summary>Puts one panel on the dimmed overlay.</summary>
@@ -545,6 +548,7 @@ namespace ExcelHeroes.UI
             Overlay.RemoveFromClassList("hidden");
             Overlay.Add(panel);
             Juice.PressAll(Overlay);
+            UiKit.TitleSubs(Overlay);
         }
 
         public void CloseOverlay()
@@ -554,6 +558,7 @@ namespace ExcelHeroes.UI
             Overlay.Clear();
             Overlay.AddToClassList("hidden");
             _current?.Refresh();
+            if (_content != null) UiKit.TitleSubs(_content);
         }
 
     }

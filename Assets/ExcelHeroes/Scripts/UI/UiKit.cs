@@ -200,6 +200,35 @@ namespace ExcelHeroes.UI
             UiPaint.ImageAt(ctx, poly, standing, r.height * share / Mathf.Max(0.02f, hb.height), hb.center, new Vector2(r.center.x, r.yMin + r.height * y));
         }
 
+        // The reference labels its panels twice: the Korean title and a small spaced-out English
+        // line after it (DAILY TASKS, ATTENDANCE). One table, applied after a screen is built, so
+        // no title call site has to know (ui_critique round 9: 10-Quests #3, 11-Progress #1).
+        static readonly System.Collections.Generic.Dictionary<string, string> English = new()
+        {
+            ["일일 업무"] = "DAILY TASKS", ["출근 도장"] = "ATTENDANCE", ["전체 완료 보너스"] = "ALL CLEAR",
+            ["대표 사원"] = "LEAD", ["광고 보상"] = "AD REWARD", ["부문 시너지"] = "SYNERGY", ["편성 구성"] = "FORMATION",
+            ["대기 인원"] = "STANDBY", ["업적"] = "ACHIEVEMENTS", ["회사 이전"] = "RELOCATION", ["출장"] = "BUSINESS TRIP",
+            ["마일스톤"] = "MILESTONES", ["스킬"] = "SKILL", ["특성"] = "TRAIT", ["호감도"] = "AFFECTION",
+            ["인사 기록"] = "PROFILE", ["기본 능력치"] = "STATUS", ["비품"] = "EQUIPMENT", ["승진 조건"] = "PROMOTION",
+        };
+
+        public static void TitleSubs(VisualElement root)
+        {
+            if (root == null) return;
+            root.Query<Label>().ForEach(l =>
+            {
+                if (!(l.ClassListContains("section-title") || l.ClassListContains("qs-title__name") || l.ClassListContains("block__title"))) return;
+                var t = l.text ?? "";
+                if (t.Length == 0 || t.Contains("<size")) return;
+                string en = null;
+                foreach (var kv in English)
+                    if (t == kv.Key || t.StartsWith(kv.Key + " ") || t.EndsWith(" " + kv.Key) || t.Contains("→ " + kv.Key)) { en = kv.Value; break; }
+                if (en == null) return;
+                l.enableRichText = true;
+                l.text = t + $"  <size=55%><color=#94A7BA><b><cspace=0.12em>{en}</cspace></b></color></size>";
+            });
+        }
+
         public static string Stars(int star) => new string('★', Math.Clamp(star, 0, 5)).PadRight(5, '☆');
 
         public static string RoleName(string roleId) => GameData.Role(roleId)?.name ?? roleId;

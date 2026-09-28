@@ -122,17 +122,22 @@ namespace ExcelHeroes.UI
             var tabs = UiKit.Div("gtabs", _root);
             var featured = GameData.Featured("S", System.DateTime.UtcNow);
             var tab = UiKit.Div("gtab gtab--on", tabs);
+            // docked to the screen's left edge, its right end cut on the slant, a cyan bar on the
+            // docked side; the pickup's face in a disc beside the words (ui_critique 09-Gacha #2)
             ModalFrame.Painted(tab, (ctx, r) =>
             {
-                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.4f, 6f);
-                UiPaint.Shadow(ctx, poly, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.25f), 8f);
-                UiPaint.Fill(ctx, poly, UiPaint.C(255, 255, 255, 0.96f));
-                UiPaint.Fill(ctx, UiPaint.SkewRect(Rect.MinMaxRect(r.xMin, r.yMax - 8f, r.xMax, r.yMax), SkewPlate.SlantFor(r.height) * 0.4f * 8f / r.height, 0f),
-                             UiPaint.C(255, 206, 60));
+                var slant = SkewPlate.SlantFor(r.height) * 0.45f;
+                var poly = new System.Collections.Generic.List<Vector2> { new(r.xMin - 60f, r.yMin), new(r.xMax, r.yMin), new(r.xMax - slant, r.yMax), new(r.xMin - 60f, r.yMax) };
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), UiPaint.C(0, 20, 50, 0.25f), 8f);
+                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.98f), UiPaint.C(236, 244, 251, 0.96f), r.yMin, r.yMax));
+                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMin, r.xMin + 8f, r.yMax), 0f)), UiPaint.C(46, 135, 246));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.9f), 1.5f);
             });
             var thumb = UiKit.Div("gtab__thumb", tab);
-            if (featured != null) UiKit.SetPortrait(thumb, featured.id, UiKit.Crop.Bust, false);
-            UiKit.Text("픽업 모집", "gtab__label", tab);
+            if (featured != null) UiKit.SetPortrait(thumb, featured.id, UiKit.Crop.Face, false, round: true);
+            var words = UiKit.Div("gtab__words", tab);
+            UiKit.Text("PICK UP", "gtab__en", words);
+            UiKit.Text("픽업 모집", "gtab__label", words);
 
             // bottom left: 확률 정보 and 모집 포인트
             var info = UiKit.Div("gfoot", _root);

@@ -5910,3 +5910,31 @@
 .roster-scroll .unity-base-slider__tracker { background-color: rgba(255, 255, 255, 0.25); border-width: 0; border-radius: 6px; }
 .roster-scroll .unity-base-slider__dragger { background-color: rgb(43, 91, 136); border-width: 0; border-radius: 6px; }
 .roster-empty { -unity-text-align: middle-center; font-size: 30px; color: rgb(90, 110, 140); height: 80px; }
+.qs-title__note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; min-width: 0; }
+
+/* messenger (12-Story): header sub-label and reward pill, room rows with a chapter label, ring, lock */
+.mt__title-en { font-size: 18px; -unity-font-style: bold; color: rgb(255, 196, 208); letter-spacing: 2px; margin-left: 16px; padding: 0; }
+.mt__pill { flex-direction: row; align-items: center; height: 50px; padding: 0 20px; border-radius: 25px; background-color: rgba(0, 0, 0, 0.22); }
+.mt__pill-text { font-size: 22px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; }
+.mt__pill-rule { width: 2px; height: 26px; background-color: rgba(255, 255, 255, 0.4); margin: 0 14px; }
+.mt__pill-icon { width: 34px; height: 34px; -unity-background-scale-mode: scale-to-fit; margin-right: 6px; }
+.mt__pill-gems { font-size: 24px; -unity-font-style: bold; color: rgb(255, 230, 0); padding: 0; margin: 0; }
+.mt__count { display: none; }
+.mt-room__face { border-width: 3px; border-color: rgb(226, 232, 240); }
+.mt-room__lock { position: absolute; left: 22%; top: 22%; width: 56%; height: 56%; }
+.mt-room__chapter { font-size: 18px; -unity-font-style: bold; color: rgb(0, 163, 255); padding: 0; margin: 0 0 2px 0; }
+.mt-room__title { font-size: 28px; color: rgb(40, 48, 63); }
+.mt-room__cond { align-self: flex-start; font-size: 18px; color: rgb(113, 128, 150); background-color: rgb(241, 244, 247); border-radius: 6px; padding: 2px 10px; margin-top: 4px; }
+.mt-room--locked { opacity: 0.75; }
+.mt-room--locked .mt-room__title { color: rgb(150, 160, 176); }
+
+.mt-room { height: 132px; padding-top: 6px; padding-bottom: 6px; }
+/* gacha banner tab docked to the left edge (09-Gacha #2) */
+.gtabs { left: 0; top: 150px; width: 330px; }
+.gtab { height: 124px; padding: 0 30px 0 26px; flex-direction: row; align-items: center; justify-content: flex-start; }
+.gtab__thumb { width: 92px; height: 92px; border-radius: 46px; border-width: 3px; border-color: rgb(255, 255, 255); flex-shrink: 0; margin-right: 14px; position: relative; left: 0; top: 0; }
+.gtab__words { flex-direction: column; }
+.gtab__en { font-size: 16px; -unity-font-style: bold; color: rgb(46, 135, 246); letter-spacing: 2px; padding: 0; margin: 0; }
+.gtab__label { font-size: 28px; color: rgb(28, 41, 56); padding: 0; margin: 0; }
+.gtab__thumb { right: auto; bottom: auto; }
+.gtabs { width: 290px; }
