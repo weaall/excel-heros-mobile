@@ -36,7 +36,8 @@
    "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
    "head": "",
    "scale": 0.971,
-   "prop": "calculator"
+   "prop": "calculator",
+   "face": "hatsune_miku"
   },
   {
    "id": "admin",
@@ -164,7 +165,8 @@
    "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
    "head": "hairclip:#c4a35f:left",
    "scale": 1.017,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "reisa"
   },
   {
    "id": "audit_han",
@@ -202,7 +204,8 @@
    "garment": "pants=none;skirt=1.30;flare=-0.25;legs=tights",
    "head": "earring:#282531:right",
    "scale": 0.964,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "kayoko_dress_ver_"
   },
   {
    "id": "barista",
@@ -240,7 +243,8 @@
    "garment": "pants=slim",
    "head": "",
    "scale": 0.94,
-   "prop": "cup"
+   "prop": "cup",
+   "face": "hayase_yuuka"
   },
   {
    "id": "bd_lead",
@@ -278,7 +282,8 @@
    "garment": "pants=none;skirt=0.95;flare=-0.25;legs=tights",
    "head": "",
    "scale": 1.019,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "yutori_natsu"
   },
   {
    "id": "cco",
@@ -316,7 +321,8 @@
    "garment": "pants=none;skirt=0.85;flare=-0.15;legs=socks",
    "head": "headset:#e5ecf4:right,flower:#e27889:right",
    "scale": 0.997,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "mika"
   },
   {
    "id": "cdo",
@@ -354,7 +360,8 @@
    "garment": "pants=none;skirt=0.95;flare=-0.25;legs=socks",
    "head": "",
    "scale": 0.999,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": ""
   },
   {
    "id": "ceo",
@@ -392,7 +399,8 @@
    "garment": "pants=none;skirt=1.35;flare=-0.30;legs=tights",
    "head": "",
    "scale": 1.021,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "yutori_natsu"
   },
   {
    "id": "cfo",
@@ -430,7 +438,8 @@
    "garment": "pants=none;skirt=0.90;flare=-0.20;legs=tights",
    "head": "earring:#caa34f:left",
    "scale": 1.042,
-   "prop": "calculator"
+   "prop": "calculator",
+   "face": "kayoko_dress_ver_"
   },
   {
    "id": "chairman",
@@ -468,7 +477,8 @@
    "garment": "pants=none;skirt=1.10;flare=-0.30;legs=tights",
    "head": "crown:#cca360:top",
    "scale": 1.024,
-   "prop": "folder"
+   "prop": "folder",
+   "face": "kayoko_dress_ver_"
   },
   {
    "id": "chairwoman",
@@ -506,7 +516,8 @@
    "garment": "pants=none;skirt=1.35;flare=0.35;legs=tights",
    "head": "earring:#cfae60:right",
    "scale": 1.001,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "kayoko_dress_ver_"
   },
   {
    "id": "chief_of_staff",
@@ -544,7 +555,8 @@
    "garment": "pants=none;skirt=1.40;flare=-0.20;legs=tights",
    "head": "",
    "scale": 1.048,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "yutori_natsu"
   },
   {
    "id": "chro",
@@ -582,7 +594,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=socks",
    "head": "earring:#dfb462:both",
    "scale": 1.026,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "mika"
   },
   {
    "id": "cleaner",
@@ -620,7 +633,8 @@
    "garment": "pants=none;skirt=1.85;flare=0.30;legs=bare",
    "head": "bandana:#bfd5e8:top",
    "scale": 0.942,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "mika"
   },
   {
    "id": "cmo",
@@ -658,7 +672,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
    "head": "earring:#d7ad48:both",
    "scale": 1.028,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "hikari"
   },
   {
    "id": "contract",
@@ -696,7 +711,8 @@
    "garment": "pants=none;skirt=1.40;flare=0.30;legs=bare",
    "head": "",
    "scale": 0.952,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "mika"
   },
   {
    "id": "coo",
@@ -734,7 +750,8 @@
    "garment": "pants=none;skirt=0.85;flare=-0.20;legs=socks",
    "head": "",
    "scale": 1.03,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": ""
   },
   {
    "id": "courier",
@@ -772,7 +789,8 @@
    "garment": "pants=slim",
    "head": "cap:#335b9c:top",
    "scale": 0.973,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "haruka"
   },
   {
    "id": "cpo",
@@ -810,7 +828,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.10;legs=socks",
    "head": "neckphones:#caa35f:both",
    "scale": 0.975,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "hayase_yuuka"
   },
   {
    "id": "cro",
@@ -848,7 +867,8 @@
    "garment": "pants=none;skirt=0.70;flare=-0.30;legs=socks",
    "head": "",
    "scale": 1.032,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "kayoko_dress_ver_"
   },
   {
    "id": "cso",
@@ -886,7 +906,8 @@
    "garment": "pants=none;skirt=1.10;flare=-0.20;legs=tights",
    "head": "earring:#d9b34f:both",
    "scale": 1.034,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "hayase_yuuka"
   },
   {
    "id": "cto",
@@ -924,7 +945,8 @@
    "garment": "pants=none;skirt=0.95;flare=-0.30;legs=tights",
    "head": "earring:#2c2d3a:left",
    "scale": 0.977,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "kayoko_dress_ver_"
   },
   {
    "id": "design_lead",
@@ -962,7 +984,8 @@
    "garment": "pants=none;skirt=0.60;flare=-0.10;legs=bare",
    "head": "beret:#2c94db:top",
    "scale": 1.044,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "haruka"
   },
   {
    "id": "dev_lead",
@@ -1000,7 +1023,8 @@
    "garment": "pants=none;skirt=1.35;flare=-0.20;legs=tights",
    "head": "headset:#80b6e1:both",
    "scale": 0.954,
-   "prop": "cup"
+   "prop": "cup",
+   "face": "hatsune_miku"
   },
   {
    "id": "finance",
@@ -1128,7 +1152,8 @@
    "garment": "pants=none;skirt=2.00;flare=-0.20;legs=tights",
    "head": "",
    "scale": 1.05,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "yutori_natsu"
   },
   {
    "id": "ga_lead",
@@ -1166,7 +1191,8 @@
    "garment": "pants=none;skirt=1.20;flare=-0.25;legs=tights",
    "head": "",
    "scale": 0.979,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "hikari"
   },
   {
    "id": "guard",
@@ -1204,7 +1230,8 @@
    "garment": "pants=slim",
    "head": "",
    "scale": 1.036,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "hatsune_miku"
   },
   {
    "id": "hacker",
@@ -1242,7 +1269,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
    "head": "headset:#6cd6d0:right",
    "scale": 1.003,
-   "prop": "laptop"
+   "prop": "laptop",
+   "face": "hikari"
   },
   {
    "id": "helpdesk",
@@ -1280,7 +1308,8 @@
    "garment": "pants=none;skirt=1.40;flare=-0.10;legs=bare",
    "head": "neckphones:#5b9bc3:both",
    "scale": 0.944,
-   "prop": "laptop"
+   "prop": "laptop",
+   "face": "mika"
   },
   {
    "id": "hr_jung",
@@ -1318,7 +1347,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.25;legs=tights",
    "head": "earring:#e5e7eb:both",
    "scale": 1.005,
-   "prop": "pen"
+   "prop": "pen",
+   "face": "mika"
   },
   {
    "id": "intern",
@@ -1387,7 +1417,8 @@
    "garment": "pants=none;skirt=0.70;flare=-0.20;legs=bare",
    "head": "ribbon:#eff0f4:both",
    "scale": 0.981,
-   "prop": "folder"
+   "prop": "folder",
+   "face": "haruka"
   },
   {
    "id": "intern_seo",
@@ -1425,7 +1456,8 @@
    "garment": "pants=none;skirt=1.70;flare=0.35;legs=bare",
    "head": "",
    "scale": 0.946,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "haruka"
   },
   {
    "id": "ir_lead",
@@ -1463,7 +1495,8 @@
    "garment": "pants=none;skirt=0.90;flare=-0.30;legs=socks",
    "head": "",
    "scale": 1.046,
-   "prop": "folder"
+   "prop": "folder",
+   "face": "yutori_natsu"
   },
   {
    "id": "lab_park",
@@ -1501,7 +1534,8 @@
    "garment": "pants=none;skirt=1.10;flare=-0.20;legs=tights",
    "head": "",
    "scale": 1.007,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "reisa"
   },
   {
    "id": "labor_atty",
@@ -1539,7 +1573,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.25;legs=socks",
    "head": "",
    "scale": 1.009,
-   "prop": "folder"
+   "prop": "folder",
+   "face": "reisa"
   },
   {
    "id": "legal_yoon",
@@ -1577,7 +1612,8 @@
    "garment": "pants=none;skirt=1.35;flare=-0.30;legs=tights",
    "head": "",
    "scale": 1.011,
-   "prop": "folder"
+   "prop": "folder",
+   "face": "reisa"
   },
   {
    "id": "logistics_bae",
@@ -1615,7 +1651,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
    "head": "ahoge",
    "scale": 0.983,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "hikari"
   },
   {
    "id": "macro",
@@ -1653,7 +1690,8 @@
    "garment": "pants=none;skirt=1.15;flare=-0.10;legs=tights",
    "head": "headset:#314d74:both",
    "scale": 0.985,
-   "prop": "laptop"
+   "prop": "laptop",
+   "face": "hikari"
   },
   {
    "id": "mail_cho",
@@ -1691,7 +1729,8 @@
    "garment": "pants=slim",
    "head": "",
    "scale": 0.987,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": ""
   },
   {
    "id": "main",
@@ -1759,7 +1798,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.20;legs=tights",
    "head": "",
    "scale": 1.013,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "hayase_yuuka"
   },
   {
    "id": "parttime",
@@ -1797,7 +1837,8 @@
    "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare",
    "head": "",
    "scale": 0.948,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "mika"
   },
   {
    "id": "pivot",
@@ -1835,7 +1876,8 @@
    "garment": "pants=none;skirt=1.15;flare=-0.30;legs=tights",
    "head": "earring:#e2e5ea:left",
    "scale": 0.989,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "haruka"
   },
   {
    "id": "pm_lead",
@@ -1873,7 +1915,8 @@
    "garment": "pants=none;skirt=1.40;flare=-0.25;legs=tights",
    "head": "",
    "scale": 0.956,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": ""
   },
   {
    "id": "pr_yoo",
@@ -1911,7 +1954,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.20;legs=tights",
    "head": "earring:#f1eff5:right",
    "scale": 1.015,
-   "prop": "phone"
+   "prop": "phone",
+   "face": "hikari"
   },
   {
    "id": "qa_lee",
@@ -1949,7 +1993,8 @@
    "garment": "pants=none;skirt=0.65;flare=-0.30;legs=tights",
    "head": "",
    "scale": 0.95,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "hatsune_miku"
   },
   {
    "id": "reception_go",
@@ -1987,7 +2032,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.20;legs=tights",
    "head": "headset:#2c3036:right",
    "scale": 0.991,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "hatsune_miku"
   },
   {
    "id": "sales",
@@ -2055,7 +2101,8 @@
    "garment": "pants=none;skirt=1.35;flare=-0.15;legs=tights",
    "head": "",
    "scale": 0.966,
-   "prop": "tablet"
+   "prop": "tablet",
+   "face": "hatsune_miku"
   },
   {
    "id": "sales_manager",
@@ -2153,7 +2200,8 @@
    "garment": "pants=none;skirt=1.20;flare=-0.30;legs=tights",
    "head": "earring:#d5b461:both",
    "scale": 1.038,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "yutori_natsu"
   },
   {
    "id": "security_yang",
@@ -2191,7 +2239,8 @@
    "garment": "pants=none;skirt=1.40;flare=-0.10;legs=bare",
    "head": "",
    "scale": 0.958,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "hatsune_miku"
   },
   {
    "id": "staff",
@@ -2259,7 +2308,8 @@
    "garment": "pants=none;skirt=1.40;flare=-0.20;legs=bare",
    "head": "",
    "scale": 0.96,
-   "prop": "folder"
+   "prop": "folder",
+   "face": "hayase_yuuka"
   },
   {
    "id": "trainer_seok",
@@ -2297,7 +2347,8 @@
    "garment": "pants=none;skirt=1.25;flare=-0.20;legs=tights",
    "head": "",
    "scale": 0.993,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "reisa"
   },
   {
    "id": "translator_ji",
@@ -2335,7 +2386,8 @@
    "garment": "pants=none;skirt=1.40;flare=-0.30;legs=tights",
    "head": "",
    "scale": 0.995,
-   "prop": "document"
+   "prop": "document",
+   "face": ""
   },
   {
    "id": "union_chief",
@@ -2373,7 +2425,8 @@
    "garment": "pants=none;skirt=1.00;flare=-0.30;legs=tights",
    "head": "",
    "scale": 1.04,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "kayoko_dress_ver_"
   },
   {
    "id": "vlookup",
@@ -2411,7 +2464,8 @@
    "garment": "pants=none;skirt=1.30;flare=-0.20;legs=tights",
    "head": "",
    "scale": 0.969,
-   "prop": "pen"
+   "prop": "pen",
+   "face": "hatsune_miku"
   },
   {
    "id": "welfare",
@@ -2449,7 +2503,8 @@
    "garment": "pants=none;skirt=1.35;flare=-0.20;legs=tights",
    "head": "flower:#f1b2c6:right",
    "scale": 0.962,
-   "prop": "clipboard"
+   "prop": "clipboard",
+   "face": "mika"
   }
  ]
 }

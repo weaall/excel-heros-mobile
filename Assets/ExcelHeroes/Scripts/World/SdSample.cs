@@ -242,6 +242,100 @@ namespace ExcelHeroes.World
             r.bones = bones.ToArray();
         }
 
+        static bool FacePart(string mat) { var n = mat.ToLowerInvariant(); return n.Contains("face") || n.Contains("eyemouth") || n.Contains("eyebrow"); }
+
+        /// <summary>
+        /// Another sample's face on this body: its face plate, eye plates and brows (the submeshes named
+        /// face / eyemouth / eyebrow of its body and of its separate face renderer), placed so its head
+        /// bone sits on ours and re-skinned to our bones by name (the head where we lack one). Our own
+        /// face submeshes are emptied and a separate face renderer hidden. The new renderer then goes
+        /// through the same face split and eye rig as a body's own.
+        /// </summary>
+        static SkinnedMeshRenderer SwapFace(string donorKey, SkinnedMeshRenderer body, List<SkinnedMeshRenderer> kept, Transform root, Transform model, Transform[] ours, int layer)
+        {
+            var prefab = Prefab(donorKey); if (prefab == null) return null;
+            var head = ours.FirstOrDefault(t => t.name == "Bip001 Head"); if (head == null) return null;
+            var temp = new GameObject("facedonor").transform; temp.SetParent(root, false);
+            var dgo = Object.Instantiate(prefab, temp);
+            var drs = dgo.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            var dbody = drs.OrderByDescending(r => r.sharedMesh.subMeshCount).ThenByDescending(r => r.sharedMesh.vertexCount).First();
+            dbody.updateWhenOffscreen = true;
+            var wb = dbody.bounds; var lo = temp.InverseTransformPoint(wb.min); var hi = temp.InverseTransformPoint(wb.max);
+            // the donor at our height (the samples share one proportion), then its head bone on ours
+            var ourH = body.bounds.size.y / Mathf.Max(1e-5f, root.lossyScale.y);
+            dgo.transform.localScale = Vector3.one * (ourH / Mathf.Max(1e-5f, hi.y - lo.y));
+            var dhead = dgo.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Bip001 Head");
+            if (dhead == null) { Object.DestroyImmediate(temp.gameObject); return null; }
+            dgo.transform.position += head.position - dhead.position;
+            var sources = drs.Where(r => r == dbody || (r.name.Contains("Face_Outline") && !r.name.Contains("Face0"))).ToList();
+            var byName = ours.GroupBy(t => t.name).ToDictionary(gp => gp.Key, gp => gp.First());
+            var verts = new List<Vector3>(); var nrms = new List<Vector3>(); var uvs = new List<Vector2>(); var bws = new List<BoneWeight>();
+            var bones = new List<Transform>(); var boneIx = new Dictionary<Transform, int>();
+            int Bone(Transform d)
+            {
+                var t = d != null && d.name.StartsWith("Bip001") && byName.TryGetValue(d.name, out var o) ? o : head;
+                if (!boneIx.TryGetValue(t, out var i)) { i = bones.Count; bones.Add(t); boneIx[t] = i; }
+                return i;
+            }
+            var subs = new List<(string name, List<int> tris)>();
+            foreach (var r in sources)
+            {
+                var m = r.sharedMesh; var mats = r.sharedMaterials; var l2w = r.transform.localToWorldMatrix;
+                var mv = m.vertices; var mn = m.normals; var mu = m.uv; var mb = m.boneWeights; var rb = r.bones;
+                Transform B(int bi) => bi >= 0 && bi < rb.Length ? rb[bi] : null;
+                for (var sIx = 0; sIx < m.subMeshCount && sIx < mats.Length; sIx++)
+                {
+                    if (mats[sIx] == null || !FacePart(mats[sIx].name)) continue;
+                    var map = new Dictionary<int, int>(); var tris = new List<int>();
+                    foreach (var t in m.GetTriangles(sIx))
+                    {
+                        if (!map.TryGetValue(t, out var ni))
+                        {
+                            ni = verts.Count; map[t] = ni;
+                            verts.Add(l2w.MultiplyPoint3x4(mv[t]));
+                            nrms.Add(mn.Length == mv.Length ? l2w.MultiplyVector(mn[t]).normalized : Vector3.forward);
+                            uvs.Add(mu.Length == mv.Length ? mu[t] : Vector2.zero);
+                            var w = mb.Length == mv.Length ? mb[t] : new BoneWeight { weight0 = 1f };
+                            bws.Add(new BoneWeight
+                            {
+                                boneIndex0 = Bone(B(w.boneIndex0)), weight0 = w.weight0, boneIndex1 = Bone(B(w.boneIndex1)), weight1 = w.weight1,
+                                boneIndex2 = Bone(B(w.boneIndex2)), weight2 = w.weight2, boneIndex3 = Bone(B(w.boneIndex3)), weight3 = w.weight3,
+                            });
+                        }
+                        tris.Add(ni);
+                    }
+                    subs.Add((mats[sIx].name, tris));
+                }
+            }
+            Object.DestroyImmediate(temp.gameObject);
+            if (subs.Count == 0) return null;
+            // our own face out: the body's face submeshes emptied, a separate face renderer hidden
+            foreach (var r in kept.ToList())
+            {
+                if (r != body) { r.gameObject.SetActive(false); kept.Remove(r); continue; }
+                var m = Object.Instantiate(r.sharedMesh); var mats = r.sharedMaterials;
+                for (var sIx = 0; sIx < m.subMeshCount && sIx < mats.Length; sIx++) if (mats[sIx] != null && FacePart(mats[sIx].name)) m.SetTriangles(new int[0], sIx, false);
+                r.sharedMesh = m;
+            }
+            var go = new GameObject("face:" + donorKey) { layer = layer };
+            go.transform.SetParent(model, false);
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            var w2l = go.transform.worldToLocalMatrix;
+            var mesh = new Mesh { name = "face:" + donorKey, indexFormat = verts.Count > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16 };
+            mesh.SetVertices(verts.Select(p => w2l.MultiplyPoint3x4(p)).ToList());
+            mesh.SetNormals(nrms.Select(n => w2l.MultiplyVector(n).normalized).ToList());
+            mesh.SetUVs(0, uvs);
+            mesh.boneWeights = bws.ToArray();
+            mesh.subMeshCount = subs.Count;
+            for (var i = 0; i < subs.Count; i++) mesh.SetTriangles(subs[i].tris, i, false);
+            mesh.bindposes = bones.Select(b => b.worldToLocalMatrix * go.transform.localToWorldMatrix).ToArray();
+            mesh.RecalculateBounds();
+            smr.sharedMesh = mesh; smr.bones = bones.ToArray(); smr.rootBone = head;
+            smr.sharedMaterials = subs.Select(x => new Material(MeshKit.ToonFlat) { name = x.name }).ToArray();
+            smr.updateWhenOffscreen = true;
+            return smr;
+        }
+
         static void StripKit(SkinnedMeshRenderer body, Transform neck, Transform pelvis)
         {
             if (neck == null || pelvis == null) return;
@@ -518,11 +612,25 @@ namespace ExcelHeroes.World
             var k = SdLook.For(heroId);
             var tex = _raw ? new SdSampleTex.Set { Body = Sheet(key, "body"), Hair = Sheet(key, "hair"), EyeMouth = Sheet(key, "eyemouth"), EyeMouthSrc = Sheet(key, "eyemouth"), Face = Sheet(key, "face") }
                            : SdSampleTex.For(key, k, Sheet(key, "body"), Sheet(key, "hair"), Sheet(key, "eyemouth"), Sheet(key, "face"));
+            // the hero's own face from another sample (sdspec "face": its eyes, brows, face plate), in place of the body's
+            SkinnedMeshRenderer donorFace = null; SdSampleTex.Set donorTex = null;
+            var faceKey = _raw ? null : System.Environment.GetEnvironmentVariable("SD_FACE") ?? k.Face;
+            if (!string.IsNullOrEmpty(faceKey) && faceKey != key && Has(faceKey))
+            {
+                donorFace = SwapFace(faceKey, body, kept, root, go.transform, all, layer);
+                if (donorFace != null)
+                {
+                    kept.Add(donorFace);
+                    donorTex = SdSampleTex.For(faceKey, k, Sheet(faceKey, "body"), Sheet(faceKey, "hair"), Sheet(faceKey, "eyemouth"), Sheet(faceKey, "face"));
+                }
+            }
             var face = tex.Face;
             var blinkBones = new List<(Transform bone, Transform lid, Vector3 drop)>();
             Vector3? mouthAt = null;
+            var bodyTex = tex;
             foreach (var r in kept)
             {
+                tex = r == donorFace ? donorTex : bodyTex; face = tex.Face;
                 var names = r.sharedMaterials.Select(m => m ? m.name : "").ToArray();
                 var em = tex.EyeMouthSrc;
                 System.Func<Vector2, float> luma = em == null || !em.isReadable ? null : uv => { var c = em.GetPixelBilinear(uv.x, uv.y); return c.r * 0.3f + c.g * 0.59f + c.b * 0.11f; };
