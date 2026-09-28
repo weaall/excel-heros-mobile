@@ -366,7 +366,14 @@ namespace ExcelHeroes.World
                         if (dn.Contains("wing") || dn.Contains("_bag") || dn.Contains("acc_0") || dn.Contains("phone")) wing++;
                     }
                     if (wing * 2 > piece.Count) behind = true;
-                    if (!above && !behind) keep.AddRange(piece);
+                    if (above || behind) continue;
+                    // kit joined to the outfit (Hikari's bag and pouch hang off her jacket): by triangle
+                    for (var q = 0; q < piece.Count; q += 3)
+                    {
+                        bool Kit(int vi) { var dn = Dominant(bw[vi], bones).ToLowerInvariant(); return dn.Contains("_bag") || dn.Contains("acc_0") || dn.Contains("phone"); }
+                        if (Kit(piece[q]) && Kit(piece[q + 1]) && Kit(piece[q + 2])) continue;
+                        keep.Add(piece[q]); keep.Add(piece[q + 1]); keep.Add(piece[q + 2]);
+                    }
                 }
                 mesh.SetTriangles(keep, s, false);
             }
