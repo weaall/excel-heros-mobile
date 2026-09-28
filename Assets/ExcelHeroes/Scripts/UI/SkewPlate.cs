@@ -47,7 +47,7 @@ namespace ExcelHeroes.UI
         /// Glow = the navy plate with the cyan core (START). Glass = the see-through one (the
         /// arrow row). Gold = the recruit call to action. Off = disabled.
         /// </summary>
-        public enum Kind { Light, Primary, Navy, Gold, Off, Glow, Glass, Ivory }
+        public enum Kind { Light, Primary, Navy, Gold, Off, Glow, Glass, Ivory, Danger, Pill, PillOn, Round, Chip }
 
         public readonly struct Look
         {
@@ -66,6 +66,7 @@ namespace ExcelHeroes.UI
         static Color C(int r, int g, int b, float a = 1f) => UiPaint.C(r, g, b, a);
 
         static readonly Color Yellow = C(255, 214, 58);
+        static readonly Color Navy = C(30, 43, 69);
         static readonly Color Cyan = C(72, 222, 255);
 
         /// <summary>
@@ -92,8 +93,19 @@ namespace ExcelHeroes.UI
             // not-yet-claimable button reads as "later", not as broken (ui_critique round 1)
             Kind.Off     => new Look(C(244, 247, 250, 0.82f), C(232, 238, 244, 0.78f), C(170, 186, 206, 0.95f), C(255, 255, 255, 0.5f), 2.2f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0f),
-            _            => new Look(C(255, 255, 255), C(233, 241, 248), C(168, 190, 214, 0.85f), C(255, 255, 255, 0.9f), 1.5f,
-                                     C(150, 205, 238), C(0, 0, 0, 0f), 0f, 0.2f),
+            // the UI kit (tools/out/design/kit_0): red for what cannot be undone
+            Kind.Danger  => new Look(C(246, 88, 84), C(222, 56, 60), C(150, 24, 36, 0.8f), C(255, 200, 200, 0.6f), 1.5f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0.12f),
+            // pills (tab bars), round icon buttons and chips: white with the navy line, the chosen pill navy
+            Kind.Pill or Kind.Round => new Look(C(255, 255, 255), C(246, 249, 252), Navy, C(255, 255, 255, 0.9f), 3f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0f),
+            Kind.PillOn  => new Look(C(40, 58, 96), C(28, 42, 72), Navy, C(120, 150, 200, 0.4f), 3f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0f),
+            Kind.Chip    => new Look(C(120, 222, 255), C(64, 196, 244), Navy, C(255, 255, 255, 0.6f), 3f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0f),
+            // secondary: white with a thick navy outline, no pattern — it must not compete with the cyan CTA
+            _            => new Look(C(255, 255, 255), C(248, 250, 253), Navy, C(255, 255, 255, 0.9f), 3f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0f),
         };
 
         /// <summary>
@@ -179,7 +191,20 @@ namespace ExcelHeroes.UI
             var w = r.width;
             var slant = Mathf.Min(Mathf.Tan(12f * Mathf.Deg2Rad) * h, w * 0.2f);
             var radius = Mathf.Clamp(h * 0.1f, 3f, 8f);
-            var outer = UiPaint.SkewRect(r, slant, radius);
+            // the shapes: slanted plates for actions; a pill for tabs and chips; a circle for icon buttons
+            var round = kind is Kind.Pill or Kind.PillOn or Kind.Chip;
+            // the raised actions (CTA, premium, danger) stand on a darker lip, as the kit's buttons do —
+            // inside the element's rect (outside it the paint is clipped): the face is lifted by the lip
+            var lip = kind is Kind.Primary or Kind.Gold or Kind.Danger;
+            var lipH = lip ? Mathf.Clamp(h * 0.09f, 4f, 8f) : 0f;
+            if (lip)
+            {
+                var lipCol = kind switch { Kind.Primary => C(22, 112, 186), Kind.Gold => C(178, 118, 10), _ => C(152, 30, 42) };
+                UiPaint.Fill(ctx, UiPaint.SkewRect(Rect.MinMaxRect(r.xMin, r.yMin + lipH, r.xMax, r.yMax), slant, radius), lipCol);
+                r = Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMax - lipH); h = r.height;
+            }
+            var outer = kind == Kind.Round ? UiPaint.Ellipse(r.center, Mathf.Min(w, h) * 0.5f, Mathf.Min(w, h) * 0.5f)
+                      : round ? UiPaint.RoundRect(r, h * 0.5f, 8) : UiPaint.SkewRect(r, slant, radius);
 
             // a soft shadow under the plate — the only depth the reference gives a button
             UiPaint.Shadow(ctx, outer, new Vector2(0f, Mathf.Clamp(h * 0.05f, 2f, 5f)),
@@ -210,7 +235,7 @@ namespace ExcelHeroes.UI
 
             // the mock-up's marks: two short slanted ticks inside the top-left, a small solid corner
             // wedge at the bottom-right — they make a plate read as a game button, not a web one
-            if (accents && kind != Kind.Off && h >= 40f)
+            if (accents && kind is Kind.Primary && h >= 40f)
             {
                 var ink = kind is Kind.Navy or Kind.Glow ? C(255, 255, 255, 0.55f) : kind == Kind.Primary ? C(255, 255, 255, 0.85f) : UiPaint.WithAlpha(look.Edge, 0.9f);
                 var tl = new Vector2(r.xMin + slant + h * 0.16f, r.yMin + h * 0.16f);
@@ -250,6 +275,11 @@ namespace ExcelHeroes.UI
             if (!isPlate) return null;
 
             if (classes.Contains("btn--primary")) return Kind.Primary;
+            if (classes.Contains("btn--danger")) return Kind.Danger;
+            if (classes.Contains("btn--pill-on")) return Kind.PillOn;
+            if (classes.Contains("btn--pill")) return Kind.Pill;
+            if (classes.Contains("btn--round")) return Kind.Round;
+            if (classes.Contains("btn--chip")) return Kind.Chip;
             if (classes.Contains("btn--glow")) return Kind.Glow;
             if (classes.Contains("btn--ghost") || classes.Contains("btn--navy")) return Kind.Navy;
             if (classes.Contains("btn--gold")) return Kind.Gold;

@@ -56,6 +56,17 @@ namespace ExcelHeroes.UI
             var off = UiKit.Btn("잠김", "btn kit__btn", null, grid);
             off.SetEnabled(false);
             UiKit.Btn("모집", "btn btn--gold kit__btn", null, grid);
+            UiKit.Btn("방출", "btn btn--danger kit__btn", null, grid);
+            UiKit.Btn("전체 선택", "btn btn--chip kit__btn", null, grid);
+            UiKit.Text("(2) 탭 · 아이콘 버튼", "kit__cap", left);
+            var tabs = UiKit.Div("kit__grid", left);
+            UiKit.Btn("영웅", "btn btn--pill-on kit__btn", null, tabs);
+            UiKit.Btn("장비", "btn btn--pill kit__btn", null, tabs);
+            foreach (var ic in new[] { "mail", "notice", "settings" })
+            {
+                var rb = UiKit.Btn("", "btn btn--round kit__round", null, tabs);
+                var a = Data.GameData.Icon(ic); if (a != null) UiKit.SetArt(UiKit.Div("kit__round-icon", rb), a);
+            }
 
             var right = UiKit.Div("kit__col", root);
             UiKit.Text("(5) 모달", "kit__cap", right);

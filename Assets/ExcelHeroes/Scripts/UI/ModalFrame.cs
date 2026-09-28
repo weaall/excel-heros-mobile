@@ -58,26 +58,20 @@ namespace ExcelHeroes.UI
 
         public static void DrawFrame(MeshGenerationContext ctx, Rect r)
         {
-            const float radius = 16f;
+            // The UI kit's modal (tools/out/design/kit_0): a clean white card with a soft drop shadow and
+            // a navy line round it — no glow ring, no corner brackets (they read as clutter) — its content
+            // area a light grey panel inset under the head.
+            const float radius = 20f;
             var outer = UiPaint.RoundRect(r, radius, 6);
-            UiPaint.Ring(ctx, outer, C(80, 215, 255, 0.40f), C(80, 215, 255, 0f), 18f);
-            UiPaint.Shadow(ctx, outer, new Vector2(0f, 8f), C(6, 16, 36, 0.35f), 22f);
-            // frosted glass, not paper: the scene behind every screen shows faintly through
-            UiPaint.Fill(ctx, outer, C(255, 255, 255, 0.92f), 1.2f);
-            var body = UiPaint.Offset(outer, -3f);
-            UiPaint.Fill(ctx, body, UiPaint.Vertical(C(246, 250, 254, 0.86f), C(228, 238, 248, 0.84f), r.yMin, r.yMax));
-            // faint facets in the corners, the mock-up's glass
-            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMin, r.yMin), new(r.xMin + r.width * 0.22f, r.yMin), new(r.xMin, r.yMin + r.height * 0.4f) }, body), C(200, 228, 248, 0.45f), 0.8f);
-            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMax, r.yMax), new(r.xMax - r.width * 0.28f, r.yMax), new(r.xMax, r.yMax - r.height * 0.45f) }, body), C(200, 228, 248, 0.45f), 0.8f);
-            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMax, r.yMax - r.height * 0.45f), new(r.xMax - r.width * 0.12f, r.yMax - r.height * 0.2f), new(r.xMax, r.yMax - r.height * 0.1f) }, body), C(214, 236, 250, 0.4f), 0.8f);
-
-            // L-brackets, 10px outside each corner.
-            const float len = 46f, t = 6f, gap = 10f;
-            Bracket(ctx, new Vector2(r.xMin - gap, r.yMin - gap), 1, 1, len, t);
-            Bracket(ctx, new Vector2(r.xMax + gap, r.yMin - gap), -1, 1, len, t);
-            Bracket(ctx, new Vector2(r.xMin - gap, r.yMax + gap), 1, -1, len, t);
-            Bracket(ctx, new Vector2(r.xMax + gap, r.yMax + gap), -1, -1, len, t);
+            UiPaint.Shadow(ctx, outer, new Vector2(0f, 12f), C(6, 16, 40, 0.35f), 30f);
+            UiPaint.Fill(ctx, outer, C(255, 255, 255));
+            var inset = Rect.MinMaxRect(r.xMin + 22f, r.yMin + HeadH + 18f, r.xMax - 22f, r.yMax - 22f);
+            if (inset.height > 40f) UiPaint.Fill(ctx, UiPaint.RoundRect(inset, 14f, 5), C(238, 242, 248));
+            UiPaint.Stroke(ctx, outer, C(30, 43, 69), 3f);
         }
+
+        /// <summary>The head band's height, which the frame's inset starts under.</summary>
+        public const float HeadH = 110f;
 
         static void Bracket(MeshGenerationContext ctx, Vector2 corner, int sx, int sy, float len, float t)
         {
@@ -101,20 +95,14 @@ namespace ExcelHeroes.UI
         /// </summary>
         public static void DrawHead(MeshGenerationContext ctx, Rect r)
         {
-            // The Gemini modal mock-up (tools/out/design/mock_modal_0): a navy slanted strip set IN from
-            // the frame, with pale slashes at both ends, on the white glass — not a full-width band
-            var h = r.height;
-            var strip = Rect.MinMaxRect(r.xMin + r.width * 0.05f, r.yMin + h * 0.2f, r.xMax - r.width * 0.05f, r.yMax - h * 0.06f);
-            var slant = SkewPlate.SlantFor(strip.height);
-            var band = UiPaint.SkewRect(strip, slant, 4f);
-            UiPaint.Shadow(ctx, band, new Vector2(0f, 3f), C(10, 20, 50, 0.22f), 6f);
-            UiPaint.Fill(ctx, band, UiPaint.Vertical(C(44, 66, 112), C(24, 40, 78), strip.yMin, strip.yMax));
-            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(strip.xMin - 4f, strip.yMin - 4f), new(strip.xMax + 4f, strip.yMin - 4f), new(strip.xMax + 4f, strip.yMin + 3f), new(strip.xMin - 4f, strip.yMin + 3f) }, band), C(120, 150, 210, 0.7f), 0f);
-            var sr = Rect.MinMaxRect(r.xMin, strip.yMin, r.xMax, strip.yMax);
-            Slash(ctx, sr, strip.xMin + slant * 0.2f - 30f, 10f, slant, C(160, 186, 230, 0.9f));
-            Slash(ctx, sr, strip.xMin + slant * 0.2f - 14f, 5f, slant, C(160, 186, 230, 0.6f));
-            Slash(ctx, sr, strip.xMax - slant * 0.8f + 18f, 10f, slant, C(160, 186, 230, 0.9f));
-            Slash(ctx, sr, strip.xMax - slant * 0.8f + 34f, 5f, slant, C(160, 186, 230, 0.6f));
+            // full width, navy, its top corners the card's; a thin cyan line and a slanted cyan tab at the
+            // left edge are its only ornament (the kit's modal)
+            var band = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMax + 24f), 18f, 6);
+            var clip = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMin - 10f, r.xMax + 10f, r.yMax), 0f);
+            UiPaint.Fill(ctx, UiPaint.Clip(band, clip), UiPaint.Vertical(C(40, 58, 96), C(28, 42, 72), r.yMin, r.yMax), 0.6f);
+            var tab = new List<Vector2> { new(r.xMin + 36f, r.yMin + r.height * 0.3f), new(r.xMin + 52f, r.yMin + r.height * 0.3f), new(r.xMin + 44f, r.yMax - r.height * 0.3f), new(r.xMin + 28f, r.yMax - r.height * 0.3f) };
+            UiPaint.Fill(ctx, tab, C(42, 184, 240));
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMax - 4f, r.xMax, r.yMax), 0f), C(42, 184, 240), 0.6f);
         }
 
         static List<Vector2> Expand(Rect r)

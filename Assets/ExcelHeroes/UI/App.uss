@@ -6095,3 +6095,20 @@
 .notice__title { font-size: 44px; -unity-font-style: bold; color: rgb(24, 36, 60); margin: 16px 0; white-space: normal; }
 .notice__scroll { flex-grow: 1; }
 .notice__body { font-size: 30px; color: rgb(50, 64, 88); white-space: normal; }
+
+/* ---------------------------------------------------------------- button roles (the UI kit, tools/out/design/kit_0) */
+.plate--primary, .plate--danger, .plate--pillon { color: rgb(255, 255, 255); }
+.plate--primary .plate__label, .plate--danger .plate__label { -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(10, 50, 100, 0.55); }
+.plate--light, .plate--pill, .plate--round, .plate--chip, .plate--ivory { color: rgb(30, 43, 69); }
+.plate--gold { color: rgb(60, 36, 0); }
+
+/* ---------------------------------------------------------------- modal v4 (the UI kit, tools/out/design/kit_0) */
+.modal { padding: 0; }
+.modal__head { height: 110px; justify-content: flex-start; padding-left: 76px; }
+.modal__title { flex-grow: 1; -unity-text-align: middle-left; color: rgb(255, 255, 255); font-size: 46px; -unity-font-style: bold; padding-top: 0; }
+.modal__close { position: absolute; right: 26px; top: 19px; width: 72px; height: 72px; background-color: rgba(0, 0, 0, 0); border-width: 0; padding: 0; margin: 0; }
+.modal__body { padding: 40px 64px 50px 64px; }
+.kit__round { width: 110px; height: 110px; padding: 0; margin: 10px; align-items: center; justify-content: center; }
+.kit__round-icon { width: 60px; height: 60px; -unity-background-scale-mode: scale-to-fit; }
+
+.kit__btn { height: 84px; margin-bottom: 14px; }

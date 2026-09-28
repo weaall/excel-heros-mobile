@@ -57,7 +57,7 @@ namespace ExcelHeroes.UI
             foreach (var t in ShopService.Tabs)
             {
                 var on = t == _tab;
-                var tab = UiKit.Btn(t, on ? "btn btn--navy shop__tab shop__tab--on" : "btn btn--glass shop__tab", () => { _tab = t; Refresh(); }, _tabs);
+                var tab = UiKit.Btn(t, on ? "btn btn--pill-on shop__tab shop__tab--on" : "btn btn--pill shop__tab", () => { _tab = t; Refresh(); }, _tabs);
                 if (t == "무료 보급" && ShopService.HasFree(p)) UiKit.Div("shop__dot", tab).pickingMode = PickingMode.Ignore;
             }
             _grid.Clear();

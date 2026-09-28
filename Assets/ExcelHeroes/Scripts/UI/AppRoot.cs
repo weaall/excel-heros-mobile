@@ -463,7 +463,7 @@ namespace ExcelHeroes.UI
 
             BuildSaveTransfer(pane);
 
-            UiKit.Btn("닫기", "btn btn--ghost", CloseOverlay, pane);
+            UiKit.Btn("닫기", "btn", CloseOverlay, pane);
             OpenOverlay(pane);
         }
 

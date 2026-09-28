@@ -385,7 +385,7 @@ namespace ExcelHeroes.UI
                 }));
             });
 
-            UiKit.Btn("닫기", "btn btn--ghost", _app.CloseOverlay, pane);
+            UiKit.Btn("닫기", "btn", _app.CloseOverlay, pane);
             _app.OpenOverlay(pane);
         }
     }

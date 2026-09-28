@@ -66,9 +66,21 @@ namespace ExcelHeroes.UI
             Text(title, "modal__title", head);
             if (onClose != null)
             {
-                var close = new Button(() => { AudioService.Play("tap", 0.5f); onClose(); }) { text = Icons.Close };
-                close.AddToClassList("icon");
+                // a round white button with the navy ✕ (the kit's modal)
+                var close = new Button(() => { AudioService.Play("tap", 0.5f); onClose(); }) { text = "" };
                 close.AddToClassList("modal__close");
+                ModalFrame.Painted(close, (ctx, r) =>
+                {
+                    var c = r.center; var rad = Mathf.Min(r.width, r.height) * 0.5f;
+                    UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad), Color.white);
+                    var k = rad * 0.38f; var t = rad * 0.11f;
+                    foreach (var sgn in new[] { 1f, -1f })
+                    {
+                        var d = new Vector2(k, sgn * k); var n = new Vector2(-d.y, d.x).normalized * t;
+                        UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2> { c - d - n, c + d - n, c + d + n, c - d + n }, UiPaint.C(30, 43, 69));
+                    }
+                });
+                Juice.Press(close);
                 head.Add(close);
             }
 

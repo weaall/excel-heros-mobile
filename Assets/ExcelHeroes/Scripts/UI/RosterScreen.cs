@@ -502,7 +502,7 @@ namespace ExcelHeroes.UI
 
             var row = UiKit.Div("party-actions", pane);
             UiKit.Btn("취소", "btn", _app.CloseOverlay, row);
-            UiKit.Btn("방출한다", "btn btn--primary", () =>
+            UiKit.Btn("방출한다", "btn btn--danger", () =>
             {
                 var (got, back) = DismissService.Release(Game.Player, heroId);
                 if (got <= 0) { _app.CloseOverlay(); return; }
@@ -637,7 +637,7 @@ namespace ExcelHeroes.UI
                     Reopen(heroId, onClose);
                 }, pane);
 
-            UiKit.Btn("닫기", "btn btn--ghost", _app.CloseOverlay, pane);
+            UiKit.Btn("닫기", "btn", _app.CloseOverlay, pane);
             _app.OpenOverlay(pane);
         }
 
