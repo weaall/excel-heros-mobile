@@ -32,6 +32,120 @@ namespace ExcelHeroes.World
                 ?? all.FirstOrDefault(t => t.name.ToLowerInvariant().Contains(part));
         }
 
+        // the hair library name of each body's own hair (HairLibExtract)
+        static string OwnLib(string key) => key switch
+        {
+            "hayase_yuuka" or "hayase_yuuka_gym_ver_" => "yuuka", "kayoko_dress_ver_" => "kayoko", "hatsune_miku" => "miku",
+            "yutori_natsu" => "natsu", _ => key,
+        };
+
+        /// <summary>
+        /// The hero's hair, not the sample's: a long style from the hair library (the samples' own
+        /// hairs, skinned, with their chains), or — for the short, bob, bun and spiky styles the
+        /// library has no sample for — the base figure's trimmed hair, built for this hero and moved
+        /// across on the head bone. The sample's own hair is hidden unless it is already the pick.
+        /// </summary>
+        static void DressHair(ChibiRig rig, string heroId, string key, SdLook k, List<SkinnedMeshRenderer> kept, int layer)
+        {
+            var lib = k.HairLib != "" ? (k.HairLib == "base" ? null : k.HairLib) : SdRefHairLib.Pick(k.Style, heroId);
+            if (lib == OwnLib(key)) return;                       // the sample's hair is the right one
+            foreach (var r in kept)
+            {
+                var mats = r.sharedMaterials;
+                for (var i = 0; i < mats.Length; i++)
+                    if (mats[i] != null && mats[i].mainTexture != null && mats[i].mainTexture.name.Contains("+hair")) mats[i].SetFloat("_Cutoff", 2f);
+            }
+            if (lib != null && SdRefHairLib.Has(lib)) { SdRefHairLib.Mount(rig, lib, k, layer); return; }
+            // short styles: the base figure's hair for this hero, baked in its head bone's space
+            var temp = new GameObject("hairdonor").transform;
+            try
+            {
+                var donor = SdRef.BuildBase(heroId, temp, layer);
+                if (donor?.Head == null || rig.Head == null) return;
+                var body = donor.FaceRenderer as SkinnedMeshRenderer;
+                if (body == null) return;
+                var hairMat = SdRefLook.For(heroId).MaterialFor("hair");
+                var sub = System.Array.IndexOf(body.sharedMaterials, hairMat);
+                var baked = new Mesh(); body.BakeMesh(baked, true);
+                if (sub < 0) return;
+                var tris = baked.GetTriangles(sub); var vs = baked.vertices; var ns = baked.normals; var uv = baked.uv;
+                // into the donor head's space, then onto ours
+                var toHead = donor.Head.worldToLocalMatrix * body.transform.localToWorldMatrix;
+                var map = new Dictionary<int, int>(); var nv = new List<Vector3>(); var nn = new List<Vector3>(); var nu = new List<Vector2>(); var nt = new List<int>();
+                foreach (var t in tris)
+                {
+                    if (!map.TryGetValue(t, out var j)) { j = map[t] = nv.Count; nv.Add(toHead.MultiplyPoint3x4(vs[t])); nn.Add(toHead.MultiplyVector(ns[t]).normalized); nu.Add(uv[t]); }
+                    nt.Add(j);
+                }
+                var m = new Mesh { name = "hair:" + heroId, indexFormat = nv.Count > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16 };
+                m.SetVertices(nv); m.SetNormals(nn); m.SetUVs(0, nu); m.SetTriangles(nt, 0); m.RecalculateBounds();
+                var go = new GameObject("hair") { layer = layer };
+                go.transform.SetParent(rig.Head, false);
+                // the donor's head bone and ours carry different lossy scales (each model was normalised to 1.2)
+                var ratio = donor.Head.lossyScale.x / Mathf.Max(1e-6f, rig.Head.lossyScale.x);
+                go.transform.localScale = Vector3.one * ratio;
+                go.AddComponent<MeshFilter>().sharedMesh = m;
+                var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = hairMat;
+                rig.Renderers.Add(mr);
+                // the scalp ball too, when the donor made one
+                foreach (var sc in donor.Head.GetComponentsInChildren<MeshRenderer>(true).Where(x => x.name == "scalp"))
+                {
+                    var copy = Object.Instantiate(sc.gameObject, rig.Head, false);
+                    copy.transform.localPosition = sc.transform.localPosition * ratio; copy.transform.localRotation = sc.transform.localRotation;
+                    copy.transform.localScale = sc.transform.localScale * ratio;
+                    rig.Renderers.Add(copy.GetComponent<MeshRenderer>());
+                }
+            }
+            finally { Object.DestroyImmediate(temp.gameObject); }
+        }
+
+        /// <summary>
+        /// The sample's character kit off the outfit: pieces of the BODY submesh above the neck (caps,
+        /// horns, ear devices — the face and the hair are their own submeshes) and well behind the
+        /// hips (tails). An office worker in Hikari's cap or with Kayoko's tail read as cosplay.
+        /// </summary>
+        static void StripKit(SkinnedMeshRenderer body, Transform neck, Transform pelvis)
+        {
+            if (neck == null || pelvis == null) return;
+            var mesh = Object.Instantiate(body.sharedMesh);
+            var baked = new Mesh(); body.BakeMesh(baked, true);
+            var w = baked.vertices.Select(p => body.transform.TransformPoint(p)).ToArray();
+            var fwd = body.transform.root.forward;
+            var names = body.sharedMaterials.Select(m => m ? m.name.ToLowerInvariant() : "").ToArray();
+            var neckY = neck.position.y; var hipZ = Vector3.Dot(pelvis.position, fwd);
+            var height = w.Max(p => p.y) - w.Min(p => p.y);
+            for (var s = 0; s < mesh.subMeshCount; s++)
+            {
+                if (s >= names.Length || !names[s].Contains("body")) continue;
+                var tris = mesh.GetTriangles(s); var keep = new List<int>(tris.Length);
+                foreach (var piece in SdFacePieces(tris))
+                {
+                    var c = Vector3.zero; foreach (var t in piece) c += w[t]; c /= piece.Count;
+                    var above = c.y > neckY + height * 0.02f;
+                    var behind = Vector3.Dot(c, fwd) < hipZ - height * 0.14f && c.y < neckY;
+                    if (!above && !behind) keep.AddRange(piece);
+                }
+                mesh.SetTriangles(keep, s, false);
+            }
+            body.sharedMesh = mesh;
+        }
+
+        static IEnumerable<List<int>> SdFacePieces(int[] tris)
+        {
+            var parent = new Dictionary<int, int>();
+            int Root(int a) { while (parent[a] != a) a = parent[a] = parent[parent[a]]; return a; }
+            foreach (var t in tris) if (!parent.ContainsKey(t)) parent[t] = t;
+            for (var i = 0; i < tris.Length; i += 3) { var a = Root(tris[i]); parent[Root(tris[i + 1])] = a; parent[Root(tris[i + 2])] = a; }
+            var groups = new Dictionary<int, List<int>>();
+            for (var i = 0; i < tris.Length; i += 3)
+            {
+                var r = Root(tris[i]);
+                if (!groups.TryGetValue(r, out var l)) groups[r] = l = new List<int>();
+                l.Add(tris[i]); l.Add(tris[i + 1]); l.Add(tris[i + 2]);
+            }
+            return groups.Values;
+        }
+
         public static ChibiRig Build(string heroId, string key, Transform parent, int layer)
         {
             var prefab = Prefab(key);
@@ -62,9 +176,10 @@ namespace ExcelHeroes.World
             var pelvis = Find("Bip001 Pelvis");
             if (pelvis != null) { var pl = root.InverseTransformPoint(pelvis.position); go.transform.localPosition -= new Vector3(pl.x, 0f, pl.z); }
 
+            StripKit(body, Find("Bip001 Neck"), pelvis);
             var k = SdLook.For(heroId);
-            var tex = SdSampleTex.For(key, k, Sheet(key, "body"), Sheet(key, "hair"), Sheet(key, "eyemouth"));
-            var face = Sheet(key, "face");
+            var tex = SdSampleTex.For(key, k, Sheet(key, "body"), Sheet(key, "hair"), Sheet(key, "eyemouth"), Sheet(key, "face"));
+            var face = tex.Face;
             foreach (var r in kept)
             {
                 var names = r.sharedMaterials.Select(m => m ? m.name : "").ToArray();
@@ -113,6 +228,8 @@ namespace ExcelHeroes.World
             rig.FaceRenderer = body;
             rig.EyeSub = -1;   // the layered eye is the sample's own: no sheet swaps for expressions (yet)
 
+            DressHair(rig, heroId, key, k, kept, layer);
+
             var sh = new MeshKit.Builder();
             sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
@@ -126,6 +243,8 @@ namespace ExcelHeroes.World
         }
     }
 
+    public static partial class SdSampleHair { }
+
     /// <summary>
     /// The sample's sheets in the hero's colours, keeping every stroke of their shading: the hair
     /// by a luminance gradient map onto the hero's hair colour; the iris square (the right three
@@ -134,10 +253,10 @@ namespace ExcelHeroes.World
     /// </summary>
     public static class SdSampleTex
     {
-        public class Set { public Texture2D Body, Hair, EyeMouth, EyeMouthSrc; }
+        public class Set { public Texture2D Body, Hair, EyeMouth, EyeMouthSrc, Face; }
         static readonly Dictionary<string, Set> Cache = new();
 
-        public static Set For(string key, SdLook k, Texture2D body, Texture2D hair, Texture2D eyemouth)
+        public static Set For(string key, SdLook k, Texture2D body, Texture2D hair, Texture2D eyemouth, Texture2D face = null)
         {
             var id = key + ":" + k.Id;
             if (Cache.TryGetValue(id, out var set)) return set;
@@ -145,6 +264,7 @@ namespace ExcelHeroes.World
             set.Hair = hair != null && hair.isReadable ? GradientMap(hair, k.Hair) : hair;
             set.EyeMouth = eyemouth != null && eyemouth.isReadable ? IrisHue(eyemouth, k.Eye) : eyemouth;
             set.Body = body != null && body.isReadable ? Outfit(body, k) : body;
+            set.Face = face != null && face.isReadable ? Swatches(face, k.Hair) : face;
             return Cache[id] = set;
         }
 
@@ -171,6 +291,10 @@ namespace ExcelHeroes.World
             var light = Color.HSVToRGB(h, Mathf.Clamp01(sat * 0.7f), Mathf.Clamp01(v + (1f - v) * 0.45f));
             // where the sheet's mid-tone sits (its median luminance), so that maps to the colour
             var ls = px.Select(Luma).OrderBy(x => x).ToArray(); var mid = Mathf.InverseLerp(lo, hi, ls[ls.Length / 2]);
+            // the range from the 8th to the 97th percentile: a sample's two-tone streak (Kayoko's black
+            // half) or stray dark pixels would otherwise stretch the map and draw a stripe
+            lo = ls[(int)(ls.Length * 0.08f)]; hi = Mathf.Max(lo + 0.05f, ls[(int)(ls.Length * 0.97f)]);
+            mid = Mathf.InverseLerp(lo, hi, ls[ls.Length / 2]);
             for (var i = 0; i < px.Length; i++)
             {
                 var t = Mathf.InverseLerp(lo, hi, Luma(px[i]));
@@ -178,6 +302,25 @@ namespace ExcelHeroes.World
                 c.a = px[i].a; px[i] = c;
             }
             return Copy(src, px, src.name + "+hair");
+        }
+
+        /// <summary>
+        /// The face sheet's colour swatches (brow and lash colours — the sample's hair colour) onto
+        /// the hero's hair, by value; skin and blush left.
+        /// </summary>
+        static Texture2D Swatches(Texture2D src, Color hair)
+        {
+            var px = src.GetPixels();
+            Color.RGBToHSV(hair, out var hh, out var hs, out var hv);
+            for (var i = 0; i < px.Length; i++)
+            {
+                Color.RGBToHSV(px[i], out var h, out var s, out var v);
+                var skin = (h < 0.1f || h > 0.92f) && s < 0.5f && v > 0.55f;
+                if (skin || s < 0.18f) continue;
+                var c = Color.HSVToRGB(hh, Mathf.Clamp01(hs * 0.9f + 0.1f), Mathf.Clamp01(hv * Mathf.Lerp(0.55f, 1.1f, v)));
+                c.a = px[i].a; px[i] = c;
+            }
+            return Copy(src, px, src.name + "+swatch");
         }
 
         /// <summary>The iris square's coloured pixels onto the eye colour's hue; the white and line blocks untouched.</summary>

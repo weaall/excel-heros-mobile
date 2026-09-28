@@ -46,6 +46,12 @@ namespace ExcelHeroes.World
             var forced = System.Environment.GetEnvironmentVariable("SD_BODY");
             var bodyKey = !string.IsNullOrEmpty(forced) ? forced : SdLook.For(heroId).Body;
             if (!string.IsNullOrEmpty(bodyKey) && SdSample.Has(bodyKey)) return SdSample.Build(heroId, bodyKey, parent, layer);
+            return BuildBase(heroId, parent, layer);
+        }
+
+        /// <summary>The base body (CH0184) with our outfit pieces and trimmed hair — also the donor of short hair for SdSample.</summary>
+        public static ChibiRig BuildBase(string heroId, Transform parent, int layer)
+        {
             var prefab = Prefab;
             if (prefab == null) return null;
             // a wrapper so the rig's Root is at the feet and rotates about the figure's own axis
