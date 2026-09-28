@@ -66,8 +66,22 @@ if __name__ == "__main__":
     pairs = [f"{t}|{l}" for t in sb.BODIES for l in sb.LOWERS]
     joint = {h: {f"{t}|{l}": cache[h]["tops"].get(t, 0) + 0.7 * cache[h]["lowers"].get(l, 0) for t in sb.BODIES for l in sb.LOWERS} for h in heroes}
     fixed = {h: f"{byid[h]['body']}|{byid[h].get('lower') or byid[h]['body']}" for h in heroes if "body" in (byid[h].get("manual") or [])}
+    # Kayoko's off-shoulder jacket and Mika's princess dress read wrong on office wear (tools/sd_likeness_gemini.py):
+    # a heavy cost per use past a few, so only the best matches keep them
+    for h in heroes:
+        for pr in pairs:
+            t = pr.split("|")[0]
+            if t == "kayoko_dress_ver_": joint[h][pr] -= 2.5
+            if t in ("mika", "hatsune_miku"): joint[h][pr] -= 3.0
     pick = assign(heroes, joint, pairs, 3, fixed, step=1.2)
     tops = {h: pick[h].split("|")[0] for h in heroes}; lows = {h: pick[h].split("|")[1] for h in heroes}
+    # Kayoko's lower is a dress hem with no skirt chains: it cannot be lengthened (SdGarment), so a hero
+    # whose skirt reaches mid-thigh or lower takes the best-scored lower that has a skirt
+    skirted = ["hayase_yuuka", "hikari", "yutori_natsu", "reisa", "haruka"]
+    for h in heroes:
+        g2 = dict(x.split("=") for x in (byid[h].get("garment") or "").split(";") if "=" in x)
+        if lows[h] == "kayoko_dress_ver_" and g2.get("pants", "none") == "none" and float(g2.get("skirt", "1")) >= 0.95:
+            lows[h] = max(skirted, key=lambda o: cache[h]["lowers"].get(o, 0))
     combos = {}
     for h in heroes:
         combos.setdefault((tops[h], lows[h]), []).append(h)

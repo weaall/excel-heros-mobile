@@ -263,7 +263,14 @@ namespace ExcelHeroes.World
                     var above = c.y > neckY + height * 0.02f;
                     var behind = Vector3.Dot(c, fwd) < hipZ - height * 0.14f && c.y < neckY;
                     // wings (Mika's): by their bones
-                    var wing = 0; foreach (var t in piece) if (Dominant(bw[t], bones).ToLowerInvariant().Contains("wing")) wing++;
+                    // … and the kit on its own bones: Hikari's bag and cross straps (the "tactical harness"
+                    // Gemini kept seeing on office suits), Natsu's phone
+                    var wing = 0;
+                    foreach (var t in piece)
+                    {
+                        var dn = Dominant(bw[t], bones).ToLowerInvariant();
+                        if (dn.Contains("wing") || dn.Contains("_bag") || dn.Contains("acc_0") || dn.Contains("phone")) wing++;
+                    }
                     if (wing * 2 > piece.Count) behind = true;
                     if (!above && !behind) keep.AddRange(piece);
                 }

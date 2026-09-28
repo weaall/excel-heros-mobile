@@ -29,6 +29,8 @@ PROMPT = (
     "Image 2 is the full illustration of the character who will wear it. {ref}"
     "Repaint image 1 so its CLOTHES are exactly the outfit of image 2 (leave the head, face and hair as they are): its garments, colours, trims, buttons, ties, ribbons, "
     "patterns, logos and accessories on the torso, arms and legs — mapped onto the shapes that are there. "
+    "Anything on image 1 that image 2 does not wear — cross straps, harness belts, pouches, holsters, mechanical parts, "
+    "big logos — is painted over in the colour of the garment under it, so it disappears. "
     "Keep image 1's silhouette, folds, pleats and shading exactly: every edge stays where it is; only the colours and "
     "surface details change. Blue Archive SD texture style: flat cel colours, soft two-tone shading, clean thin dark lines on seams. "
     "Plain pure white background; paint nothing outside the figure; same size and framing as image 1."
