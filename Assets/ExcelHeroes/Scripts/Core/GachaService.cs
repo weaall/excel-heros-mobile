@@ -133,8 +133,10 @@ namespace ExcelHeroes.Core
             return results;
         }
 
-        public static int CostFor(int count) =>
-            count >= 10 ? GameData.Balance.gachaTenCost : GameData.Balance.gachaSingleCost * count;
+        // Ten at once is ten singles at once — no discount, as in the reference (1,200 for ten, 120
+        // for one). The exported gachaTenCost (900) is ignored on purpose, so a re-export of the
+        // web balance does not bring the discount back.
+        public static int CostFor(int count) => GameData.Balance.gachaSingleCost * count;
 
         public static bool CanAfford(PlayerState p, int count) => p.gems >= CostFor(count);
 

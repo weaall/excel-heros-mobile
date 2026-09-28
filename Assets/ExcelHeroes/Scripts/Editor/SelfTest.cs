@@ -867,7 +867,7 @@ namespace ExcelHeroes.EditorTools
             // The economy this exists to fix: a day's gems against the price of a ten-pull.
             var dayCeiling = file.loginGems + file.streakMaxDays * file.streakGemsPerDay + file.allClearGems
                              + ids.Sum(id => GameData.Quest(id).gems);
-            var ten = GameData.Balance.gachaTenCost;
+            var ten = GachaService.CostFor(10);
             Check(dayCeiling * 4 >= ten, $"a day's gems ({dayCeiling}) reach a ten-pull ({ten}) inside a week");
         }
 
