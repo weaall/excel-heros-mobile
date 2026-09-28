@@ -115,7 +115,8 @@ namespace ExcelHeroes.EditorTools
             {
                 importer.textureType = TextureImporterType.Default;
                 importer.mipmapEnabled = true;
-                importer.filterMode = FilterMode.Bilinear;
+                importer.filterMode = FilterMode.Trilinear;
+                importer.anisoLevel = 4;             // the figure is seen from above at a slant in the fight
                 importer.alphaSource = TextureImporterAlphaSource.FromInput;
                 importer.sRGBTexture = true;
                 importer.isReadable = true;

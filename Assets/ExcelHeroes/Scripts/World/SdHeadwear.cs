@@ -17,7 +17,7 @@ namespace ExcelHeroes.World
         public static void Apply(ChibiRig rig, SdLook k, Transform root, int layer, bool shortHair)
         {
             var text = System.Environment.GetEnvironmentVariable("SD_HEAD") ?? k.Head ?? "";
-            if (string.IsNullOrEmpty(text) || rig.Head == null) return;
+            if (rig.Head == null) return;
             // the hair surface, at rest (the hair was just skinned in its bind pose)
             var pts = new List<Vector3>();
             foreach (var r in rig.Renderers)
@@ -49,8 +49,40 @@ namespace ExcelHeroes.World
                 return best > 0f ? best : crownR;
             }
             Vector3 On(Vector3 dir, float lift = 1f) => dir.normalized * Reach(dir) * lift;
+            // the INNER hair surface along a direction (the cap under the strands): a low percentile
+            float Inner(Vector3 dir)
+            {
+                dir.Normalize(); var lens = new List<float>();
+                foreach (var p in local) { var len = p.magnitude; if (len > 1e-5f && Vector3.Dot(p / len, dir) > 0.96f) lens.Add(len); }
+                if (lens.Count < 4) return crownR * 0.8f;
+                lens.Sort(); return lens[(int)(lens.Count * 0.2f)];
+            }
 
             var b = new MeshKit.Builder();
+            // the scalp: a shell just inside the hair, in its shadow tone, so a gap between parts from
+            // different samples (Yuuka's parting) shows hair and not the black of the outline hull behind
+            {
+                var scalp = Color.Lerp(k.Hair, Color.black, 0.3f); scalp.a = 1f;
+                var sb2 = new MeshKit.Builder();
+                sb2.Grid(24, 10, (u, t) =>
+                {
+                    var phi = u * Mathf.PI * 2f;
+                    var back = Mathf.Max(0f, -Mathf.Cos(phi));
+                    var th = t * Mathf.Lerp(1.05f, 1.75f, back);
+                    var dir = new Vector3(Mathf.Sin(th) * Mathf.Sin(phi), Mathf.Cos(th), Mathf.Sin(th) * Mathf.Cos(phi));
+                    return (dir * Inner(dir) * 0.96f, dir, new Vector2(u, t));
+                }, scalp);
+                if (local.Length > 0)
+                {
+                    var sm = MeshKit.NewToon(0f); sm.SetFloat("_ShadeStrength", 0.2f);
+                    var sg = MeshKit.Part("scalp", rig.Head, sb2.Bake("scalp"), sm, layer);
+                    var sls = rig.Head.lossyScale;
+                    sg.transform.localScale = new Vector3(1f / sls.x, 1f / sls.y, 1f / sls.z);
+                    sg.transform.position = c; sg.transform.rotation = root.rotation;
+                    rig.Renderers.Add(sg.GetComponent<MeshRenderer>());
+                }
+            }
+            if (string.IsNullOrEmpty(text)) return;
             foreach (var item in text.Split(','))
             {
                 var f = item.Trim().Split(':');

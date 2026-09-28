@@ -80,11 +80,18 @@ namespace ExcelHeroes.World
                 // few percent of texels are the highlight streaks. (Mathf.SmoothStep(a, b, t) is an
                 // ease between a and b, NOT a threshold — an explicit one here.)
                 var ratio = Lum(_hairSrc[i]) / _hairMeanLum;
-                var f = Mathf.Clamp(Mathf.Pow(ratio, 2.2f), 0.7f, 1.45f);
-                var c = new Color(Mathf.Clamp01(hair.r * f), Mathf.Clamp01(hair.g * f), Mathf.Clamp01(hair.b * f), 1f);
+                // in HSV, the hero's colour as the sheet's mid-tone with room above and below it: white or
+                // silver hair used to sit at the top already, so its shadows only reached 70 % and the
+                // highlights nowhere — a flat pale blob with no strands. Light hair now takes its mid-tone
+                // at 0.9 value, the strand lines and shadows down to about 55 %, the streaks to white.
+                Color.RGBToHSV(hair, out var hh, out var hs, out var hv);
+                var baseV = Mathf.Min(hv, 0.9f);
+                var f = Mathf.Clamp(Mathf.Pow(ratio, 2.6f), hv > 0.85f ? 0.62f : 0.5f, 1.5f);
+                var shadowSat = f < 1f ? Mathf.Lerp(1.15f, 1f, f) : 1f;
+                var c = Color.HSVToRGB(hh, Mathf.Clamp01(hs * shadowSat), Mathf.Clamp01(baseV * f)); c.a = 1f;
                 var u = Mathf.Clamp01((ratio - 1.08f) / 0.1f);
                 var shine = u * u * (3f - 2f * u);
-                px[i] = Color.Lerp(c, tip, shine * 0.6f);
+                px[i] = Color.Lerp(c, tip, shine * 0.65f);
             }
             t = new Texture2D(_hairN, src.px.Length / _hairN, TextureFormat.RGBA32, true) { name = "hair:" + id, wrapMode = TextureWrapMode.Clamp };
             t.SetPixels(px); t.Apply(true);

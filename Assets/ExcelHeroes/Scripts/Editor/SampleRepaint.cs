@@ -107,13 +107,15 @@ namespace ExcelHeroes.EditorTools
                     var f = Path.Combine(painted, $"{id}_{name}.png");
                     if (!File.Exists(f)) continue;
                     var t = new Texture2D(2, 2, TextureFormat.RGBA32, false); t.LoadImage(File.ReadAllBytes(f));
-                    views.Add((yaw, t.GetPixels32(), t.width, t.height)); Object.DestroyImmediate(t);
+                    views.Add((yaw, Sharpen(t.GetPixels32(), t.width, t.height), t.width, t.height)); Object.DestroyImmediate(t);
                 }
                 if (views.Count == 0) { Debug.Log("[SampleRepaint] no painted views for " + id); continue; }
                 var holder = new GameObject("b").transform;
                 var (rig, body, subs) = Build(id, holder);
                 var baseTex = body.sharedMaterials[subs[0]].mainTexture as Texture2D;
-                var W = baseTex.width; var H = baseTex.height;
+                // twice the sheet's own size: the paintings carry more detail than a 512 sheet holds (the
+                // outfits read soft), the sample's own texels upsampled under them where no view reaches
+                var W = baseTex.width * Up; var H = baseTex.height * Up;
                 // the rest mesh in the root's space (root at the origin, unrotated)
                 var baked = new Mesh(); body.BakeMesh(baked, true);
                 var m2r = holder.worldToLocalMatrix * body.transform.localToWorldMatrix;
@@ -123,7 +125,8 @@ namespace ExcelHeroes.EditorTools
                 var all = Enumerable.Range(0, body.sharedMesh.subMeshCount).SelectMany(s => body.sharedMesh.GetTriangles(s)).ToArray();
                 var mats = views.Select(x => Matrix4x4.Rotate(Quaternion.Euler(0f, x.yaw, 0f))).ToList();
                 var zbufs = mats.Select(m => DepthBuffer(v, all, m)).ToList();
-                var atlas = baseTex.GetPixels();
+                var atlas = new Color[W * H];
+                for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) atlas[y * W + x] = baseTex.GetPixelBilinear((x + 0.5f) / W, (y + 0.5f) / H);
                 var wsum = new float[atlas.Length]; var acc = new Color[atlas.Length];
                 foreach (var s in subs)
                 {
@@ -137,6 +140,38 @@ namespace ExcelHeroes.EditorTools
                 Debug.Log($"[SampleRepaint] baked {id} from {views.Count} views");
             }
             UnityEditor.AssetDatabase.Refresh();
+        }
+
+        const int Up = 2;
+
+        static Color Bilinear(Color32[] px, int w, int h, float x, float y)
+        {
+            int x0 = Mathf.Clamp((int)Mathf.Floor(x), 0, w - 1), y0 = Mathf.Clamp((int)Mathf.Floor(y), 0, h - 1);
+            int x1 = Mathf.Min(w - 1, x0 + 1), y1 = Mathf.Min(h - 1, y0 + 1);
+            float fx = Mathf.Clamp01(x - x0), fy = Mathf.Clamp01(y - y0);
+            Color a = px[y0 * w + x0], b = px[y0 * w + x1], c = px[y1 * w + x0], d = px[y1 * w + x1];
+            // an edge texel (alpha 0 beside) must not bleed the background in
+            if (a.a < 0.5f || b.a < 0.5f || c.a < 0.5f || d.a < 0.5f) return px[Mathf.Clamp((int)(y + 0.5f), 0, h - 1) * w + Mathf.Clamp((int)(x + 0.5f), 0, w - 1)];
+            return Color.Lerp(Color.Lerp(a, b, fx), Color.Lerp(c, d, fx), fy);
+        }
+
+        /// <summary>A light unsharp mask on a painted view: the image model paints soft, and a soft
+        /// painting projected and filtered twice reads as a blur on the figure.</summary>
+        static Color32[] Sharpen(Color32[] src, int w, int h)
+        {
+            var o = (Color32[])src.Clone();
+            for (var y = 1; y < h - 1; y++)
+                for (var x = 1; x < w - 1; x++)
+                {
+                    var i = y * w + x; var c = src[i]; if (c.a < 128) continue;
+                    int r = 0, g = 0, b = 0, n = 0;
+                    foreach (var j in new[] { i - 1, i + 1, i - w, i + w }) { var q = src[j]; if (q.a < 128) continue; r += q.r; g += q.g; b += q.b; n++; }
+                    if (n < 4) continue;
+                    const float k = 0.6f;
+                    byte S(int v, int m) => (byte)Mathf.Clamp(Mathf.RoundToInt(v + k * (v - m / 4f)), 0, 255);
+                    o[i] = new Color32(S(c.r, r), S(c.g, g), S(c.b, b), c.a);
+                }
+            return o;
         }
 
         static Vector2 Px(Vector3 w) => new(((w.x / Ortho) * 0.5f + 0.5f) * ViewPx, ((w.y - CentreY) / Ortho * 0.5f + 0.5f) * ViewPx);
@@ -197,9 +232,10 @@ namespace ExcelHeroes.EditorTools
                         var zi = Mathf.Clamp((int)(sy * ViewPx), 0, ViewPx - 1) * ViewPx + Mathf.Clamp((int)(sx * ViewPx), 0, ViewPx - 1);
                         if (wp.z > zbufs[k][zi] + 0.006f) continue;
                         var vw = views[k];
-                        var c = (Color)vw.px[Mathf.Clamp((int)(sy * vw.h), 0, vw.h - 1) * vw.w + Mathf.Clamp((int)(sx * vw.w), 0, vw.w - 1)];
+                        var c = Bilinear(vw.px, vw.w, vw.h, sx * vw.w - 0.5f, sy * vw.h - 0.5f);
                         if (c.a < 0.5f) continue;
-                        var wgt = Mathf.Pow(facing, 4f);
+                        // the view facing it most nearly wins: an even blend of four ghosted the seams
+                        var wgt = Mathf.Pow(facing, 10f);
                         acc[i] += new Color(c.r, c.g, c.b) * wgt; wsum[i] += wgt;
                     }
                 }
