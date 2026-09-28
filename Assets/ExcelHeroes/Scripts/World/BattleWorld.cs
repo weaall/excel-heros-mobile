@@ -202,8 +202,12 @@ namespace ExcelHeroes.World
         {
             var list = c.side == Side.Hero ? _sim.Heroes : _sim.Monsters;
             var i = Mathf.Max(0, list.IndexOf(c));
-            return c.side == Side.Hero ? LaneZ[i % LaneZ.Length] : LaneZ[(i + 1) % LaneZ.Length] * 0.9f;
+            return c.side == Side.Hero ? LaneZ[i % LaneZ.Length] : MonLaneZ[i % MonLaneZ.Length];
         }
+
+        // the errors stand further back than the squad: the EX cards cover the lower right of the
+        // screen, and the near lanes put the enemies behind them (target_3 has them mid-field)
+        static readonly float[] MonLaneZ = { 0.45f, 1.05f, 0.0f, 1.4f, 0.75f };
 
         /// <summary>Where a world point lands on the field, 0..1 with y DOWN (UI space).</summary>
         public Vector2 Project(Vector3 world)
@@ -271,11 +275,17 @@ namespace ExcelHeroes.World
             }
             // the drawn mascot first (enemies v2, tools/gen_monsters_v2.py): one clean BA hand reads better
             // than the TripoSR meshes made from the first set, which stay as the fallback
-            else if ((SdSprite.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer) ?? SdModel.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer)) is { } sdm)
+            // 3D when the textured mesh exists (TRELLIS + the drawing, tools/mon3d_pack.py) — the squad is
+            // 3D and the errors stand in the same street
+            else if ((SdModel.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer, texturedOnly: true)
+                      ?? SdSprite.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer)
+                      ?? SdModel.BuildMonster(c.boss != null ? c.boss.id : c.typeId, _root, Layer)) is { } sdm)
             {
                 a.Rig = sdm;
                 a.Rig.Root.name = c.name;
                 a.Scale = c.boss != null ? 1.9f : c.elite ? 1.25f : 1f;
+                // a round 3D mascot of height 1 reads half the size of the drawn one beside a 1.3 m hero
+                if (sdm.Mascot) a.Scale *= 1.4f;
                 a.Accent = new Color(1f, 0.35f, 0.35f);
             }
             else
@@ -774,6 +784,7 @@ namespace ExcelHeroes.World
                 }
                 else
                 {
+                    if (Rig.Mascot) Squash(time, walking, ref y);
                     if (Rig.Body != null) Rig.Body.localRotation = Quaternion.Euler(lean, twist, 0f);
                     if (Rig.Head != null) Rig.Head.localRotation = Quaternion.Euler(br * 2f, 0f, Hit > 0f ? 6f : 0f);
                     if (Rig.ArmL != null) Rig.ArmL.localRotation = Quaternion.Euler(fwdL, 0f, armL);
@@ -793,6 +804,32 @@ namespace ExcelHeroes.World
                     Rig.Sheet.localPosition = new Vector3(Rig.SheetSide * 0.12f, Rig.Height * 0.62f + Mathf.Sin(time * 1.7f) * 0.015f, -0.14f);
                     Rig.Sheet.localRotation = Quaternion.Euler(0f, 180f, Rig.SheetSide * 12f);
                 }
+            }
+
+            /// <summary>
+            /// A limbless 3D mascot moves the way the 2D one did: it breathes, crouches before a lunge
+            /// and stretches into it, flattens when hit, squashes on each hop's landing.
+            /// </summary>
+            void Squash(float time, bool walking, ref float y)
+            {
+                var sx = 1f; var sy = 1f;
+                var br = Mathf.Sin(time * 3.1f + Z * 2f);
+                sx *= 1f - br * 0.015f; sy *= 1f + br * 0.022f;
+                if (walking)
+                {
+                    var hop = Mathf.Abs(Mathf.Sin(_walk * 0.9f));
+                    y += hop * 0.08f;
+                    if (hop < 0.25f) { sx *= 1.07f; sy *= 0.93f; }
+                }
+                if (Attack > 0f)
+                {
+                    var a = 1f - Attack / 0.32f;
+                    if (a < 0.3f) { var k = a / 0.3f; sx *= 1f + 0.12f * k; sy *= 1f - 0.14f * k; }
+                    else if (a < 0.55f) { var k = (a - 0.3f) / 0.25f; sx *= 1.12f - 0.2f * k; sy *= 0.86f + 0.24f * k; }
+                    else { var k = (a - 0.55f) / 0.45f; sx *= 0.92f + 0.08f * k; sy *= 1.1f - 0.1f * k; }
+                }
+                if (Hit > 0f) { var k = Hit / 0.16f; sx *= 1f + 0.12f * k; sy *= 1f - 0.12f * k; }
+                if (Rig.Body != null) Rig.Body.localScale = new Vector3(sx, sy, sx);
             }
 
             /// <summary>Swaps the eye/mouth sheet on the face renderer's eye submesh (SdRef only).</summary>

@@ -102,19 +102,35 @@ namespace ExcelHeroes.World
         /// body pivot so the sprite-era hop, lean and flinch still apply; no limbs. Height 1.0,
         /// facing +Z (BattleWorld turns it toward the squad). Null when the mascot has no mesh.
         /// </summary>
-        public static ChibiRig BuildMonster(string typeId, Transform parent, int layer)
+        public static ChibiRig BuildMonster(string typeId, Transform parent, int layer, bool texturedOnly = false)
         {
             if (typeId == null) return null;
             var asset = Resources.Load<TextAsset>($"Art/SD3DM/{typeId}");
             if (asset == null) return null;
+            if (texturedOnly && (asset.bytes.Length < 4 || asset.bytes[3] != (byte)'2')) return null;
             var mesh = LoadMesh("m:" + typeId, asset.bytes);
             if (mesh == null) return null;
+            // SDM2 (TRELLIS shape + the drawing projected on the front, tools/mon3d_pack.py) carries
+            // its own texture; SDM1 (TripoSR) is vertex-coloured on the shared material
+            var mat = Mat3D;
+            var tex = Resources.Load<Texture2D>($"Art/SD3DM/{typeId}_tex");
+            if (tex != null && mesh.uv != null && mesh.uv.Length == mesh.vertexCount)
+            {
+                if (!TexMats.TryGetValue(typeId, out mat) || mat == null)
+                {
+                    mat = MeshKit.NewToon(0.0035f, tex);
+                    mat.SetFloat("_ShadeStrength", 0.22f);
+                    mat.SetFloat("_Rim", 0.14f);
+                    TexMats[typeId] = mat;
+                }
+            }
             var root = new GameObject("sd3dm:" + typeId) { layer = layer }.transform;
             root.SetParent(parent, false);
             var body = new GameObject("body") { layer = layer }.transform;
             body.SetParent(root, false);
-            var part = MeshKit.Part("mesh", body, mesh, Mat3D, layer);
-            var rig = new ChibiRig { Root = root, Body = body, Head = body, Height = mesh.bounds.max.y, Model3D = true };
+            var part = MeshKit.Part("mesh", body, mesh, mat, layer);
+            // Head stays null: it is the same transform as Body, and the head sway was overwriting the lean
+            var rig = new ChibiRig { Root = root, Body = body, Head = null, Height = mesh.bounds.max.y, Model3D = true, Mascot = true };
             rig.Renderers.Add(part.GetComponent<MeshRenderer>());
             var sh = new MeshKit.Builder();
             var w = Mathf.Max(0.2f, mesh.bounds.extents.x * 1.1f);
@@ -127,7 +143,9 @@ namespace ExcelHeroes.World
         {
             if (Cache.TryGetValue(key, out var m) && m != null) return m;
             using var r = new BinaryReader(new MemoryStream(bytes));
-            if (new string(r.ReadChars(4)) != "SDM1") return null;
+            var magic = new string(r.ReadChars(4));
+            if (magic == "SDM2") return Cache[key] = LoadTextured(key, r);
+            if (magic != "SDM1") return null;
             int nv = r.ReadInt32(), nt = r.ReadInt32();
             var pos = new Vector3[nv]; var nor = new Vector3[nv]; var col = new Color[nv];
             var linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
@@ -145,6 +163,28 @@ namespace ExcelHeroes.World
             m.SetVertices(pos); m.SetNormals(nor); m.SetColors(col); m.SetTriangles(tris, 0);
             m.RecalculateBounds();
             Cache[key] = m;
+            return m;
+        }
+
+        static readonly Dictionary<string, Material> TexMats = new();
+
+        /// <summary>SDM2: position, normal and uv per vertex; white vertex colour (the texture carries it).</summary>
+        static Mesh LoadTextured(string key, BinaryReader r)
+        {
+            int nv = r.ReadInt32(), nt = r.ReadInt32();
+            var pos = new Vector3[nv]; var nor = new Vector3[nv]; var uv = new Vector2[nv]; var col = new Color[nv];
+            for (var i = 0; i < nv; i++)
+            {
+                pos[i] = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+                nor[i] = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+                uv[i] = new Vector2(r.ReadSingle(), r.ReadSingle());
+                col[i] = Color.white;
+            }
+            var tris = new int[nt * 3];
+            for (var i = 0; i < tris.Length; i++) tris[i] = r.ReadInt32();
+            var m = new Mesh { name = "sd3dm2:" + key, indexFormat = nv > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16 };
+            m.SetVertices(pos); m.SetNormals(nor); m.SetUVs(0, uv); m.SetColors(col); m.SetTriangles(tris, 0);
+            m.RecalculateBounds();
             return m;
         }
 

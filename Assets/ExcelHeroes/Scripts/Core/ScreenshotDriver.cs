@@ -183,6 +183,7 @@ namespace ExcelHeroes.Core
 
                         // The fight itself: the next run starts on its own after the result, so
                         // wait it out and take a burst from the party's entrance onwards.
+                        BattleSim.DebugTanky = 25;   // the capture party wipes a wave in a second: keep the monsters up to be seen
                         yield return new WaitForSeconds(2.9f);
                         for (var f = 0; f < 6; f++)
                         {
@@ -192,6 +193,7 @@ namespace ExcelHeroes.Core
                         // The boss HUD (bar, layer badge, trail) and the hit rings only exist in a
                         // boss wave, which a capture pass never reaches on its own: bring it on.
                         Debug.Log("[shots] before boss: " + BattleScreen.Current?.DebugState());
+                        BattleSim.DebugTanky = 0;
                         BattleScreen.Current?.DebugBoss(0.63f);
                         yield return new WaitForSeconds(2.6f);
                         Debug.Log("[shots] at Boss0: " + BattleScreen.Current?.DebugState());

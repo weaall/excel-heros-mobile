@@ -517,9 +517,13 @@ namespace ExcelHeroes.Core
             }
         }
 
+        /// <summary>Capture pass only: ordinary monsters take this many times their hp, so a fight lasts long enough to photograph them.</summary>
+        public static int DebugTanky;
+
         void Spawn(Combatant m, float x)
         {
             m.x = x;
+            if (DebugTanky > 1 && m.boss == null) { m.maxHp = (int)Math.Min(int.MaxValue / 2L, (long)m.maxHp * DebugTanky); m.hp = m.maxHp; }
             Spawned++;
             Monsters.Add(m);
             Events.Enqueue(new BattleEvent { kind = EventKind.Spawn, actor = m });

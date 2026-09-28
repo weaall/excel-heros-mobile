@@ -13,6 +13,7 @@ namespace ExcelHeroes.World
         public Renderer SheetRenderer;
         public bool Sprite;                 // an SD sprite (SdSprite) rather than a built model
         public bool Model3D;
+        public bool Mascot;       // a limbless 3D monster (SdModel.BuildMonster): squash and stretch instead of limbs
         public Transform[] Base;            // the common SD base skeleton (SdBase.B order), when built on it
         public bool RefModel;               // built on the sample FBX (SdRef): Bip001 bones, extra joints below
         public Transform Spine, ForearmL, ForearmR, CalfL, CalfR, HandL, HandR, FootL, FootR, Pelvis, ClavL, ClavR, Neck;

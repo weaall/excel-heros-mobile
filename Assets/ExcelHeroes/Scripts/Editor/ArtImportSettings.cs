@@ -43,6 +43,9 @@ namespace ExcelHeroes.EditorTools
         const string BattleRoot = ArtRoot + "Battle/";
         const string SdMonRoot = ArtRoot + "SDMonsters/";
 
+        /// <summary>The 3D monsters' textures (tools/mon3d_pack.py): wrapped on a mesh, so a plain texture with mipmaps.</summary>
+        const string Sd3dmRoot = ArtRoot + "SD3DM/";
+
         /// <summary>
         /// The UI skin from tools/gen-ui-skin.py. It lives OUTSIDE Resources/Art because nothing
         /// loads it by name at runtime — App.uss references it by path — and it needs the opposite
@@ -90,6 +93,22 @@ namespace ExcelHeroes.EditorTools
                 importer.isReadable = false;
                 importer.maxTextureSize = 256;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
+                ClearPlatformOverrides(importer);
+                importer.userData = Stamp;
+                return;
+            }
+
+            if (assetPath.StartsWith(Sd3dmRoot))
+            {
+                importer.textureType = TextureImporterType.Default;
+                importer.mipmapEnabled = true;
+                importer.filterMode = FilterMode.Trilinear;
+                importer.wrapMode = TextureWrapMode.Clamp;
+                importer.alphaSource = TextureImporterAlphaSource.None;
+                importer.sRGBTexture = true;
+                importer.isReadable = false;
+                importer.maxTextureSize = 1024;
+                importer.textureCompression = TextureImporterCompression.CompressedHQ;
                 ClearPlatformOverrides(importer);
                 importer.userData = Stamp;
                 return;
