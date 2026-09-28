@@ -101,6 +101,21 @@ namespace ExcelHeroes.EditorTools
                 return;
             }
 
+            // the sample bodies (git-ignored, third-party): read at runtime to recolour the hair and iris
+            if (assetPath.StartsWith(ArtRoot + "SDBase/bodies/"))
+            {
+                importer.textureType = TextureImporterType.Default;
+                importer.mipmapEnabled = true;
+                importer.filterMode = FilterMode.Bilinear;
+                importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                importer.sRGBTexture = true;
+                importer.isReadable = true;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                ClearPlatformOverrides(importer);
+                importer.userData = Stamp;
+                return;
+            }
+
             if (assetPath.StartsWith(FxRoot))
             {
                 importer.textureType = TextureImporterType.Default;

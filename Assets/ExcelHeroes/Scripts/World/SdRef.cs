@@ -42,6 +42,10 @@ namespace ExcelHeroes.World
 
         public static ChibiRig Build(string heroId, Transform parent, int layer)
         {
+            // a hero assigned one of the sample bodies wears it as made (SdSample); SD_BODY=key forces one (previews)
+            var forced = System.Environment.GetEnvironmentVariable("SD_BODY");
+            var bodyKey = !string.IsNullOrEmpty(forced) ? forced : SdLook.For(heroId).Body;
+            if (!string.IsNullOrEmpty(bodyKey) && SdSample.Has(bodyKey)) return SdSample.Build(heroId, bodyKey, parent, layer);
             var prefab = Prefab;
             if (prefab == null) return null;
             // a wrapper so the rig's Root is at the feet and rotates about the figure's own axis
@@ -347,8 +351,8 @@ namespace ExcelHeroes.World
         // towards a soft rose-violet, hair towards a deeper, more saturated tone of its own colour.
         // The shader's default tint was a grey-blue that muddied every face and jacket. The outline
         // went 0.004 → 0.006: at battle distance the old one vanished and the figure lost its edge.
-        static readonly Color WarmShade = new(0.93f, 0.78f, 0.9f, 1f);
-        static Color ShadeOf(Color c)
+        public static readonly Color WarmShade = new(0.93f, 0.78f, 0.9f, 1f);
+        public static Color ShadeOf(Color c)
         {
             Color.RGBToHSV(c, out var h, out var sat, out var v);
             var t = Color.HSVToRGB(h, Mathf.Clamp01(sat * 1.2f + 0.15f), Mathf.Clamp01(v * 0.72f + 0.12f));
