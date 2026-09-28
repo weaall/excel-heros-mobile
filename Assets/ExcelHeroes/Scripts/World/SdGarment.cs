@@ -127,8 +127,9 @@ namespace ExcelHeroes.World
                 {
                     Zone.Skirt when legs == "pants" => k.Bottom,
                     Zone.Hip => k.Bottom,
-                    Zone.Thigh when legs is "pants" or "tights" => legs == "pants" ? k.Bottom : Color.Lerp(k.Socks, k.Skin, 0.12f),
-                    Zone.Calf when legs is "pants" or "tights" or "socks" => legs == "pants" ? k.Bottom : legs == "socks" ? k.Socks : Color.Lerp(k.Socks, k.Skin, 0.12f),
+                    // bare legs are skin: the samples' own stockings and garters painted there showed as marks
+                    Zone.Thigh => legs == "pants" ? k.Bottom : legs == "tights" ? Color.Lerp(k.Socks, k.Skin, 0.12f) : k.Skin,
+                    Zone.Calf => legs == "pants" ? k.Bottom : legs == "socks" ? k.Socks : legs == "tights" ? Color.Lerp(k.Socks, k.Skin, 0.12f) : k.Skin,
                     Zone.Foot => k.Shoes,
                     _ => null,
                 };
@@ -174,7 +175,7 @@ namespace ExcelHeroes.World
                     foreach (var kv in groups)
                     {
                         mesh.SetTriangles(kv.Value, gi++, false);
-                        var m = MeshKit.NewToon(0.005f, Solid(kv.Key));
+                        var m = MeshKit.NewToon(0.0025f, Solid(kv.Key));   // a thinner hull: the full one poked through the knee's crease as black marks
                         m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.3f); m.SetColor("_ShadeTint", SdRefLook.ShadeOf(kv.Key)); m.SetFloat("_Rim", 0.12f);
                         mats.Add(m);
                     }

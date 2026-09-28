@@ -251,6 +251,7 @@ namespace ExcelHeroes.World
             var fwd = body.transform.root.forward;
             var names = body.sharedMaterials.Select(m => m ? m.name.ToLowerInvariant() : "").ToArray();
             var neckY = neck.position.y; var hipZ = Vector3.Dot(pelvis.position, fwd);
+            var bw = mesh.boneWeights; var bones = body.bones;
             var height = w.Max(p => p.y) - w.Min(p => p.y);
             for (var s = 0; s < mesh.subMeshCount; s++)
             {
@@ -261,9 +262,9 @@ namespace ExcelHeroes.World
                     var c = Vector3.zero; foreach (var t in piece) c += w[t]; c /= piece.Count;
                     var above = c.y > neckY + height * 0.02f;
                     var behind = Vector3.Dot(c, fwd) < hipZ - height * 0.14f && c.y < neckY;
-                    // wings (Mika's) and packs stand well off the back at the shoulders
-                    var off = 0f; foreach (var t in piece) off = Mathf.Max(off, hipZ - Vector3.Dot(w[t], fwd));
-                    if (off > height * 0.2f && c.y > pelvis.position.y) behind = true;
+                    // wings (Mika's): by their bones
+                    var wing = 0; foreach (var t in piece) if (Dominant(bw[t], bones).ToLowerInvariant().Contains("wing")) wing++;
+                    if (wing * 2 > piece.Count) behind = true;
                     if (!above && !behind) keep.AddRange(piece);
                 }
                 mesh.SetTriangles(keep, s, false);
@@ -301,7 +302,7 @@ namespace ExcelHeroes.World
         static bool Lower(string bone)
         {
             var n = bone.ToLowerInvariant();
-            return n.Contains("skirt") || n.Contains("thigh") || n.Contains("calf") || n.Contains("foot") || n.Contains("toe");
+            return n.Contains("skirt") || n.Contains("thigh") || n.Contains("calf") || n.Contains("knee") || n.Contains("foot") || n.Contains("toe");   // knee: its helper bones left the own knees behind as black marks
         }
 
         static string Dominant(BoneWeight w, Transform[] bones)
@@ -438,10 +439,30 @@ namespace ExcelHeroes.World
             // a lower is the hero's SKIRT: its cloth all in the bottom colour, the pleats' shading kept
             // (the outfit clusters put the top's colour on Natsu's skirt)
             var sheetL = accessory ? tex.Body : SdSampleTex.Tint(Sheet(donorKey, "body"), k.Bottom, donorKey + ":" + k.Id) ?? tex.Body;
+            // the tint only on the skirt (skirt-chain and hip triangles); the legs and shoes keep the
+            // outfit recolour, whose skin test is the sheet's own (the tint darkened shaded knees)
+            var skirtSub = new bool[part.subMeshCount];
+            if (!accessory && sheetL != tex.Body)
+            {
+                var subsN = part.subMeshCount; var extra = new List<List<int>>();
+                var isSkirt = dbw.Select(w => { var n = Dominant(w, dbones).ToLowerInvariant(); return n.Contains("skirt") || n == "bip001 pelvis"; }).ToArray();
+                var lists = new List<int>[subsN];
+                for (var si = 0; si < subsN; si++)
+                {
+                    var tris = part.GetTriangles(si); var legs = new List<int>(); var sk = new List<int>();
+                    for (var t = 0; t < tris.Length; t += 3)
+                        (isSkirt[tris[t]] || isSkirt[tris[t + 1]] || isSkirt[tris[t + 2]] ? sk : legs).AddRange(new[] { tris[t], tris[t + 1], tris[t + 2] });
+                    lists[si] = legs; extra.Add(sk);
+                }
+                part.subMeshCount = subsN * 2;
+                for (var si = 0; si < subsN; si++) { part.SetTriangles(lists[si], si, false); part.SetTriangles(extra[si], subsN + si, false); }
+                skirtSub = Enumerable.Range(0, subsN * 2).Select(i => i >= subsN).ToArray();
+                smr.sharedMesh = part;
+            }
             var mats = new Material[part.subMeshCount];
             for (var i = 0; i < mats.Length; i++)
             {
-                var m = MeshKit.NewToon(0.005f, sheetL);
+                var m = MeshKit.NewToon(0.005f, skirtSub[i] ? sheetL : tex.Body);
                 m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.24f); m.SetColor("_ShadeTint", SdRefLook.WarmShade); m.SetFloat("_Rim", 0.1f);
                 mats[i] = m;
             }
