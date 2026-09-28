@@ -20,7 +20,7 @@ namespace ExcelHeroes.World
     {
         public const int StencilEye = 2;
 
-        public enum Part { Skin, White, Iris, Highlight, Line, Mouth, Brow, Other }
+        public enum Part { Skin, White, Iris, IrisFree, Highlight, Line, Mouth, Brow, Other }
 
         /// <summary>
         /// A copy of the body mesh with the eyemouth submesh split into white / iris / mouth, and a
@@ -73,9 +73,17 @@ namespace ExcelHeroes.World
                         foreach (var piece in Pieces(white.ToArray())) (Depth(piece) > dIris + spread * 0.01f ? hi : keep).AddRange(piece);
                         white = keep;
                     }
+                    // a real white plate is about as big as the iris it holds; tiny ones (reisa: the white is
+                    // painted on the face sheet) are just lid marks — then the iris goes free
+                    float Area(List<int> ids) { var a2 = 0f; for (var q = 0; q + 2 < ids.Count; q += 3) a2 += Vector3.Cross(vtx[ids[q + 1]] - vtx[ids[q]], vtx[ids[q + 2]] - vtx[ids[q]]).magnitude; return a2 * 0.5f; }
+                    if (white.Count > 0 && iris.Count > 0 && Area(white) < Area(iris) * 0.3f) { line.AddRange(white); white = new List<int>(); }
                     if (white.Count > 0) { subs.Add(white.ToArray()); parts.Add(Part.White); names.Add(n + ":white"); }
-                    if (hi.Count > 0) { subs.Add(hi.ToArray()); parts.Add(Part.Highlight); names.Add(n + ":highlight"); }
-                    if (iris.Count > 0) { subs.Add(iris.ToArray()); parts.Add(white.Count > 0 ? Part.Iris : Part.Mouth); names.Add(n + ":iris"); }
+                    // with no white plate (reisa: the white is painted on the face sheet) the highlights
+                    // are plain plates over the iris
+                    if (hi.Count > 0) { subs.Add(hi.ToArray()); parts.Add(white.Count > 0 ? Part.Highlight : Part.Line); names.Add(n + ":highlight"); }
+                    // no white plates here (reisa's face renderer: its "whites" sample dark blocks — lid
+                    // shadows): the iris draws on its own, depth-tested, over the face's painted white
+                    if (iris.Count > 0) { subs.Add(iris.ToArray()); parts.Add(white.Count > 0 ? Part.Iris : Part.IrisFree); names.Add(n + ":iris"); }
                     if (mouth.Count > 0) { subs.Add(mouth.ToArray()); parts.Add(Part.Mouth); names.Add(n + ":mouth"); }
                     if (line.Count > 0) { subs.Add(line.ToArray()); parts.Add(Part.Line); names.Add(n + ":line"); }
                     continue;
@@ -97,11 +105,18 @@ namespace ExcelHeroes.World
             {
                 case Part.White:
                     m.SetFloat("_StencilRef", StencilEye); m.SetFloat("_StencilComp", 8f); m.SetFloat("_StencilPass", 2f);   // Always, Replace
+                    // a hair's breadth toward the camera: on some samples the white is coplanar with the skin (reisa)
+                    m.SetFloat("_DepthPull", 0.004f * height);
                     m.renderQueue = 2001; break;
                 case Part.Iris:
                     // inside the white whatever the depth: on some samples the iris plate sits behind it
                     m.SetFloat("_StencilRef", StencilEye); m.SetFloat("_StencilComp", 3f); m.SetFloat("_StencilPass", 0f);   // Equal, Keep
                     m.SetFloat("_ZTest", 8f);   // Always
+                    m.renderQueue = 2002; break;
+                case Part.IrisFree:
+                    // over the face's painted white, clipped by nothing: the iris sheet's dark surround is
+                    // the eye's own outline there. Pulled just in front of the skin it lies on.
+                    m.SetFloat("_DepthPull", 0.03f * height);   // reisa's sits well behind the skin it shows through
                     m.renderQueue = 2002; break;
                 case Part.Highlight:
                     m.SetFloat("_StencilRef", StencilEye); m.SetFloat("_StencilComp", 3f);

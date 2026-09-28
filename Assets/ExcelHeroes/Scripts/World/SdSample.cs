@@ -146,6 +146,14 @@ namespace ExcelHeroes.World
             return groups.Values;
         }
 
+        /// <summary>The sample exactly as made (its own colours, hair, kit) — for side-by-side comparisons.</summary>
+        public static ChibiRig BuildRaw(string key, Transform parent, int layer)
+        {
+            _raw = true;
+            try { return Build("raw:" + key, key, parent, layer); } finally { _raw = false; }
+        }
+        static bool _raw;
+
         public static ChibiRig Build(string heroId, string key, Transform parent, int layer)
         {
             var prefab = Prefab(key);
@@ -159,7 +167,8 @@ namespace ExcelHeroes.World
             var rends = go.GetComponentsInChildren<SkinnedMeshRenderer>(true);
             var body = rends.OrderByDescending(r => r.sharedMesh.subMeshCount).ThenByDescending(r => r.sharedMesh.vertexCount).First();
             // the face may be its own renderer; Face00/01 and Eyebrow02 are BA's expression alternates
-            var kept = rends.Where(r => r == body || (r.name.Contains("Face_Outline") && !r.name.Contains("Face0"))).ToList();
+            var faceEnv = System.Environment.GetEnvironmentVariable("SD_FACEPICK");
+            var kept = rends.Where(r => r == body || (faceEnv != null ? r.name.Contains(faceEnv) : r.name.Contains("Face_Outline") && !r.name.Contains("Face0"))).ToList();
             foreach (var r in rends) if (!kept.Contains(r)) r.gameObject.SetActive(false);
             foreach (var mr in go.GetComponentsInChildren<MeshRenderer>(true)) mr.gameObject.SetActive(false);   // halos, props
 
@@ -176,9 +185,10 @@ namespace ExcelHeroes.World
             var pelvis = Find("Bip001 Pelvis");
             if (pelvis != null) { var pl = root.InverseTransformPoint(pelvis.position); go.transform.localPosition -= new Vector3(pl.x, 0f, pl.z); }
 
-            StripKit(body, Find("Bip001 Neck"), pelvis);
+            if (!_raw) StripKit(body, Find("Bip001 Neck"), pelvis);
             var k = SdLook.For(heroId);
-            var tex = SdSampleTex.For(key, k, Sheet(key, "body"), Sheet(key, "hair"), Sheet(key, "eyemouth"), Sheet(key, "face"));
+            var tex = _raw ? new SdSampleTex.Set { Body = Sheet(key, "body"), Hair = Sheet(key, "hair"), EyeMouth = Sheet(key, "eyemouth"), EyeMouthSrc = Sheet(key, "eyemouth"), Face = Sheet(key, "face") }
+                           : SdSampleTex.For(key, k, Sheet(key, "body"), Sheet(key, "hair"), Sheet(key, "eyemouth"), Sheet(key, "face"));
             var face = tex.Face;
             foreach (var r in kept)
             {
@@ -191,7 +201,7 @@ namespace ExcelHeroes.World
                 for (var i = 0; i < mats.Length; i++)
                 {
                     var n = subNames[i];
-                    var eye = parts[i] is SdFace.Part.White or SdFace.Part.Iris or SdFace.Part.Highlight or SdFace.Part.Line or SdFace.Part.Mouth or SdFace.Part.Brow;
+                    var eye = parts[i] is SdFace.Part.White or SdFace.Part.Iris or SdFace.Part.IrisFree or SdFace.Part.Highlight or SdFace.Part.Line or SdFace.Part.Mouth or SdFace.Part.Brow;
                     var sheet = n.Contains("eyemouth") ? tex.EyeMouth : n.Contains("hair") ? tex.Hair : n.Contains("face") || n.Contains("eyebrow") ? face : n.Contains("alpha") ? tex.Body : tex.Body;
                     var m = MeshKit.NewToon(eye ? 0f : 0.005f, sheet);
                     m.SetFloat("_Cutoff", 0f);
@@ -203,6 +213,13 @@ namespace ExcelHeroes.World
                         m.SetFloat("_Rim", 0.1f);
                     }
                     SdFace.Configure(m, parts[i], SdRef.Height);
+                    if (System.Environment.GetEnvironmentVariable("SD_FACEDBG") == "1")
+                    {
+                        Debug.Log($"[facedbg] {key} {r.name} sub {i} '{n}' {parts[i]} tris {mesh.GetTriangles(i).Length / 3} q {m.renderQueue}");
+                        var col = parts[i] switch { SdFace.Part.White => Color.green, SdFace.Part.Iris or SdFace.Part.IrisFree => Color.red, SdFace.Part.Highlight => Color.yellow, SdFace.Part.Line => Color.magenta, SdFace.Part.Mouth => Color.cyan, _ => Color.white };
+                        if (col != Color.white) m.SetColor("_Color", col);
+                        if (parts[i] == SdFace.Part.IrisFree) m.SetFloat("_ZTest", 8f);
+                    }
                     mats[i] = m;
                 }
                 r.sharedMaterials = mats;
@@ -228,13 +245,13 @@ namespace ExcelHeroes.World
             rig.FaceRenderer = body;
             rig.EyeSub = -1;   // the layered eye is the sample's own: no sheet swaps for expressions (yet)
 
-            DressHair(rig, heroId, key, k, kept, layer);
+            if (!_raw) DressHair(rig, heroId, key, k, kept, layer);
 
             var sh = new MeshKit.Builder();
             sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
             if (k.Glasses || k.Sunglasses) SdRefProps.Glasses(rig, body, root, k.Sunglasses, k.GlassesStyle, k.GlassesColor, layer);
-            SdRefProps.HandProp(rig, root, SdRef.RoleOf(heroId), k, layer);
+            if (!_raw) SdRefProps.HandProp(rig, root, SdRef.RoleOf(heroId), k, layer);
 
             SdPose.Apply(rig, Pose.Rest);
             if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
@@ -365,18 +382,28 @@ namespace ExcelHeroes.World
             var mean = new float[14]; var n = new int[14];
             for (var i = 0; i < px.Length; i++) { if (bucket[i] < 0) continue; Color.RGBToHSV(px[i], out _, out _, out var v); mean[bucket[i]] += v; n[bucket[i]]++; }
             for (var b = 0; b < 14; b++) mean[b] = n[b] > 0 ? mean[b] / n[b] : 0.5f;
-            var darkest = targets.OrderBy(Luma).First();
+            // Keep the sample's own contrast — that is most of why it reads well: the two biggest
+            // coloured clusters take the hero's top / bottom HUE and saturation, their value only half
+            // way toward the hero's; the smaller clusters (piping, accents) turn to the accent hue with
+            // their own saturation and value; blacks, whites and skin stay the sample's.
             for (var i = 0; i < px.Length; i++)
             {
                 var b = bucket[i];
-                if (b < 0 || b == 13) continue;
-                Color target;
-                if (b == 12) target = Luma(darkest) < 0.3f ? darkest : Color.Lerp(darkest, Color.black, 0.5f);
-                else if (!map.TryGetValue(b, out target)) continue;
-                Color.RGBToHSV(px[i], out _, out _, out var v);
+                if (b < 0 || b >= 12 || !map.TryGetValue(b, out var target)) continue;
+                var rank = order.IndexOf(b);
+                Color.RGBToHSV(px[i], out _, out var s0, out var v);
                 Color.RGBToHSV(target, out var th, out var ts, out var tv);
-                var ratio = v / Mathf.Max(0.05f, mean[b]);
-                var c = Color.HSVToRGB(th, ts, Mathf.Clamp01(tv * ratio));
+                Color c;
+                if (rank < 2)
+                {
+                    var ratio = v / Mathf.Max(0.05f, mean[b]);
+                    c = Color.HSVToRGB(th, Mathf.Lerp(s0, ts, 0.8f), Mathf.Clamp01(Mathf.Lerp(v, tv * ratio, 0.5f)));
+                }
+                else
+                {
+                    Color.RGBToHSV(k.Accent, out var ah, out _, out _);
+                    c = Color.HSVToRGB(ah, s0, v);
+                }
                 c.a = px[i].a; px[i] = c;
             }
             return Copy(src, px, src.name + "+outfit");

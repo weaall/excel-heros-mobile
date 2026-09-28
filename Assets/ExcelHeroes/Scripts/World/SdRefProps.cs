@@ -247,8 +247,12 @@ namespace ExcelHeroes.World
         /// stub temples that vanish into the hair, CLEAR lenses carrying only a glint (sunglasses
         /// stay dark). On the head bone, counter-scaled.
         /// </summary>
+        /// <summary>Off (user, 2026-09-28: "the glasses still look silly — take them all off"). The illustrations keep theirs.</summary>
+        public static bool Enabled = false;
+
         public static void Glasses(ChibiRig rig, SkinnedMeshRenderer body, Transform root, bool dark, string style, Color frame, int layer)
         {
+            if (!Enabled) return;
             if (rig.Head == null) return;
             var s = body.transform.lossyScale.x;
             var centre = body.transform.TransformPoint(new Vector3(0f, -0.00128f, 0.00752f));
