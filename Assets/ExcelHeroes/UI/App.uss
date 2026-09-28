@@ -6030,3 +6030,9 @@
 .reveal-grid__badgetext { font-size: 26px; -unity-font-style: bold; color: rgb(255, 255, 255); -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 0, 0, 0.45); padding: 0; margin: 0; }
 .reveal-grid__stars2 { bottom: 15%; }
 .reveal-grid__name { bottom: 3%; height: 50px; font-size: 21px; }
+
+/* gacha after ui_critique: a white-stroked title, the note on glass, navy points */
+.gstage__title { -unity-text-outline-width: 4px; -unity-text-outline-color: rgb(255, 255, 255); text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+.gstage__notebox { padding: 6px 14px; margin-top: 10px; align-self: flex-start; }
+.gstage__notebox .gstage__note { margin: 0; color: rgb(80, 100, 125); }
+.gfoot__points-text { color: rgb(255, 255, 255); }

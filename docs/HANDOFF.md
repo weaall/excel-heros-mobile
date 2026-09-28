@@ -918,6 +918,15 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
     - **긴 머리 형상 노브**(`SdRefHairLib.Wave/Spread/Gather/Curl/Slant`, recipe `wave= spread= gather= curl= slant=`): 턱 아래를 웨이브(S자)·끝 퍼짐/모음·로우 포니테일(뒤쪽 가닥을 목덜미 묶음점으로, 뒤/옆 가중치는 부드럽게)·끝 안/바깥 말림, 컷은 앞뒤로 비스듬히. `tools/sdspec_hairshape_gemini.py`가 일러에서 읽음. 카요코 뒷머리·옆머리 사용 가능(`SdRefTex.LocalTone`: 국소 명도 정규화로 투톤 제거; 카요코 앞머리·캡은 줄무늬가 남아 제외, 캡 없이 걸면 두피 셸이 틈을 메움). 뒷머리 5종 기준 시트 `tools/out/back_reference.png` + `tools/sdspec_longhair_gemini.py`(채점·상한 배정).
     - **구분 루프**: `tools/sd_hairdistinct_gemini.py <라인업> <ids파일> [a:b,…]`(비슷한 쌍 → 닮음이 약한 쪽을 자기 일러 쪽으로 수정, `hairPrev` 기록) → `bash tools/sd_hair_ab.sh`(재채점, 머리 점수 떨어지면 되돌림). `tools/sd_hairclose.py 0.8`로 수치상 가까운 쌍을 찾아 넣는다 — 현재 0쌍, 부위 조합 43+/55.
     - **흐림**: 의상 칠하기는 시트의 2배(1024) + 뷰 언샤프 + 가장 정면인 뷰 가중(facing^10), 작은 머리 시트는 2배 캣멀롬+샤픈, 이방성 4. 흰·은발은 HSV 명암(중간 0.9, 그림자 ~55 %)으로 가닥이 보이게. 두피 셸(머리 안쪽 20 백분위 표면, 뒤는 목덜미까지)로 부위 사이 틈을 머리 그림자색으로.
+    - **주인공(김인턴)**: 체육복 몸체 + 슬림 바지 + 짧은 남자 컷(`len=crop`, 나츠 옆머리, 앞머리 sweep) + 카요코 얼굴, 일러의 민트 셔츠를 칠하기로. sdspec `manual`에 고정. `SdGarment` 버그 수정(엉덩이 삼각형이 늘 칠 안 되던 `else if`) — 바지는 허리까지.
+    - **소매 슬림** garment `sleeve=`(유우카 몸체 0.82), 앞머리 노브 `bang= sweep= split=`(앞머리 아래 60 %만). 카요코 몸체(초미니+오프숄더)의 펜슬스커트 4명은 히카리·유우카로.
+    - **적 3D 전원**: `tools/mon3d_inflate.py` — GPU·모델 없이 스프라이트를 봉제인형으로(실루엣 거리장 → 1/4원 프로파일 두께 0.44, 앞 = 그림(바깥 잉크 링은 안쪽 색으로 채움), 뒤 = 선 지운 흐린 단색, 테두리 라플라시안 스무딩, 솔기는 자기 정점·뒤 UV·바깥 감김 — 안쪽 감김이면 외곽선 헐이 검은 띠로 보임). TRELLIS가 약했던 감사 보스·복사기·눈알도 교체, 의자·커서는 TRELLIS 유지. 3D 마스코트 적은 카메라 쪽 28°로 돌림(측면 솔기 안 보이게).
+    - **faces.json**은 `Resources/Art/Standing`(게임에 보이는 일러)에서 다시 검출 — `ArtSource`가 교체 전 일러라 17명 초상이 머리카락만 잡혔다.
+- **UI 3차 — 제미나이 시안 반영**(2026-09-29, 사용자: "버튼·모달·카드·액션을 제미나이에게 물어보고 UI 발전"): `tools/out/prompts/*.txt` + `tools/gemini_edit.py` → `tools/out/design/mock_{btn,modal,card,action,home,party,hud,quests}_*.png`, 그다음 `tools/ui_critique.py`.
+    - 버튼: 모서리 틱 두 개 + 오른쪽 아래 삼각 쐐기, primary 그라데이션 강화. 모달 머리: 흰 유리 위 남색 비스듬 띠 + 끝 슬래시 + 모서리 면(제목 흰색).
+    - 10연차: 한 줄 세로 카드, 등급순, 등급색 틴트, S/A 외곽 글로우, 사선 등급 배지, 별·이름 띠(등급명 제거), 확인 = 시안.
+    - EX 컷인: 집중선 + 떠 있는 엑셀 창 두 개(수식바 =SUM / =VLOOKUP, 격자, 막대 차트) + 영문 부제.
+    - 편성: 큰 시안 '출격'(편성 구성 패널 폭 양보). 전투 HUD: 쓸 수 있는 EX 카드에 맥동 오라 + 빛 스윕. 업무: 아이콘 타일, 큰 제목, 남색 진행바, 보상 아이템 타일(모서리 수량), 큰 수령 버튼. 모집: 사선 D-day 칩(3일 이하 빨강), 흰 외곽선 타이틀, 확률 안내 유리 박스, 모집 포인트 남색.
     - 닮음 추이: 4.1 → 4.45 → 4.75 → 4.84(머리 4.3 → 5.04, 의상 4.16 → 4.82). 남은 지적: 안경 없음(사용자 지시로 제외), 상의 실루엣(히카리 끈 등 메시 자체) 11, 앞머리 9.
     - 의상 칠하기 프롬프트: 일러에 없는 끈·하네스·파우치는 그 아래 옷 색으로 덮어 칠함(히카리 재킷의 대각선 끈은 메시 일부라 형상으로는 못 뺌).
 - **사람 모션**: 사용자가 Unity 모델·클립을 찾아주겠다고 함 → BA 원본 클립은 넥슨 저작권(출시 불가), **Mixamo 권장**(무료·게임 사용 허용). 받으면 런타임 Humanoid 아바타(`AvatarBuilder.BuildHumanAvatar` + Bip001 매핑)로 리타겟. 요청 목록: Rifle/Happy Idle, Running/Rifle Run, Pistol Shoot/Shooting/Punching/Sword Slash/Throw, Standing 1H Magic Attack, Hit Reaction, Standing Block, Dying, Victory/Cheering (FBX for Unity, Without Skin, 30fps).

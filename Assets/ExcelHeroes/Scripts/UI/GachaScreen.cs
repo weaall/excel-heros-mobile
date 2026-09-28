@@ -89,10 +89,15 @@ namespace ExcelHeroes.UI
             UiKit.Text(featuredS?.name ?? "신규 모집", "gstage__title", block);
             if (featuredA != null) UiKit.Text($"+ {featuredA.name}", "gstage__sub", block);
             var days = UiKit.Div("gstage__days", block);
-            ModalFrame.Painted(days, (ctx, r) => UiPaint.Fill(ctx, UiPaint.RoundRect(r, r.height * 0.5f, 6), sColour));
+            // a sharp slanted chip, red when the banner is about to end (ui_critique 09-Gacha #2)
+            var soon = GameData.BannerDaysLeft(now) <= 3;
+            ModalFrame.Painted(days, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.7f, 3f),
+                soon ? UiPaint.C(255, 83, 112) : UiPaint.C(43, 112, 224)));
             UiKit.Text($"종료까지 {GameData.BannerDaysLeft(now)}일", "gstage__days-text", days);
+            var noteBox = UiKit.Div("gstage__notebox", block);
+            ModalFrame.Painted(noteBox, (ctx, r) => UiPaint.Fill(ctx, UiPaint.RoundRect(r, 4f), UiPaint.C(255, 255, 255, 0.66f)));
             UiKit.Text($"S 등급 {GameData.Grade("S")?.rate ?? 0.005f:P1} 중 절반이 픽업 사원으로 · 첫 10회 모집은 S 확정",
-                       "gstage__note", block);
+                       "gstage__note", noteBox);
         }
 
         void Figure(string id, string classes)
@@ -145,7 +150,7 @@ namespace ExcelHeroes.UI
             var rates = UiKit.Btn("확률 정보", "gfoot__btn", OpenRates, info);
             SkewPlate.Apply(rates, SkewPlate.Kind.Glass);
             var points = UiKit.Btn("", "gfoot__points", OpenExchange, info);
-            SkewPlate.Apply(points, SkewPlate.Kind.Glass);
+            SkewPlate.Apply(points, SkewPlate.Kind.Navy);
             _total = UiKit.Text("모집 포인트 0", "gfoot__points-text", points);
 
             // bottom right: the two pulls, 10회 in the reference's gold
