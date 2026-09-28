@@ -5938,3 +5938,13 @@
 .gtab__label { font-size: 28px; color: rgb(28, 41, 56); padding: 0; margin: 0; }
 .gtab__thumb { right: auto; bottom: auto; }
 .gtabs { width: 290px; }
+
+/* party slot: tag and plate one card (08-Party #3) */
+.pslot--stand .pslot__plate { margin: 0; }
+.pslot__tag { margin: 0; }
+.pslot--stand .pslot__name { font-size: 26px; -unity-font-style: bold; color: rgb(30, 43, 55); }
+
+.arow__claim { flex-direction: row; align-items: center; justify-content: center; }
+.arow__gem { width: 36px; height: 36px; -unity-background-scale-mode: scale-to-fit; margin-right: 6px; }
+.arow__amount { font-size: 26px; -unity-font-style: bold; padding: 0; margin: 0; }
+.arow__claim:disabled .arow__gem { opacity: 0.4; }

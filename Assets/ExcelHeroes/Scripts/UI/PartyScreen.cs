@@ -247,11 +247,16 @@ namespace ExcelHeroes.UI
             {
                 // White glass plate with the grade as a small coloured badge at its left edge —
                 // where the reference puts the star count.
+                // one card with the tag above it: square top joined to the tag, rounded foot, a
+                // hairline edge (ui_critique round 9, 08-Party #3)
                 ModalFrame.Painted(plate, (ctx, r) =>
                 {
                     var body = UiPaint.RoundRect(r, 8f, 4);
                     UiPaint.Shadow(ctx, body, new Vector2(0f, 3f), UiPaint.C(20, 40, 80, 0.2f), 8f);
                     UiPaint.Fill(ctx, body, UiPaint.C(255, 255, 255, 0.96f));
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + 10f), 0f), UiPaint.C(255, 255, 255, 0.96f), 0f);
+                    UiPaint.Stroke(ctx, body, UiPaint.C(194, 214, 229, 0.9f), 1.2f);
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + 3f), 0f), UiPaint.C(28, 40, 70), 0f);
                 });
                 var row = UiKit.Div("pslot__row", plate);
                 var badge = UiKit.Div("pslot__grade", row);

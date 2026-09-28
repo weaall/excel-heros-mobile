@@ -98,13 +98,17 @@ namespace ExcelHeroes.UI
 
             var id = a.id;
             var gems = tier < (a.gems?.Length ?? 0) ? a.gems[tier] : 0;
-            var claim = UiKit.Btn($"◈{gems}", "arow__claim", () =>
+            var claim = UiKit.Btn("", "arow__claim", () =>
             {
                 if (ProgressService.Claim(Game.Player, id) <= 0) return;
                 AudioService.Play("bond");
                 Game.Touch();
                 Refresh();
             }, row);
+            // the drawn gem and the amount, not "◈50" (the glyph read as a bullet point)
+            var gemArt = GameData.Icon("gem");
+            if (gemArt != null) { var gi = UiKit.Div("arow__gem", claim); gi.pickingMode = PickingMode.Ignore; UiKit.SetArt(gi, gemArt); }
+            UiKit.Text(gems.ToString(), "arow__amount", claim).pickingMode = PickingMode.Ignore;
             claim.SetEnabled(ProgressService.CanClaim(p, a));
         }
 
