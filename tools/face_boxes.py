@@ -15,7 +15,7 @@ from PIL import Image
 from imgutils.detect import detect_heads
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ART = os.path.join(HERE, '..', 'Assets', 'ExcelHeroes', 'ArtSource', 'Standing')   # clean originals
+ART = os.path.join(HERE, '..', 'Assets', 'ExcelHeroes', 'Resources', 'Art', 'Standing')   # the art the game shows (ArtSource went stale when illustrations were replaced)
 OUT = os.path.join(HERE, '..', 'Assets', 'ExcelHeroes', 'Resources', 'Data', 'faces.json')
 
 items = []

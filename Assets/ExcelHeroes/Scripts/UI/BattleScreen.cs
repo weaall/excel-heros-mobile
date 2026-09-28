@@ -1774,6 +1774,26 @@ namespace ExcelHeroes.UI
                 var art = UiKit.Div("ex-button__art", btn);
                 UiKit.SetPortrait(art, combatant.heroId, UiKit.Crop.Face);
                 UiKit.Div("ex-button__dim", btn).pickingMode = PickingMode.Ignore;
+                // the ready glow (the Gemini HUD mock-up, tools/out/design/mock_hud_0): a pulsing cyan
+                // aura and a light sweep across the card while it can be cast
+                var glow = UiKit.Div("ex-button__glow", btn);
+                glow.pickingMode = PickingMode.Ignore;
+                var gt0 = Time.realtimeSinceStartup;
+                ModalFrame.Painted(glow, (ctx, r) =>
+                {
+                    if (!btn.ClassListContains("ex-button--ready")) return;
+                    var t = Time.realtimeSinceStartup - gt0;
+                    var k = 0.6f + 0.4f * Mathf.Sin(t * 4f);
+                    var box = UiPaint.RoundRect(r, 10f);
+                    UiPaint.Ring(ctx, box, UiPaint.C(120, 236, 255, 0.85f * k), UiPaint.C(120, 236, 255, 0f), 16f);
+                    UiPaint.Stroke(ctx, box, UiPaint.C(170, 246, 255, 0.95f), 3f);
+                    // the sweep: a slanted band of light crossing every 1.6 s
+                    var ph = Mathf.Repeat(t / 1.6f, 1f) * 1.8f - 0.4f;
+                    var x = r.xMin + r.width * ph; var w2 = r.width * 0.16f; var sl = r.height * 0.35f;
+                    var band = new List<Vector2> { new(x + sl, r.yMin), new(x + sl + w2, r.yMin), new(x + w2, r.yMax), new(x, r.yMax) };
+                    UiPaint.Fill(ctx, UiPaint.Clip(band, box), UiPaint.C(255, 255, 255, 0.28f), 1f);
+                });
+                glow.schedule.Execute(() => glow.MarkDirtyRepaint()).Every(40);
 
                 var charge = UiKit.Div("ex-button__charge", btn);
                 var cost = BattleSim.CostOf(combatant);

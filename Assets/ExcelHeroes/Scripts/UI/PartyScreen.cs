@@ -118,6 +118,9 @@ namespace ExcelHeroes.UI
             }, actions);
             bulk.SetEnabled(p.PartyCount() > 0);
 
+            // 출격: the way from the line-up to the fight, big and cyan at the bottom-right (the Gemini
+            // party mock-up, tools/out/design/mock_party_0 — BA's 출격)
+
             var power = p.PartyMembers().Sum(StatMath.Power);
             var strip = UiKit.Div("party-strip", left);
             var readout = UiKit.Div("power-readout power-readout--strip", strip);
@@ -176,6 +179,13 @@ namespace ExcelHeroes.UI
             // tree is the only thing that decides both.
             actions.RemoveFromHierarchy();
             right.Add(actions);
+
+            // 출격: the way from the line-up to the fight, a big cyan plate at the strip's end, where
+            // the composition panel gives up its width to it (the Gemini party mock-up,
+            // tools/out/design/mock_party_0 — BA's 출격)
+            composition.AddToClassList("party-strip__panel--narrow");
+            var sortie = UiKit.Btn("출격", "btn btn--primary party-sortie", () => _app.Show(AppRoot.Sheet.Battle), strip);
+            sortie.SetEnabled(p.PartyCount() > 0);
         }
 
         /// <summary>

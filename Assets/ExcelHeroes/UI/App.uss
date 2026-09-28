@@ -5997,3 +5997,12 @@
 /* ---------------------------------------------------------------- modal v3 (Gemini modal mock-up): white title on the navy strip */
 .modal__title { color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 48px; padding-top: 10px; }
 .modal__close { color: rgb(255, 255, 255); top: 18px; right: 34px; }
+
+
+/* ---------------------------------------------------------------- EX card ready glow (Gemini HUD mock-up) */
+.ex-button__glow { position: absolute; left: -2px; right: -2px; top: -2px; bottom: -2px; }
+.battle--3d .ex-button--ready { scale: 1.08 1.08; translate: 0 -6px; }
+
+.party-sortie { width: 420px; height: 150px; margin-left: 24px; align-self: center; flex-shrink: 0; font-size: 64px; -unity-font-style: bold; }
+.party-strip__panel--narrow { flex-grow: 0.6; flex-shrink: 1; }
+.party-sortie .plate__label { font-size: 64px; }

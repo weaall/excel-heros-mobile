@@ -1618,7 +1618,9 @@ namespace ExcelHeroes.World
                 // turn to the camera for the win close-up. Root rotation 180 = facing the camera,
                 // 90 = facing +x (the enemies): heroes at 105, enemies mirrored at 255.
                 // turned with the quarter-view camera, so each keeps the same angle to the lens
-                var yaw = (hero ? Mathf.Lerp(-75f, -10f, closeUp) : 75f) + QuarterYaw * (1f - closeUp);
+                // a mascot is a drawing given depth: its face is the drawing's front, so it turns only a
+                // little toward the squad (28° off the lens) — side-on it showed its thin plush seam
+                var yaw = (hero ? Mathf.Lerp(-75f, -10f, closeUp) : Rig.Mascot ? 28f : 75f) + QuarterYaw * (1f - closeUp);
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad
                 var lunge = 0f;
                 if (Rig.ArmR == null && Attack > 0f)

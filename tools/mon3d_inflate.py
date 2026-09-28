@@ -25,7 +25,7 @@ import mon3d_pack as mp
 import glb_preview
 
 N = 96             # grid cells across the longer side of the drawing (~10k vertices: several on screen at once on a phone)
-DEPTH = 0.36       # the fullest depth (each side) against the width
+DEPTH = 0.44       # the fullest depth (each side) against the width
 FLOOR = 0.1        # the thinnest a part may be, against the fullest
 
 
