@@ -30,7 +30,7 @@ ASK = ("Image 1 is a character illustration. Image 2 shows eight 3D hairstyles w
        "'back' = whose back hair is closest (long straight fall, twin tails, low twin tails, side ponytail, short with bow…); "
        "'extra' = 'mika' if the character has a bun, 'haruka' if a big bow at the back, else 'none'; "
        "'len' = the back hair's length in image 1: 'short' (to the jaw), 'bob' (just below the chin), 'shoulder', or 'long'. "
-       "For short or bob hair choose a 'back' with a plain fall (hikari, mika or haruka), never tails. "
+       "For short or bob hair choose a 'back' with a plain fall (hikari, mika or haruka), never tails; only haruka, hikari, mika and yuuka have a back. "
        "Also: 'badge' = true if the character wears an ID badge / lanyard; 'bow' = true if a hair bow or ribbon in the hair. "
        f"Names: {', '.join(LIBS)} (kayoko is not available). Answer JSON only: " + '{"front":"","side":"","back":"","extra":"","len":"","badge":false,"bow":false,"why":""}')
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         if not a: print(f"  ?  {hid}"); continue
         def ok(v, allowed): return v if v in allowed else ""
         front = ok(a.get("front"), LIBS) or "haruka"
-        recipe = f"front={front};side={ok(a.get('side'), LIBS) or front};back={ok(a.get('back'), LIBS) or front};" \
+        recipe = f"front={front};side={ok(a.get('side'), LIBS) or front};back={ok(a.get('back'), ['haruka', 'hikari', 'mika', 'yuuka']) or 'haruka'};" \
                  f"extra={ok(a.get('extra'), ['mika', 'haruka']) or 'none'};len={ok(a.get('len'), ['short', 'bob', 'shoulder', 'long']) or 'long'}"
         row["hairParts"] = recipe
         acc = (["nameplate"] if a.get("badge") else []) + (["ribbon"] if a.get("bow") and "haruka" not in recipe.split("extra=")[1][:6] else [])
