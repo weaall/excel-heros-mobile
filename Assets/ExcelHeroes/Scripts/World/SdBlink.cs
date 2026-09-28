@@ -13,7 +13,7 @@ namespace ExcelHeroes.World
     /// </summary>
     public class SdBlink : MonoBehaviour
     {
-        struct Eye { public Transform Plates, Lid; public Vector3 LidRest, Drop; }
+        struct Eye { public Transform Plates, Lid; public Vector3 LidRest, Drop, PlateScale; }
         Eye[] _eyes;
         float _next, _t0 = -1f;
         public float Squint;
@@ -28,7 +28,7 @@ namespace ExcelHeroes.World
                 var (bone, lid, drop) = eyes[i];
                 // one lid bone may serve both eyes (a shared brow-lid): move it once
                 var shared = false; for (var j = 0; j < i; j++) if (b._eyes[j].Lid == lid) shared = true;
-                b._eyes[i] = new Eye { Plates = bone, Lid = shared ? null : lid, LidRest = lid != null ? lid.localPosition : Vector3.zero, Drop = lid != null && lid.parent != null ? lid.parent.InverseTransformVector(drop) : Vector3.zero };
+                b._eyes[i] = new Eye { Plates = bone, PlateScale = bone.localScale, Lid = shared ? null : lid, LidRest = lid != null ? lid.localPosition : Vector3.zero, Drop = lid != null && lid.parent != null ? lid.parent.InverseTransformVector(drop) : Vector3.zero };
             }
             if (hold != null && float.TryParse(hold, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var h)) { b.Hold = h; b.Set(h); }
             b._next = Random.Range(1f, 4f);
@@ -111,7 +111,8 @@ namespace ExcelHeroes.World
             var y = Mathf.Lerp(1f, 0.1f, t);
             foreach (var e in _eyes)
             {
-                if (e.Plates != null) e.Plates.localScale = new Vector3(1f, y, 1f);
+                // the bone's rest scale cancels the head's import scale (×124): squash relative to it
+                if (e.Plates != null) e.Plates.localScale = new Vector3(e.PlateScale.x, e.PlateScale.y * y, e.PlateScale.z);
                 if (e.Lid != null) e.Lid.localPosition = e.LidRest + e.Drop * t;
             }
         }

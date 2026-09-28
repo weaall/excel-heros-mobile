@@ -478,7 +478,9 @@ namespace ExcelHeroes.World
             var prefab = Prefab(key);
             if (prefab == null) return null;
             var root = new GameObject("sdsample:" + heroId) { layer = layer }.transform;
-            root.SetParent(parent, false);
+            // built unparented, at the origin and scale 1: the battle spawns heroes at scale ~0 and pops
+            // them in, and every fitted piece (headwear, trouser legs, hair volume) is sized in world units
+            // at build — it grew a hundredfold with the pop. Parented once done.
             var go = Object.Instantiate(prefab, root);
             go.name = "model";
             foreach (var t in go.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = layer;
@@ -592,8 +594,9 @@ namespace ExcelHeroes.World
 
             SdPose.Apply(rig, Pose.Rest);
             if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
-            root.gameObject.AddComponent<SdSecondary>().Init(go.transform, "sample:" + key);
             if (!_raw && blinkBones.Count > 0) { rig.Blink = SdBlink.Attach(root.gameObject, blinkBones.ToArray(), System.Environment.GetEnvironmentVariable("SD_LID")); if (mouthAt != null) rig.Blink.AddMouth(Find("Bip001 Head"), mouthAt.Value, root, layer); }
+            root.SetParent(parent, false);   // before the secondary motion takes its first positions
+            root.gameObject.AddComponent<SdSecondary>().Init(go.transform, "sample:" + key);
             return rig;
         }
     }
