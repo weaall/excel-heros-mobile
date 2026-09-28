@@ -35,6 +35,8 @@ namespace ExcelHeroes.World
         readonly Dictionary<string, (GameObject go, float h)> _templateCache = new();
         readonly Dictionary<Combatant, Actor> _actors = new();
         readonly Dictionary<Shot, Transform> _shots = new();
+        readonly List<Combatant> _actorKeys = new();
+        readonly List<Shot> _shotKeys = new();
         readonly List<(Transform t, float life, float max, Vector3 vel, float grow)> _sparks = new();
         readonly Stack<Transform> _sparkPool = new();
         BattleSim _sim;
@@ -396,19 +398,25 @@ namespace ExcelHeroes.World
             if (_sim == null) return;
             _time += dt;
             _closeUp = Mathf.MoveTowards(_closeUp, _closeUpTarget, dt * 1.4f);
-            var living = _actors.Values.Where(a => a.C.side == Side.Hero && a.C.Alive).ToList();
-            if (living.Count > 0 && _closeUpTarget <= 0f)
-                _partyCentre = new Vector3(living.Average(a => a.X), 0f, living.Average(a => a.Z));
+            // (loops, not LINQ: this runs every frame)
+            float cx = 0f, cz = 0f; var alive = 0;
+            foreach (var a in _actors.Values) if (a.C.side == Side.Hero && a.C.Alive) { cx += a.X; cz += a.Z; alive++; }
+            if (alive > 0 && _closeUpTarget <= 0f) _partyCentre = new Vector3(cx / alive, 0f, cz / alive);
             PlaceCamera((shake + _localShake * 20f) * (1f - _closeUp));
 
             foreach (var c in _sim.Heroes) Ensure(c);
             foreach (var c in _sim.Monsters) Ensure(c);
 
             // where the fight is, for the heads: the nearest living enemy / hero along the lane
-            var nearestEnemyX = _sim.Monsters.Where(m => m.Alive).Select(m => WX(m.x)).DefaultIfEmpty(WX(800f)).Min();
-            var nearestHeroX = _sim.Heroes.Where(h => h.Alive).Select(h => WX(h.x)).DefaultIfEmpty(WX(0f)).Max();
-            foreach (var (c, a) in _actors.ToList())
+            float nearestEnemyX = float.MaxValue, nearestHeroX = float.MinValue;
+            foreach (var m in _sim.Monsters) if (m.Alive) nearestEnemyX = Mathf.Min(nearestEnemyX, WX(m.x));
+            foreach (var h in _sim.Heroes) if (h.Alive) nearestHeroX = Mathf.Max(nearestHeroX, WX(h.x));
+            if (nearestEnemyX == float.MaxValue) nearestEnemyX = WX(800f);
+            if (nearestHeroX == float.MinValue) nearestHeroX = WX(0f);
+            _actorKeys.Clear(); _actorKeys.AddRange(_actors.Keys);
+            foreach (var c in _actorKeys)
             {
+                var a = _actors[c];
                 var gone = c.side == Side.Monster && !_sim.Monsters.Contains(c);
                 if (gone && (a.Dying <= 0f || a.Dying > 1.1f))
                 {
@@ -472,12 +480,13 @@ namespace ExcelHeroes.World
                 var glow = t.Find("glow");
                 if (glow != null) glow.rotation = Quaternion.LookRotation(glow.position - _cam.transform.position);
             }
-            foreach (var pair in _shots.ToList())
+            _shotKeys.Clear(); _shotKeys.AddRange(_shots.Keys);
+            foreach (var key in _shotKeys)
             {
-                if (_sim.Shots.Contains(pair.Key)) continue;
-                Object.Destroy(pair.Value.gameObject);
-                _shots.Remove(pair.Key);
-                _volleys.Remove(pair.Key);
+                if (_sim.Shots.Contains(key)) continue;
+                Object.Destroy(_shots[key].gameObject);
+                _shots.Remove(key);
+                _volleys.Remove(key);
             }
         }
 
@@ -832,18 +841,18 @@ namespace ExcelHeroes.World
             if (!RingMats.TryGetValue(c, out var ring) || ring == null) RingMats[c] = ring = MeshKit.NewGlass(RingTex, c);
             var centre = a.Rig.Root.position + Vector3.up * a.Rig.Height * a.Scale * 0.5f;
 
-            var floor = MeshKit.Part("ring", _root, FloorQuad, ring, Layer).transform;
+            var floor = FxPart("ring", FloorQuad, ring, Layer).transform;
             floor.position = a.Rig.Root.position + Vector3.up * 0.02f;
             _fx.Add(new Fx { T = floor, Life = 0.6f, Max = 0.6f, Grow0 = 0.4f, Grow1 = 3.2f, Flat = true });
 
-            var up = MeshKit.Part("ring", _root, Quad, ring, Layer).transform;
+            var up = FxPart("ring", Quad, ring, Layer).transform;
             up.position = centre + new Vector3(0f, 0f, 0.3f);
             _fx.Add(new Fx { T = up, Life = 0.5f, Max = 0.5f, Grow0 = 0.5f, Grow1 = 2.6f, Face = true });
 
             Spark(a, Color.white, 2.2f);
             for (var i = 0; i < 14; i++)
             {
-                var shard = MeshKit.Part("shard", _root, Cell, MeshKit.Toon, Layer).transform;
+                var shard = FxPart("shard", Cell, MeshKit.Toon, Layer).transform;
                 var mpb = new MaterialPropertyBlock();
                 mpb.SetColor("_Color", MeshKit.Lin(Color.Lerp(a.Accent, Color.white, (i % 3) * 0.25f)));
                 shard.GetComponent<MeshRenderer>().SetPropertyBlock(mpb);
@@ -887,6 +896,32 @@ namespace ExcelHeroes.World
 
         Vector3 Mid(Actor a) => a.Rig.Root.position + Vector3.up * a.Rig.Height * a.Scale * 0.55f + new Vector3(0f, 0f, -0.3f);
 
+        // Effect quads are pooled per (mesh, material): a hit makes a floor ring, a face ring and
+        // six to nine streaks, and creating then destroying that many GameObjects every hit was
+        // behind the fight's worst frames (PerfProbe, 25–30 ms spikes).
+        readonly Dictionary<(Mesh, Material), Stack<Transform>> _fxPool = new();
+        readonly Dictionary<Transform, (Mesh, Material)> _fxKey = new();
+
+        Transform FxPart(string name, Mesh mesh, Material mat, int layer)
+        {
+            var key = (mesh, mat);
+            Transform t = null;
+            if (_fxPool.TryGetValue(key, out var st)) while (st.Count > 0 && t == null) t = st.Pop();
+            if (t == null) { t = MeshKit.Part(name, _root, mesh, mat, layer).transform; _fxKey[t] = key; }
+            t.gameObject.SetActive(true);
+            t.localScale = Vector3.one; t.localRotation = Quaternion.identity;
+            return t;
+        }
+
+        void FxRelease(Transform t)
+        {
+            if (!_fxKey.TryGetValue(t, out var key)) { Object.Destroy(t.gameObject); return; }
+            t.gameObject.SetActive(false);
+            var mr = t.GetComponent<MeshRenderer>(); if (mr != null) mr.SetPropertyBlock(null);
+            if (!_fxPool.TryGetValue(key, out var st)) _fxPool[key] = st = new Stack<Transform>();
+            st.Push(t);
+        }
+
         static readonly MaterialPropertyBlock _fxBlock = new();   // reused: a new block per effect per frame was garbage
 
         void TintFx(Transform t, Color c, float alpha)
@@ -899,7 +934,7 @@ namespace ExcelHeroes.World
 
         void FxCard(string tex, Vector3 p, float w, float h, float life, Vector3 vel, Color tint, float delay = 0f, float g0 = 0.6f, float g1 = 1f, float roll = 0f)
         {
-            var q = MeshKit.Part("fxcard", _root, Quad, FxMat(tex), Layer).transform;
+            var q = FxPart("fxcard", Quad, FxMat(tex), Layer).transform;
             q.position = p; q.gameObject.SetActive(delay <= 0f);
             TintFx(q, tint, 1f);
             _fx.Add(new Fx { T = q, Life = life, Max = life, Vel = vel, Aspect = new Vector2(w, h), Grow0 = g0, Grow1 = g1, Fade = true, Tint = tint, Delay = delay, Roll = roll });
@@ -907,7 +942,7 @@ namespace ExcelHeroes.World
 
         void FxLine(string tex, Vector3 a, Vector3 b, float w, float life, Color tint, float delay = 0f)
         {
-            var q = MeshKit.Part("fxline", _root, Quad, tex == null ? GlowMat(tint) : FxMat(tex), Layer).transform;
+            var q = FxPart("fxline", Quad, tex == null ? GlowMat(tint) : FxMat(tex), Layer).transform;
             q.gameObject.SetActive(delay <= 0f);
             Lay(q, a, b, w);
             if (tex != null) TintFx(q, tint, 1f);
@@ -924,7 +959,7 @@ namespace ExcelHeroes.World
         void FloorRing(Vector3 at, Color c, float life, float g0, float g1)
         {
             if (!RingMats.TryGetValue(c, out var ring) || ring == null) RingMats[c] = ring = MeshKit.NewGlass(RingTex, c);
-            var floor = MeshKit.Part("ring", _root, FloorQuad, ring, Layer).transform;
+            var floor = FxPart("ring", FloorQuad, ring, Layer).transform;
             floor.position = at + Vector3.up * 0.03f;
             _fx.Add(new Fx { T = floor, Life = life, Max = life, Grow0 = g0, Grow1 = g1, Flat = true });
         }
@@ -1384,10 +1419,10 @@ namespace ExcelHeroes.World
             var c = crit ? new Color(1f, 0.86f, 0.4f, 0.95f) : new Color(0.78f, 0.96f, 1f, 0.9f);
             if (!RingMats.TryGetValue(c, out var ring) || ring == null) RingMats[c] = ring = MeshKit.NewGlass(RingTex, c);
             var s = at.Scale * (crit ? 1.3f : 1f);
-            var floor = MeshKit.Part("hitring", _root, FloorQuad, ring, Layer).transform;
+            var floor = FxPart("hitring", FloorQuad, ring, Layer).transform;
             floor.position = at.Rig.Root.position + Vector3.up * 0.025f;
             _fx.Add(new Fx { T = floor, Life = 0.3f, Max = 0.3f, Grow0 = 0.3f * s, Grow1 = 1.5f * s, Flat = true });
-            var up = MeshKit.Part("hitring", _root, Quad, ring, Layer).transform;
+            var up = FxPart("hitring", Quad, ring, Layer).transform;
             var hitAt = at.Rig.Root.position + Vector3.up * at.Rig.Height * at.Scale * 0.55f + new Vector3(0f, 0f, -0.32f);
             up.position = hitAt;
             _fx.Add(new Fx { T = up, Life = 0.22f, Max = 0.22f, Grow0 = 0.15f * s, Grow1 = 1.0f * s, Face = true });
@@ -1400,7 +1435,7 @@ namespace ExcelHeroes.World
             {
                 var ang = (i + Random.value * 0.6f) / n * 360f;
                 var dir = Quaternion.AngleAxis(ang, -_cam.transform.forward) * camUp;
-                var st = MeshKit.Part("streak", _root, Quad, GlowMat(streakCol), Layer).transform;
+                var st = FxPart("streak", Quad, GlowMat(streakCol), Layer).transform;
                 st.position = hitAt + dir * 0.08f * s;
                 var speed = (crit ? 5.5f : 4f) * s * (0.7f + Random.value * 0.6f);
                 _fx.Add(new Fx { T = st, Life = 0.18f, Max = 0.18f, Grow0 = 0.9f * s, Grow1 = 0.5f * s, Face = true, Roll = ang, Aspect = new Vector2(0.09f, 0.55f), Vel = dir * speed });
@@ -1451,7 +1486,7 @@ namespace ExcelHeroes.World
                 f.Life -= dt;
                 if (f.Life <= 0f || f.T == null)
                 {
-                    if (f.T != null) Object.Destroy(f.T.gameObject);
+                    if (f.T != null) FxRelease(f.T);
                     _fx.RemoveAt(i);
                     continue;
                 }

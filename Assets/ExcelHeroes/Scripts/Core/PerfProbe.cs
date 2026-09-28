@@ -15,7 +15,7 @@ namespace ExcelHeroes.Core
     public class PerfProbe : MonoBehaviour
     {
         ProfilerRecorder _draw, _setPass, _tris, _gc, _gcCount, _main;
-        long _alloc0; int _vsync, _fps;
+        long _alloc0; int _vsync, _fps, _gc0;
         readonly List<(float ms, long draw, long setPass, long tris, long gc, long gcCount)> _frames = new();
         bool _on;
         string _label;
@@ -40,7 +40,7 @@ namespace ExcelHeroes.Core
             _gc = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame");
             _gcCount = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocation In Frame Count");
             _main = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Main Thread", 15);
-            _alloc0 = System.GC.GetTotalMemory(false);
+            _alloc0 = System.GC.GetTotalMemory(false); _gc0 = System.GC.CollectionCount(0);
             // uncapped while measuring: under vsync every frame reads 16.7 ms whatever it cost
             _vsync = QualitySettings.vSyncCount; _fps = Application.targetFrameRate;
             QualitySettings.vSyncCount = 0; Application.targetFrameRate = 1000;
@@ -77,7 +77,9 @@ namespace ExcelHeroes.Core
             sb.AppendLine($"  frame (uncapped) avg {ms / n:F2} ms = {1000.0 * n / ms:F0} fps   worst {worst:F1} ms");
             sb.AppendLine($"  draws     avg {draw / n:F0}   max {maxDraw}   setpass avg {sp / n:F0}");
             sb.AppendLine($"  tris      avg {tris / n / 1000:F0}k");
-            sb.AppendLine($"  GC/frame  avg {gc / n / 1024:F1} KB   max {maxGc / 1024f:F1} KB");
+            sb.AppendLine($"  GC/frame  avg {gc / n / 1024:F1} KB   max {maxGc / 1024f:F1} KB   collections {System.GC.CollectionCount(0) - _gc0}");
+            var slow = 0; foreach (var x in f) if (x.ms > 8f) slow++;
+            sb.AppendLine($"  slow      {slow} frames over 8 ms ({100f * slow / n:F1}%)");
             // what is on screen: renderers, distinct materials, and which renderers carry a property block
             var rs = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
             var mats = new HashSet<Material>(); int live = 0, blocks = 0; var byName = new Dictionary<string, int>();
