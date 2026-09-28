@@ -200,14 +200,21 @@ namespace ExcelHeroes.Core
                         yield return Shoot($"{n:00}-Boss0");
                         yield return new WaitForSeconds(0.2f);
                         yield return Shoot($"{n:00}-Boss1");
-                        // each boss telegraph shape, forced on the boss in the field
+                        // each boss telegraph shape, forced on the boss in the field (no EX cut-in over it)
+                        BattleScreen.Current?.DebugAutoSkill(false);
                         foreach (var kind in new[] { "volley", "stomp", "throw", "sweep", "slow" })
                         {
                             if (ExcelHeroes.World.BattleWorld.Instance?.DebugTelegraph(kind) != true) break;
+                            if (kind == "stomp")
+                                for (var sf = 0; sf < 8; sf++) { yield return new WaitForSeconds(0.1f); yield return Shoot($"{n:00}-Stomp{sf}"); }
                             yield return new WaitForSeconds(0.35f);
                             yield return Shoot($"{n:00}-Tele-{kind}");
+                            yield return new WaitForSeconds(0.4f);            // the strikes coming down (they land at 0.95 s)
+                            yield return Shoot($"{n:00}-Tele-{kind}-b");
+                            yield return new WaitForSeconds(0.3f);
                         }
                         ExcelHeroes.World.BattleWorld.Instance?.DebugTelegraph("none");
+                        BattleScreen.Current?.DebugAutoSkill(true);
                         // every member's EX, one after another, against the boss (deep enough not to fall)
                         for (var hi = 0; hi < 5; hi++)
                         {

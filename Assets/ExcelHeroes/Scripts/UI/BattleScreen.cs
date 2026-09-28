@@ -82,6 +82,7 @@ namespace ExcelHeroes.UI
         /// <summary>For the screenshot driver: an EX cut-in for the strongest hero on the field, guards off.</summary>
         /// <summary>Screenshot driver only: the boss on the field now, part-way down (see BattleSim.DebugBossNow).</summary>
         /// Held until a run is live — a call that lands on a finished run would otherwise do nothing.
+        public void DebugAutoSkill(bool on) { if (_sim != null) _sim.AutoSkill = on; }
         public void DebugBoss(float hpFrac) { _pendingBoss = hpFrac; Debug.Log($"[shots] boss requested (sim {(_sim == null ? "none" : _sim.Finished ? "finished" : "live")})"); }
         float _pendingBoss;
         VisualElement _resultPopup;

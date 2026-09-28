@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using ExcelHeroes.Ability;
 using ExcelHeroes.Core;
 using ExcelHeroes.Data;
 using ExcelHeroes.UI;
@@ -18,7 +20,7 @@ namespace ExcelHeroes.World
     /// Skill a jump with the back sheet flaring. The HUD asks it where a fighter's head is on the
     /// screen, so health bars and damage numbers stay pinned to the figures.
     /// </summary>
-    public class BattleWorld
+    public class BattleWorld : IAbilityPresenter
     {
         public const int Layer = 30;
         static BattleWorld _instance;
@@ -69,6 +71,7 @@ namespace ExcelHeroes.World
             data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
             data.antialiasingQuality = AntialiasingQuality.High;
             PlaceCamera(0f);
+            AbilityHost.Presenter = this;
 
             // light from the upper left, a little in front — the reference's key light
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
@@ -111,6 +114,7 @@ namespace ExcelHeroes.World
         public void Begin(BattleSim sim)
         {
             _sim = sim;
+            ResetAbilities();
             _closeUp = _closeUpTarget = 0f;
             foreach (var a in _actors.Values) Object.Destroy(a.Rig.Root.gameObject);
             _actors.Clear();
@@ -363,7 +367,7 @@ namespace ExcelHeroes.World
                     }
                     break;
                 case EventKind.Warn:
-                    if (e.actor != null && _actors.TryGetValue(e.actor, out var wb)) Telegraph(wb, e.text);
+                    if (e.actor != null && _actors.TryGetValue(e.actor, out var wb)) { Telegraph(wb, e.text); BossStrikes(wb, e.text); }
                     break;
                 case EventKind.Skill:
                     if (e.actor != null && _actors.TryGetValue(e.actor, out var s))
@@ -419,6 +423,8 @@ namespace ExcelHeroes.World
             }
 
             SyncShots();
+            UpdateAbilityShots(dt);
+            UpdateAbilityWarns(dt);
             UpdateTelegraphs(dt);
             UpdateSparks(dt);
             UpdateFx(dt);
@@ -442,9 +448,7 @@ namespace ExcelHeroes.World
                 if (_volleys.TryGetValue(shot, out var vol)) { DrawVolley(shot, vol, from, to); continue; }
 
                 var k = shot.Progress;
-                var start = from.Rig.Sheet != null && shot.From.side == Side.Hero
-                    ? from.Rig.Sheet.position
-                    : from.Rig.Root.position + Vector3.up * from.Rig.Height * from.Scale * 0.55f;
+                var start = Muzzle(from);
                 var end = to.Rig.Root.position + Vector3.up * to.Rig.Height * to.Scale * 0.5f;
                 Vector3 p;
                 switch (shot.Kind)
@@ -487,7 +491,7 @@ namespace ExcelHeroes.World
         // when the Shot does, so the number and the flinch still land on it. (Rhythms after the
         // reference RPG's ability compositions: Repeat 5 x 0.1 s, Spread 5 x 20 deg, charge then orb.)
 
-        enum Fire { Single, Type3, Fill5, Paste5, Sum, Trace, Lob, SlashH, SlashD, SlashX, Cut }
+        enum Fire { Single, Type3, Fill5, Paste5, Sum, Trace, Lob, SlashH, SlashD, SlashX, Cut, Ability }
 
         class Volley { public Fire F; public Transform[] Parts; public bool[] Landed; public float Seed; }
         readonly Dictionary<Shot, Volley> _volleys = new();
@@ -568,6 +572,13 @@ namespace ExcelHeroes.World
         {
             var f = FireOf(shot.From, shot.Kind);
             if (f == Fire.Single) return null;
+            if (FireAbility(shot, f, accent))
+            {
+                // the ported ability system draws this one (AttackBook); the Shot itself shows nothing
+                var av = new Volley { F = Fire.Ability, Parts = new Transform[0], Landed = new bool[0] };
+                _volleys[shot] = av;
+                return av;
+            }
             var v = new Volley { F = f, Seed = Random.value * 100f };
             const float cw = 0.46f, ch = 0.23f;   // readable at the battle camera's distance
             Transform C(int i) => Card(root, "cell_" + (i % 3), cw, ch);
@@ -590,9 +601,9 @@ namespace ExcelHeroes.World
 
         void DrawVolley(Shot shot, Volley v, Actor from, Actor to)
         {
+            if (v.F == Fire.Ability) return;
             var k = shot.Progress;
-            var start = from.Rig.Sheet != null && shot.From.side == Side.Hero ? from.Rig.Sheet.position
-                      : from.Rig.Root.position + Vector3.up * from.Rig.Height * from.Scale * 0.55f;
+            var start = Muzzle(from);
             var end = to.Rig.Root.position + Vector3.up * to.Rig.Height * to.Scale * 0.5f;
             var cam = _cam.transform;
             var side = Vector3.Cross((end - start).normalized, cam.forward).normalized;
@@ -1032,6 +1043,211 @@ namespace ExcelHeroes.World
                 FxCard("plus_cell", Mid(h) + Vector3.up * 0.3f, 0.3f, 0.24f, 0.9f, Vector3.up * 0.7f, Color.white, _cast.N++ * 0.05f, 0.5f, 1f);
         }
 
+
+        // ------------------------------------------------------------------ ported ability system --
+        // Attacks and boss patterns are compositions of the effects ported from OperationKivotos
+        // (Assets/ExcelHeroes/Scripts/Ability, see THIRD_PARTY_NOTICES.md): Repeat, Spread, Delay,
+        // SpawnVFX, SpawnProjectiles, AreaStrike, ScatterPattern, RadialBurstPattern. The sim still
+        // lands every hit; each composition is timed so its last round / last blast falls on it.
+        // BattleWorld is the presenter: Excel cells for bullets, #REF! discs for warnings.
+
+        Vector3 Muzzle(Actor a) => a.Rig.HandR != null && a.C.side == Side.Hero
+            ? a.Rig.HandR.position + Vector3.up * 0.05f
+            : a.Rig.Root.position + Vector3.up * a.Rig.Height * a.Scale * 0.55f;
+
+        // the basic-attack compositions (the Shot flies 0.28 s for a ranged hero)
+        static (AbilityData ab, float flight, string payload)? _type3, _fill5, _paste5, _sum, _lob;
+
+        static (AbilityData, float, string) Book(Fire f) => f switch
+        {
+            Fire.Type3 => _type3 ??= (AbilityData.Make("셀 입력", 0f, RepeatEffect.Make(3, 0.05f, SpawnProjectiles.Make())), 0.18f, "cell"),
+            Fire.Fill5 => _fill5 ??= (AbilityData.Make("자동 채우기", 0f, RepeatEffect.Make(5, 0.03f, SpawnProjectiles.Make())), 0.16f, "cell"),
+            Fire.Paste5 => _paste5 ??= (AbilityData.Make("범위 붙여넣기", 0f, SpreadProjectiles.Make(5, 26f)), 0.28f, "cell"),
+            Fire.Sum => _sum ??= (AbilityData.Make("=SUM", 0f, SpawnVFX.Make("charge", Anchor.At(Anchor.Source.Muzzle)), DelayEffect.Make(0.12f), SpawnProjectiles.Make()), 0.16f, "result"),
+            Fire.Lob => _lob ??= (AbilityData.Make("커피", 0f, SpawnProjectiles.Make()), 0.28f, "coffee"),
+            _ => (null, 0f, null),
+        };
+
+        readonly AbilityRunner _runner = new AbilityRunner();
+        System.Threading.CancellationTokenSource _abCts = new();
+
+        bool FireAbility(Shot shot, Fire f, Color accent)
+        {
+            var (ab, flight, payload) = Book(f);
+            if (ab == null || !_actors.TryGetValue(shot.From, out var from) || !_actors.TryGetValue(shot.To, out var to)) return false;
+            var ctx = new AbilityContext
+            {
+                CasterGO = from.Rig.Root.gameObject, Object = from.Rig.HandR != null ? from.Rig.HandR : from.Rig.Root,
+                Target = to.Rig.Root.gameObject, TargetPoint = to.Rig.Root.position,
+                Accent = accent, Flight = flight, Payload = payload,
+            };
+            _runner.Fire(ab, ctx, _abCts.Token).Forget();
+            return true;
+        }
+
+        class AbShot { public Transform T; public Vector3 A; public Actor To; public Vector3 B; public float Time, Flight, Lateral, Seed; public string Payload; }
+        readonly List<AbShot> _abShots = new();
+
+        Actor ActorOf(GameObject go) => go == null ? null : _actors.Values.FirstOrDefault(a => a.Rig.Root.gameObject == go);
+
+        public void Projectile(AbilityContext ctx, Vector3 from, Vector3 to, float flight, float lateral)
+        {
+            ShotCount++;
+            var target = ActorOf(ctx.Target);
+            var caster = ActorOf(ctx.CasterGO);
+            if (caster != null) from = Muzzle(caster);
+            Transform t = ctx.Payload switch
+            {
+                "coffee" => Bullet(_root, new Color(0.62f, 0.42f, 0.26f), 0.9f),
+                "result" => Card(_root, "result", 0.56f, 0.28f),
+                _ => Card(_root, "cell_" + Random.Range(0, 3), 0.46f, 0.23f),
+            };
+            t.gameObject.SetActive(true);
+            _abShots.Add(new AbShot { T = t, A = from, To = target, B = to, Flight = Mathf.Max(0.05f, flight), Lateral = lateral, Payload = ctx.Payload, Seed = Random.value * 10f });
+        }
+
+        void UpdateAbilityShots(float dt)
+        {
+            var cam = _cam.transform;
+            for (var i = _abShots.Count - 1; i >= 0; i--)
+            {
+                var s = _abShots[i];
+                s.Time += dt;
+                var k = s.Time / s.Flight;
+                if (s.T == null || k >= 1f)
+                {
+                    if (s.To != null && s.T != null) Spark(s.To, Color.white, 0.3f);
+                    if (s.T != null) Object.Destroy(s.T.gameObject);
+                    _abShots.RemoveAt(i);
+                    continue;
+                }
+                var end = s.To != null ? s.To.Rig.Root.position + Vector3.up * s.To.Rig.Height * s.To.Scale * 0.5f : s.B;
+                var side = Vector3.Cross((end - s.A).normalized, cam.forward).normalized;
+                var arc = s.Payload == "coffee" ? 1.1f : s.Payload == "result" ? 0.22f : 0.1f;
+                var p = Vector3.Lerp(s.A, end, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * arc
+                      + side * s.Lateral * (end - s.A).magnitude * Mathf.Sin(k * Mathf.PI * 0.9f);
+                if (s.T.Find("glow") != null)
+                {
+                    s.T.position = p; s.T.rotation = Quaternion.Euler(_time * 720f, _time * 360f, 0f);
+                    var g = s.T.Find("glow"); g.rotation = Quaternion.LookRotation(g.position - cam.position);
+                }
+                else Billboard(s.T, p, Mathf.Sin(_time * 9f + s.Seed) * 14f);
+                _abShots[i] = s;
+            }
+        }
+
+        class AbWarn { public Transform Disc, Ring; public float Time, Seconds, Radius; public bool Danger; }
+        readonly List<AbWarn> _abWarns = new();
+
+        public static int WarnCount, ShotCount;
+        public void Warn(Vector3 at, float radius, float seconds, bool danger)
+        {
+            WarnCount++;
+            at.y = _root.position.y + 0.06f;   // (the stage's floor, not world 0) over the telegraph's red floor, in amber, so the incoming strikes read against it
+            var disc = MeshKit.Part("abwarn", _root, FloorQuad, DiscMat, Layer).transform;
+            var ring = MeshKit.Part("abwarn", _root, FloorQuad, RingMat(danger ? new Color(1f, 0.78f, 0.25f, 1f) : new Color(0.8f, 0.6f, 1f, 1f)), Layer).transform;
+            disc.position = ring.position = at;
+            _abWarns.Add(new AbWarn { Disc = disc, Ring = ring, Seconds = Mathf.Max(0.05f, seconds), Radius = radius, Danger = danger });
+        }
+
+        void UpdateAbilityWarns(float dt)
+        {
+            for (var i = _abWarns.Count - 1; i >= 0; i--)
+            {
+                var w = _abWarns[i];
+                w.Time += dt;
+                var k = w.Time / w.Seconds;
+                if (k >= 1f || w.Disc == null)
+                {
+                    if (w.Disc != null) Object.Destroy(w.Disc.gameObject);
+                    if (w.Ring != null) Object.Destroy(w.Ring.gameObject);
+                    _abWarns.RemoveAt(i);
+                    continue;
+                }
+                // the disc fills in toward the ring as the strike comes (the reference's warning decal)
+                w.Ring.localScale = Vector3.one * w.Radius * 2f;
+                w.Disc.localScale = Vector3.one * w.Radius * 2f * Mathf.Lerp(0.15f, 1f, k);
+                TintFx(w.Disc, w.Danger ? new Color(1f, 0.62f, 0.2f, 0.35f + k * 0.4f) : new Color(0.62f, 0.4f, 1f, 0.25f + k * 0.3f), 1f);
+            }
+        }
+
+        public void Blast(Vector3 at, float radius, Color color)
+        {
+            at.y = _root.position.y;
+            FloorRing(at, color, 0.3f, radius * 0.6f, radius * 2.4f);
+            // a round flash (no Fx texture called "blob": FxMat falls back to the soft round Blob)
+            FxCard("blob", at + Vector3.up * 0.3f, radius * 1.6f, radius * 1.1f, 0.2f, Vector3.up * 0.6f, new Color(1f, 0.8f, 0.55f, 0.75f), g0: 0.5f, g1: 1.5f);
+            AddShakeLocal(0.12f);
+        }
+
+        public void Vfx(string name, Vector3 at, AbilityContext ctx)
+        {
+            var caster = ActorOf(ctx.CasterGO);
+            if (caster != null) at = Muzzle(caster);
+            switch (name)
+            {
+                case "charge": FxCard("formula", at + Vector3.up * 0.15f, 0.7f, 0.24f, 0.16f, Vector3.up * 0.3f, Color.white, g0: 0.5f, g1: 1.25f); break;
+                default: FxCard("white", at, 0.14f, 0.14f, 0.08f, Vector3.zero, new Color(1f, 1f, 1f, 0.8f)); break;
+            }
+        }
+
+        /// <summary>
+        /// The boss special as a strike pattern, timed so its last blast lands on the sim's hit: the
+        /// hit comes on the boss's next swing (its attack timer) plus the swing's own 0.5 s drop.
+        /// </summary>
+        void BossStrikes(Actor boss, string name, string kindOverride = null, float hitOverride = -1f)
+        {
+            var kind = kindOverride ?? boss.C.boss?.specials?.FirstOrDefault(x => x.name == name)?.kind;
+            if (kind == null) return;
+            var speed = Mathf.Max(0.2f, 1f + boss.C.hasteAmount - boss.C.slowAmount);
+            var hitIn = hitOverride > 0f ? hitOverride : boss.C.attackTimer / speed + 0.5f;
+            var squad = Living(Side.Hero).Where(h => h.C.Alive).OrderByDescending(h => h.C.x).ToList();
+            if (squad.Count == 0) return;
+            void Run(AbilityData ab, Actor on, Vector3 point)
+            {
+                var ctx = new AbilityContext { CasterGO = boss.Rig.Root.gameObject, Object = boss.Rig.Root, Target = on?.Rig.Root.gameObject, TargetPoint = point };
+                _runner.Fire(ab, ctx, _abCts.Token).Forget();
+                Object.Destroy(ab, hitIn + 3f);
+            }
+            switch (kind)
+            {
+                case "volley":
+                    foreach (var h in squad)
+                        Run(AbilityData.Make("volley", 0f, DelayEffect.Make(Mathf.Max(0f, hitIn - 0.8f)), AreaStrike.Make(0.8f, 0.7f * h.Scale)), h, h.Rig.Root.position);
+                    break;
+                case "throw":
+                {
+                    var back = squad[squad.Count - 1];
+                    Run(AbilityData.Make("throw", 0f, DelayEffect.Make(Mathf.Max(0f, hitIn - 0.9f)), AreaStrike.Make(0.9f, 1f)), back, back.Rig.Root.position);
+                    break;
+                }
+                case "sweep":
+                    foreach (var h in squad.Take(2))
+                        Run(AbilityData.Make("sweep", 0f, DelayEffect.Make(Mathf.Max(0f, hitIn - 0.85f)),
+                            ScatterPattern.Make(Anchor.At(Anchor.Source.TargetPoint), 0f, 0.9f, 4, 0.06f, ForkEffect.Make(AreaStrike.Make(0.6f, 0.45f)))), h, h.Rig.Root.position);
+                    break;
+                case "stomp":
+                {
+                    // converging from outside in over the whole squad (the reference's RadialBurst)
+                    var c = squad.Aggregate(Vector3.zero, (acc, h) => acc + h.Rig.Root.position) / squad.Count;
+                    const int waves = 4; const float gap = 0.12f, strike = 0.4f;
+                    var span = waves * gap + strike;
+                    Run(AbilityData.Make("stomp", 0f, DelayEffect.Make(Mathf.Max(0f, hitIn - span)),
+                        RadialBurstPattern.Make(Anchor.At(Anchor.Source.TargetPoint), 6, waves, 3.4f, 0.6f, 30f, gap, ForkEffect.Make(AreaStrike.Make(strike, 0.55f)))), null, c);
+                    break;
+                }
+            }
+        }
+
+        public void ResetAbilities()
+        {
+            _abCts.Cancel(); _abCts.Dispose(); _abCts = new System.Threading.CancellationTokenSource();
+            foreach (var s2 in _abShots) if (s2.T != null) Object.Destroy(s2.T.gameObject);
+            _abShots.Clear();
+            foreach (var w in _abWarns) { if (w.Disc != null) Object.Destroy(w.Disc.gameObject); if (w.Ring != null) Object.Destroy(w.Ring.gameObject); }
+            _abWarns.Clear();
+        }
+
         // ------------------------------------------------------------------ boss telegraphs --
         // A boss announces its next special one swing ahead (EventKind.Warn); until it lands the
         // floor says where: red conditional-format discs under whoever it will hit, #REF! over
@@ -1056,6 +1272,7 @@ namespace ExcelHeroes.World
             var boss = _actors.Values.FirstOrDefault(a => a.C.boss != null && a.C.Alive);
             if (boss == null || kind == "none") return boss != null;
             Telegraph(boss, "debug:" + kind, kind);
+            BossStrikes(boss, "debug:" + kind, kind, 0.95f);   // lands just after the capture's 0.35 s look
             return true;
         }
 
