@@ -147,6 +147,7 @@ namespace ExcelHeroes.World
 
         public static void Set(ChibiRig rig, string heroId, string expr)
         {
+            if (rig != null && rig.Blink != null && rig.Expression != expr) { rig.Expression = expr; rig.Blink.Express(expr); return; }
             if (rig == null || rig.EyeSub < 0 || rig.FaceRenderer == null || rig.Expression == expr) return;
             rig.Expression = expr;
             var b = new MaterialPropertyBlock();

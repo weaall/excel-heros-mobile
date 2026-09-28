@@ -1805,6 +1805,7 @@ namespace ExcelHeroes.World
             /// <summary>Swaps the eye/mouth sheet on the face renderer's eye submesh (SdRef only).</summary>
             void SetExpression(string expr)
             {
+                if (Rig.Blink != null && Rig.Expression != expr) { Rig.Expression = expr; Rig.Blink.Express(expr); return; }
                 if (Rig.EyeSub < 0 || Rig.FaceRenderer == null || Rig.Expression == expr) return;
                 Rig.Expression = expr;
                 var look = SdRefLook.For(C.heroId);

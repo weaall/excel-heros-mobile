@@ -182,6 +182,60 @@ namespace ExcelHeroes.World
         /// horns, ear devices — the face and the hair are their own submeshes) and well behind the
         /// hips (tails). An office worker in Hikari's cap or with Kayoko's tail read as cosplay.
         /// </summary>
+        /// <summary>
+        /// Each eye's plates (white, iris, highlight, lash line) re-skinned to a bone of its own at
+        /// the eye's lower edge, so a blink squashes the eye shut onto its lower lid on every
+        /// sample alike (the samples' own lid bones close some rigs and not others). SdBlink drives them.
+        /// </summary>
+        static void EyeBones(SkinnedMeshRenderer r, SdFace.Part[] parts, Transform head, Transform root, List<(Transform bone, Transform lid, Vector3 drop)> made, int layer)
+        {
+            if (head == null) return;
+            var mesh = r.sharedMesh; var bw = mesh.boneWeights;
+            if (bw.Length != mesh.vertexCount) return;
+            var l2w = r.transform.localToWorldMatrix; var v = mesh.vertices;
+            var eyeV = new HashSet<int>();
+            for (var s = 0; s < mesh.subMeshCount && s < parts.Length; s++)
+                if (parts[s] is SdFace.Part.White or SdFace.Part.Iris or SdFace.Part.IrisFree or SdFace.Part.Highlight or SdFace.Part.Line)
+                    foreach (var t in mesh.GetTriangles(s)) eyeV.Add(t);
+            if (eyeV.Count == 0) return;
+            var cx = eyeV.Average(i => Vector3.Dot(l2w.MultiplyPoint3x4(v[i]), root.right));
+            var bones = r.bones.ToList(); var binds = mesh.bindposes.ToList();
+            var skinV = new HashSet<int>();
+            for (var s = 0; s < mesh.subMeshCount && s < parts.Length; s++)
+                if (parts[s] == SdFace.Part.Skin) foreach (var t in mesh.GetTriangles(s)) skinV.Add(t);
+            var rb = r.bones;
+            foreach (var side in new[] { -1f, 1f })
+            {
+                var mine = eyeV.Where(i => (Vector3.Dot(l2w.MultiplyPoint3x4(v[i]), root.right) - cx) * side > 0f).ToList();
+                if (mine.Count == 0) continue;
+                var w = mine.Select(i => l2w.MultiplyPoint3x4(v[i])).ToList();
+                var low = w.Min(p => p.y); var top = w.Max(p => p.y); var ctr = w.Aggregate(Vector3.zero, (a, p) => a + p) / w.Count;
+                var x0 = w.Min(p => Vector3.Dot(p, root.right)); var x1 = w.Max(p => Vector3.Dot(p, root.right));
+                // the upper lid: the bone (other than the head) most of the skin just over this eye rides —
+                // BA closes an eye by sliding that skin down over it
+                var eh = top - low; var votes = new Dictionary<int, float>();
+                foreach (var i in skinV)
+                {
+                    var p = l2w.MultiplyPoint3x4(v[i]); var px = Vector3.Dot(p, root.right);
+                    if (px < x0 || px > x1 || p.y < top - eh * 0.25f || p.y > top + eh * 0.3f) continue;
+                    void Vote(int bi2, float wt) { if (wt > 0.2f && bi2 >= 0 && bi2 < rb.Length && rb[bi2] != null && rb[bi2] != head && !rb[bi2].name.Contains("Head")) votes[bi2] = (votes.TryGetValue(bi2, out var o) ? o : 0f) + wt; }
+                    var q = bw[i]; Vote(q.boneIndex0, q.weight0); Vote(q.boneIndex1, q.weight1); Vote(q.boneIndex2, q.weight2); Vote(q.boneIndex3, q.weight3);
+                }
+                // none (Mika's lid skin rides the head; her eye_L_1 tears the face): that eye does not blink
+                if (votes.Count == 0) continue;
+                var lid = rb[votes.OrderByDescending(x => x.Value).First().Key];
+                var b = new GameObject(side < 0 ? "blink_L" : "blink_R") { layer = layer }.transform;
+                b.SetParent(head, true);
+                b.position = new Vector3(ctr.x, low + (ctr.y - low) * 0.25f, ctr.z); b.rotation = root.rotation;
+                var bi = bones.Count; bones.Add(b); binds.Add(b.worldToLocalMatrix * l2w);
+                foreach (var i in mine) bw[i] = new BoneWeight { boneIndex0 = bi, weight0 = 1f };
+                if (System.Environment.GetEnvironmentVariable("SD_LIDDBG") == "1") Debug.Log($"[lid] {r.name} side {side} lid {(lid ? lid.name : "-")} votes {string.Join(",", votes.OrderByDescending(x => x.Value).Take(4).Select(x => rb[x.Key].name + "=" + x.Value.ToString("0.0")))}");
+                made.Add((b, lid, -root.up * eh * 0.85f));
+            }
+            mesh.boneWeights = bw; mesh.bindposes = binds.ToArray();
+            r.bones = bones.ToArray();
+        }
+
         static void StripKit(SkinnedMeshRenderer body, Transform neck, Transform pelvis)
         {
             if (neck == null || pelvis == null) return;
@@ -425,6 +479,7 @@ namespace ExcelHeroes.World
             var tex = _raw ? new SdSampleTex.Set { Body = Sheet(key, "body"), Hair = Sheet(key, "hair"), EyeMouth = Sheet(key, "eyemouth"), EyeMouthSrc = Sheet(key, "eyemouth"), Face = Sheet(key, "face") }
                            : SdSampleTex.For(key, k, Sheet(key, "body"), Sheet(key, "hair"), Sheet(key, "eyemouth"), Sheet(key, "face"));
             var face = tex.Face;
+            var blinkBones = new List<(Transform bone, Transform lid, Vector3 drop)>();
             foreach (var r in kept)
             {
                 var names = r.sharedMaterials.Select(m => m ? m.name : "").ToArray();
@@ -460,6 +515,7 @@ namespace ExcelHeroes.World
                 r.sharedMaterials = mats;
                 r.updateWhenOffscreen = true;
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                if (!_raw) EyeBones(r, parts, Find("Bip001 Head"), root, blinkBones, layer);
             }
 
             var rig = new ChibiRig { Root = root, Height = SdRef.Height, Model3D = true, RefModel = true, Model = go.transform, ModelScale = go.transform.localScale, ModelPos = go.transform.localPosition };
@@ -478,7 +534,7 @@ namespace ExcelHeroes.World
             if (rig.Pelvis != null) rig.PelvisRest = rig.Pelvis.localPosition;
             foreach (var r in kept) rig.Renderers.Add(r);
             rig.FaceRenderer = body;
-            rig.EyeSub = -1;   // the layered eye is the sample's own: no sheet swaps for expressions (yet)
+            rig.EyeSub = -1;   // the layered eye is the sample's own: no sheet swaps — expressions shut the lids (SdBlink)
 
             var lowerKey = System.Environment.GetEnvironmentVariable("SD_LOWER") ?? k.Lower;
             if (!_raw && !string.IsNullOrEmpty(lowerKey) && lowerKey != key && Has(lowerKey)) SwapLower(rig, body, lowerKey, k, root, layer);
@@ -498,6 +554,7 @@ namespace ExcelHeroes.World
             SdPose.Apply(rig, Pose.Rest);
             if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
             root.gameObject.AddComponent<SdSecondary>().Init(go.transform, "sample:" + key);
+            if (!_raw && blinkBones.Count > 0) rig.Blink = SdBlink.Attach(root.gameObject, blinkBones.ToArray(), System.Environment.GetEnvironmentVariable("SD_LID"));
             return rig;
         }
     }
