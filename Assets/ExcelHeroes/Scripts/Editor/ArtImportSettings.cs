@@ -76,6 +76,15 @@ namespace ExcelHeroes.EditorTools
         /// </summary>
         public override uint GetVersion() => 9;
 
+        // the sample bodies are cut and split at runtime (SdFace, SdSample.StripKit): their meshes
+        // must be readable in the player, where FBX meshes default to GPU-only
+        void OnPreprocessModel()
+        {
+            if (!assetPath.StartsWith(ArtRoot + "SDBase/")) return;
+            var mi = (ModelImporter)assetImporter;
+            if (!mi.isReadable) mi.isReadable = true;
+        }
+
         void OnPreprocessTexture()
         {
             if (!assetPath.StartsWith(ArtRoot) && !assetPath.StartsWith(UiRoot)) return;
