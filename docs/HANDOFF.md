@@ -913,7 +913,12 @@ overlay and shoots the HUD underneath (`NN-BattleHud.png`) — it had never been
     - **머리 꼬리 영역**: `SdRefHairLib.TailTags`(유우카 l/r, 레이사 bl/br, 미쿠 b_l/b_r, 나츠 r) = Tails, recipe `tails=`일 때만(자르지 않음). 그래서 뒷머리 있는 샘플은 하루카·히카리·미카·유우카뿐. 유우카 앞머리/뒷머리는 유우카 옆머리(m_l/m_r)를 늘 동반(캡 구멍).
     - **키** sdspec `scale`(0.94–1.05, `tools/sdspec_height_gemini.py` 체형 점수 순위), 하의 이식도 같은 배율. **손 소품** sdspec `prop`(문서·컵·클립보드·태블릿·폰·펜·파일철·계산기·노트북, `tools/sdspec_prop_gemini.py`).
     - **조립은 부모 없이 원점·배율 1에서**, 끝에서 부착(전투 스폰이 배율 ~0에서 팝인해 월드 단위로 맞춘 조각이 100배가 되던 것).
-    - **닮음 루프**: `tools/sd_likeness_gemini.py <라인업 폴더> <ids>`(정면+얼굴 vs 일러 → 점수·가장 틀린 점, `tools/out/likeness.json`), `tools/sd_hairfix_gemini.py`(머리 지적만 레시피 수정 → 재채점해서 나아진 것만). 라인업은 `tools/out/lineup_ids.txt`(11명씩, **CRLF 주의** — 마지막 id에 이 붙으면 스펙을 못 찾아 기본 몸으로 나옴). 평균 4.1 → 4.45(머리 4.3 → 4.9) 시점 기록.
+    - **닮음 루프**: `tools/sd_likeness_gemini.py <라인업 폴더> <ids>`(정면+얼굴 vs 일러 → 점수·가장 틀린 점, `tools/out/likeness.json`), `tools/sd_hairfix_gemini.py`(머리 지적만 레시피 수정 → 재채점해서 나아진 것만). 라인업은 `tools/out/lineup_ids.txt`(11명씩, **CRLF 주의** — 마지막 id에 
+이 붙으면 스펙을 못 찾아 기본 몸으로 나옴). 평균 4.1 → 4.45(머리 4.3 → 4.9) 시점 기록.
+    - **긴 머리 형상 노브**(`SdRefHairLib.Wave/Spread/Gather/Curl/Slant`, recipe `wave= spread= gather= curl= slant=`): 턱 아래를 웨이브(S자)·끝 퍼짐/모음·로우 포니테일(뒤쪽 가닥을 목덜미 묶음점으로, 뒤/옆 가중치는 부드럽게)·끝 안/바깥 말림, 컷은 앞뒤로 비스듬히. `tools/sdspec_hairshape_gemini.py`가 일러에서 읽음. 카요코 뒷머리·옆머리 사용 가능(`SdRefTex.LocalTone`: 국소 명도 정규화로 투톤 제거; 카요코 앞머리·캡은 줄무늬가 남아 제외, 캡 없이 걸면 두피 셸이 틈을 메움). 뒷머리 5종 기준 시트 `tools/out/back_reference.png` + `tools/sdspec_longhair_gemini.py`(채점·상한 배정).
+    - **구분 루프**: `tools/sd_hairdistinct_gemini.py <라인업> <ids파일> [a:b,…]`(비슷한 쌍 → 닮음이 약한 쪽을 자기 일러 쪽으로 수정, `hairPrev` 기록) → `bash tools/sd_hair_ab.sh`(재채점, 머리 점수 떨어지면 되돌림). `tools/sd_hairclose.py 0.8`로 수치상 가까운 쌍을 찾아 넣는다 — 현재 0쌍, 부위 조합 43+/55.
+    - **흐림**: 의상 칠하기는 시트의 2배(1024) + 뷰 언샤프 + 가장 정면인 뷰 가중(facing^10), 작은 머리 시트는 2배 캣멀롬+샤픈, 이방성 4. 흰·은발은 HSV 명암(중간 0.9, 그림자 ~55 %)으로 가닥이 보이게. 두피 셸(머리 안쪽 20 백분위 표면, 뒤는 목덜미까지)로 부위 사이 틈을 머리 그림자색으로.
+    - 닮음 추이: 4.1 → 4.45 → 4.75 → 4.84(머리 4.3 → 5.04, 의상 4.16 → 4.82). 남은 지적: 안경 없음(사용자 지시로 제외), 상의 실루엣(히카리 끈 등 메시 자체) 11, 앞머리 9.
     - 의상 칠하기 프롬프트: 일러에 없는 끈·하네스·파우치는 그 아래 옷 색으로 덮어 칠함(히카리 재킷의 대각선 끈은 메시 일부라 형상으로는 못 뺌).
 - **사람 모션**: 사용자가 Unity 모델·클립을 찾아주겠다고 함 → BA 원본 클립은 넥슨 저작권(출시 불가), **Mixamo 권장**(무료·게임 사용 허용). 받으면 런타임 Humanoid 아바타(`AvatarBuilder.BuildHumanAvatar` + Bip001 매핑)로 리타겟. 요청 목록: Rifle/Happy Idle, Running/Rifle Run, Pistol Shoot/Shooting/Punching/Sword Slash/Throw, Standing 1H Magic Attack, Hit Reaction, Standing Block, Dying, Victory/Cheering (FBX for Unity, Without Skin, 30fps).
 - 다음: 스킬 카드 2번(흰 머리 캐릭터) 초상이 머리카락만 잡힘(얼굴 박스), 전투 타격 스파크(시안의 노란 번개 파편), 보스 바 이름판 "보스 | 이름" 판 분리, 편성·모집 화면도 같은 유리 타일로, `ceo_chair`는 얼굴이 약함(재생성 후보).
