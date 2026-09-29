@@ -6935,3 +6935,6 @@
 .ex-button { border-radius: 8px; overflow: visible; }
 .ex-button__art { border-radius: 8px; }
 .bhud__auto.bhud__sq--on .bhud__sq-label { color: rgb(255, 255, 255); }
+/* gate r20: the English sub-title reads at a glance */
+.navback__en { font-size: 32px; color: rgb(0, 96, 176); letter-spacing: 3px; margin-top: 8px; }
+.gstage__days { border-radius: 2px; }
