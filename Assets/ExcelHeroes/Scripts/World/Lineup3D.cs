@@ -124,7 +124,7 @@ namespace ExcelHeroes.World
                 SetLayer(rig.Root, Layer);
                 rig.Root.localPosition = rig.Home = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
                 // 0.92 of the floor-to-top height: long hair no longer spills into the next member's card (ui_gate 08-Party)
-                var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 0.92f / rig.Height, slotW * worldW * 1.4f) : scale;
+                var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 0.86f / rig.Height, slotW * worldW * 1.3f) : scale;
                 rig.Root.localScale = Vector3.one * s;
                 rig.Root.localRotation = rig.Sprite ? Quaternion.identity : rig.Model3D ? Quaternion.Euler(0f, 180f + 20f, 0f) : Quaternion.Euler(0f, 68f, 0f);
                 _figs.Add((rig, i * 1.3f));

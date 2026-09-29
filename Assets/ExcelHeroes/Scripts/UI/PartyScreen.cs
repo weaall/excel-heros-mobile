@@ -393,7 +393,7 @@ namespace ExcelHeroes.UI
                     for (var i = 0; i < cs.Count; i++)
                     {
                         var cw = sw * r.width * 0.9f; var cx = r.xMin + cs[i] * r.width;
-                        var card = Rect.MinMaxRect(cx - cw * 0.5f, r.yMin + r.height * 0.03f, cx + cw * 0.5f, r.yMin + fl * r.height + 4f);
+                        var card = Rect.MinMaxRect(cx - cw * 0.5f, r.yMin, cx + cw * 0.5f, r.yMin + fl * r.height + 4f);
                         var poly = UiPaint.SkewRect(card, card.height * 0.035f, 6f);
                         UiPaint.Shadow(ctx, poly, new Vector2(0f, 6f), UiPaint.C(20, 50, 90, 0.10f), 12f);
                         UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.34f), UiPaint.C(226, 240, 252, 0.56f), card.yMin, card.yMax));

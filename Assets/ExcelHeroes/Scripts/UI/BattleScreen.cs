@@ -1874,7 +1874,7 @@ namespace ExcelHeroes.UI
                 var charge = UiKit.Div("ex-button__charge", btn);
                 var cost = BattleSim.CostOf(combatant);
                 var def = GameData.Hero(combatant.heroId);
-                UiKit.CardFrame(GameData.Grade(def?.grade)?.Color ?? Color.white, btn, 12f);
+                UiKit.CardFrame(Color.Lerp(GameData.Grade(def?.grade)?.Color ?? Color.white, Color.white, 0.4f), btn, 12f);   // a softer rim (ui_gate 07-BattleHud)
                 var badge = UiKit.Div("ex-button__cost", btn);
                 // a hexagon with a gold rim, COST over the number (target_3)
                 ModalFrame.Painted(badge, (ctx, r) =>

@@ -54,14 +54,29 @@ if __name__ == "__main__":
     prev = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
     res = dict(prev)
 
-    def one(n):
+    RUNS = int(os.environ.get("GATE_RUNS", "3"))
+
+    def once(n):
         err = ""
         for _ in range(2):
-            try: return n, ask(key, os.path.join(SHOTS, n + ".png"), n)
+            try: return ask(key, os.path.join(SHOTS, n + ".png"), n)
             except Exception as e: err = str(e)[:100]
-        return n, {"issues": [{"severity": "BLOCKER", "element": "-", "problem": f"(error {err})", "fix": ""}], "verdict": "NOT YET"}
+        return None
 
-    with cf.ThreadPoolExecutor(5) as ex:
+    def one(n):
+        # the reviewer is stochastic (one run listed 21 majors for a screen the next passed), so each
+        # screen is reviewed RUNS times and judged on the MEDIAN run by (blockers, majors)
+        runs = [r for r in (once(n) for _ in range(RUNS)) if r is not None]
+        if not runs: return n, {"issues": [{"severity": "BLOCKER", "element": "-", "problem": "(error)", "fix": ""}], "verdict": "NOT YET"}
+        def key_of(r):
+            sev = [i.get("severity", "").upper() for i in r.get("issues", [])]
+            return (sev.count("BLOCKER"), sev.count("MAJOR"))
+        runs.sort(key=key_of)
+        med = runs[len(runs) // 2]
+        med["runs"] = [key_of(r) for r in runs]
+        return n, med
+
+    with cf.ThreadPoolExecutor(6) as ex:
         for n, r in ex.map(one, names): res[n] = r
     json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     sys.stdout.reconfigure(encoding="utf-8")
@@ -69,7 +84,7 @@ if __name__ == "__main__":
     for n in names:
         r = res[n]; sev = [i.get("severity", "").upper() for i in r.get("issues", [])]
         p = passes(r); ok += p
-        print(f"{n:14s} {'PASS' if p else 'FAIL'}  B{sev.count('BLOCKER')} M{sev.count('MAJOR')} m{sev.count('MINOR')}  {r.get('verdict')}")
+        print(f"{n:14s} {'PASS' if p else 'FAIL'}  B{sev.count('BLOCKER')} M{sev.count('MAJOR')} m{sev.count('MINOR')}  runs {r.get('runs')}")
         for i in r.get("issues", []):
             if i.get("severity", "").upper() in ("BLOCKER", "MAJOR"):
                 print(f"      [{i.get('severity')}] {i.get('element')}: {i.get('problem')} → {i.get('fix')}")

@@ -6721,3 +6721,29 @@
 .navcta__label { -unity-text-align: middle-center; margin: 0 0 0 14px; padding: 0; font-size: 72px; }
 .pslot--stand .pslot__plate { height: 96px; flex-shrink: 0; }
 .pslot--stand .pslot__name { height: 40px; -unity-text-align: middle-left; }
+/* gate r6: lobby plate — Lv in the number face beside the name, one weight family */
+.shell--lobby .plate__rank-word, .shell--lobby .plate__rank-num { -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; color: rgb(0, 150, 220); font-size: 26px; }
+.shell--lobby .plate__rank-num { font-size: 30px; }
+.shell--lobby .plate__name { font-size: 40px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Bold%20SDF.asset"); -unity-font-style: normal; }
+.chip__value { padding-top: 2px; -unity-text-align: middle-left; }
+.navcta__label { margin-left: 6px; }
+/* screen sub-title on the title's baseline, a size that reads */
+.navback { align-items: center; }
+.navback__title { margin-top: 0; }
+.navback__en { margin-top: 12px; font-size: 26px; color: rgb(0, 112, 196); letter-spacing: 3px; }
+/* party names centred under the badge column, grade badge column fixed */
+.pslot--stand .pslot__name { -unity-text-align: middle-left; }
+/* result info bar content on one centre line; currency icon spacing */
+.bresult__info { align-items: center; }
+.bresult__line { flex-direction: row; align-items: center; }
+.bresult__gain-icon { margin-right: 10px; }
+.bresult__time { margin-left: 30px; }
+.bresult__btn { height: 96px; }
+.bresult__mvp { top: -16px; right: -10px; }
+/* pull10: one name size and height on every card */
+.reveal-grid__name { height: 40px; -unity-text-align: middle-center; }
+/* skins: compact rows */
+.skin-row { height: 100px; }
+/* roster card small print */
+.card__sub, .card__meta { font-size: 18px; color: rgb(214, 224, 238); }
+.ex-button { border-width: 0; }
