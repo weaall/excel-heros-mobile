@@ -6348,3 +6348,26 @@
 .dtab__label { font-size: 23px; margin: 0; padding: 0; }
 .dtab__en { font-size: 12px; -unity-font-style: bold; letter-spacing: 1px; color: rgb(140, 154, 172); margin: -1px 0 0 0; padding: 0; }
 .dtab--on .dtab__en { color: rgba(255, 255, 255, 0.78); }
+/* attendance r5: two rows of four roomy tiles instead of eight cramped ones (tools/out/design/r5_10-Quests_0) */
+.stamp__grid { flex-wrap: wrap; justify-content: space-between; margin-top: 10px; }
+.stamp-day { width: 23.6%; height: 128px; margin: 0 0 16px 0; flex-grow: 0; flex-shrink: 0; flex-basis: auto; justify-content: center; padding: 8px 0; }
+.stamp-day__n { font-size: 26px; color: rgb(30, 43, 62); margin-bottom: 4px; }
+.stamp-day__icon { width: 40px; height: 40px; }
+.stamp-day__gems { font-size: 26px; margin-top: 2px; }
+.stamp-day__today { top: -14px; left: 16px; right: 16px; height: 26px; }
+.stamp-day { justify-content: flex-start; }
+.stamp-day__icon { flex-shrink: 0; min-width: 40px; min-height: 40px; }
+.stamp-day__n, .stamp-day__gems { flex-shrink: 0; }
+/* shop r5: the icon inside its slot, grade tag on the slot, a navy buy plate with white figures */
+.scard__icon { width: 180px; height: 180px; margin: 50px 0 0 30px; }
+.scard__qty { left: 26px; top: 26px; }
+.scard__body { padding-left: 34px; }
+.scard .scard__price-text { color: rgb(255, 255, 255); font-size: 28px; }
+.scard__buy--short .scard__price-text { color: rgb(255, 128, 138); }
+.scard__buy { height: 70px; }
+.scard__icon { margin: 50px 0 0 50px; }
+.scard__body { padding-left: 44px; }
+.stamp-day__icon { width: 50px; height: 50px; min-width: 50px; min-height: 50px; }
+.stamp-day { height: 136px; }
+/* roster r5: no padlock stamped over the face — the dim and the name band's 미보유 already say it */
+.card .card__lock { display: none; }

@@ -93,9 +93,14 @@ namespace ExcelHeroes.UI
                 var box = UiPaint.RoundRect(r, 10f, 6);
                 UiPaint.Shadow(ctx, box, new Vector2(0f, 4f), UiPaint.C(10, 30, 60, 0.18f), 8f);
                 UiPaint.Fill(ctx, box, UiPaint.Vertical(UiPaint.C(255, 255, 255), UiPaint.C(238, 244, 250), r.yMin, r.yMax));
-                // the item's tinted tile down the left, cut on the slant
-                var tile = new List<Vector2> { new(r.xMin, r.yMin), new(r.xMin + r.height * 0.95f, r.yMin), new(r.xMin + r.height * 0.8f, r.yMax), new(r.xMin, r.yMax) };
-                UiPaint.Fill(ctx, UiPaint.Clip(tile, box), UiPaint.Vertical(Color.Lerp(tint, Color.white, 0.25f), tint, r.yMin, r.yMax), 0.8f);
+                // the item in a square slot of its own, the grade only in the slot's rim and a thin
+                // band on its top (ui_critique r5 16-Shop #1 — the half-card colour wash read as a web card)
+                var sz = r.height - 36f;
+                var slot = Rect.MinMaxRect(r.xMin + 18f, r.yMin + 18f, r.xMin + 18f + sz, r.yMax - 18f);
+                var sbox = UiPaint.RoundRect(slot, 10f, 5);
+                UiPaint.Fill(ctx, sbox, UiPaint.Vertical(Color.Lerp(tint, Color.white, 0.82f), Color.Lerp(tint, Color.white, 0.6f), slot.yMin, slot.yMax));
+                UiPaint.Fill(ctx, UiPaint.Clip(sbox, UiPaint.RoundRect(Rect.MinMaxRect(slot.xMin, slot.yMin, slot.xMax, slot.yMin + 8f), 0f)), tint, 0f);
+                UiPaint.Stroke(ctx, sbox, Color.Lerp(tint, UiPaint.C(40, 70, 110), 0.25f), 2f);
                 UiPaint.Stroke(ctx, box, UiPaint.C(200, 214, 232), 1.5f);
             });
             var icon = UiKit.Div("scard__icon", card);
@@ -105,7 +110,7 @@ namespace ExcelHeroes.UI
             var body = UiKit.Div("scard__body", card);
             UiKit.Text(g.Name, "scard__name", body);
             UiKit.Text($"남은 수량 {left}/{g.Limit}", "scard__left" + (left == 0 ? " scard__left--zero" : ""), body);
-            var price = UiKit.Btn("", g.Pay == ShopService.Pay.Free ? "btn btn--primary scard__buy" : "btn btn--gold scard__buy", () =>
+            var price = UiKit.Btn("", g.Pay == ShopService.Pay.Free ? "btn btn--primary scard__buy" : "btn btn--navy scard__buy", () =>
             {
                 var got = ShopService.Buy(Game.Player, g);
                 if (got == null) { _app.SetStatus(g.Pay == ShopService.Pay.Gems ? "보석이 부족합니다" : "재화가 부족합니다"); return; }
@@ -123,7 +128,6 @@ namespace ExcelHeroes.UI
             if (!soldOut && !ShopService.CanBuy(p, g))
             {
                 price.AddToClassList("scard__buy--short");
-                SkewPlate.Apply(price, SkewPlate.Kind.Light);
             }
             price.SetEnabled(!soldOut);
             if (soldOut)
