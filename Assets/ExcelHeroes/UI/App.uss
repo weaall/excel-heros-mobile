@@ -6792,3 +6792,21 @@
 .bresult__mvp { rotate: 0deg; right: 4px; top: 4px; left: auto; height: 26px; font-size: 20px; padding: 0 8px; }
 .bresult__share { font-size: 28px; color: rgb(255, 255, 255); }
 .home__sheet { top: -4%; }   /* above the head, where a halo floats (it vanished behind the hair at 5%) */
+/* gate r10 */
+.skin-row { margin-bottom: 16px; }
+.skin-row--on { background-color: rgba(0, 190, 245, 0.1); border-width: 2.5px; border-color: rgb(0, 180, 240); }
+.skin-row__name { font-size: 32px; color: rgb(24, 36, 56); }
+.skin-row__desc { font-size: 21px; color: rgb(118, 132, 152); }
+.pslot__tag { height: 42px; }
+.pslot__tag-pos, .pslot__tag-role { font-size: 21px; -unity-text-align: middle-center; }
+.album__name { padding-bottom: 12px; height: 72px; font-size: 26px; }
+.bkill__num { font-size: 36px; }
+.bkill { padding: 0 40px 0 34px; }
+.bhud__pill .bhud__num, .bhud__pill .bhud__wave, .bhud__armor { margin-right: 32px; }
+.ex-button__skill { -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(8, 16, 34); font-size: 20px; }
+.bresult__kicker { margin-top: 10px; }
+.bresult__band { height: 170px; }
+.bresult__share { font-size: 30px; -unity-text-outline-width: 2px; }
+.skin-row__name { -unity-font-style: bold; }
+.navtab__badge { top: 14px; right: 26px; }
+.shell--lobby .plate__body { justify-content: center; }
