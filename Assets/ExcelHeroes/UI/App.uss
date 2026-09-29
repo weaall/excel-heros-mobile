@@ -6602,3 +6602,38 @@
 .navback__title { font-size: 46px; }
 .mt__title { font-size: 40px; }
 .pull-btn__en { font-size: 20px; letter-spacing: 3px; }
+/* gate r1 fixes */
+.home__bubble { padding-left: 68px; left: 45.5%; }
+.saybubble__tail { left: 20%; margin-left: -9px; }
+.pslot--stand .pslot__lines { padding-right: 100px; }
+/* currency pills: the + inside the pill, everything on its centre line */
+.topbar .chip { align-items: center; }
+.chip__plus { width: 46px; height: 46px; border-radius: 23px; font-size: 34px; -unity-text-align: middle-center; margin-right: 4px; }
+/* battle HUD: objective text centred, the speed label legible, AUTO white when off */
+.bkill { align-items: center; justify-content: center; }
+.bkill__num, .bkill__glyph { -unity-text-align: middle-left; margin: 0; padding: 0; }
+.bhud__sq-label { font-size: 24px; }
+/* result: MVP inside its own card, the share larger */
+.bresult__mvp { left: 4px; top: -14px; }
+.bresult__share { font-size: 24px; -unity-text-outline-width: 1.5px; }
+/* album: grade badge bigger, unowned lighter */
+.album__grade { width: 58px; height: 40px; }
+.album__grade-text { font-size: 26px; }
+/* upgrade/skin rows: the small print legible (gate: 17-Detail, 19-Scout, 20-Skins) */
+.skin-row__text .muted, .skin-row .muted { font-size: 22px; color: rgb(96, 110, 132); }
+.skin-row { height: 112px; }
+.skin-row__btn .plate__label { -unity-text-align: middle-center; }
+/* skill / trait mini cards: icon centred in the card's height */
+.minicard__icon { top: 50%; translate: 0 -50%; }
+/* skins: the worn state as a chip of the same size as the row buttons, not loose text */
+.skin-row__on { min-width: 170px; height: 64px; border-radius: 6px; border-width: 2px; border-color: rgb(0, 180, 240); background-color: rgba(0, 190, 245, 0.1); color: rgb(0, 140, 210); font-size: 24px; -unity-font-style: bold; -unity-text-align: middle-center; }
+.party-intel__en { color: rgb(0, 150, 220); }
+.party-intel__k { color: rgb(40, 54, 76); }
+.party-intel__v { color: rgb(24, 36, 56); }
+.gfoot__points { justify-content: center; align-items: center; }
+.gfoot__points-text { -unity-text-align: middle-center; }
+.gpulls .pull-btn .plate__label, .pull-btn__en { -unity-text-align: middle-center; }
+/* party plate: the attack chip on the top line (stars move beside Lv), the name gets the full width */
+.pslot--stand .pslot__lines { padding-right: 8px; }
+.pslot__atk { top: 8px; bottom: auto; right: 10px; height: 26px; }
+.pslot__stars-inline { right: auto; left: 128px; top: 10px; }

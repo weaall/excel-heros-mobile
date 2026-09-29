@@ -58,7 +58,10 @@ namespace ExcelHeroes.UI
             ModalFrame.Painted(intel, (ctx, r) =>
             {
                 var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 4f);
-                UiPaint.Fill(ctx, box, UiPaint.C(22, 34, 56, 0.86f));
+                // the screen's own light glass, so the strip belongs to the page (gate 08-Party)
+                UiPaint.Shadow(ctx, box, new Vector2(0f, 4f), UiPaint.C(20, 40, 80, 0.14f), 8f);
+                UiPaint.Fill(ctx, box, UiPaint.C(255, 255, 255, 0.9f));
+                UiPaint.Stroke(ctx, box, UiPaint.C(197, 216, 235), 1.5f);
                 UiPaint.Fill(ctx, UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 20f, r.yMax - 3f, r.xMax + 20f, r.yMax), 0f)), Affinity.ColorOf(armor), 0f);
             });
             UiKit.Text("ENEMY INTEL", "party-intel__en", intel).pickingMode = PickingMode.Ignore;
@@ -314,7 +317,8 @@ namespace ExcelHeroes.UI
                 UiKit.Text(def.grade, "pslot__grade-text", badge);
                 var lines = UiKit.Div("pslot__lines", row);
                 UiKit.Text($"Lv.{owned.level}", "pslot__lv", lines);
-                UiKit.Text(def.name, "pslot__name", lines);
+                var nm = UiKit.Text(def.name, "pslot__name", lines);
+                if (def.name.Length > 6) nm.style.fontSize = Mathf.Max(18f, 26f * 6.5f / def.name.Length);   // "VLOOKUP 분석가" whole, not "VLOOKUP …"
                 if (owned.star > 0)
                     UiKit.Text(new string('★', System.Math.Clamp(owned.star, 0, 5)), "pslot__stars-inline", plate);
                 // the member's attack type, with ▲ / ▼ against this phase's errors

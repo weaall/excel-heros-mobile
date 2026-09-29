@@ -66,7 +66,7 @@ namespace ExcelHeroes.UI
                 {
                     // the roster's locked look, so a missing picture reads the same everywhere
                     var scrim = UiKit.Div("album__scrim", cell);
-                    scrim.style.backgroundColor = new Color(0.06f, 0.1f, 0.19f, 0.93f);   // Linear-space alpha, see UiKit.Card
+                    scrim.style.backgroundColor = new Color(0.06f, 0.1f, 0.19f, 0.78f);   // Linear-space alpha, see UiKit.Card
                 }
                 // the name on a soft fade rather than a solid slab (ui_score 13-Album #1), the grade as
                 // a small slanted tag in the corner

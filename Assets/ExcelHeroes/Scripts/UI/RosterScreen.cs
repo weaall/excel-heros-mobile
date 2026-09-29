@@ -1027,7 +1027,7 @@ namespace ExcelHeroes.UI
             var baseText = UiKit.Div("skin-row__text", baseRow);
             UiKit.Text("기본", "skin-row__name", baseText);
             UiKit.Text("처음 그려진 모습", "skin-row__desc", baseText);
-            if (active.Length == 0) UiKit.Text("착용 중", "skin-row__on", baseRow);
+            if (active.Length == 0) UiKit.Text("✓ 착용 중", "skin-row__on", baseRow);
             else
                 UiKit.Btn("착용", "skin-row__btn", () =>
                 {
@@ -1048,7 +1048,7 @@ namespace ExcelHeroes.UI
                 UiKit.Text(sk.name, "skin-row__name", text);
                 UiKit.Text(sk.desc, "skin-row__desc", text);
 
-                if (on) { UiKit.Text("착용 중", "skin-row__on", row); continue; }
+                if (on) { UiKit.Text("✓ 착용 중", "skin-row__on", row); continue; }
 
                 if (owned)
                 {
