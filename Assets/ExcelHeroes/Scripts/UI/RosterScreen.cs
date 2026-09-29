@@ -68,7 +68,7 @@ namespace ExcelHeroes.UI
             // A vertical scroll, as the reference's student list: pages of ten with a "< 1 / 6 >"
             // bar read as a web admin table (ui_critique round 9, 07-Roster #2). The scroll offset
             // is kept across refreshes, so coming back from a card lands where it was.
-            _scroll = new ScrollView(ScrollViewMode.Vertical) { horizontalScrollerVisibility = ScrollerVisibility.Hidden };
+            _scroll = new ScrollView(ScrollViewMode.Vertical) { horizontalScrollerVisibility = ScrollerVisibility.Hidden, verticalScrollerVisibility = ScrollerVisibility.Hidden };
             _scroll.AddToClassList("roster-scroll");
             _scroll.touchScrollBehavior = ScrollView.TouchScrollBehavior.Elastic;
             _root.Add(_scroll);
