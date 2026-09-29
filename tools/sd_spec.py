@@ -20,7 +20,8 @@ fringe: 0 sample · 1 longer · 2 swept left · 3 swept right · 4 short, parted
 eyes: round | almond | sharp | droop ("" = by hash; the intern is sharp)
 hairLib: base | haruka | miku | yuuka | hikari | kayoko | mika | reisa | natsu ("" = by style: twin→miku/haruka, long→kayoko/hikari/mika, side→natsu, ponytail→yuuka/base, curly→reisa; short/bob/bun/spiky = base cap)
 glassesStyle: square | round | oval | half | cat | rimless ("" = by hash)   glassesColor: #hex ("" = by hash: black / brown / silver / gold)
-idle / win: 0..5 (-1 = by hash) — World/SdPose lists them.   attack: melee | ranged | caster | "" (= by role)
+idle / win: 0..13 / 0..11 (-1 = from the persona's pool, else by hash) — World/SdPose lists them.
+persona: confident | elegant | shy | energetic | lazy | stern | nerdy | cool | cheerful | caring | executive | playful (World/SdPersona)   attack: melee | ranged | caster | "" (= by role)
 """
 import json, os, sys
 
@@ -28,7 +29,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "..", "Assets", "ExcelHeroes", "Resources", "Data")
 SPEC = os.path.join(DATA, "sdspec.json")
 FIELDS = ["style", "fringe", "ahoge", "glasses", "sunglasses", "hair", "eye", "skin", "top", "shirt",
-          "bottom", "legs", "shoes", "outfit", "bottomType", "idle", "win", "attack", "tie", "cap", "headset", "legwear", "eyes", "glassesStyle", "glassesColor", "hairLib"]
+          "bottom", "legs", "shoes", "outfit", "bottomType", "idle", "win", "attack", "tie", "cap", "headset", "legwear", "eyes", "glassesStyle", "glassesColor", "hairLib", "persona"]
 
 
 def load(name):
@@ -49,7 +50,7 @@ def build_row(cid, doll, look, old):
     r = {"id": cid, "style": "short", "fringe": -1, "ahoge": False, "glasses": False, "sunglasses": False,
          "hair": "", "eye": "", "skin": "", "top": "", "shirt": "", "bottom": "", "legs": "", "shoes": "",
          "outfit": "suit", "bottomType": "pants", "idle": -1, "win": -1, "attack": "",
-         "tie": "", "cap": "", "headset": False, "legwear": "", "eyes": "", "glassesStyle": "", "glassesColor": "", "hairLib": "", "manual": []}
+         "tie": "", "cap": "", "headset": False, "legwear": "", "eyes": "", "glassesStyle": "", "glassesColor": "", "hairLib": "", "persona": "", "manual": []}
     if doll:
         acc = [a.split(":")[0] for a in doll.get("acc", [])]
         r.update(style=doll.get("hair", "short"), outfit=doll.get("outfit", "suit"), bottomType=doll.get("bottom", "pants"),
@@ -96,7 +97,8 @@ def main(argv):
         for kv in argv[2:]:
             k, v = kv.split("=", 1)
             if k not in FIELDS: sys.exit(f"unknown field {k}")
-            row[k] = (v.lower() == "true") if isinstance(row[k], bool) else int(v) if isinstance(row[k], int) else v
+            cur = row.get(k, "")
+            row[k] = (v.lower() == "true") if isinstance(cur, bool) else int(v) if isinstance(cur, int) else v
             if k not in row["manual"]: row["manual"].append(k)
         old[cid] = row
         rows = old

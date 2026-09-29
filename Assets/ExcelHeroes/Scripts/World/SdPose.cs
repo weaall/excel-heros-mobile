@@ -162,7 +162,7 @@ namespace ExcelHeroes.World
 
     public static class SdPose
     {
-        public const int IdleCount = 8, WinCount = 8;
+        public const int IdleCount = 14, WinCount = 12;
         /// <summary>Metres of travel per walk cycle (2π) at root scale 1 — BattleWorld drives the phase by distance with it, so the planted foot stays put. Calibrated by SdMotionTest.Calibrate.</summary>
         public const float WalkCycle = 0.85f;
         /// <summary>Metres per run cycle at root scale 1: a run's stride is longer than the walk's (the feet leave the floor).</summary>
@@ -228,8 +228,9 @@ namespace ExcelHeroes.World
             return Mathf.Abs(h);
         }
 
-        public static int IdleOf(string id) { var k = SdLook.For(id); return k.Idle >= 0 ? k.Idle % IdleCount : Hash(id) % IdleCount; }
-        public static int WinOf(string id) { var k = SdLook.For(id); return k.Win >= 0 ? k.Win % WinCount : (Hash(id) / 7) % WinCount; }
+        // the spec's pick, else one of the persona's own (SdPersona), else a hash
+        public static int IdleOf(string id) { var k = SdLook.For(id); if (k.Idle >= 0) return k.Idle % IdleCount; var pp = SdPersona.For(id); return pp.Has ? pp.Idles[Hash(id) % pp.Idles.Length] : Hash(id) % IdleCount; }
+        public static int WinOf(string id) { var k = SdLook.For(id); if (k.Win >= 0) return k.Win % WinCount; var pp = SdPersona.For(id); return pp.Has ? pp.Wins[(Hash(id) / 7) % pp.Wins.Length] : (Hash(id) / 7) % WinCount; }
         public static int AttackOf(string role) => role switch { "ranged" => 1, "healer" => 2, "caster" => 2, _ => 0 };
         /// <summary>The attack kind for a character: the spec's, else by role.</summary>
         public static int AttackOf(string id, string role) { var k = SdLook.For(id); return AttackOf(k.Attack is { Length: > 0 } ? k.Attack : role); }
@@ -312,6 +313,48 @@ namespace ExcelHeroes.World
                         p.SpineBend += -8f * up; p.HeadPitch += -8f * up; p.ShrugL += 8f * up + 9f * drop; p.ShrugR += 8f * up + 9f * drop;
                         p.Lean += 3f * drop; p.HeadPitch += 4f * drop;
                         break;
+                    }
+                case 8:
+                    // hands behind the back, chest out: the upper arms back, the forearms folded in behind
+                    p.RaiseL = p.RaiseR = -40f; p.SwingL = p.SwingR = -30f; p.ElbowL = p.ElbowR = 42f; p.InL = p.InR = 38f;
+                    p.HandFlexL = p.HandFlexR = 10f; p.FistL = p.FistR = 0.4f;
+                    p.SpineBend -= 3f; p.HeadPitch -= 2f; p.ShrugL -= 2f; p.ShrugR -= 2f; p.Twist = sway * 2f; break;
+                case 9:
+                    // hands in the pockets: the arms close, the forearms a little forward, the wrists turned in; weight on one hip
+                    p.RaiseL = p.RaiseR = -32f; p.SwingL = p.SwingR = -4f; p.ElbowL = p.ElbowR = 30f; p.InL = p.InR = 22f;
+                    p.HandFlexL = p.HandFlexR = 34f; p.FistL = p.FistR = 0.65f;
+                    p.HipRoll += 4f; p.KneeL += 10f; p.HeadTilt += -3f + sway * 2f; p.ShrugL += 3f; p.ShrugR += 3f; break;
+                case 10:
+                    // hands clasped low in front, feet together, a little tilt of the head
+                    p.RaiseL = p.RaiseR = -30f; p.SwingL = p.SwingR = 22f; p.ElbowL = p.ElbowR = 36f; p.InL = p.InR = 60f;
+                    p.HandFlexL = p.HandFlexR = 18f; p.FistL = p.FistR = 0.45f;
+                    p.Spread = 0f; p.HeadTilt += 5f + sway * 2f; p.ShrugL += 2f; p.ShrugR += 2f; break;
+                case 11:
+                    {
+                        // the phone: held at the chest in both hands, eyes down on it; every ~6 s a look up and round
+                        var cyc = (t * 0.17f + phase * 0.1f) % 1f;
+                        var look = cyc > 0.7f && cyc < 0.9f ? Impulse((cyc - 0.7f) / 0.2f, 0.3f) : 0f;
+                        p.RaiseR = -14f; p.SwingR = 32f; p.ElbowR = 88f; p.InR = 40f; p.HandFlexR = -25f; p.FistR = 0.5f;   // probed: at the chest (108° held it at the ear, a call)
+                        p.RaiseL = -20f; p.SwingL = 28f; p.ElbowL = 80f; p.InL = 52f; p.HandFlexL = 10f; p.FistL = 0.45f;
+                        p.HeadPitch += 13f * (1f - look) - 2f * look; p.HeadYaw += 14f * look; p.SpineBend += 2f; break;
+                    }
+                case 12:
+                    {
+                        // bouncing on the toes, ready to go: a quick heel lift twice a second, the arms swinging with it
+                        var b = Mathf.Abs(Mathf.Sin(t * 5.5f + phase));
+                        p.ToeL = p.ToeR = b * 22f; p.KneeL = p.KneeR = (1f - b) * 10f; p.Squash += (b - 0.5f) * 0.03f;
+                        p.RaiseL = p.RaiseR = -28f; p.SwingL = p.SwingR = 10f + b * 6f; p.ElbowL = p.ElbowR = 50f; p.InL = p.InR = 20f; p.FistL = p.FistR = 0.6f;
+                        p.HeadTilt += Mathf.Sin(t * 2.75f + phase) * 4f; break;
+                    }
+                case 13:
+                    {
+                        // sleepy: the head drooping to one side, arms hanging; every ~8 s a yawn behind the hand
+                        var cyc = (t * 0.12f + phase * 0.1f) % 1f;
+                        var y = cyc < 0.12f ? EaseInOut(cyc / 0.12f) : cyc < 0.3f ? 1f : cyc < 0.4f ? 1f - EaseInOut((cyc - 0.3f) / 0.1f) : 0f;
+                        p.RaiseR = Mathf.Lerp(-38f, 4f, y); p.SwingR = Mathf.Lerp(2f, 44f, y); p.ElbowR = Mathf.Lerp(12f, 124f, y); p.InR = 40f * y; p.HandFlexR = Mathf.Lerp(16f, 10f, y); p.FistR = Mathf.Lerp(0.2f, 0.4f, y);
+                        p.RaiseL = -38f; p.SwingL = 0f; p.ElbowL = 12f;
+                        p.HeadPitch += 4f * (1f - y) - 10f * y; p.HeadTilt += 7f * (1f - y); p.SpineBend += -5f * y + 3f * (1f - y);
+                        p.ShrugL += 6f * y; p.ShrugR += 6f * y; p.Lean += 2f * (1f - y); break;
                     }
             }
             return p;
@@ -415,11 +458,43 @@ namespace ExcelHeroes.World
                         p.Lean = 22f * bow2; p.HeadPitch = 8f * bow2 - 2f * clap; p.SpineBend = 6f * bow2;
                         p.ShrugL = p.ShrugR = 5f * clap; p.Y = 0f; break;
                     }
+                case 8:
+                    // thumbs up at the lens, the other hand on the hip, a lean back and one hop
+                    p.RaiseR = -4f; p.SwingR = 62f; p.ElbowR = 72f; p.InR = 12f; p.HandFlexR = -10f; p.HandDevR = -30f; p.FistR = 1f;
+                    p.RaiseL = -22f; p.SwingL = -12f; p.ElbowL = 22f; p.InL = 52f; p.HandFlexL = 45f; p.HandDevL = -15f;
+                    p.Lean = -4f; p.SpineBend = -3f; p.HeadTilt = 6f; p.Twist = 8f; p.HipRoll = 3f;
+                    p.Y = t < 0.9f ? hop * 0.07f : 0f; p.KneeL = 6f; break;
+                case 9:
+                    {
+                        // a salute: the right hand snapped to the brow (beside it: in front of the fringe it vanished), heels together, chin up
+                        var up = EaseOutBack(Mathf.Clamp01((t - 0.2f) / 0.18f), 1.4f);
+                        p.RaiseR = Mathf.Lerp(-36f, 60f, up); p.SwingR = Mathf.Lerp(3f, -5f, up); p.ElbowR = Mathf.Lerp(14f, 120f, up); p.InR = 75f * up;   // probed: the upper arm out and up, the forearm folded in to the brow
+                        p.HandFlexR = 0f; p.HandDevR = 10f * up; p.FistR = 0f;
+                        p.RaiseL = -40f; p.SwingL = 0f; p.ElbowL = 6f; p.FistL = 0.5f;
+                        p.Spread = 0f; p.HeadPitch = -4f; p.SpineBend = -4f; p.ShrugR = 4f * up; break;
+                    }
+                case 10:
+                    {
+                        // pointing straight at the lens with a grin, the other hand on the hip, leaning in
+                        var up = EaseOutBack(Mathf.Clamp01((t - 0.2f) / 0.2f), 1.3f);
+                        p.SwingR = Mathf.Lerp(3f, 86f, up); p.RaiseR = Mathf.Lerp(-36f, 4f, up); p.ElbowR = Mathf.Lerp(14f, 6f, up); p.ReachR = 10f * up;
+                        p.HandFlexR = -6f; p.FistR = 0.8f;
+                        p.RaiseL = -22f; p.SwingL = -12f; p.ElbowL = 22f; p.InL = 52f; p.HandFlexL = 45f; p.HandDevL = -15f;
+                        p.Lean = 6f * up; p.HeadTilt = 7f; p.Twist = 10f * up; p.KneeL = 10f; p.Y = hop * 0.03f; break;
+                    }
+                case 11:
+                    {
+                        // the hand on the heart and a short nod, the other arm behind the back
+                        var nod = Mathf.Clamp01(Mathf.Sin(Mathf.Clamp01((t - 0.3f) / 0.9f) * Mathf.PI));
+                        p.RaiseR = -18f; p.SwingR = 38f; p.ElbowR = 108f; p.InR = 68f; p.HandFlexR = 10f; p.FistR = 0.2f;
+                        p.RaiseL = -40f; p.SwingL = -28f; p.ElbowL = 40f; p.InL = 38f;
+                        p.Lean = 16f * nod; p.HeadPitch = 10f * nod - 2f; p.Spread = 0f; break;
+                    }
             }
             // the entry: a quick crouch (anticipation), then the body pops up into the pose — the spring
             // overshoots it a little — instead of drifting into it from the fight stance
             var pre = t < 0.12f ? EaseOut(t / 0.12f) : t < 0.26f ? 1f - EaseOut((t - 0.12f) / 0.14f) : 0f;
-            if (pre > 0f && variant % WinCount is not 3 and not 7)
+            if (pre > 0f && variant % WinCount is not 3 and not 7 and not 9 and not 11)
             {
                 var c = Pose.Rest; c.Expr = p.Expr;
                 c.KneeL = c.KneeR = 40f; c.Squash = -0.11f; c.Lean = 10f; c.HeadPitch = 5f; c.Spread = 7f;

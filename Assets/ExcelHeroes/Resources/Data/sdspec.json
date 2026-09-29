@@ -17,8 +17,8 @@
    "shoes": "#26292d",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 2,
+   "win": 3,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -34,7 +34,10 @@
     "bottom",
     "legs",
     "shoes",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -44,7 +47,8 @@
    "head": "",
    "scale": 0.971,
    "prop": "calculator",
-   "face": "hatsune_miku"
+   "face": "hatsune_miku",
+   "persona": "stern"
   },
   {
    "id": "admin",
@@ -153,8 +157,8 @@
    "shoes": "#1d1c20",
    "outfit": "labcoat",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 6,
+   "win": 2,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -164,7 +168,11 @@
    "glassesStyle": "round",
    "glassesColor": "#63707e",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "hayase_yuuka",
    "lower": "haruka",
    "hairParts": "front=mika;side=mika;back=yuuka;extra=mika;len=long;vol=1.06;fall=1.30;wave=0.20;spread=0.50;curl=0.20",
@@ -173,7 +181,8 @@
    "head": "hairclip:#c4a35f:left",
    "scale": 1.017,
    "prop": "tablet",
-   "face": "reisa"
+   "face": "reisa",
+   "persona": "nerdy"
   },
   {
    "id": "audit_han",
@@ -192,8 +201,8 @@
    "shoes": "#29282c",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 8,
+   "win": 11,
    "attack": "",
    "tie": "#f5c542",
    "cap": "",
@@ -209,7 +218,10 @@
     "bottom",
     "legs",
     "shoes",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -219,7 +231,8 @@
    "head": "earring:#282531:right",
    "scale": 0.964,
    "prop": "clipboard",
-   "face": "kayoko_dress_ver_"
+   "face": "kayoko_dress_ver_",
+   "persona": "stern"
   },
   {
    "id": "barista",
@@ -238,8 +251,8 @@
    "shoes": "#6c5344",
    "outfit": "apron",
    "bottomType": "pants",
-   "idle": -1,
-   "win": -1,
+   "idle": 10,
+   "win": 4,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -250,7 +263,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "haruka",
    "lower": "",
@@ -260,7 +276,8 @@
    "head": "",
    "scale": 0.94,
    "prop": "cup",
-   "face": "hayase_yuuka"
+   "face": "hayase_yuuka",
+   "persona": "caring"
   },
   {
    "id": "bd_lead",
@@ -279,8 +296,8 @@
    "shoes": "#26262c",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 1,
+   "win": 2,
    "attack": "",
    "tie": "#ffe0b2",
    "cap": "",
@@ -296,7 +313,10 @@
     "bottom",
     "legs",
     "shoes",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "yutori_natsu",
@@ -306,7 +326,8 @@
    "head": "",
    "scale": 1.019,
    "prop": "tablet",
-   "face": "yutori_natsu"
+   "face": "yutori_natsu",
+   "persona": "playful"
   },
   {
    "id": "cco",
@@ -325,8 +346,8 @@
    "shoes": "#1f1f22",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 5,
+   "win": 2,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -345,7 +366,10 @@
     "legs",
     "shoes",
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -355,7 +379,8 @@
    "head": "headset:#e5ecf4:right,flower:#e27889:right",
    "scale": 0.997,
    "prop": "tablet",
-   "face": "mika"
+   "face": "mika",
+   "persona": "cheerful"
   },
   {
    "id": "cdo",
@@ -374,8 +399,8 @@
    "shoes": "#24252a",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 11,
+   "win": 10,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -386,7 +411,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "hair"
+    "hair",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "yutori_natsu",
@@ -396,7 +424,8 @@
    "head": "",
    "scale": 0.999,
    "prop": "tablet",
-   "face": ""
+   "face": "",
+   "persona": "nerdy"
   },
   {
    "id": "ceo",
@@ -415,8 +444,8 @@
    "shoes": "#232328",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 2,
+   "win": 3,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -426,7 +455,11 @@
    "glassesStyle": "",
    "glassesColor": "",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "hikari",
    "lower": "",
    "hairParts": "front=haruka;side=mika;back=mika;extra=none;len=long;fall=1.10;spread=-0.45;curl=-0.35;wave=0.00;vol=0.90",
@@ -435,7 +468,8 @@
    "head": "",
    "scale": 1.021,
    "prop": "tablet",
-   "face": "yutori_natsu"
+   "face": "yutori_natsu",
+   "persona": "executive"
   },
   {
    "id": "cfo",
@@ -454,8 +488,8 @@
    "shoes": "#262329",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 2,
+   "win": 11,
    "attack": "",
    "tie": "#d4a017",
    "cap": "",
@@ -466,7 +500,10 @@
    "glassesColor": "#c4a760",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -476,7 +513,8 @@
    "head": "earring:#caa34f:left",
    "scale": 1.042,
    "prop": "calculator",
-   "face": "kayoko_dress_ver_"
+   "face": "kayoko_dress_ver_",
+   "persona": "executive"
   },
   {
    "id": "chairman",
@@ -495,8 +533,8 @@
    "shoes": "#202022",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 8,
+   "win": 11,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -508,7 +546,10 @@
    "hairLib": "",
    "manual": [
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -518,7 +559,8 @@
    "head": "crown:#cca360:top",
    "scale": 1.024,
    "prop": "folder",
-   "face": "kayoko_dress_ver_"
+   "face": "kayoko_dress_ver_",
+   "persona": "executive"
   },
   {
    "id": "chairwoman",
@@ -537,8 +579,8 @@
    "shoes": "#2c3d52",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 8,
+   "win": 3,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -549,7 +591,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "hair"
+    "hair",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -559,7 +604,8 @@
    "head": "earring:#cfae60:right",
    "scale": 1.001,
    "prop": "tablet",
-   "face": "kayoko_dress_ver_"
+   "face": "kayoko_dress_ver_",
+   "persona": "executive"
   },
   {
    "id": "chief_of_staff",
@@ -578,8 +624,8 @@
    "shoes": "#263756",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 2,
+   "win": 9,
    "attack": "",
    "tie": "#151515",
    "cap": "",
@@ -596,7 +642,10 @@
     "legs",
     "shoes",
     "hair",
-    "glasses"
+    "glasses",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "haruka",
@@ -606,7 +655,8 @@
    "head": "",
    "scale": 1.048,
    "prop": "tablet",
-   "face": "yutori_natsu"
+   "face": "yutori_natsu",
+   "persona": "executive"
   },
   {
    "id": "chro",
@@ -625,8 +675,8 @@
    "shoes": "#c9af96",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 1,
+   "win": 4,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -645,7 +695,10 @@
     "legs",
     "shoes",
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -655,7 +708,8 @@
    "head": "earring:#dfb462:both",
    "scale": 1.026,
    "prop": "clipboard",
-   "face": "mika"
+   "face": "mika",
+   "persona": "caring"
   },
   {
    "id": "cleaner",
@@ -674,8 +728,8 @@
    "shoes": "#33343a",
    "outfit": "cardigan",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 3,
+   "win": 4,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -687,7 +741,10 @@
    "hairLib": "",
    "manual": [
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "reisa",
    "lower": "haruka",
@@ -697,7 +754,8 @@
    "head": "bandana:#bfd5e8:top",
    "scale": 0.942,
    "prop": "clipboard",
-   "face": "mika"
+   "face": "mika",
+   "persona": "shy"
   },
   {
    "id": "cmo",
@@ -716,8 +774,8 @@
    "shoes": "#222328",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 5,
+   "win": 6,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -729,7 +787,10 @@
    "hairLib": "",
    "manual": [
     "eye",
-    "sunglasses"
+    "sunglasses",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "yutori_natsu",
@@ -739,7 +800,8 @@
    "head": "earring:#d7ad48:both",
    "scale": 1.028,
    "prop": "tablet",
-   "face": "hikari"
+   "face": "hikari",
+   "persona": "playful"
   },
   {
    "id": "contract",
@@ -758,8 +820,8 @@
    "shoes": "#959aa3",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 10,
+   "win": 7,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -770,7 +832,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "haruka",
    "lower": "",
@@ -780,7 +845,8 @@
    "head": "",
    "scale": 0.952,
    "prop": "tablet",
-   "face": "mika"
+   "face": "mika",
+   "persona": "shy"
   },
   {
    "id": "coo",
@@ -799,8 +865,8 @@
    "shoes": "#316cb1",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 8,
+   "win": 9,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -814,7 +880,10 @@
     "body",
     "lower",
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "yutori_natsu",
@@ -824,7 +893,8 @@
    "head": "",
    "scale": 1.03,
    "prop": "tablet",
-   "face": ""
+   "face": "",
+   "persona": "executive"
   },
   {
    "id": "courier",
@@ -843,8 +913,8 @@
    "shoes": "#3a3c44",
    "outfit": "hoodie",
    "bottomType": "pants",
-   "idle": -1,
-   "win": -1,
+   "idle": 12,
+   "win": 0,
    "attack": "",
    "tie": "",
    "cap": "#3b5bd6",
@@ -855,7 +925,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "hair"
+    "hair",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -865,7 +938,8 @@
    "head": "cap:#335b9c:top",
    "scale": 0.973,
    "prop": "clipboard",
-   "face": "haruka"
+   "face": "haruka",
+   "persona": "energetic"
   },
   {
    "id": "cpo",
@@ -884,8 +958,8 @@
    "shoes": "#24252a",
    "outfit": "shirt",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 9,
+   "win": 4,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -899,7 +973,10 @@
     "body",
     "lower",
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -909,7 +986,8 @@
    "head": "neckphones:#caa35f:both",
    "scale": 0.975,
    "prop": "tablet",
-   "face": "hayase_yuuka"
+   "face": "hayase_yuuka",
+   "persona": "lazy"
   },
   {
    "id": "cro",
@@ -928,8 +1006,8 @@
    "shoes": "#27272d",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 9,
+   "win": 10,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -940,7 +1018,10 @@
    "glassesColor": "#28252c",
    "hairLib": "",
    "manual": [
-    "hair"
+    "hair",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -950,7 +1031,8 @@
    "head": "",
    "scale": 1.032,
    "prop": "tablet",
-   "face": "kayoko_dress_ver_"
+   "face": "kayoko_dress_ver_",
+   "persona": "cool"
   },
   {
    "id": "cso",
@@ -969,8 +1051,8 @@
    "shoes": "#1d1d24",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 0,
+   "win": 11,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -980,7 +1062,11 @@
    "glassesStyle": "",
    "glassesColor": "",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "hikari",
    "lower": "",
    "hairParts": "front=mika;extra=none;len=long;fall=1.25;back=hikari;side=mika;vol=1.12;wave=0.65;spread=0.30;curl=-0.20",
@@ -989,7 +1075,8 @@
    "head": "earring:#d9b34f:both",
    "scale": 1.034,
    "prop": "tablet",
-   "face": "hayase_yuuka"
+   "face": "hayase_yuuka",
+   "persona": "elegant"
   },
   {
    "id": "cto",
@@ -1008,8 +1095,8 @@
    "shoes": "#222329",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 4,
+   "win": 10,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1020,7 +1107,10 @@
    "glassesColor": "#232029",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -1030,7 +1120,8 @@
    "head": "earring:#2c2d3a:left",
    "scale": 0.977,
    "prop": "tablet",
-   "face": "kayoko_dress_ver_"
+   "face": "kayoko_dress_ver_",
+   "persona": "cool"
   },
   {
    "id": "design_lead",
@@ -1049,8 +1140,8 @@
    "shoes": "#24252a",
    "outfit": "shirt",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 6,
+   "win": 2,
    "attack": "",
    "tie": "",
    "cap": "#5b9bd5",
@@ -1067,7 +1158,10 @@
     "legs",
     "shoes",
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "yutori_natsu",
    "lower": "",
@@ -1077,7 +1171,8 @@
    "head": "beret:#2c94db:top",
    "scale": 1.044,
    "prop": "tablet",
-   "face": "haruka"
+   "face": "haruka",
+   "persona": "elegant"
   },
   {
    "id": "dev_lead",
@@ -1096,8 +1191,8 @@
    "shoes": "#4a7ebb",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 9,
+   "win": 8,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1107,7 +1202,11 @@
    "glassesStyle": "",
    "glassesColor": "",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "reisa",
    "lower": "",
    "hairParts": "front=haruka;side=haruka;back=haruka;extra=none;len=short;vol=1.18;wave=0.90;curl=-0.30",
@@ -1116,7 +1215,8 @@
    "head": "headset:#80b6e1:both",
    "scale": 0.954,
    "prop": "cup",
-   "face": "hatsune_miku"
+   "face": "hatsune_miku",
+   "persona": "cool"
   },
   {
    "id": "finance",
@@ -1225,8 +1325,8 @@
    "shoes": "#2b2b33",
    "outfit": "coat",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 0,
+   "win": 5,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1237,7 +1337,10 @@
    "glassesColor": "#b89e6c",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "kayoko_dress_ver_",
    "lower": "",
@@ -1247,7 +1350,8 @@
    "head": "",
    "scale": 1.05,
    "prop": "tablet",
-   "face": "yutori_natsu"
+   "face": "yutori_natsu",
+   "persona": "energetic"
   },
   {
    "id": "ga_lead",
@@ -1266,8 +1370,8 @@
    "shoes": "#26282c",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 8,
+   "win": 9,
    "attack": "",
    "tie": "#c0392b",
    "cap": "",
@@ -1279,7 +1383,10 @@
    "hairLib": "",
    "manual": [
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "hikari",
@@ -1289,7 +1396,8 @@
    "head": "",
    "scale": 0.979,
    "prop": "clipboard",
-   "face": "hikari"
+   "face": "hikari",
+   "persona": "stern"
   },
   {
    "id": "guard",
@@ -1308,8 +1416,8 @@
    "shoes": "#343944",
    "outfit": "suit",
    "bottomType": "pants",
-   "idle": -1,
-   "win": -1,
+   "idle": 2,
+   "win": 9,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1319,7 +1427,11 @@
    "glassesStyle": "",
    "glassesColor": "",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "hikari",
    "lower": "",
    "hairParts": "front=haruka;side=haruka;extra=none;len=short;back=haruka;curl=0.60;spread=-0.40;vol=0.95",
@@ -1328,7 +1440,8 @@
    "head": "",
    "scale": 1.036,
    "prop": "clipboard",
-   "face": "hatsune_miku"
+   "face": "hatsune_miku",
+   "persona": "stern"
   },
   {
    "id": "hacker",
@@ -1347,8 +1460,8 @@
    "shoes": "#26262b",
    "outfit": "hoodie",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 4,
+   "win": 8,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1359,7 +1472,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "haruka",
    "lower": "hikari",
@@ -1369,7 +1485,8 @@
    "head": "headset:#6cd6d0:right",
    "scale": 1.003,
    "prop": "laptop",
-   "face": "hikari"
+   "face": "hikari",
+   "persona": "cool"
   },
   {
    "id": "helpdesk",
@@ -1388,8 +1505,8 @@
    "shoes": "#34343a",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 4,
+   "win": 8,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1400,7 +1517,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "reisa",
    "lower": "haruka",
@@ -1410,7 +1530,8 @@
    "head": "neckphones:#5b9bc3:both",
    "scale": 0.944,
    "prop": "laptop",
-   "face": "mika"
+   "face": "mika",
+   "persona": "lazy"
   },
   {
    "id": "hr_jung",
@@ -1429,8 +1550,8 @@
    "shoes": "#4d3835",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 1,
+   "win": 7,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1446,7 +1567,10 @@
     "bottom",
     "legs",
     "shoes",
-    "hair"
+    "hair",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -1456,7 +1580,8 @@
    "head": "earring:#e5e7eb:both",
    "scale": 1.005,
    "prop": "pen",
-   "face": "mika"
+   "face": "mika",
+   "persona": "caring"
   },
   {
    "id": "intern",
@@ -1519,8 +1644,8 @@
    "shoes": "#473836",
    "outfit": "cardigan",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 12,
+   "win": 6,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1536,7 +1661,10 @@
     "bottom",
     "legs",
     "shoes",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "reisa",
    "lower": "",
@@ -1546,7 +1674,8 @@
    "head": "ribbon:#eff0f4:both",
    "scale": 0.981,
    "prop": "folder",
-   "face": "haruka"
+   "face": "haruka",
+   "persona": "cheerful"
   },
   {
    "id": "intern_seo",
@@ -1565,8 +1694,8 @@
    "shoes": "#61443b",
    "outfit": "shirt",
    "bottomType": "pants",
-   "idle": -1,
-   "win": -1,
+   "idle": 10,
+   "win": 4,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1582,7 +1711,10 @@
     "bottom",
     "legs",
     "shoes",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "yutori_natsu",
    "lower": "haruka",
@@ -1592,7 +1724,8 @@
    "head": "",
    "scale": 0.946,
    "prop": "tablet",
-   "face": "haruka"
+   "face": "haruka",
+   "persona": "shy"
   },
   {
    "id": "ir_lead",
@@ -1611,8 +1744,8 @@
    "shoes": "#202127",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 0,
+   "win": 3,
    "attack": "",
    "tie": "#e1bee7",
    "cap": "",
@@ -1629,7 +1762,10 @@
     "legs",
     "shoes",
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -1639,7 +1775,8 @@
    "head": "",
    "scale": 1.046,
    "prop": "folder",
-   "face": "yutori_natsu"
+   "face": "yutori_natsu",
+   "persona": "elegant"
   },
   {
    "id": "lab_park",
@@ -1658,8 +1795,8 @@
    "shoes": "#262527",
    "outfit": "labcoat",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 3,
+   "win": 2,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1670,7 +1807,10 @@
    "glassesColor": "#3b3a3f",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "yutori_natsu",
    "lower": "",
@@ -1680,7 +1820,8 @@
    "head": "",
    "scale": 1.007,
    "prop": "clipboard",
-   "face": "reisa"
+   "face": "reisa",
+   "persona": "nerdy"
   },
   {
    "id": "labor_atty",
@@ -1699,8 +1840,8 @@
    "shoes": "#ebebf1",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 2,
+   "win": 1,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1712,7 +1853,10 @@
    "hairLib": "",
    "manual": [
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "haruka",
    "lower": "",
@@ -1722,7 +1866,8 @@
    "head": "",
    "scale": 1.009,
    "prop": "folder",
-   "face": "reisa"
+   "face": "reisa",
+   "persona": "confident"
   },
   {
    "id": "legal_yoon",
@@ -1741,8 +1886,8 @@
    "shoes": "#1d1d20",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 9,
+   "win": 10,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1754,7 +1899,10 @@
    "hairLib": "",
    "manual": [
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "haruka",
    "lower": "hikari",
@@ -1764,7 +1912,8 @@
    "head": "",
    "scale": 1.011,
    "prop": "folder",
-   "face": "reisa"
+   "face": "reisa",
+   "persona": "confident"
   },
   {
    "id": "logistics_bae",
@@ -1783,8 +1932,8 @@
    "shoes": "#2c3035",
    "outfit": "vest",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 1,
+   "win": 8,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1800,7 +1949,10 @@
     "bottom",
     "legs",
     "shoes",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka_gym_ver_",
    "lower": "yutori_natsu",
@@ -1810,7 +1962,8 @@
    "head": "ahoge",
    "scale": 0.983,
    "prop": "clipboard",
-   "face": "hikari"
+   "face": "hikari",
+   "persona": "confident"
   },
   {
    "id": "macro",
@@ -1829,8 +1982,8 @@
    "shoes": "#2c2e35",
    "outfit": "hoodie",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 13,
+   "win": 4,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1841,7 +1994,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "reisa",
    "lower": "hikari",
@@ -1851,7 +2007,8 @@
    "head": "headset:#314d74:both",
    "scale": 0.985,
    "prop": "laptop",
-   "face": "hikari"
+   "face": "hikari",
+   "persona": "lazy"
   },
   {
    "id": "mail_cho",
@@ -1870,8 +2027,8 @@
    "shoes": "#eef2f5",
    "outfit": "shirt",
    "bottomType": "pants",
-   "idle": -1,
-   "win": -1,
+   "idle": 12,
+   "win": 5,
    "attack": "",
    "tie": "",
    "cap": "#2c3345",
@@ -1883,7 +2040,10 @@
    "hairLib": "",
    "manual": [
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka_gym_ver_",
    "lower": "yutori_natsu",
@@ -1893,7 +2053,8 @@
    "head": "",
    "scale": 0.987,
    "prop": "clipboard",
-   "face": ""
+   "face": "",
+   "persona": "energetic"
   },
   {
    "id": "main",
@@ -1942,8 +2103,8 @@
    "shoes": "#1d2024",
    "outfit": "labcoat",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 10,
+   "win": 7,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -1955,7 +2116,10 @@
    "hairLib": "",
    "manual": [
     "hair",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "yutori_natsu",
    "lower": "hikari",
@@ -1965,7 +2129,8 @@
    "head": "",
    "scale": 1.013,
    "prop": "clipboard",
-   "face": "hayase_yuuka"
+   "face": "hayase_yuuka",
+   "persona": "caring"
   },
   {
    "id": "parttime",
@@ -1984,8 +2149,8 @@
    "shoes": "#5d463b",
    "outfit": "cardigan",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 0,
+   "win": 6,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2000,7 +2165,10 @@
     "shirt",
     "bottom",
     "legs",
-    "shoes"
+    "shoes",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "haruka",
@@ -2010,7 +2178,8 @@
    "head": "",
    "scale": 0.948,
    "prop": "clipboard",
-   "face": "mika"
+   "face": "mika",
+   "persona": "cheerful"
   },
   {
    "id": "pivot",
@@ -2029,8 +2198,8 @@
    "shoes": "#262629",
    "outfit": "shirt",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 1,
+   "win": 1,
    "attack": "",
    "tie": "#111111",
    "cap": "",
@@ -2041,7 +2210,10 @@
    "glassesColor": "#333742",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -2051,7 +2223,8 @@
    "head": "earring:#e2e5ea:left",
    "scale": 0.989,
    "prop": "clipboard",
-   "face": "haruka"
+   "face": "haruka",
+   "persona": "confident"
   },
   {
    "id": "pm_lead",
@@ -2070,8 +2243,8 @@
    "shoes": "#262835",
    "outfit": "shirt",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 10,
+   "win": 3,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2086,7 +2259,10 @@
     "shirt",
     "bottom",
     "legs",
-    "shoes"
+    "shoes",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -2096,7 +2272,8 @@
    "head": "",
    "scale": 0.956,
    "prop": "tablet",
-   "face": ""
+   "face": "",
+   "persona": "elegant"
   },
   {
    "id": "pr_yoo",
@@ -2115,8 +2292,8 @@
    "shoes": "#22252a",
    "outfit": "shirt",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 5,
+   "win": 6,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2126,7 +2303,11 @@
    "glassesStyle": "",
    "glassesColor": "",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "yutori_natsu",
    "lower": "hikari",
    "hairParts": "extra=none;len=bob;vol=1.08;back=hikari;curl=0.60;spread=-0.20;front=yuuka;side=yuuka",
@@ -2135,7 +2316,8 @@
    "head": "earring:#f1eff5:right",
    "scale": 1.015,
    "prop": "phone",
-   "face": "hikari"
+   "face": "hikari",
+   "persona": "energetic"
   },
   {
    "id": "qa_lee",
@@ -2154,8 +2336,8 @@
    "shoes": "#26282b",
    "outfit": "hoodie",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 11,
+   "win": 10,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2165,7 +2347,11 @@
    "glassesStyle": "round",
    "glassesColor": "#4a4c59",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "reisa",
    "lower": "hikari",
    "hairParts": "front=haruka;side=mika;back=haruka;extra=none;len=bob;vol=1.00",
@@ -2174,7 +2360,8 @@
    "head": "",
    "scale": 0.95,
    "prop": "tablet",
-   "face": "hatsune_miku"
+   "face": "hatsune_miku",
+   "persona": "playful"
   },
   {
    "id": "reception_go",
@@ -2193,8 +2380,8 @@
    "shoes": "#1f2226",
    "outfit": "cardigan",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 10,
+   "win": 2,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2205,7 +2392,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -2215,7 +2405,8 @@
    "head": "headset:#2c3036:right",
    "scale": 0.991,
    "prop": "clipboard",
-   "face": "hatsune_miku"
+   "face": "hatsune_miku",
+   "persona": "elegant"
   },
   {
    "id": "sales",
@@ -2264,8 +2455,8 @@
    "shoes": "#262629",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 2,
+   "win": 8,
    "attack": "",
    "tie": "#c0392b",
    "cap": "",
@@ -2281,7 +2472,10 @@
     "bottom",
     "legs",
     "shoes",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -2291,7 +2485,8 @@
    "head": "",
    "scale": 0.966,
    "prop": "tablet",
-   "face": "hatsune_miku"
+   "face": "hatsune_miku",
+   "persona": "confident"
   },
   {
    "id": "sales_manager",
@@ -2370,8 +2565,8 @@
    "shoes": "#26282d",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 8,
+   "win": 3,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2381,7 +2576,11 @@
    "glassesStyle": "",
    "glassesColor": "",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "hikari",
    "lower": "",
    "hairParts": "front=hikari;side=hikari;back=haruka;extra=mika;len=short;split=0.60;vol=1.03",
@@ -2390,7 +2589,8 @@
    "head": "earring:#d5b461:both",
    "scale": 1.038,
    "prop": "clipboard",
-   "face": "yutori_natsu"
+   "face": "yutori_natsu",
+   "persona": "stern"
   },
   {
    "id": "security_yang",
@@ -2409,8 +2609,8 @@
    "shoes": "#2c3349",
    "outfit": "shirt",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 2,
+   "win": 11,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2420,7 +2620,11 @@
    "glassesStyle": "",
    "glassesColor": "",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "hikari",
    "lower": "haruka",
    "hairParts": "front=yuuka;side=kayoko;back=hikari;extra=none;len=bob;sweep=-0.20;split=0.20;vol=1.02",
@@ -2429,7 +2633,8 @@
    "head": "",
    "scale": 0.958,
    "prop": "clipboard",
-   "face": "hatsune_miku"
+   "face": "hatsune_miku",
+   "persona": "stern"
   },
   {
    "id": "staff",
@@ -2478,8 +2683,8 @@
    "shoes": "#6e4d3e",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 11,
+   "win": 2,
    "attack": "",
    "tie": "#2f3d5c",
    "cap": "",
@@ -2490,7 +2695,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "hair"
+    "hair",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -2500,7 +2708,8 @@
    "head": "",
    "scale": 0.96,
    "prop": "folder",
-   "face": "hayase_yuuka"
+   "face": "hayase_yuuka",
+   "persona": "nerdy"
   },
   {
    "id": "trainer_seok",
@@ -2519,8 +2728,8 @@
    "shoes": "#202024",
    "outfit": "vest",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 0,
+   "win": 0,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2537,7 +2746,10 @@
     "legs",
     "shoes",
     "eye",
-    "glasses"
+    "glasses",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -2547,7 +2759,8 @@
    "head": "",
    "scale": 0.993,
    "prop": "clipboard",
-   "face": "reisa"
+   "face": "reisa",
+   "persona": "energetic"
   },
   {
    "id": "translator_ji",
@@ -2566,8 +2779,8 @@
    "shoes": "#5a433c",
    "outfit": "coat",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 6,
+   "win": 11,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2578,7 +2791,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "",
@@ -2588,7 +2804,8 @@
    "head": "",
    "scale": 0.995,
    "prop": "document",
-   "face": ""
+   "face": "",
+   "persona": "elegant"
   },
   {
    "id": "union_chief",
@@ -2607,8 +2824,8 @@
    "shoes": "#1d2027",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 1,
+   "win": 10,
    "attack": "",
    "tie": "#f5f6fa",
    "cap": "",
@@ -2619,7 +2836,10 @@
    "glassesColor": "",
    "hairLib": "",
    "manual": [
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hayase_yuuka",
    "lower": "hikari",
@@ -2629,7 +2849,8 @@
    "head": "",
    "scale": 1.04,
    "prop": "clipboard",
-   "face": "kayoko_dress_ver_"
+   "face": "kayoko_dress_ver_",
+   "persona": "confident"
   },
   {
    "id": "vlookup",
@@ -2648,8 +2869,8 @@
    "shoes": "#26292e",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 6,
+   "win": 10,
    "attack": "",
    "tie": "",
    "cap": "",
@@ -2659,7 +2880,11 @@
    "glassesStyle": "square",
    "glassesColor": "#232634",
    "hairLib": "",
-   "manual": [],
+   "manual": [
+    "persona",
+    "idle",
+    "win"
+   ],
    "body": "hayase_yuuka",
    "lower": "",
    "hairParts": "side=yuuka;extra=none;len=bob;vol=1.03;back=yuuka;front=hikari;curl=0.65;slant=0.10",
@@ -2668,7 +2893,8 @@
    "head": "",
    "scale": 0.969,
    "prop": "pen",
-   "face": "hatsune_miku"
+   "face": "hatsune_miku",
+   "persona": "nerdy"
   },
   {
    "id": "welfare",
@@ -2687,8 +2913,8 @@
    "shoes": "#9E938F",
    "outfit": "suit",
    "bottomType": "skirt",
-   "idle": -1,
-   "win": -1,
+   "idle": 5,
+   "win": 4,
    "attack": "",
    "tie": "#ffb7a1",
    "cap": "",
@@ -2704,7 +2930,10 @@
     "bottom",
     "legs",
     "shoes",
-    "eye"
+    "eye",
+    "persona",
+    "idle",
+    "win"
    ],
    "body": "hikari",
    "lower": "",
@@ -2714,7 +2943,8 @@
    "head": "flower:#f1b2c6:right",
    "scale": 0.962,
    "prop": "clipboard",
-   "face": "mika"
+   "face": "mika",
+   "persona": "cheerful"
   }
  ]
 }

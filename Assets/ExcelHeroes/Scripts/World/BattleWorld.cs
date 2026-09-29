@@ -1708,6 +1708,7 @@ namespace ExcelHeroes.World
                     if (Hit > _pHit + 1e-4f) _hitT = 0f; else _hitT += live;
                     if (Skill > _pSkl + 1e-4f) _sklT = 0f; else _sklT += dt;
                     _pAtk = Attack; _pHit = Hit; _pSkl = Skill;
+                    var pers = SdPersona.For(Pid);
                     var atkOn = _atkT < SdPose.AttackLen; var hitOn = _hitT < SdPose.HitLen; var sklOn = _sklT < SdPose.SkillLen;
                     if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f);
                     else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(Pid), _winT);
@@ -1715,7 +1716,9 @@ namespace ExcelHeroes.World
                     else if (hitOn) _pose = SdPose.Hit(1f - _hitT / SdPose.HitLen);
                     else if (atkOn) _pose = SdPose.AttackAt(AttackPose(C), _atkT / SdPose.AttackLen);
                     else if (walking) _pose = _speed > RunSpeed * Rig.Root.localScale.x ? SdPose.Run(_walk) : SdPose.Walk(_walk);
-                    else _pose = SdPose.Ready(SdPose.AttackOf(Pid, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
+                    else _pose = SdPose.Ready(SdPose.AttackOf(Pid, C.role), time * pers.Tempo, Z * 2f);   // in a fight: the combat stance, not the lobby idle
+                    // the character's own bearing over it (SdPersona): full in the guard, less on the run or celebrating, none mid-blow
+                    pers.Shape(ref _pose, Dying > 0f || !C.Alive || sklOn || hitOn || atkOn ? 0f : cheering ? 0.4f : walking ? 0.45f : 0.7f);
                     // the head looks at the fight: heroes toward the enemy line, enemies toward the squad
                     if (!cheering && !atkOn && C.Alive)
                     {

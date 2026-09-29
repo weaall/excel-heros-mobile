@@ -195,7 +195,9 @@ namespace ExcelHeroes.World
                         }
                         else
                         {
-                            var ip = SdPose.Idle(SdPose.IdleOf(id), _t, phase);
+                            var pp = SdPersona.For(id);
+                            var ip = SdPose.Idle(SdPose.IdleOf(id), _t * pp.Tempo, phase);
+                            pp.Shape(ref ip, 1f);   // the character's own bearing (SdPersona)
                             SdPose.Apply(rig, ip);
                             rig.Root.localPosition = rig.Home + Vector3.up * ((ip.Y + rig.FootDrop) * rig.Root.localScale.y);
                         }

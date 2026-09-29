@@ -151,6 +151,7 @@ namespace ExcelHeroes.EditorTools
                 if (System.Environment.GetEnvironmentVariable("SD_NOSEC") == "1") sec = null;   // debug: the chains left rigid
                 var yaw0 = float.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPYAW"), out var y0) ? y0 : 215f;
                 var kind = SdPose.AttackOf(id, SdRef.RoleOf(id));
+                var pers = SdPersona.For(id);
                 // frames per row: a plain action gets 8 across its time; a seq gets 24 at 0.07 s
                 var rows = new System.Collections.Generic.List<(string name, System.Collections.Generic.List<(ExcelHeroes.World.Pose p, float dt)>)>();
                 foreach (var act0 in actions)
@@ -187,8 +188,8 @@ namespace ExcelHeroes.EditorTools
                         {
                             var u = f / (float)Mathf.Max(1, nf - 1);
                             ExcelHeroes.World.Pose p;
-                            if (act.StartsWith("idle")) p = SdPose.Idle(int.Parse(act.Substring(4)), u * 6f, 0f);
-                            else if (act.StartsWith("ready")) p = SdPose.Ready(int.Parse(act.Substring(5)), u * 4f, 0f);
+                            if (act.StartsWith("idle")) { p = SdPose.Idle(int.Parse(act.Substring(4)), u * 6f * pers.Tempo, 0f); pers.Shape(ref p, 1f); }
+                            else if (act.StartsWith("ready")) { p = SdPose.Ready(int.Parse(act.Substring(5)), u * 4f * pers.Tempo, 0f); pers.Shape(ref p, 0.7f); }
                             else if (act.StartsWith("atkt")) p = SdPose.AttackAt(int.Parse(act.Substring(4)), u);   // on the game's timeline
                             else if (act.StartsWith("attack")) p = SdPose.Attack(int.Parse(act.Substring(6)), u);
                             else if (act == "hit") p = SdPose.Hit(1f - u);
@@ -205,7 +206,7 @@ namespace ExcelHeroes.EditorTools
                                 }
                                 p = (ExcelHeroes.World.Pose)bx;
                             }
-                            else if (act.StartsWith("win")) p = SdPose.Victory(int.Parse(act.Substring(3)), u * 1.4f);
+                            else if (act.StartsWith("win")) { p = SdPose.Victory(int.Parse(act.Substring(3)), u * 1.4f); pers.Shape(ref p, 0.4f); }
                             else if (act.StartsWith("skillt")) p = SdPose.SkillAt(int.Parse(act.Substring(6)), u);
                             else if (act.StartsWith("skill")) p = SdPose.Skill(int.Parse(act.Substring(5)), u);
                             else if (act == "dead") p = SdPose.Dead(u);
