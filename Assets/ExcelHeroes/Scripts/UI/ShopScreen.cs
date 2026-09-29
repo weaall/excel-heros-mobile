@@ -43,16 +43,19 @@ namespace ExcelHeroes.UI
             ModalFrame.Painted(chip, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 4f), UiPaint.C(24, 40, 74)));
             _reset = UiKit.Text("", "shop__reset-text", chip);
             _grid = UiKit.Div("shop__grid", panel);
-            _root.schedule.Execute(() => { if (_reset != null) _reset.text = "초기화까지 " + ShopService.ResetIn(); }).Every(1000);
+            _root.schedule.Execute(() => { if (_reset != null) _reset.text = ResetText(); }).Every(1000);
             Refresh();
             return _root;
         }
+
+        // the label muted, the time itself in cyan (ui_critique r6 16-Shop #3)
+        static string ResetText() => $"<color=#9AB0C4>초기화까지</color>  <color=#2CE0F8>{ShopService.ResetIn()}</color>";
 
         public void Refresh()
         {
             if (_grid == null) return;
             var p = Game.Player;
-            _reset.text = "초기화까지 " + ShopService.ResetIn();
+            _reset.text = ResetText();
             _tabs.Clear();
             foreach (var t in ShopService.Tabs)
             {
@@ -76,6 +79,8 @@ namespace ExcelHeroes.UI
                     }
                 });
                 UiKit.Text(t, "shop__tab-label", tab).pickingMode = PickingMode.Ignore;
+                var en = t switch { "일반 상점" => "NORMAL", "보석 상점" => "GEM SHOP", "교환소" => "EXCHANGE", "무료 보급" => "FREE SUPPLY", _ => "" };
+                UiKit.Text(en, "shop__tab-en", tab).pickingMode = PickingMode.Ignore;
                 if (t == "무료 보급" && ShopService.HasFree(p)) UiKit.Div("shop__dot", tab).pickingMode = PickingMode.Ignore;
             }
             _grid.Clear();
@@ -110,7 +115,7 @@ namespace ExcelHeroes.UI
             var body = UiKit.Div("scard__body", card);
             UiKit.Text(g.Name, "scard__name", body);
             UiKit.Text($"남은 수량 {left}/{g.Limit}", "scard__left" + (left == 0 ? " scard__left--zero" : ""), body);
-            var price = UiKit.Btn("", g.Pay == ShopService.Pay.Free ? "btn btn--primary scard__buy" : "btn btn--navy scard__buy", () =>
+            var price = UiKit.Btn("", g.Pay == ShopService.Pay.Free ? "btn btn--primary scard__buy" : "btn btn--primary scard__buy", () =>
             {
                 var got = ShopService.Buy(Game.Player, g);
                 if (got == null) { _app.SetStatus(g.Pay == ShopService.Pay.Gems ? "보석이 부족합니다" : "재화가 부족합니다"); return; }
@@ -128,6 +133,7 @@ namespace ExcelHeroes.UI
             if (!soldOut && !ShopService.CanBuy(p, g))
             {
                 price.AddToClassList("scard__buy--short");
+                SkewPlate.Apply(price, SkewPlate.Kind.Light);
             }
             price.SetEnabled(!soldOut);
             if (soldOut)

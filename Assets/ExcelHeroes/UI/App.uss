@@ -6371,3 +6371,18 @@
 .stamp-day { height: 136px; }
 /* roster r5: no padlock stamped over the face — the dim and the name band's 미보유 already say it */
 .card .card__lock { display: none; }
+/* r6: shop — live buy plates cyan (white figures), short ones white with a red figure; tabs with English */
+.scard__buy--short .scard__price-text { color: rgb(226, 58, 70); }
+.shop__tab { flex-direction: column; }
+.shop__tab-label { font-size: 26px; }
+.shop__tab-en { font-size: 12px; -unity-font-style: bold; letter-spacing: 2px; color: rgb(150, 166, 186); padding: 0; margin: 0; }
+.shop__tab--on .shop__tab-en { color: rgb(44, 224, 248); }
+/* screen sub-label in the cyan accent, on the title's baseline */
+.navback__en { color: rgb(0, 155, 227); }
+.gstage__note { color: rgb(236, 244, 252); }
+.gstage__notebox { padding-left: 18px; }
+/* detail equipment: bigger sockets, a stronger + */
+.kittile__sock { width: 150px; height: 150px; }
+.kittile__pic { width: 112px; height: 112px; }
+.kittile__plus { width: 40px; height: 40px; border-radius: 20px; font-size: 30px; }
+.gstage__notebox .gstage__note { color: rgb(236, 244, 252); }
