@@ -1095,7 +1095,8 @@ namespace ExcelHeroes.UI
             var cell = UiKit.Div("bigstat", parent);
             UiKit.Text(glyph, "icon bigstat__icon", cell);
             var words = UiKit.Div("bigstat__words", cell);
-            UiKit.Text(key, "bigstat__key", words);
+            var en = key switch { "공격력" => "ATK", "체력" => "HP", "전투력" => "CP", "레벨" => "LEVEL", _ => "" };
+            UiKit.Text(en.Length > 0 ? $"{key}  <size=72%><color=#8A9DB0>{en}</color></size>" : key, "bigstat__key", words);
             UiKit.Text(value, "bigstat__val", words);
         }
 
@@ -1119,7 +1120,11 @@ namespace ExcelHeroes.UI
             // The label is a child: a painted element covers its own text (see UiKit.Ribbon).
             var b = UiKit.Btn("", "dtab", () => { _tab = id; Reopen(heroId, onClose); }, parent);
             b.EnableInClassList("dtab--on", _tab == id);
+            b.style.flexDirection = FlexDirection.Column;
             UiKit.Text(label, "dtab__label", b);
+            // the English line under each tab's word (the r5 detail redesign, tools/out/design/r5_17-Detail_0)
+            var en = id switch { "info" => "INFO", "power" => "UPGRADE", "bond" => "BOND", "equip" => "EQUIP", "skin" => "SKIN", "promo" => "PROMOTION", _ => "" };
+            UiKit.Text(en, "dtab__en", b).pickingMode = PickingMode.Ignore;
             // Folder tabs, as the reference's 학생 panel has: a rectangle with a slanted right
             // edge, the open one white and joined to the panel below it, the rest pale blue-grey.
             var on = _tab == id;

@@ -105,7 +105,7 @@ namespace ExcelHeroes.UI
             gear.SetEnabled(Game.Player.items.Count > 0 && p.PartyCount() > 0);
 
             UiKit.Btn("빈 칸 채우기", "btn party-icon", OpenPicker, actions);
-            var bulk = UiKit.Btn("일괄 강화", "btn party-icon btn--primary", () =>
+            var bulk = UiKit.Btn("일괄 강화", "btn party-icon", () =>
             {
                 var before = Game.Player.gold;
                 foreach (var member in Game.Player.PartyMembers())
@@ -138,12 +138,12 @@ namespace ExcelHeroes.UI
             {
                 var plate = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin, r.yMin + 8f, r.xMax, r.yMax - 8f), SkewPlate.SlantFor(r.height) * 0.4f, 6f);
                 UiPaint.Shadow(ctx, plate, new Vector2(0f, 4f), UiPaint.C(0, 10, 30, 0.3f), 8f);
-                UiPaint.Fill(ctx, plate, UiPaint.Vertical(UiPaint.C(34, 52, 90, 0.96f), UiPaint.C(16, 28, 54, 0.96f), r.yMin, r.yMax));
+                UiPaint.Fill(ctx, plate, UiPaint.Vertical(UiPaint.C(30, 44, 66, 0.97f), UiPaint.C(20, 32, 50, 0.97f), r.yMin, r.yMax));
                 UiPaint.Fill(ctx, UiPaint.Clip(plate, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMin + 16f, r.yMax), 0f)), UiPaint.C(255, 208, 40));
                 UiPaint.Stroke(ctx, plate, UiPaint.C(90, 120, 170, 0.6f), 1.2f);
             });
             UiKit.Text(power.ToString("N0"), "power-readout__value", readout);
-            UiKit.Text("총 전투력", "power-readout__label", readout);
+            UiKit.Text("총 전투력  <size=70%><color=#7D92AA>TOTAL POWER</color></size>", "power-readout__label", readout);
 
             var syn = StatMath.Synergy(p);
             var panel = UiKit.Div("panel party-strip__panel", strip);
@@ -194,7 +194,9 @@ namespace ExcelHeroes.UI
             // the composition panel gives up its width to it (the Gemini party mock-up,
             // tools/out/design/mock_party_0 — BA's 출격)
             composition.AddToClassList("party-strip__panel--narrow");
-            var sortie = UiKit.Btn("출격", "btn btn--primary party-sortie", () => _app.Show(AppRoot.Sheet.Battle), strip);
+            // the screen's one call to action in BA's yellow, with its English line under the word
+            var sortie = UiKit.Btn("출격", "btn btn--gold party-sortie", () => _app.Show(AppRoot.Sheet.Battle), strip);
+            UiKit.Text("SORTIE", "party-sortie__en", sortie).pickingMode = PickingMode.Ignore;
             sortie.SetEnabled(p.PartyCount() > 0);
         }
 
@@ -349,6 +351,18 @@ namespace ExcelHeroes.UI
                 ModalFrame.Painted(el, (ctx, r) =>
                 {
                     if (el.userData is not (System.Collections.Generic.List<float> cs, System.Collections.Generic.List<string> who, float sw, float fl)) return;
+                    // a tall glass card behind every slot (the r5 party redesign, tools/out/design/r5_08-Party_0):
+                        // each member stands in a frame of their own instead of on bare backdrop
+                    for (var i = 0; i < cs.Count; i++)
+                    {
+                        var cw = sw * r.width * 0.9f; var cx = r.xMin + cs[i] * r.width;
+                        var card = Rect.MinMaxRect(cx - cw * 0.5f, r.yMin + r.height * 0.03f, cx + cw * 0.5f, r.yMin + fl * r.height + 4f);
+                        var poly = UiPaint.SkewRect(card, card.height * 0.035f, 6f);
+                        UiPaint.Shadow(ctx, poly, new Vector2(0f, 6f), UiPaint.C(20, 50, 90, 0.10f), 12f);
+                        UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.34f), UiPaint.C(226, 240, 252, 0.56f), card.yMin, card.yMax));
+                        UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(card.xMin - 40f, card.yMin, card.xMax + 40f, card.yMin + card.height * 0.28f), 0f)), UiPaint.C(255, 255, 255, 0.18f), 0f);
+                        UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.9f), 2f);
+                    }
                     for (var i = 0; i < cs.Count; i++)
                     {
                         if (string.IsNullOrEmpty(who[i])) continue;

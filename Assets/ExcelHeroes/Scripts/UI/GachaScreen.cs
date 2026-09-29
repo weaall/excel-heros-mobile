@@ -161,6 +161,8 @@ namespace ExcelHeroes.UI
             SkewPlate.Apply(_ten, SkewPlate.Kind.Gold);
             // the price under the title with the drawn gem, not "· ◈900" run into the label
             // (ui_critique round 1, 09-Gacha #2)
+            UiKit.Text("RECRUIT ×1", "pull-btn__en", _one).pickingMode = PickingMode.Ignore;
+            UiKit.Text("RECRUIT ×10", "pull-btn__en", _ten).pickingMode = PickingMode.Ignore;
             _oneCost = CostRow(_one); _tenCost = CostRow(_ten);
             // over the 10-pull: how far the S floor is — a real number, where the reference puts
             // its guarantee ribbon (this build guarantees nothing per ten, so it says nothing it can't keep)
@@ -175,8 +177,10 @@ namespace ExcelHeroes.UI
 
         static Label CostRow(Button b)
         {
-            var row = UiKit.Div("pull-btn__cost", b);
+            // the price on a navy bar along the button's foot (the r5 gacha redesign)
+            var row = UiKit.Div("pull-btn__cost pull-btn__cost--bar", b);
             row.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(row, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 3f), UiPaint.C(28, 44, 76)));
             var gem = GameData.Icon("gem");
             if (gem != null) UiKit.SetArt(UiKit.Div("pull-btn__gem", row), gem);
             return UiKit.Text("", "pull-btn__price", row);

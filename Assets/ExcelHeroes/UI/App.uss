@@ -6327,3 +6327,24 @@
 .mt-room__chapter { font-size: 17px; margin: 0; }
 .mt-room__title { font-size: 27px; margin: 0 0 4px 0; }
 .mt-room__last { font-size: 21px; }
+/* party r5: gold sortie with its English line, the power figure in yellow */
+.party-sortie { flex-direction: column; justify-content: center; align-items: center; }
+.party-sortie .plate__label { font-size: 52px; margin: 0; padding: 0; color: rgb(30, 40, 60); }
+.party-sortie__en { font-size: 18px; -unity-font-style: bold; color: rgba(30, 40, 60, 0.7); letter-spacing: 4px; padding: 0; margin: -6px 0 0 0; }
+.power-readout--strip .power-readout__value { color: rgb(255, 226, 73); }
+/* gacha r5: title, English line, and the price on a navy bar at the foot */
+.gpulls .pull-btn { height: 164px; justify-content: flex-start; padding-top: 18px; }
+.gpulls .pull-btn .plate__label { font-size: 40px; margin: 0; padding: 0; }
+.pull-btn__en { font-size: 17px; -unity-font-style: bold; letter-spacing: 2px; color: rgba(40, 58, 88, 0.7); padding: 0; margin: -2px 0 0 0; }
+.pull-btn__cost--bar { position: absolute; left: 30px; right: 30px; bottom: 16px; height: 46px; margin: 0; justify-content: center; }
+.pull-btn__cost--bar .pull-btn__gem { width: 34px; height: 34px; }
+.pull-btn__cost--bar .pull-btn__price { color: rgb(255, 255, 255); font-size: 27px; }
+.pull-btn--primary .pull-btn__cost--bar .pull-btn__price { color: rgb(255, 222, 80); }
+/* the banner's name as a logo-type: heavy, white with a navy rim, the partner line in cyan */
+.gstage__title { -unity-font-style: bold; color: rgb(20, 34, 58); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(255, 255, 255); text-shadow: 0 4px 8px rgba(10, 30, 60, 0.25); }
+.gstage__sub { color: rgb(21, 150, 235); -unity-font-style: bold; }
+/* detail tabs r5: word over a small English line */
+.overlay--page .dtab { height: 72px; justify-content: center; align-items: center; }
+.dtab__label { font-size: 23px; margin: 0; padding: 0; }
+.dtab__en { font-size: 12px; -unity-font-style: bold; letter-spacing: 1px; color: rgb(140, 154, 172); margin: -1px 0 0 0; padding: 0; }
+.dtab--on .dtab__en { color: rgba(255, 255, 255, 0.78); }
