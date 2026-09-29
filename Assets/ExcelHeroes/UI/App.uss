@@ -6206,3 +6206,9 @@
 /* no screen scrolls sideways: a horizontal scroller is always an overflow symptom */
 .unity-scroller--horizontal { display: none; }
 .prog-cols__right { width: 36%; }
+/* the white name badge */
+.overlay--page .dplate__dept { color: rgb(255, 255, 255); font-size: 22px; }
+.overlay--page .dplate__name { color: rgb(30, 40, 55); font-size: 68px; padding-left: 26px; }
+.overlay--page .dplate__lv { color: rgb(24, 119, 242); padding-left: 26px; }
+.dplate__bond { color: rgb(120, 136, 155); }
+.dplate__stars { -unity-text-outline-color: rgb(200, 140, 0); }

@@ -248,25 +248,17 @@ namespace ExcelHeroes.UI
             var plate = UiKit.Div("dplate", art);
             ModalFrame.Painted(plate, (ctx, r) =>
             {
+                // a white slanted badge with a blue bar down its left (ui_critique 17-Detail #1: the navy
+                // plate with gold stripes read as another game's)
                 var band = Rect.MinMaxRect(r.xMin, r.yMin + 44f, r.xMax, r.yMax);
                 var poly = UiPaint.SkewRect(band, SkewPlate.SlantFor(band.height) * 0.5f, 6f);
-                UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), UiPaint.C(0, 0, 0, 0.3f), 10f);
-                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(40, 62, 108), UiPaint.C(22, 36, 70), band.yMin, band.yMax));
-                // a cyan edge along the top and faint diagonal stripes on the right: the layered
-                // plate the reference names its students on (ui_critique round 3, 16-Detail #1)
-                var edge = UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(band.xMin - 40f, band.yMin, band.xMax + 40f, band.yMin + 5f), 0f));
-                UiPaint.Fill(ctx, edge, UiPaint.C(40, 160, 246), 0f);
-                for (var k = 0; k < 6; k++)
-                {
-                    var x0 = band.xMax - band.width * 0.34f + k * 26f;
-                    var stripe = new System.Collections.Generic.List<Vector2> { new(x0 + 40f, band.yMin + 5f), new(x0 + 52f, band.yMin + 5f), new(x0 + 12f, band.yMax), new(x0, band.yMax) };
-                    UiPaint.Fill(ctx, UiPaint.Clip(stripe, poly), UiPaint.C(255, 255, 255, 0.05f), 0.5f);
-                }
-                // target_2: a gold rim round the navy, and a hairline of gold inside it
-                UiPaint.Stroke(ctx, poly, UiPaint.C(226, 180, 72), 3.5f);
-                UiPaint.Stroke(ctx, UiPaint.Offset(poly, -7f), UiPaint.C(226, 180, 72, 0.35f), 1.2f);
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 5f), UiPaint.C(30, 80, 160, 0.2f), 12f);
+                UiPaint.Fill(ctx, poly, UiPaint.C(255, 255, 255, 0.96f));
+                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(band.xMin - 40f, band.yMin, band.xMin + 34f, band.yMax), 0f)), UiPaint.C(24, 119, 242), 0f);
+                UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2> { new(band.xMax, band.yMax), new(band.xMax - band.width * 0.28f, band.yMax), new(band.xMax, band.yMin) }, poly), UiPaint.C(226, 238, 250, 0.9f), 0.8f);
+                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(band.xMin - 40f, band.yMax - 4f, band.xMax + 40f, band.yMax), 0f)), UiPaint.C(64, 196, 240), 0f);
                 var tag = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin + 10f, r.yMin, r.xMin + r.width * 0.62f, r.yMin + 42f), 8f, 3f, 2);
-                UiPaint.Fill(ctx, tag, UiPaint.C(255, 255, 255, 0.95f));
+                UiPaint.Fill(ctx, tag, UiPaint.C(30, 43, 69, 0.92f));
             });
             var plateTop = UiKit.Div("dplate__top", plate);
             UiKit.Text(def.dept ?? "", "dplate__dept", plateTop);
@@ -459,7 +451,7 @@ namespace ExcelHeroes.UI
                 var acts = UiKit.Div("detail__acts", foot);
 
                 var fav = Game.Player.favorites.Contains(heroId);
-                UiKit.Btn(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기", "btn btn--primary", () =>
+                UiKit.Btn(fav ? "★ 즐겨찾기 해제" : "☆ 즐겨찾기", "btn", () =>
                 {
                     if (fav) Game.Player.favorites.Remove(heroId);
                     else Game.Player.favorites.Add(heroId);

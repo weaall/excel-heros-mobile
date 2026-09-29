@@ -78,12 +78,12 @@ namespace ExcelHeroes.UI
         static Look LookFor(Kind kind) => kind switch
         {
             // the Gemini button mock-up (tools/out/design/mock_btn_0): a brighter cyan into a deeper blue
-            Kind.Primary => new Look(C(104, 232, 255), C(38, 170, 240), C(30, 130, 200, 0.7f), C(255, 255, 255, 0.7f), 1.5f,
-                                     Color.white, C(0, 0, 0, 0f), 0f, 0.2f),
+            Kind.Primary => new Look(C(46, 200, 255), C(30, 186, 250), C(0, 150, 214, 0f), C(255, 255, 255, 0.5f), 0f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0.07f),
             Kind.Navy or Kind.Glow => new Look(C(54, 74, 118), C(34, 50, 88), C(16, 26, 54, 0.7f), C(120, 150, 200, 0.45f), 1.5f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0.07f),
-            Kind.Gold    => new Look(C(255, 236, 112), C(255, 204, 48), C(214, 150, 16, 0.6f), C(255, 252, 230, 0.7f), 1.5f,
-                                     Color.white, C(0, 0, 0, 0f), 0f, 0.22f),
+            Kind.Gold    => new Look(C(255, 218, 60), C(255, 206, 40), C(214, 150, 16, 0f), C(255, 252, 230, 0.6f), 0f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0.08f),
             // target_2's page buttons: white, a gold rim (강화 / 편성)
             Kind.Ivory   => new Look(C(255, 255, 255), C(244, 246, 248), C(214, 166, 52, 0.95f), C(255, 255, 255, 0.95f), 3f,
                                      C(240, 200, 110), C(0, 0, 0, 0f), 0f, 0.12f),
@@ -94,8 +94,8 @@ namespace ExcelHeroes.UI
             Kind.Off     => new Look(C(244, 247, 250, 0.82f), C(232, 238, 244, 0.78f), C(170, 186, 206, 0.95f), C(255, 255, 255, 0.5f), 2.2f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0f),
             // the UI kit (tools/out/design/kit_0): red for what cannot be undone
-            Kind.Danger  => new Look(C(246, 88, 84), C(222, 56, 60), C(150, 24, 36, 0.8f), C(255, 200, 200, 0.6f), 1.5f,
-                                     Color.white, C(0, 0, 0, 0f), 0f, 0.12f),
+            Kind.Danger  => new Look(C(240, 74, 78), C(232, 62, 68), C(150, 24, 36, 0f), C(255, 200, 200, 0.5f), 0f,
+                                     Color.white, C(0, 0, 0, 0f), 0f, 0.05f),
             // pills (tab bars), round icon buttons and chips: white with the navy line, the chosen pill navy
             Kind.Pill or Kind.Round => new Look(C(255, 255, 255), C(246, 249, 252), Navy, C(255, 255, 255, 0.9f), 3f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0f),
@@ -105,8 +105,8 @@ namespace ExcelHeroes.UI
                                      Color.white, C(0, 0, 0, 0f), 0f, 0f),
             // secondary: white with a thick navy outline, no pattern — it must not compete with the cyan CTA
             // secondary: the reference's CLOSE — a pale grey plate with a soft edge, quiet beside the cyan
-            _            => new Look(C(246, 248, 251), C(222, 228, 236), C(186, 198, 214), C(255, 255, 255, 0.95f), 1.5f,
-                                     C(200, 212, 228), C(0, 0, 0, 0f), 0f, 0.14f),
+            _            => new Look(C(255, 255, 255, 0.9f), C(246, 249, 252, 0.9f), C(180, 196, 212), C(255, 255, 255, 0f), 2f,
+                                     C(200, 212, 228), C(0, 0, 0, 0f), 0f, 0f),
         };
 
         /// <summary>
@@ -197,10 +197,10 @@ namespace ExcelHeroes.UI
             // the raised actions (CTA, premium, danger) stand on a darker lip, as the kit's buttons do —
             // inside the element's rect (outside it the paint is clipped): the face is lifted by the lip
             var lip = kind is Kind.Primary or Kind.Gold or Kind.Danger;
-            var lipH = lip ? Mathf.Clamp(h * 0.05f, 2.5f, 4f) : 0f;   // a thin lip: a thick one read as a toy
+            var lipH = lip ? Mathf.Clamp(h * 0.045f, 3f, 4f) : 0f;   // a thin solid lip under a flat face
             if (lip)
             {
-                var lipCol = kind switch { Kind.Primary => C(22, 112, 186), Kind.Gold => C(178, 118, 10), _ => C(152, 30, 42) };
+                var lipCol = kind switch { Kind.Primary => C(0, 150, 214), Kind.Gold => C(214, 150, 20), _ => C(170, 36, 48) };
                 UiPaint.Fill(ctx, UiPaint.SkewRect(Rect.MinMaxRect(r.xMin, r.yMin + lipH, r.xMax, r.yMax), slant, radius), lipCol);
                 r = Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMax - lipH); h = r.height;
             }
