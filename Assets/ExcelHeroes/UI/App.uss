@@ -6406,3 +6406,9 @@
 .pslot__atk .aff-chip__text { font-size: 17px; }
 .pslot--stand .pslot__lines { padding-right: 70px; min-width: 0; flex-shrink: 1; }
 .pslot--stand .pslot__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* battle HUD r6: the squares one family, lit labels when on */
+.bhud__sq { width: 96px; height: 96px; margin-left: 10px; }
+.bhud__sq-label { color: rgb(214, 226, 242); }
+.bhud__sq--on .bhud__sq-label { color: rgb(0, 229, 255); }
+.bhud__auto .bhud__sq-label { height: 96px; font-size: 26px; color: rgb(214, 226, 242); }
+.bhud__auto.bhud__sq--on .bhud__sq-label { color: rgb(255, 196, 0); }

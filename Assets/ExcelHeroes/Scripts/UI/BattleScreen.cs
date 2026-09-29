@@ -408,12 +408,15 @@ namespace ExcelHeroes.UI
             bg.pickingMode = PickingMode.Ignore;
             ModalFrame.Painted(bg, (ctx, r) =>
             {
+                // one family (ui_critique 07-BattleHud #3): the same navy glass square for all three;
+                // "on" is a lit bar along the foot and a lit label — AUTO amber, speed cyan — not
+                // a whole yellow block beside two grey ones
                 var on = b.ClassListContains("bhud__sq--on");
-                var poly = UiPaint.RoundRect(r, 12f, 5);
-                UiPaint.Fill(ctx, poly, on ? UiPaint.Vertical(UiPaint.C(255, 222, 90), UiPaint.C(255, 190, 40), r.yMin, r.yMax)
-                                            : UiPaint.Flat(UiPaint.C(18, 28, 50, 0.66f)));
-                UiPaint.Stroke(ctx, poly, on ? UiPaint.C(255, 250, 220, 0.9f) : UiPaint.C(226, 186, 90, 0.95f), 2.5f);   // target_3: a gold rim
-                UiPaint.Stroke(ctx, UiPaint.Offset(poly, -5f), UiPaint.C(255, 255, 255, on ? 0.5f : 0.16f), 1.2f);
+                var accent = b.ClassListContains("bhud__auto") ? UiPaint.C(255, 196, 0) : UiPaint.C(0, 229, 255);
+                var poly = UiPaint.RoundRect(r, 8f, 4);
+                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(26, 40, 66, on ? 0.92f : 0.8f), UiPaint.C(14, 24, 44, on ? 0.92f : 0.8f), r.yMin, r.yMax));
+                UiPaint.Stroke(ctx, poly, on ? WithAlpha(accent, 0.85f) : UiPaint.C(255, 255, 255, 0.28f), 1.5f);
+                if (on) UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 4f, r.yMax - 6f, r.xMax + 4f, r.yMax + 4f), 0f)), accent, 0f);
             });
             if (icon != null)
             {
@@ -425,6 +428,8 @@ namespace ExcelHeroes.UI
             label.pickingMode = PickingMode.Ignore;
             return b;
         }
+
+        static Color WithAlpha(Color c, float a) { c.a = a; return c; }
 
         static void SetOn(Button b, bool on)
         {
