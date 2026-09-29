@@ -6976,3 +6976,8 @@
 .party-intel .aff-chip { height: 36px; margin-right: 12px; }
 .party-intel__k { margin: 0 14px 0 0; }
 .party-intel__v { margin-left: 8px; }
+.ex-button__skill { font-size: 22px; color: rgb(255, 255, 255); -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Bold%20SDF.asset"); -unity-font-style: normal; }
+.ex-button__band { height: 56px; padding-bottom: 10px; }
+.bkill__num { font-size: 40px; }
+.bhud__sq-label { font-size: 22px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Bold%20SDF.asset"); -unity-font-style: normal; }
+.bhud__auto .bhud__sq-label { font-size: 26px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); }

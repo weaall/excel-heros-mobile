@@ -1899,7 +1899,8 @@ namespace ExcelHeroes.UI
                 var band = UiKit.Div("ex-button__band", btn); band.pickingMode = PickingMode.Ignore;
                 ModalFrame.Painted(band, (ctx, r) =>
                 {
-                    UiPaint.Fill(ctx, UiPaint.RoundRect(r, 0f), UiPaint.Vertical(UiPaint.C(16, 26, 48, 0.2f), UiPaint.C(16, 26, 48, 0.92f), r.yMin, r.yMin + r.height * 0.45f));
+                    // a solid navy strip under the name (a fade left it grey on light portraits: ui_gate blocker)
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin + r.height * 0.3f, r.xMax, r.yMax), 0f), UiPaint.C(14, 24, 46, 0.94f));
                 });
                 UiKit.Text(def?.skillName ?? "", "ex-button__skill", band).pickingMode = PickingMode.Ignore;
                 // a navy-glass card frame with a thin light rim (r8 HUD redesign), not a grade-coloured border

@@ -175,7 +175,12 @@ namespace ExcelHeroes.EditorTools
             {
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
-                importer.mipmapEnabled = false;
+                // mipmapped + trilinear: the lobby shows these at about half size, and without mips the
+                // cut-out edge aliased into a jagged, "pasted-on" outline (ui_gate 05-Home blocker)
+                importer.mipmapEnabled = true;
+                importer.mipmapFilter = TextureImporterMipFilter.KaiserFilter;
+                importer.filterMode = FilterMode.Trilinear;
+                importer.anisoLevel = 4;
                 importer.alphaSource = TextureImporterAlphaSource.FromInput;
                 importer.alphaIsTransparency = true;
                 importer.isReadable = false;
@@ -245,6 +250,18 @@ namespace ExcelHeroes.EditorTools
         /// override is sticky: it lives in the .meta and outranks whatever the default says, so a
         /// texture that once went through Apply() keeps that format until the override is removed.
         /// </summary>
+        /// <summary>Re-imports the standing art (batch: -executeMethod ...ArtImportSettings.ReimportStanding).</summary>
+        public static void ReimportStanding()
+        {
+            foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { StandingRoot.TrimEnd('/') }))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                if (AssetImporter.GetAtPath(path) is TextureImporter ti) ti.userData = "";   // the stamp would skip it
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            }
+            AssetDatabase.SaveAssets();
+        }
+
         static void ClearPlatformOverrides(TextureImporter importer)
         {
             foreach (var platform in new[] { "Standalone", "Android", "iPhone" })
