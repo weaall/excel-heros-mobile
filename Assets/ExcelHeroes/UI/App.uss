@@ -6947,3 +6947,14 @@
 .home__campaign-sub { color: rgb(0, 110, 190); }
 .home__campaign-mark { opacity: 0.95; }
 .home__icon { width: 260px; height: 92px; margin-bottom: 16px; }
+/* gate r22 */
+.pslot__lvrow { justify-content: space-between; width: 100%; }
+.pslot__lvstar { margin-left: 0; margin-right: 4px; }
+.pull-btn__en { font-size: 22px; }
+.pull-btn__cost--bar .pull-btn__gem { width: 40px; height: 40px; }
+.gstage__title { -unity-text-outline-width: 2px; -unity-text-outline-color: rgba(255, 255, 255, 0.95); text-shadow: 0 5px 10px rgba(10, 30, 60, 0.35); }
+.gfoot__points-text { -unity-text-align: middle-center; padding-top: 2px; }
+.dplate__heart { font-size: 34px; margin: 10px 0 0 12px; }
+.overlay--page .dplate__lv { margin-right: 16px; }
+.dplate__stars { font-size: 32px; }
+.card__plate { padding-top: 6px; padding-bottom: 8px; }
