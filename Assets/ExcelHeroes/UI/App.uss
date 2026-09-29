@@ -6830,3 +6830,16 @@
 .pslot--stand .pslot__row { align-items: center; height: 100%; padding: 6px 0 10px 0; }
 .pslot--stand .pslot__lines { justify-content: center; }
 .pslot--stand .pslot__name { height: 36px; margin-top: 2px; }
+/* gate r13: gacha */
+.gfoot__btn, .gfoot__points { justify-content: center; align-items: center; padding: 0; height: 84px; min-width: 260px; }
+.gfoot__btn .plate__label, .gfoot__points-text { -unity-text-align: middle-center; margin: 0; padding: 0; font-size: 28px; }
+.gpulls__ribbon { top: -46px; right: 40px; height: 42px; border-radius: 4px; border-width: 0; background-color: rgb(20, 33, 54); color: rgb(0, 229, 255); font-size: 22px; padding: 0 22px; -unity-text-align: middle-center; }
+.gpulls .pull-btn { margin-left: 34px; }
+.gstage__title { margin: 4px 0 0 0; }
+.gstage__sub { margin: 0 0 14px 0; font-size: 34px; }
+.gstage__days { margin-bottom: 12px; }
+.gtab--on { border-left-width: 6px; border-color: rgb(0, 200, 255); }
+.card .card__sub, .card .card__sub.muted { font-size: 21px; color: rgb(236, 242, 250); -unity-font-style: bold; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(10, 20, 40, 0.8); }
+.aff-chip__text { font-size: 20px; }
+.pslot__atk { height: 30px; padding: 0 14px; }
+.pslot__grade-text { -unity-text-align: middle-center; padding: 0 0 2px 0; }
