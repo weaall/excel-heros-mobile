@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_cards_gemini as g
 
 MODEL = os.environ.get("CRITIQUE_MODEL", "gemini-3.8-flash")
-SHOTS = os.path.join(g.ROOT, "tools", "out", "shots")
+SHOTS = os.environ.get("SHOTS") or os.path.join(g.ROOT, "tools", "out", "shots")
 DEFAULT = ["05-Home", "07-Roster", "16-Detail", "08-Party", "09-Gacha", "10-Quests", "11-Progress", "12-Story", "13-Album", "07-BattleHud", "17-Enhance", "21-Pull10"]
 ASK = ("This is one screen ({name}) of our landscape mobile gacha game, which is meant to reach Blue Archive's UI quality. "
        "As a senior UI designer who knows Blue Archive's screens in detail, list the THREE biggest remaining gaps on this "

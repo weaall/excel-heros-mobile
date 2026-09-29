@@ -1710,7 +1710,7 @@ namespace ExcelHeroes.World
                     _pAtk = Attack; _pHit = Hit; _pSkl = Skill;
                     var pers = SdPersona.For(Pid);
                     var atkOn = _atkT < SdPose.AttackLen; var hitOn = _hitT < SdPose.HitLen; var sklOn = _sklT < SdPose.SkillLen;
-                    if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f);
+                    if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / SdPose.DeadLen) : 1f);
                     else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(Pid), _winT);
                     else if (sklOn) _pose = SdPose.SkillAt(SdPose.AttackOf(Pid, C.role), _sklT / SdPose.SkillLen);
                     else if (hitOn) _pose = SdPose.Hit(1f - _hitT / SdPose.HitLen);
@@ -1728,7 +1728,7 @@ namespace ExcelHeroes.World
                     // a damped spring between states instead of a fade: a body overshoots a little
                     // and settles; stiffer into an attack or a hit
                     // stiff enough to follow a three-frame snap (at 42 the spring smeared the release into a swing)
-                    var omega = atkOn || sklOn ? 64f : hitOn ? 58f : 26f;
+                    var omega = atkOn || sklOn ? 64f : hitOn ? 58f : Dying > 0f ? 40f : 26f;
                     if (!_shownInit) { _shown = _pose; _vel = new float[Pose.Count]; _shownInit = true; }
                     // hitstop: the body all but stops for the few frames of the blow (as the clips did), then springs on
                     else Pose.Spring(ref _shown, _vel, _pose, Freeze > 0f ? dt * 0.05f : dt, omega, 0.78f);
@@ -1753,6 +1753,8 @@ namespace ExcelHeroes.World
                 if (Rig.ArmR == null && Hit > 0f) { var k = Hit / 0.16f; lunge = (hero ? -1f : 1f) * k * 0.12f; }
                 // the mesh faces +z; the camera looks along +z, so 180 turns it to camera, yaw toward the fight
                 root.localRotation = Quaternion.Euler(0f, 180f + yaw + spin, 0f);
+                // a fall tips the whole figure about its feet (SdPose.Dead)
+                if (Rig.RefModel && hero && Mathf.Abs(_shown.Pitch) > 0.01f) root.localRotation *= Quaternion.Euler(_shown.Pitch, 0f, 0f);   // an enemy is knocked up and spun instead
                 var facing = Rig.RefModel ? root.localRotation * Vector3.forward * _shown.Step : Vector3.zero;   // the pose's step along the facing
                 // bones first (offsets onto the rest pose), then the root: planting the feet needs the pose
                 if (Rig.RefModel)

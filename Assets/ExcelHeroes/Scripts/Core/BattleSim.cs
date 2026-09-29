@@ -1056,6 +1056,15 @@ namespace ExcelHeroes.Core
         }
 
         /// <summary>Player-facing: fire a charged EX skill. Safe to call when not ready — it no-ops.</summary>
+        /// <summary>Capture pass only: member i goes down now (the death motion, photographed).</summary>
+        public bool DebugDown(int i)
+        {
+            if (i < 0 || i >= Heroes.Count || !Heroes[i].Alive) return false;
+            Heroes[i].hp = 0;
+            Events.Enqueue(new BattleEvent { kind = EventKind.Death, target = Heroes[i] });
+            return true;
+        }
+
         /// <summary>Capture pass only: fire member i's EX now, cost and cooldown aside.</summary>
         public bool DebugFire(int i)
         {

@@ -186,13 +186,15 @@ namespace ExcelHeroes.World
         /// never look detached. Called after ChibiBuilder.AddSheet; the world spot is the one the
         /// per-frame code used (side × 0.12, 0.744, −0.14 in the root's frame).
         /// </summary>
-        public static void WearSheet(ChibiRig rig, float scale)
+        /// <param name="back">how far behind the body (root units); the lineup sets it deeper so the sheet is
+        /// only felt behind the squad, never cutting through a member's hair (the user)</param>
+        public static void WearSheet(ChibiRig rig, float scale, float back = 0.16f, float side = 0.27f, float up = 0.84f)
         {
             if (rig.Sheet == null || rig.Spine == null) return;
             var root = rig.Root;
             // behind the head and out past one shoulder, turned a little towards that side so the
             // flat plane reads in perspective, as a halo does (the lean itself is in the texture)
-            var pos = root.TransformPoint(new Vector3(rig.SheetSide * 0.27f, 0.84f, -0.16f));
+            var pos = root.TransformPoint(new Vector3(rig.SheetSide * side, up, -back));
             var rot = root.rotation * Quaternion.Euler(0f, 180f + rig.SheetSide * 16f, rig.SheetSide * 4f);
             rig.Sheet.SetParent(rig.Spine, true);
             var ls = rig.Spine.lossyScale;

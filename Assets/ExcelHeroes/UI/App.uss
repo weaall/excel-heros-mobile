@@ -7010,3 +7010,167 @@
 .party-strip .synergy-line { color: rgb(0, 86, 170); margin-bottom: 6px; }
 .party-strip .statcell__val { color: rgb(20, 36, 64); -unity-font-style: bold; }
 .party-strip .statcell__key { color: rgb(110, 126, 148); }
+
+
+/* ================================================================ 모집 r10 (GachaFx, the user's round of 2026-09-30)
+   One tell, cards dealt face down and turned, an entrance for each A / S, SKIP, a 2 x 5 result of
+   hard-leaning cards with the grade at the top right, and the member's card over any of it. */
+.gx-skip { position: absolute; top: 44px; right: 64px; width: 250px; height: 82px; font-size: 30px; -unity-font-style: bold; color: rgb(24, 36, 60); }
+.gx-skip .plate__label { font-size: 30px; letter-spacing: 3px; }
+
+.gx-intro { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.gx-intro__bg { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.gx-intro__fig { position: absolute; right: 9%; top: 18px; bottom: 0; width: 720px; -unity-background-scale-mode: scale-to-fit; background-position-y: bottom; }
+.gx-intro__fig--card { top: 90px; bottom: 90px; width: 640px; right: 11%; -unity-background-scale-mode: scale-and-crop; border-radius: 18px; border-width: 6px; border-color: rgb(255, 255, 255); }
+.gx-intro__info { position: absolute; left: 150px; top: 110px; width: 900px; }
+.gx-intro__tags { flex-direction: row; }
+.gx-tag { height: 44px; padding: 0 20px; margin-right: 10px; font-size: 24px; -unity-font-style: bold; color: rgb(255, 255, 255); background-color: rgba(255, 255, 255, 0.16); border-radius: 4px; -unity-text-align: middle-center; }
+.gx-tag--new { background-color: rgb(255, 222, 40); color: rgb(30, 30, 40); }
+.gx-tag--pick { background-color: rgb(255, 83, 112); }
+.gx-tag--dup { background-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.8); }
+.gx-intro__graderow { flex-direction: row; align-items: center; margin-top: 26px; }
+.gx-intro__grade { width: 112px; height: 76px; align-items: center; justify-content: center; }
+.gx-intro__grade--sm { width: 84px; height: 56px; }
+.gx-intro__grade-text { font-size: 58px; color: rgb(255, 255, 255); padding: 0; margin: 0; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 0, 0, 0.35);
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+.gx-intro__grade--sm .gx-intro__grade-text { font-size: 40px; }
+.gx-intro__stars { font-size: 52px; margin-left: 20px; letter-spacing: 4px; }
+.gx-intro__stars--sm { font-size: 36px; }
+.gx-intro__gradelabel { font-size: 26px; color: rgba(255, 255, 255, 0.75); margin-left: 16px; }
+.gx-intro__name { font-size: 112px; color: rgb(255, 255, 255); margin-top: 10px; padding: 0; text-shadow: 0 5px 0 rgba(0, 20, 60, 0.45);
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); -unity-font-style: normal; }
+.gx-intro__nick { font-size: 32px; color: rgb(214, 228, 248); margin-top: -4px; }
+.gx-chips { flex-direction: row; flex-wrap: wrap; margin-top: 26px; }
+.gx-chip { height: 58px; padding: 0 26px 0 30px; margin: 0 12px 12px 0; flex-direction: row; align-items: center; }
+.gx-chip__key { font-size: 20px; color: rgb(116, 130, 156); margin-right: 10px; padding: 0; }
+.gx-chip__value { font-size: 28px; -unity-font-style: bold; color: rgb(24, 36, 60); padding: 0; }
+.gx-intro__ex { flex-direction: row; align-items: center; margin-top: 18px; }
+.gx-intro__ex-tag { font-size: 26px; color: rgb(12, 24, 50); background-color: rgb(0, 212, 255); padding: 2px 14px; border-radius: 4px;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; }
+.gx-intro__ex-name { font-size: 36px; -unity-font-style: bold; color: rgb(255, 255, 255); margin-left: 14px; }
+.gx-intro__ex-desc { font-size: 24px; color: rgba(214, 228, 248, 0.9); margin-top: 8px; width: 820px; }
+.gx-intro__say { position: absolute; left: 120px; bottom: 70px; width: 1020px; min-height: 150px; padding: 22px 44px 26px 56px; }
+.gx-intro__say-who { font-size: 24px; -unity-font-style: bold; color: rgb(46, 135, 246); padding: 0; }
+.gx-intro__say-line { font-size: 34px; color: rgb(24, 36, 60); margin-top: 6px; padding: 0; }
+.gx-intro__hint { position: absolute; right: 80px; bottom: 34px; font-size: 26px; letter-spacing: 6px; color: rgba(24, 36, 60, 0.55);
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-SemiBold%20SDF.asset"); -unity-font-style: normal; }
+.gx-flash { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgb(255, 255, 255); }
+
+.gx-grid { position: absolute; left: 7%; right: 7%; top: 96px; bottom: 196px; flex-direction: row; flex-wrap: wrap; justify-content: center; align-content: center; }
+.gx-card { width: 17.6%; height: 46%; margin: 0.8% 1.2%; }
+.gx-card__face, .gx-card__back { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.gx-card__grade { position: absolute; top: -14px; right: -4px; width: 78px; height: 52px; align-items: center; justify-content: center; }
+.gx-card__grade-text { font-size: 38px; color: rgb(255, 255, 255); padding: 0; margin: 0; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(0, 0, 0, 0.4);
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+.gx-card__new { position: absolute; top: 12px; left: 22%; width: 86px; height: 32px; font-size: 20px; -unity-font-style: bold-and-italic; color: rgb(30, 30, 40); background-color: rgb(255, 222, 40);
+    border-width: 2px; border-color: rgb(255, 255, 255); -unity-text-align: middle-center; rotate: -8deg; padding: 0; }
+.gx-card__stars { position: absolute; left: 0; right: 14%; bottom: 17%; height: 34px; font-size: 26px; color: rgb(255, 214, 58); -unity-text-align: middle-center; padding: 0; }
+.gx-card__name { position: absolute; left: 3%; right: 17%; bottom: 3%; height: 58px; font-size: 28px; -unity-font-style: bold; color: rgb(255, 255, 255); white-space: normal;
+    -unity-text-align: middle-center; padding: 0; margin: 0; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(10, 20, 40, 0.5); }
+.gx-card__name--long { font-size: 23px; }
+.gx-card__backmark { position: absolute; left: 0; right: 16%; bottom: 12%; font-size: 18px; letter-spacing: 4px; color: rgba(160, 205, 255, 0.8); -unity-text-align: middle-center;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-SemiBold%20SDF.asset"); -unity-font-style: normal; }
+.gx-card__sfx { position: absolute; left: -12%; right: -12%; top: -8%; bottom: -8%; }
+.gx-burst { position: absolute; left: -30%; right: -30%; top: -30%; bottom: -30%; }
+.gx-result__hint { position: absolute; right: 90px; bottom: 150px; font-size: 22px; color: rgba(24, 36, 60, 0.6); }
+.gx-foot { position: absolute; left: 0; right: 0; bottom: 40px; }
+
+.gx-info { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(10, 20, 40, 0.55); align-items: center; justify-content: center; }
+.gx-info__panel { width: 1980px; height: 900px; flex-direction: row; padding: 56px 70px 44px 70px; }
+.gx-info__art { width: 520px; height: 790px; flex-shrink: 0; }
+.gx-info__sd { width: 330px; height: 480px; margin-left: 26px; align-self: flex-end; margin-bottom: 20px; flex-shrink: 0; }
+.gx-info__sd-tag { position: absolute; top: 14px; left: 56px; font-size: 22px; color: rgb(255, 255, 255); background-color: rgba(0, 20, 60, 0.3); padding: 0 12px; border-radius: 4px;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; }
+.gx-info__sd-name { position: absolute; left: 4%; right: 14%; bottom: 14px; height: 40px; font-size: 26px; -unity-font-style: bold; color: rgb(255, 255, 255); -unity-text-align: middle-center; padding: 0; }
+.gx-info__col { flex-grow: 1; flex-shrink: 1; margin-left: 56px; }
+.gx-info__col .gx-intro__graderow { margin-top: 6px; }
+.gx-info__own { font-size: 24px; color: rgb(110, 125, 150); margin-left: 16px; }
+.gx-info__name { font-size: 78px; color: rgb(24, 36, 60); margin-top: 8px; padding: 0;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); -unity-font-style: normal; }
+.gx-info__nick { font-size: 28px; color: rgb(96, 110, 135); margin-top: -2px; }
+.gx-info__col .gx-chips { margin-top: 20px; }
+.gx-info__head { font-size: 28px; -unity-font-style: bold; color: rgb(24, 36, 60); margin-top: 14px; }
+.gx-info__body { font-size: 24px; color: rgb(70, 84, 108); margin-top: 4px; }
+.gx-info__line { font-size: 28px; -unity-font-style: italic; color: rgb(46, 135, 246); margin-top: 18px; }
+.gx-info__bio { font-size: 22px; color: rgb(110, 125, 150); margin-top: 8px; }
+.gx-info__close { position: absolute; top: 22px; right: 34px; width: 72px; height: 72px; font-size: 36px; color: rgb(24, 36, 60); background-color: rgba(0, 0, 0, 0); border-width: 0; }
+
+/* the banner: the pick-up pair from the waist up, tap for the card; 일반 모집 a line of SD figures */
+.gstage__bust { position: absolute; overflow: hidden; }
+/* cut by the screen's bottom edge, as the reference's banners are: no crop line of our own */
+.gstage__bust--s { right: 3%; width: 40%; top: 5%; bottom: 0; }
+.gstage__bust--a { right: 35%; width: 32%; top: 13%; bottom: 0; opacity: 0.97; }
+.gstage__bust-art { position: absolute; left: 0; right: 0; top: 0; height: 172%; -unity-background-scale-mode: scale-to-fit; background-position-y: top; }
+.gstage__bust-art--card { height: 100%; -unity-background-scale-mode: scale-and-crop; border-radius: 22px; }
+.gstage__bust-hint { position: absolute; top: 34%; right: 12%; font-size: 22px; color: rgb(255, 255, 255); background-color: rgba(24, 36, 60, 0.7); padding: 4px 16px; border-radius: 16px; }
+.gstage__sdline { position: absolute; right: 3%; bottom: 20%; width: 60%; height: 60%; flex-direction: row; align-items: flex-end; justify-content: space-around; }
+.gstage__sd { width: 15%; height: 82%; -unity-background-scale-mode: scale-to-fit; }
+
+/* ---------------------------------------------------------------- EX cards r10: one painted slanted card with the
+   member's SD (BattleScreen.BuildExBar), the skill name in the display face at the very foot */
+.ex-button { background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 0; width: 176px; }
+.ex-button__card { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+.ex-button__skill { position: absolute; left: 1%; right: 15%; bottom: 8px; height: 38px; font-size: 25px; color: rgb(255, 255, 255); -unity-text-align: middle-center;
+    white-space: nowrap; overflow: hidden; padding: 0; margin: 0; -unity-text-outline-width: 0; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); -unity-font-style: normal; }
+.ex-button__cost { left: 12px; top: -30px; }
+.ex-button__verdict { right: 2px; top: 6px; }
+
+/* ---------------------------------------------------------------- 설정 r10 (AppRoot.OpenSettings) */
+.settings-modal { width: 1500px; }
+.stabs { flex-direction: row; margin-bottom: 26px; }
+.stab { height: 76px; min-width: 250px; margin-right: 16px; font-size: 28px; -unity-font-style: bold; }
+.stab .plate__label { font-size: 28px; }
+.spage { flex-shrink: 1; }
+.spage__head { font-size: 26px; -unity-font-style: bold; color: rgb(0, 140, 220); letter-spacing: 1px; margin: 18px 0 8px 4px; }
+.spage__row { flex-direction: row; align-items: center; }
+.spage__meta { font-size: 24px; color: rgb(110, 125, 150); }
+.spage__foot { font-size: 22px; color: rgb(110, 125, 150); margin-top: 16px; }
+.srow { flex-direction: row; align-items: center; min-height: 104px; padding: 14px 24px; margin-bottom: 10px; background-color: rgba(236, 243, 250, 0.9);
+    border-left-width: 5px; border-left-color: rgb(0, 200, 250); border-radius: 4px; }
+.srow__text { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-right: 24px; }
+.srow__name { font-size: 30px; -unity-font-style: bold; color: rgb(24, 36, 60); padding: 0; }
+.srow__desc { font-size: 22px; color: rgb(110, 125, 150); margin-top: 4px; padding: 0; white-space: normal; }
+.srow__btn { min-width: 220px; height: 70px; flex-shrink: 0; }
+.srow__field { width: 420px; flex-shrink: 0; margin-right: 18px; }
+.stoggle { width: 170px; height: 64px; flex-shrink: 0; font-size: 28px; -unity-font-style: bold; color: rgb(110, 125, 150); background-color: rgba(0, 0, 0, 0); border-width: 0;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; }
+.stoggle--on { color: rgb(255, 255, 255); }
+.sslider { width: 520px; flex-shrink: 0; margin-right: 20px; }
+.sslider__value { width: 80px; font-size: 32px; color: rgb(24, 36, 60); -unity-text-align: middle-right;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; }
+.settings-modal .arow { height: auto; min-height: 112px; overflow: visible; background-color: rgba(236, 243, 250, 0.9); border-width: 0; border-left-width: 5px; border-left-color: rgb(0, 200, 250); border-radius: 4px; padding: 14px 24px; }
+
+/* ui_gate r10: the banner's words over the photo-lit room get a white glow; a closed banner tab's words recede */
+.gstage__title, .gstage__sub { text-shadow: 0 0 10px rgba(255, 255, 255, 0.95); }
+.gtab .gtab__label { color: rgb(96, 112, 138); }
+.gtab--on .gtab__label { color: rgb(22, 38, 63); }
+.stoggle { width: 150px; height: 60px; color: rgba(0, 0, 0, 0); }
+
+/* ---------------------------------------------------------------- battle 메뉴 r10 (ui_gate 07-Menu: the 4th 개선 card ran off the
+   panel, the head's two texts sat on different lines, the toggles touched the head) */
+.bmenu { width: 900px; padding: 0 30px 28px 30px; }
+.bmenu__title { height: 64px; margin-bottom: 20px; padding: 0; }
+.bmenu__forecast { top: 0; right: 30px; height: 64px; -unity-text-align: middle-right; padding: 0; margin: 0; }
+.bmenu__row { flex-wrap: nowrap; justify-content: space-between; }
+.bmenu__row .auto-toggle { width: 23.5%; min-width: 0; height: 78px; margin: 0; padding: 0; -unity-text-align: middle-center; }
+.bmenu__row .auto-toggle .plate__label { -unity-text-align: middle-center; }
+.bmenu__leave { margin: 16px 0 8px 0; }
+.bmenu__sub { margin: 14px 0 12px 2px; }
+.bmenu__upgrades { position: relative; left: 0; right: 0; bottom: auto; height: auto; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+.bmenu__upgrades .upgrade { width: 49%; height: 116px; margin: 0 0 12px 0; padding: 12px 16px; }
+.bmenu__upgrades .upgrade__cost { margin-top: 6px; }
+/* ui_gate r10 round 2 */
+.stab, .bmenu__row .auto-toggle { justify-content: center; align-items: center; }
+.bmenu__upgrades .upgrade { height: 146px; padding: 8px 16px; justify-content: center; }
+.bmenu__upgrades .upgrade__name { font-size: 24px; margin: 0; padding: 0; }
+.bmenu__upgrades .upgrade__level { font-size: 34px; margin: 2px 0 0 0; padding: 0; }
+.bmenu__upgrades .upgrade__cost { font-size: 22px; margin: 4px 0 0 0; padding: 0; }
+.srow__field { height: 64px; margin-right: 24px; }
+.srow__field > .unity-text-field__input { font-size: 28px; padding: 0 16px; }
+.settings-modal .arow .arow__claim { margin-left: 16px; }
+.gx-info__sd { margin-bottom: 6px; }
+.ex-button__skill { font-size: 22px; }
+.gtab .gtab__label { color: rgb(128, 142, 166); }
+.gtab .gtab__en { color: rgb(150, 164, 186); }
+.gtab { margin-bottom: 22px; }

@@ -29,9 +29,20 @@ namespace ExcelHeroes.Core
         public static void Init(GameObject host)
         {
             if (_source != null) return;
+            // the player's own choice from 설정, kept on the device
+            Muted = PlayerPrefs.GetInt("eh.muted", 0) == 1;
+            Volume = Mathf.Clamp01(PlayerPrefs.GetFloat("eh.volume", 0.7f));
             _source = host.AddComponent<AudioSource>();
             _source.playOnAwake = false;
             _source.spatialBlend = 0f;   // UI audio, never positional
+        }
+
+        /// <summary>Keeps Muted / Volume for the next launch (설정).</summary>
+        public static void Save()
+        {
+            PlayerPrefs.SetInt("eh.muted", Muted ? 1 : 0);
+            PlayerPrefs.SetFloat("eh.volume", Volume);
+            PlayerPrefs.Save();
         }
 
         public static void Play(string id, float gain = 1f)

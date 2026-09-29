@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_cards_gemini as g
 
 MODEL = os.environ.get("CRITIQUE_MODEL", "gemini-3.8-flash")
-SHOTS = os.path.join(g.ROOT, "tools", "out", "shots")
+SHOTS = os.environ.get("SHOTS") or os.path.join(g.ROOT, "tools", "out", "shots")
 OUT = os.path.join(g.ROOT, "tools", "out", "ui_score.json")
 SCREENS = ["05-Home", "07-Roster", "17-Detail", "18-Enhance", "20-Skins", "08-Party", "09-Gacha", "22-Pull10",
            "10-Quests", "11-Progress", "12-Story", "13-Album", "14-Codex", "15-Chart", "16-Shop", "23-Mail",

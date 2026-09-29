@@ -139,7 +139,7 @@ namespace ExcelHeroes.UI
             if (cta != null) SkewPlate.Apply(cta, SkewPlate.Kind.Gold);
 
             var settings = root.Q<Button>("overflowBtn");
-            if (settings != null) settings.clicked += OpenAdMenu;
+            if (settings != null) settings.clicked += () => OpenSettings();
 
             var back = root.Q<Button>("backBtn");
             // Back closes a page opened over the screen first (the hero page), then goes home.
@@ -425,32 +425,99 @@ namespace ExcelHeroes.UI
         public void Rebuild() => Show(_sheet);
 
         /// <summary>
-        /// 광고 보상. Every offer pays a flat amount — see AdService. The menu prints that rule at
-        /// the foot rather than leaving a player to work out whether closing the app pays better,
-        /// because the answer being "no, never" is the point of the whole design.
+        /// 설정 — the gear. It opened the ad sheet straight away, which is not what a gear promises
+        /// (the user). Now a modal with three tabs: 설정 (sound on / off and its volume, kept in
+        /// PlayerPrefs; the battle's 자동 전투 / 자동 진행 / 안전 진행 switches, kept in the save),
+        /// 광고 보상 (every offer pays a flat amount — see AdService — and the foot says so, because
+        /// "closing the app never pays better" is the point of the design), and 쿠폰·데이터 (보석 코드
+        /// and 세이브 이동).
         /// </summary>
-        void OpenAdMenu()
+        public void OpenSettings(int tab = 0)
         {
             AudioService.Play("tap", 0.5f);
+            var body = UiKit.Modal("설정", CloseOverlay, out var panel, "settings-modal");
+            var tabs = UiKit.Div("stabs", body);
+            var page = UiKit.Div("spage", body);
+            string[] names = { "설정", "광고 보상", "쿠폰 · 데이터" };
+            for (var i = 0; i < names.Length; i++)
+            {
+                var ii = i;
+                var b = UiKit.Btn(names[i], "stab" + (i == tab ? " stab--on" : ""), () => { CloseOverlay(); OpenSettings(ii); }, tabs);
+                SkewPlate.Apply(b, i == tab ? SkewPlate.Kind.Primary : SkewPlate.Kind.Glass);   // one slanted family, the open one lit (ui_gate 22-Settings)
+            }
+            if (tab == 0) BuildSettingsPage(page);
+            else if (tab == 1) BuildAdPage(page);
+            else { BuildCodeRow(page); BuildSaveTransfer(page); }
+            OpenOverlay(panel);
+        }
+
+        /// <summary>A settings row: the name and a line under it on the left, the control on the right.</summary>
+        static VisualElement SettingRow(VisualElement parent, string name, string desc)
+        {
+            var row = UiKit.Div("srow", parent);
+            var text = UiKit.Div("srow__text", row);
+            UiKit.Text(name, "srow__name", text);
+            if (!string.IsNullOrEmpty(desc)) UiKit.Text(desc, "srow__desc", text);
+            return row;
+        }
+
+        /// <summary>An ON / OFF switch: a slanted pill, lit cyan when on.</summary>
+        static void Switch(VisualElement row, bool on, System.Action<bool> set)
+        {
+            var b = UiKit.Btn(on ? "ON" : "OFF", "stoggle" + (on ? " stoggle--on" : ""), null, row);
+            b.clicked += () =>
+            {
+                on = !on; set(on);
+                b.text = on ? "ON" : "OFF";
+                b.EnableInClassList("stoggle--on", on);
+                b.MarkDirtyRepaint();
+            };
+            // a switch, not a button (ui_gate 22-Settings: which colour is ON was a guess): a round knob
+            // that sits right and lit when on, left and grey when off, the word on the other side
+            ModalFrame.Painted(b, (ctx, r) =>
+            {
+                var lit = b.ClassListContains("stoggle--on");
+                var p = UiPaint.RoundRect(r, r.height * 0.5f, 8);
+                UiPaint.Fill(ctx, p, lit ? UiPaint.Vertical(UiPaint.C(90, 226, 255), UiPaint.C(0, 170, 236), r.yMin, r.yMax)
+                                         : UiPaint.Vertical(UiPaint.C(206, 214, 226), UiPaint.C(188, 198, 214), r.yMin, r.yMax));
+                UiPaint.Stroke(ctx, p, lit ? UiPaint.C(0, 150, 220) : UiPaint.C(170, 184, 204), 2f);
+                var rad = r.height * 0.5f - 6f;
+                var c = new Vector2(lit ? r.xMax - rad - 6f : r.xMin + rad + 6f, r.center.y);
+                UiPaint.Shadow(ctx, UiPaint.Ellipse(c, rad, rad), new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.25f), 4f);
+                UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad), Color.white);
+            });
+        }
+
+        void BuildSettingsPage(VisualElement page)
+        {
             var p = Game.Player;
-            var pane = UiKit.Div("picker ad-menu");
+            UiKit.Text("사운드", "spage__head", page);
+            Switch(SettingRow(page, "효과음", "버튼 · 전투 · 모집 소리"), !AudioService.Muted, v => { AudioService.Muted = !v; AudioService.Save(); });
+            var vol = SettingRow(page, "음량", null);
+            var slider = new Slider(0f, 100f) { value = AudioService.Volume * 100f };
+            slider.AddToClassList("sslider");
+            var readout = UiKit.Text($"{Mathf.RoundToInt(AudioService.Volume * 100f)}", "sslider__value", null);
+            slider.RegisterValueChangedCallback(e => { AudioService.Volume = e.newValue / 100f; readout.text = $"{Mathf.RoundToInt(e.newValue)}"; AudioService.Save(); });
+            vol.Add(slider); vol.Add(readout);
 
-            var head = UiKit.Div("prog-head", pane);
-            UiKit.Text("광고 보상", "section-title", head);
+            UiKit.Text("전투", "spage__head", page);
+            Switch(SettingRow(page, "자동 전투", "EX 스킬을 코스트가 차는 대로 자동 사용"), p.autoSkill, v => { p.autoSkill = v; Game.Touch(); });
+            Switch(SettingRow(page, "자동 진행", "클리어하면 다음 Phase로 (끄면 이 Phase 반복 · 파밍)"), p.autoAdvance, v => { p.autoAdvance = v; Game.Touch(); });
+            Switch(SettingRow(page, "안전 진행", "승산이 낮으면 다음 Phase로 넘어가지 않음"), p.safeAdvance, v => { p.safeAdvance = v; Game.Touch(); });
+        }
+
+        void BuildAdPage(VisualElement page)
+        {
+            var p = Game.Player;
+            var head = UiKit.Div("spage__row", page);
+            UiKit.Text("광고 보상", "spage__head", head);
             UiKit.Div("spacer", head);
-            UiKit.Text($"오늘 남은 광고 {AdService.LeftToday(p)} / {GameData.Balance.adPerDay}회",
-                "muted", head);
-
+            UiKit.Text($"오늘 남은 광고 {AdService.LeftToday(p)} / {GameData.Balance.adPerDay}회", "spage__meta", head);
             foreach (var offer in AdService.Offers(p))
             {
-                var row = UiKit.Div("arow", pane);
-                var text = UiKit.Div("arow__text", row);
-                UiKit.Text($"{offer.Def.name}　{offer.Value}", "arow__name", text);
-                UiKit.Text($"{offer.Def.desc}　·　오늘 {offer.Left} / {offer.Def.perDay}회",
-                    "arow__meta", text);
-
+                var row = SettingRow(page, $"{offer.Def.name}  {offer.Value}", $"{offer.Def.desc} · 오늘 {offer.Left} / {offer.Def.perDay}회");
                 var id = offer.Def.id;
-                var watch = UiKit.Btn(offer.Can ? "광고 보기" : offer.Reason, "arow__claim", () =>
+                var watch = UiKit.Btn(offer.Can ? "광고 보기" : offer.Reason, "arow__claim srow__btn srow__btn--go", () =>
                 {
                     var told = AdService.Grant(Game.Player, id);
                     if (told == null) return;
@@ -458,23 +525,24 @@ namespace ExcelHeroes.UI
                     SetStatus(told);
                     Game.Touch();
                     CloseOverlay();
-                    OpenAdMenu();
+                    OpenSettings(1);
                 }, row);
                 watch.SetEnabled(offer.Can);
+                if (offer.Can) SkewPlate.Apply(watch, SkewPlate.Kind.Primary);   // the live offer reads as the thing to press (ui_gate 22-Settings1)
             }
+            UiKit.Text("광고 1편 = 보상 1개 · 모든 보상은 고정 지급 (방치 배율 없음)", "spage__foot", page);
+        }
 
-            UiKit.Text("광고 1편 = 보상 1개 · 모든 보상은 고정 지급 (방치 배율 없음)", "muted", pane);
-
-            // 보석 코드 — a field and a button, on the same sheet as the ads because both are
-            // "get something without fighting for it" and a player looks for them in one place.
-            var codeRow = UiKit.Div("arow", pane);
-            var codeText = UiKit.Div("arow__text", codeRow);
-            UiKit.Text("보석 코드", "arow__name", codeText);
+        // 보석 코드 — a field and a button, beside the save transfer: both are "not playing the game"
+        void BuildCodeRow(VisualElement page)
+        {
+            UiKit.Text("쿠폰", "spage__head", page);
+            var codeRow = SettingRow(page, "보석 코드", "받은 코드를 입력하세요");
             var field = new TextField { value = "" };
             field.AddToClassList("code-field");
-            codeText.Add(field);
-
-            UiKit.Btn("등록", "arow__claim", () =>
+            field.AddToClassList("srow__field");
+            codeRow.Add(field);
+            UiKit.Btn("등록", "arow__claim srow__btn", () =>
             {
                 var r = CodeService.Redeem(Game.Player, field.value);
                 if (!r.Ok) { SetStatus(r.Message); return; }
@@ -482,13 +550,9 @@ namespace ExcelHeroes.UI
                 SetStatus($"{r.Message} · {CodeService.Paid(r)}");
                 Game.Touch();
                 CloseOverlay();
-                OpenAdMenu();
+                OpenSettings(2);
             }, codeRow);
-
-            BuildSaveTransfer(pane);
-
-            UiKit.Btn("닫기", "btn", CloseOverlay, pane);
-            OpenOverlay(pane);
+            UiKit.Text("데이터", "spage__head", page);
         }
 
         /// <summary>

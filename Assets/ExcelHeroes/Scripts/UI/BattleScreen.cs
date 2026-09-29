@@ -27,6 +27,10 @@ namespace ExcelHeroes.UI
         VisualElement _exBar, _costBar, _costFill;
         Label _costLabel;
         readonly Dictionary<Combatant, (Button Button, VisualElement Charge, Label CostLabel)> _exButtons = new();
+        // per EX card: [0] the charge still to fill, [1] its ready / poor state last painted
+        readonly Dictionary<Combatant, float[]> _exCharge = new();
+        // the EX cards lean like the reference's (the top edge this share of the height to the right)
+        const float ExSlant = 0.16f;
         Button _overtimeButton;
         Label _forecastLabel;
         BattleFx _fx;
@@ -83,6 +87,8 @@ namespace ExcelHeroes.UI
         /// <summary>Screenshot driver only: the boss on the field now, part-way down (see BattleSim.DebugBossNow).</summary>
         /// Held until a run is live — a call that lands on a finished run would otherwise do nothing.
         public void DebugAutoSkill(bool on) { if (_sim != null) _sim.AutoSkill = on; }
+        public bool DebugDown(int i) => _sim != null && _sim.DebugDown(i);
+        public void DebugMenu(bool open) { if (_menu == null) return; _menu.EnableInClassList("hidden", !open); if (open) { SyncAutoButton(); SyncOvertimeButton(); UpdateUpgrades(); } }
         public void DebugBoss(float hpFrac) { _pendingBoss = hpFrac; Debug.Log($"[shots] boss requested (sim {(_sim == null ? "none" : _sim.Finished ? "finished" : "live")})"); }
         float _pendingBoss;
         VisualElement _resultPopup;
@@ -1858,6 +1864,7 @@ namespace ExcelHeroes.UI
             if (_exBar == null) return;
             _exBar.Clear();
             _exButtons.Clear();
+            _exCharge.Clear();
 
             if (_sim == null) return;
 
@@ -1874,50 +1881,69 @@ namespace ExcelHeroes.UI
                 UiKit.AddClasses(btn, "ex-button");
                 _exBar.Add(btn);
 
-                var art = UiKit.Div("ex-button__art", btn);
-                UiKit.SetPortrait(art, combatant.heroId, UiKit.Crop.Face);
-                UiKit.Div("ex-button__dim", btn).pickingMode = PickingMode.Ignore;
-                // the ready glow (the Gemini HUD mock-up, tools/out/design/mock_hud_0): a pulsing cyan
-                // aura and a light sweep across the card while it can be cast
-                var glow = UiKit.Div("ex-button__glow", btn);
-                glow.pickingMode = PickingMode.Ignore;
-                var gt0 = Time.realtimeSinceStartup;
-                ModalFrame.Painted(glow, (ctx, r) =>
-                {
-                    if (!btn.ClassListContains("ex-button--ready")) return;
-                    var t = Time.realtimeSinceStartup - gt0;
-                    var k = 0.6f + 0.4f * Mathf.Sin(t * 4f);
-                    var box = UiPaint.RoundRect(r, 10f);
-                    UiPaint.Ring(ctx, box, UiPaint.C(120, 236, 255, 0.85f * k), UiPaint.C(120, 236, 255, 0f), 16f);
-                    UiPaint.Stroke(ctx, box, UiPaint.C(170, 246, 255, 0.95f), 3f);
-                    // the sweep: a slanted band of light crossing every 1.6 s
-                    var ph = Mathf.Repeat(t / 1.6f, 1f) * 1.8f - 0.4f;
-                    var x = r.xMin + r.width * ph; var w2 = r.width * 0.16f; var sl = r.height * 0.35f;
-                    var band = new List<Vector2> { new(x + sl, r.yMin), new(x + sl + w2, r.yMin), new(x + w2, r.yMax), new(x, r.yMax) };
-                    UiPaint.Fill(ctx, UiPaint.Clip(band, box), UiPaint.C(255, 255, 255, 0.28f), 1f);
-                });
-                glow.schedule.Execute(() => glow.MarkDirtyRepaint()).Every(40);
-
-                var charge = UiKit.Div("ex-button__charge", btn);
+                // The card as the reference draws it (the user: the SD figure, not a face crop; the skill
+                // name in the display face at the very foot; the card itself on the slant): ONE painted
+                // parallelogram — the member's SD from the chest up over a light of her attack colour,
+                // the charge shading down from the top, dimmed when the cost is short, a cyan aura and a
+                // light sweep while it can be cast, the attack colour as a slanted strip over the band.
                 var cost = BattleSim.CostOf(combatant);
                 var def = GameData.Hero(combatant.heroId);
-                // the skill's name on a navy band across the card's foot, as BA's EX cards carry it
-                var band = UiKit.Div("ex-button__band", btn); band.pickingMode = PickingMode.Ignore;
-                ModalFrame.Painted(band, (ctx, r) =>
+                var atk = combatant.atkType >= 0 ? combatant.atkType : Affinity.AtkOf(combatant.heroId);
+                var atkColour = Affinity.ColorOf(atk);
+                var sd = GameData.SdArt(combatant.heroId);
+                var standing = sd == null ? GameData.StandingArt(combatant.heroId) : null;
+                var st = new float[2];                          // the charge still to fill 0..1, the painted state (UpdateExBar)
+                _exCharge[combatant] = st;
+                var card = UiKit.Div("ex-button__card", btn); card.pickingMode = PickingMode.Ignore;
+                var gt0 = Time.realtimeSinceStartup;
+                ModalFrame.Painted(card, (ctx, r) =>
                 {
-                    // a solid navy strip under the name (a fade left it grey on light portraits: ui_gate blocker)
-                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin + r.height * 0.3f, r.xMax, r.yMax), 0f), UiPaint.C(14, 24, 46, 0.94f));
+                    var ready = btn.ClassListContains("ex-button--ready"); var poor = btn.ClassListContains("ex-button--poor");
+                    var t = Time.realtimeSinceStartup - gt0;
+                    var slant = r.height * ExSlant;
+                    var outer = UiPaint.SkewRect(r, slant, 6f);
+                    if (ready)
+                    {
+                        var k = 0.6f + 0.4f * Mathf.Sin(t * 4f);
+                        UiPaint.Ring(ctx, outer, UiPaint.C(120, 236, 255, 0.85f * k), UiPaint.C(120, 236, 255, 0f), 16f);
+                    }
+                    UiPaint.Shadow(ctx, outer, new Vector2(0f, 4f), UiPaint.C(0, 10, 30, 0.35f), 8f);
+                    UiPaint.Fill(ctx, outer, UiPaint.C(250, 253, 255));
+                    var inner = UiPaint.Offset(outer, -4f);
+                    var bandTop = r.yMax - r.height * 0.24f;
+                    var art = UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMin - 20f, r.xMax + 60f, bandTop), 0f));
+                    UiPaint.Fill(ctx, art, UiPaint.Vertical(Color.Lerp(atkColour, Color.white, 0.78f), Color.Lerp(atkColour, Color.white, 0.35f), r.yMin, bandTop));
+                    for (var i = 0; i < 3; i++)
+                    {
+                        var x = r.xMin + r.width * (0.2f + i * 0.3f);
+                        UiPaint.Fill(ctx, UiPaint.Clip(art, new List<Vector2> { new(x, r.yMin), new(x + 10f, r.yMin), new(x + 10f - slant, bandTop), new(x - slant, bandTop) }), UiPaint.C(255, 255, 255, 0.28f), 0f);
+                    }
+                    if (sd != null)
+                    {
+                        // the SD from the chest up: the head fills the top of the card
+                        var tr = sd.textureRect; var w = r.width * 0.98f; var h = w * tr.height / tr.width;
+                        UiPaint.Image(ctx, art, sd, new Rect(r.center.x - w * 0.5f + slant * 0.12f, r.yMin + r.height * 0.02f, w, h), 0f);
+                    }
+                    else if (standing != null) UiKit.PaintPortrait(ctx, art, standing, combatant.heroId, Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, bandTop), UiKit.Crop.Face);
+                    var band = UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, bandTop, r.xMax + 60f, r.yMax + 20f), 0f));
+                    UiPaint.Fill(ctx, band, UiPaint.Vertical(UiPaint.C(22, 34, 64), UiPaint.C(12, 20, 42), bandTop, r.yMax), 0f);
+                    UiPaint.Fill(ctx, UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, bandTop - 3f, r.xMax + 60f, bandTop + 3f), 0f)), atkColour, 0f);
+                    if (st[0] > 0.001f)
+                        UiPaint.Fill(ctx, UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMin - 20f, r.xMax + 60f, r.yMin + (r.height + 20f) * st[0]), 0f)), UiPaint.C(16, 24, 44, 0.55f), 0f);
+                    if (poor) UiPaint.Fill(ctx, inner, UiPaint.C(10, 16, 30, 0.6f), 0f);
+                    if (ready)
+                    {
+                        var ph = Mathf.Repeat(t / 1.6f, 1f) * 1.8f - 0.4f;
+                        var x = r.xMin + r.width * ph; var w2 = r.width * 0.16f; var sl = r.height * 0.35f;
+                        UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(x + sl, r.yMin), new(x + sl + w2, r.yMin), new(x + w2, r.yMax), new(x, r.yMax) }, inner), UiPaint.C(255, 255, 255, 0.28f), 1f);
+                    }
+                    UiPaint.Stroke(ctx, outer, ready ? UiPaint.C(170, 246, 255) : UiPaint.C(120, 200, 240, 0.9f), ready ? 4f : 3f);
+                    UiPaint.Stroke(ctx, inner, UiPaint.C(255, 255, 255, 0.85f), 1.5f);
                 });
-                UiKit.Text(def?.skillName ?? "", "ex-button__skill", band).pickingMode = PickingMode.Ignore;
-                // a navy-glass card frame with a thin light rim (r8 HUD redesign), not a grade-coloured border
-                var frameEl = UiKit.Div("ex-button__frame", btn); frameEl.pickingMode = PickingMode.Ignore;
-                ModalFrame.Painted(frameEl, (ctx, r) =>
-                {
-                    var outer = UiPaint.RoundRect(r, 8f, 4); var inner = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 5f, r.yMin + 5f, r.xMax - 5f, r.yMax - 5f), 5f, 4);
-                    UiPaint.Ring(ctx, outer, UiPaint.C(0, 214, 255, 0.35f), UiPaint.C(0, 214, 255, 0f), 8f);
-                    UiPaint.Stroke(ctx, outer, UiPaint.C(120, 226, 255), 4f);
-                    UiPaint.Stroke(ctx, inner, UiPaint.C(255, 255, 255, 0.9f), 1.5f);
-                });
+                card.schedule.Execute(() => { if (btn.ClassListContains("ex-button--ready")) card.MarkDirtyRepaint(); }).Every(40);
+                // the charge element stays for the tuple; the card paints the charge itself
+                var charge = card;
+                UiKit.Text(def?.skillName ?? "", "ex-button__skill", btn).pickingMode = PickingMode.Ignore;
                 var badge = UiKit.Div("ex-button__cost", btn);
                 // a hexagon with a gold rim, COST over the number (target_3)
                 ModalFrame.Painted(badge, (ctx, r) =>
@@ -1932,10 +1958,7 @@ namespace ExcelHeroes.UI
                 var label = UiKit.Text(cost.ToString(), "ex-button__label", badge);
                 // 업무 상성 on the card: the attack colour as a strip along the foot, ▲ / ▼ against
                 // this Phase's errors in a tag at the top right — which EX to spend first
-                var atk = combatant.atkType >= 0 ? combatant.atkType : Affinity.AtkOf(combatant.heroId);
                 var verdict = Affinity.Verdict(atk, Affinity.ArmorOfStage(_sim.Stage));
-                var strip = UiKit.Div("ex-button__atk", btn); strip.pickingMode = PickingMode.Ignore;
-                strip.style.backgroundColor = Affinity.ColorOf(atk);
                 if (verdict != 0)
                 {
                     var vt = UiKit.Text(verdict > 0 ? "▲" : "▼", "ex-button__verdict" + (verdict > 0 ? " ex-button__verdict--up" : ""), btn);
@@ -2018,10 +2041,11 @@ namespace ExcelHeroes.UI
                 if (h == null || btn == null) continue;
 
                 // 1. Skill cooldown/charge vertical fill
-                if (charge != null)
+                if (charge != null && _exCharge.TryGetValue(h, out var st))
                 {
-                    var chargePercent = h.SkillReady ? 0f : (1f - h.SkillCharge) * 100f;
-                    charge.style.height = Length.Percent(chargePercent);
+                    // the painted card shades what is still to charge; repainted only on a visible step
+                    var left = h.SkillReady ? 0f : Mathf.Round((1f - h.SkillCharge) * 60f) / 60f;
+                    if (!Mathf.Approximately(left, st[0])) { st[0] = left; charge.MarkDirtyRepaint(); }
                 }
 
                 // 2. Can afford and is ready?
@@ -2030,6 +2054,11 @@ namespace ExcelHeroes.UI
                 btn.EnableInClassList("ex-button--spent", !readyAndAffordable);
                 // cost not there yet: the card dims and its cost turns red (ui_score 07-BattleHud #1)
                 btn.EnableInClassList("ex-button--poor", !_sim.CanAfford(h));
+                if (_exCharge.TryGetValue(h, out var st2))
+                {
+                    var key = (readyAndAffordable ? 1f : 0f) + (_sim.CanAfford(h) ? 0f : 2f);
+                    if (!Mathf.Approximately(key, st2[1])) { st2[1] = key; charge?.MarkDirtyRepaint(); }
+                }
                 btn.SetEnabled(h.Alive); // cannot cast if dead
             }
         }

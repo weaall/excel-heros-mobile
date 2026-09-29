@@ -229,8 +229,10 @@ namespace ExcelHeroes.EditorTools
                     foreach (var (p, dt) in rows[r].Item2)
                     {
                         SdPose.Apply(rig, p);
-                        rig.Root.localPosition = new Vector3(p.Step, p.Y + rig.FootDrop, 0f);
-                        rig.Root.rotation = Quaternion.Euler(0f, yaw0 + p.Yaw, 0f);
+                        // SD_STRIPLIFT: the figure raised in the frame (a lying pose is framed for a standing one)
+                        var lift = float.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPLIFT"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var lf) ? lf : 0f;
+                        rig.Root.localPosition = new Vector3(p.Step, p.Y + rig.FootDrop + lift, 0f);
+                        rig.Root.rotation = Quaternion.Euler(0f, yaw0 + p.Yaw, 0f) * Quaternion.Euler(p.Pitch, 0f, 0f);
                         if (dt < 0f) { sec?.Step(1f / 60f); continue; }
                         if (rig.EyeSub >= 0) { var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(id).EyeSheet(p.Expr ?? "")); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub); }
                         var steps = Mathf.Max(1, Mathf.RoundToInt(dt * 60f));

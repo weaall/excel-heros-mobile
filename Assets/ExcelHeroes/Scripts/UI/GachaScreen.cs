@@ -11,43 +11,21 @@ namespace ExcelHeroes.UI
     /// <summary>
     /// 모집 — the summon screen, and the reason the rest of the game exists.
     ///
-    /// A pull reveals one card at a time: the art fades up behind a rarity-coloured frame, the
-    /// character says their entrance line, and the player taps to move on. A ten-pull walks the same
-    /// reveal ten times and then lays the whole set out at once, because seeing the row is half the
-    /// payoff. Rates and the two pity floors are printed on the banner rather than buried.
+    /// Two banners, 픽업 and 일반. A pull plays one tell, then deals the cards face down and turns
+    /// them over; an A or S stops the deal for its full-illustration entrance, SKIP turns them all
+    /// (GachaFx). Every result card and pick-up figure opens the member's card. Rates and the two
+    /// pity floors are printed on the banner rather than buried.
     /// </summary>
     public class GachaScreen : IScreen
     {
-        static List<Vector2> Star4(Vector2 c, float r)
-        {
-            var pts = new List<Vector2>();
-            for (var i = 0; i < 8; i++)
-            {
-                var a = i / 8f * Mathf.PI * 2f - Mathf.PI / 2f;
-                var rad = i % 2 == 0 ? r : r * 0.32f;
-                pts.Add(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * rad);
-            }
-            return pts;
-        }
-
-        static List<Vector2> Heart(Vector2 c, float r)
-        {
-            var pts = new List<Vector2>();
-            for (var i = 0; i < 40; i++)
-            {
-                var t = i / 40f * Mathf.PI * 2f;
-                var x = 16f * Mathf.Pow(Mathf.Sin(t), 3f);
-                var y = 13f * Mathf.Cos(t) - 5f * Mathf.Cos(2f * t) - 2f * Mathf.Cos(3f * t) - Mathf.Cos(4f * t);
-                pts.Add(c + new Vector2(x, -y) * (r / 16f));
-            }
-            return pts;
-        }
-
         public string Cell => "D4";
         public string Formula => "=QUERY(외부_데이터!A:F, \"select * where C is not null\")";
 
         readonly AppRoot _app;
         VisualElement _root, _pickup;
+        // 픽업 모집 (the featured pair, half of S / A on them, 모집 포인트) or 일반 모집 (the whole cast evenly)
+        bool _normal;
+        VisualElement _tabPick, _tabNormal;
         VisualElement _side, _cards;
         Label _pityA, _pityS, _total;
         Button _one, _ten;
@@ -70,6 +48,7 @@ namespace ExcelHeroes.UI
         void BuildPickup()
         {
             _pickup.Clear();
+            if (_normal) { BuildNormal(); return; }
             if (GameData.Pickup == null) return;
             var now = System.DateTime.UtcNow;
             var featuredS = GameData.Featured("S", now);
@@ -105,17 +84,95 @@ namespace ExcelHeroes.UI
                        "gstage__note", noteBox);
         }
 
+        /// <summary>
+        /// A pick-up member from the waist up (the user: the whole standing figure crossing its legs
+        /// read as a poster; the upper body reads as a person), in a window that crops the legs.
+        /// Tapping her opens her card.
+        /// </summary>
         void Figure(string id, string classes)
         {
-            var fig = UiKit.Div(classes, _pickup);
-            fig.pickingMode = PickingMode.Ignore;
+            var win = UiKit.Div(classes.Replace("gstage__fig", "gstage__bust").Replace(" clips", ""), _pickup);
             var standing = GameData.StandingArt(id);
+            var fig = UiKit.Div(standing != null ? "gstage__bust-art" : "gstage__bust-art gstage__bust-art--card", win);
+            fig.pickingMode = PickingMode.Ignore;
             UiKit.SetArt(fig, standing ?? GameData.CardArt(id));
-            fig.EnableInClassList("gstage__fig--card", standing == null);
+            win.RegisterCallback<ClickEvent>(_ => OpenInfo(id));
+            var hint = UiKit.Text("정보 보기", "gstage__bust-hint", win); hint.pickingMode = PickingMode.Ignore;
         }
+
+        void OpenInfo(string id)
+        {
+            if (_app == null) return;
+            AudioService.Play("tap", 0.5f);
+            _app.OpenOverlay(GachaFx.Info(id, _app.CloseOverlay));
+        }
+
+        /// <summary>일반 모집: no one featured — a line of the cast's SD figures, and what the banner is.</summary>
+        void BuildNormal()
+        {
+            var cast = GameData.Heroes.Where(h => GameData.SdArt(h.id) != null && h.id != GameData.MainId).ToList();
+            if (cast.Count == 0) return;
+            var day = System.DateTime.UtcNow.DayOfYear;
+            var pick = Enumerable.Range(0, 9).Select(i => cast[(day * 7 + i * 13) % cast.Count]).Distinct().Take(6).ToList();
+            var line = UiKit.Div("gstage__sdline", _pickup);
+            for (var i = 0; i < pick.Count; i++)
+            {
+                var sd = UiKit.Div("gstage__sd", line);
+                UiKit.SetArt(sd, GameData.SdArt(pick[i].id));
+                sd.style.translate = new Translate(0f, i % 2 == 0 ? 0f : -46f);
+                var id = pick[i].id;
+                sd.RegisterCallback<ClickEvent>(_ => OpenInfo(id));
+            }
+            var block = UiKit.Div("gstage__block", _pickup);
+            var kicker = UiKit.Div("gstage__kicker", block);
+            ModalFrame.Painted(kicker, (ctx, r) =>
+                UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 4f), UiPaint.C(28, 44, 80)));
+            UiKit.Text("STANDARD 모집", "gstage__kicker-text", kicker);
+            UiKit.Text("일반 모집", "gstage__title", block);
+            UiKit.Text("모든 사원이 같은 확률로", "gstage__sub", block);
+            var noteBox = UiKit.Div("gstage__notebox", block);
+            ModalFrame.Painted(noteBox, (ctx, r) =>
+            {
+                UiPaint.Fill(ctx, UiPaint.RoundRect(r, 4f), UiPaint.C(255, 255, 255, 0.9f));
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMin + 5f, r.yMax), 0f), UiPaint.C(0, 212, 255));
+            });
+            UiKit.Text("픽업 없음 · 모집 포인트 없음 · 천장은 두 모집 공통", "gstage__note", noteBox);
+        }
+
+        void SetBanner(bool normal)
+        {
+            if (_normal == normal) return;
+            _normal = normal;
+            AudioService.Play("tap", 0.5f);
+            _tabPick?.EnableInClassList("gtab--on", !normal);
+            _tabNormal?.EnableInClassList("gtab--on", normal);
+            _tabPick?.MarkDirtyRepaint(); _tabNormal?.MarkDirtyRepaint();
+            BuildPickup();
+        }
+
+        void PaintTab(VisualElement tab, System.Func<bool> on)
+        {
+            ModalFrame.Painted(tab, (ctx, r) =>
+            {
+                var slant = SkewPlate.SlantFor(r.height) * 0.45f;
+                var lit = on();
+                var poly = new System.Collections.Generic.List<Vector2> { new(r.xMin - 60f, r.yMin), new(r.xMax, r.yMin), new(r.xMax - slant, r.yMax), new(r.xMin - 60f, r.yMax) };
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), UiPaint.C(0, 20, 50, 0.25f), 8f);
+                UiPaint.Fill(ctx, poly, lit ? UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.98f), UiPaint.C(236, 244, 251, 0.96f), r.yMin, r.yMax)
+                                            : UiPaint.Vertical(UiPaint.C(196, 208, 226, 0.45f), UiPaint.C(180, 194, 214, 0.45f), r.yMin, r.yMax));   // the closed banner recedes (ui_gate 09-Gacha)
+                if (lit) UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMin, r.xMin + 14f, r.yMax), 0f)), UiPaint.C(46, 135, 246));
+                if (lit) UiPaint.Ring(ctx, poly, UiPaint.C(0, 200, 255, 0.35f), UiPaint.C(0, 200, 255, 0f), 10f);
+                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.9f), 1.5f);
+            });
+        }
+
+        /// <summary>The open banner screen (the screenshot driver switches its banner).</summary>
+        public static GachaScreen Current { get; private set; }
+        public void DebugBanner(bool normal) => SetBanner(normal);
 
         public VisualElement Build()
         {
+            Current = this;
             _root = UiKit.Div("gacha gacha--ba");
             // no painted sky of its own: the shell's illustrated scene is the room the pick-up stands in
 
@@ -132,23 +189,26 @@ namespace ExcelHeroes.UI
             // banner tabs, down the left edge
             var tabs = UiKit.Div("gtabs", _root);
             var featured = GameData.Featured("S", System.DateTime.UtcNow);
-            var tab = UiKit.Div("gtab gtab--on", tabs);
-            // docked to the screen's left edge, its right end cut on the slant, a cyan bar on the
-            // docked side; the pickup's face in a disc beside the words (ui_critique 09-Gacha #2)
-            ModalFrame.Painted(tab, (ctx, r) =>
-            {
-                var slant = SkewPlate.SlantFor(r.height) * 0.45f;
-                var poly = new System.Collections.Generic.List<Vector2> { new(r.xMin - 60f, r.yMin), new(r.xMax, r.yMin), new(r.xMax - slant, r.yMax), new(r.xMin - 60f, r.yMax) };
-                UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), UiPaint.C(0, 20, 50, 0.25f), 8f);
-                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.98f), UiPaint.C(236, 244, 251, 0.96f), r.yMin, r.yMax));
-                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMin, r.xMin + 8f, r.yMax), 0f)), UiPaint.C(46, 135, 246));
-                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.9f), 1.5f);
-            });
+            // two banners (the user: 픽업 and 일반 must be told apart), each docked to the screen's left
+            // edge, its right end cut on the slant, a cyan bar on the docked side of the open one
+            var tab = _tabPick = UiKit.Div("gtab gtab--on", tabs);
+            tab.RegisterCallback<ClickEvent>(_ => SetBanner(false));
+            PaintTab(tab, () => !_normal);
             var thumb = UiKit.Div("gtab__thumb", tab);
             if (featured != null) UiKit.SetPortrait(thumb, featured.id, UiKit.Crop.Face, false, round: true);
             var words = UiKit.Div("gtab__words", tab);
             UiKit.Text("PICK UP", "gtab__en", words);
             UiKit.Text("픽업 모집", "gtab__label", words);
+
+            var tab2 = _tabNormal = UiKit.Div("gtab", tabs);
+            tab2.RegisterCallback<ClickEvent>(_ => SetBanner(true));
+            PaintTab(tab2, () => _normal);
+            var thumb2 = UiKit.Div("gtab__thumb", tab2);
+            var anyone = GameData.Heroes.FirstOrDefault(h => h.grade == "B" && GameData.StandingArt(h.id) != null);
+            if (anyone != null) UiKit.SetPortrait(thumb2, anyone.id, UiKit.Crop.Face, false, round: true);
+            var words2 = UiKit.Div("gtab__words", tab2);
+            UiKit.Text("STANDARD", "gtab__en", words2);
+            UiKit.Text("일반 모집", "gtab__label", words2);
 
             // bottom left: 확률 정보 and 모집 포인트
             var info = UiKit.Div("gfoot", _root);
@@ -306,13 +366,20 @@ namespace ExcelHeroes.UI
 
         void Pull(int count)
         {
-            var results = GachaService.Buy(Game.Player, count);
+            var results = GachaService.Buy(Game.Player, count, pickup: !_normal);
             if (results == null) return;       // buttons are disabled when broke; this is belt and braces
             QuestService.Note(Game.Player, "pull", count);
             Game.Touch();
             _app.StartCoroutine(RevealSequence(results));
         }
 
+        /// <summary>
+        /// The pull, as Blue Archive stages it (the user: tapping through ten cards one by one dragged):
+        /// ONE tell for the batch in its best grade's colour, then the cards dealt face down and turned
+        /// one after another. An A or S charges up in its colour, turns with a burst and stops the deal
+        /// for its entrance (GachaFx.Intro). SKIP turns everything at once and goes to the result; a
+        /// single pull is its entrance. Any result card opens the member's card.
+        /// </summary>
         IEnumerator RevealSequence(List<PullResult> results)
         {
             var again = false;
@@ -320,39 +387,92 @@ namespace ExcelHeroes.UI
             overlay.Clear();
             overlay.RemoveFromClassList("hidden");
             _app.SetNavEnabled(false);
-
             AudioService.Play("pull");
 
-            foreach (var r in results)
+            var skipAll = false; var tapped = false;
+            Button SkipBtn(VisualElement host)
             {
-                var skip = false;
-                overlay.Clear();
-
-                // The tell runs first. A pull with no build-up is just a list of names appearing.
-                var tell = BuildTell(r);
-                overlay.Add(tell);
-                tell.RegisterCallback<ClickEvent>(_ => skip = true);
-                foreach (var step in PlayTell(tell, r, () => skip)) yield return step;
-
-                overlay.Clear();
-                var view = BuildReveal(r, results.Count);
-                overlay.Add(view);
-                view.RegisterCallback<ClickEvent>(_ => skip = true);
-                AudioService.Play(AudioService.RevealId(r.grade));
-                if (r.promoted) AudioService.Play("promote", 0.7f);
-
-                // Long enough to read the line, short enough that a ten-pull never drags.
-                var hold = r.grade == "S" ? 2.2f : r.grade == "A" ? 1.5f : 0.85f;
-                var t = 0f;
-                while (t < hold && !skip) { t += Time.deltaTime; yield return null; }
-                yield return null;   // swallow the click that ended this card
+                var b = UiKit.Btn("SKIP  ▶▶", "gx-skip", () => skipAll = true, host);
+                SkewPlate.Apply(b, SkewPlate.Kind.Glass);
+                return b;
             }
 
-            if (results.Count > 1)
+            // The tell runs first, once. A pull with no build-up is just a list of names appearing.
+            var best = results.OrderByDescending(x => GameData.GradeRank(x.grade)).First();
+            var tell = BuildTell(best);
+            overlay.Add(tell);
+            tell.RegisterCallback<ClickEvent>(_ => tapped = true);
+            SkipBtn(tell);
+            foreach (var step in PlayTell(tell, best, () => tapped || skipAll)) yield return step;
+            yield return null;
+
+            if (results.Count == 1)
             {
-                var done = false;
+                var r0 = results[0];
                 overlay.Clear();
-                overlay.Add(BuildSummary(results, () => done = true, () => { again = true; done = true; }));
+                var intro = GachaFx.Intro(r0);
+                overlay.Add(intro);
+                AudioService.Play(AudioService.RevealId(r0.grade));
+                if (r0.promoted) AudioService.Play("promote", 0.7f);
+                var done0 = false;
+                intro.RegisterCallback<ClickEvent>(_ => done0 = true);
+                while (!done0) yield return null;
+            }
+            else
+            {
+                overlay.Clear();
+                var cards = new List<GachaFx.Card>();
+                var done = false; var dealing = true;
+                VisualElement infoLayer = null;
+                VisualElement view = null;
+                view = BuildSummary(results, cards, false, () => done = true, () => { again = true; done = true; }, r =>
+                {
+                    if (dealing || infoLayer != null) return;
+                    AudioService.Play("tap", 0.5f);
+                    infoLayer = GachaFx.Info(r.hero.id, () => { infoLayer?.RemoveFromHierarchy(); infoLayer = null; });
+                    view.Add(infoLayer);
+                });
+                overlay.Add(view);
+                var foot = view.Q(className: "gx-foot");
+                if (foot != null) foot.style.visibility = Visibility.Hidden;
+                var skip = SkipBtn(view);
+                yield return new WaitForSeconds(0.25f);
+                foreach (var c in cards)
+                {
+                    if (skipAll) break;
+                    if (GachaFx.Big(c.R.grade))
+                    {
+                        // it lights up and shivers in its colour, turns with a burst, then makes its entrance
+                        var len = c.R.grade == "S" ? 0.55f : 0.38f;
+                        GachaFx.Charge(c, len);
+                        AudioService.Play("tap", 0.6f);
+                        var w = 0f;
+                        while (w < len && !skipAll) { w += Time.deltaTime; yield return null; }
+                        c.Charging = false;
+                        GachaFx.Turn(c, skipAll);
+                        AudioService.Play(AudioService.RevealId(c.R.grade));
+                        if (skipAll) break;
+                        yield return new WaitForSeconds(0.25f);
+                        var intro = GachaFx.Intro(c.R);
+                        var go = false;
+                        intro.RegisterCallback<ClickEvent>(_ => go = true);
+                        view.Add(intro); skip.BringToFront();
+                        if (c.R.promoted) AudioService.Play("promote", 0.7f);
+                        while (!go && !skipAll) yield return null;
+                        intro.RemoveFromHierarchy();
+                        yield return null;
+                    }
+                    else
+                    {
+                        GachaFx.Turn(c);
+                        AudioService.Play("tap", 0.3f + 0.05f * GameData.GradeRank(c.R.grade));
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                }
+                foreach (var c in cards) { c.Charging = false; GachaFx.Turn(c, true); }
+                skip.RemoveFromHierarchy();
+                dealing = false;
+                if (foot != null) foot.style.visibility = Visibility.Visible;
                 while (!done) yield return null;
             }
 
@@ -433,47 +553,13 @@ namespace ExcelHeroes.UI
             _rings.Clear();
         }
 
-        VisualElement BuildReveal(PullResult r, int batch)
-        {
-            var grade = GameData.Grade(r.grade);
-            var view = UiKit.Div("reveal");
-
-            var card = UiKit.Div("reveal__card", view);
-            card.style.borderTopColor = card.style.borderBottomColor =
-                card.style.borderLeftColor = card.style.borderRightColor = grade?.Color ?? Color.white;
-
-            var art = UiKit.Div("reveal__art", card);
-            UiKit.SetArt(art, GameData.CardArt(r.hero.id));
-
-            var plate = UiKit.Div("reveal__plate", card);
-            var g = UiKit.Text($"{r.grade} · {grade?.label}", "reveal__grade", plate);
-            g.style.color = grade?.Color ?? Color.white;
-            UiKit.Text(r.hero.name, "reveal__name", plate);
-            UiKit.Text($"{r.hero.nick} · {r.hero.dept}", "reveal__nick", plate);
-            if (!string.IsNullOrEmpty(r.hero.line)) UiKit.Text($"“{r.hero.line}”", "reveal__line", plate);
-
-            if (r.isPickup) UiKit.Text("PICK UP", "reveal__badge", plate);
-            if (r.isNew) UiKit.Text("NEW", "reveal__badge", plate);
-            else if (r.promoted) UiKit.Text($"승급! ★{r.starAfter}", "reveal__badge", plate);
-            else UiKit.Text($"중복 · 승급 조각 {r.copiesAfter}", "reveal__badge", plate);
-
-            if (!string.IsNullOrEmpty(r.pityReason)) UiKit.Text(r.pityReason, "reveal__badge", plate);
-
-            UiKit.Text(batch > 1 ? "탭하여 다음" : "탭하여 닫기", "reveal__hint", view);
-
-            // A small pop on appear so each reveal lands rather than cuts.
-            card.style.scale = new StyleScale(new Scale(new Vector3(0.9f, 0.9f, 1f)));
-            card.schedule.Execute(() => card.style.scale = new StyleScale(new Scale(Vector3.one))).ExecuteLater(16);
-            return view;
-        }
-
         /// <summary>
         /// A ten-pull result built from made-up pulls — one of each grade, two marked new — for
         /// the screenshot driver. Nothing is granted and nothing is saved.
         /// </summary>
         public static VisualElement Sample(System.Action onClose) => new GachaScreen(null).SampleSummary(onClose);
 
-        public VisualElement SampleSummary(System.Action onClose)
+        static List<PullResult> SampleResults()
         {
             var results = new List<PullResult>();
             var grades = new[] { "S", "A", "B", "C", "D", "A", "B", "C", "D", "D" };
@@ -482,19 +568,36 @@ namespace ExcelHeroes.UI
                 var def = GameData.Heroes.Find(h => h.grade == grades[i] && !results.Exists(r => r.hero == h))
                           ?? GameData.Heroes.Find(h => h.grade == grades[i]);
                 if (def == null) continue;
-                results.Add(new PullResult { hero = def, grade = def.grade, isNew = i == 0 || i == 5, starAfter = def.grade == "S" ? 3 : def.grade == "A" ? 2 : 1 });
+                results.Add(new PullResult { hero = def, grade = def.grade, isNew = i == 0 || i == 5, isPickup = i == 0, starAfter = def.grade == "S" ? 3 : def.grade == "A" ? 2 : 1 });
             }
-            return BuildSummary(results, onClose);
+            return results;
         }
 
-        VisualElement BuildSummary(List<PullResult> results, System.Action onClose, System.Action again = null)
+        public VisualElement SampleSummary(System.Action onClose)
         {
-            // Laid out the way the reference lays a ten-pull out: five across and two down on a
-            // pale field, each card a portrait over a dark plate of stars, NEW called out in the
-            // corner, one wide confirm underneath and the pity points in the corner opposite.
-            var view = UiKit.Div("reveal");
-            // a stage under the ten cards, not a flat pale sheet (ui_score 22-Pull10): a soft light
-            // from the centre, diagonal beams, and the result's title top-left
+            var cards = new List<GachaFx.Card>();
+            VisualElement view = null;
+            view = BuildSummary(SampleResults(), cards, true, onClose, null,
+                r => view.Add(GachaFx.Info(r.hero.id, () => view.Q(className: "gx-info")?.RemoveFromHierarchy())));
+            return view;
+        }
+
+        /// <summary>The sample S's entrance, for the screenshot driver.</summary>
+        public static VisualElement SampleIntro() => GachaFx.Intro(SampleResults()[0]);
+
+        /// <summary>A member's card over the result, for the screenshot driver.</summary>
+        public static VisualElement SampleInfo(System.Action onClose)
+        {
+            var v = new GachaScreen(null).SampleSummary(onClose);
+            v.Add(GachaFx.Info(SampleResults()[1].hero.id, onClose));
+            return v;
+        }
+
+        VisualElement BuildSummary(List<PullResult> results, List<GachaFx.Card> cards, bool open, System.Action onClose, System.Action again, System.Action<PullResult> onCard)
+        {
+            // five across and two down on a lit stage (the user: one row of ten upright strips cut the
+            // names and hid the art); each card a hard-leaning parallelogram, the grade at its top right
+            var view = UiKit.Div("reveal gx-result");
             var stage = UiKit.Div("reveal-stage", view); stage.pickingMode = PickingMode.Ignore;
             ModalFrame.Painted(stage, (ctx, r) =>
             {
@@ -510,128 +613,12 @@ namespace ExcelHeroes.UI
             UiKit.Text("RECRUIT RESULT", "reveal-title__en", rtitle);
             UiKit.Text("모집 결과", "reveal-title__ko", rtitle);
 
-            var grid = UiKit.Div("reveal-grid", view);
-            // The Gemini card mock-up (tools/out/design/mock_card_0): all ten in ONE row of tall slanted
-            // cards, the best first, each card washed in its grade's colour (S gold, A violet, B blue,
-            // C / D slate) with a beam of light behind the top grades, the grade letter large in the
-            // corner, stars and the name on a dark foot band.
-            int Rank(string g) => g switch { "S" => 0, "A" => 1, "B" => 2, "C" => 3, _ => 4 };
-            var ordered = results.Select((r, n) => (r, n)).OrderBy(x => Rank(x.r.grade)).ThenBy(x => x.n).Select(x => x.r).ToList();
-            foreach (var r in ordered)
-            {
-                var grade = GameData.Grade(r.grade);
-                var cell = UiKit.Div("reveal-grid__cell", grid);
-                var sprite = GameData.StandingArt(r.hero.id);
-                var card = sprite == null ? GameData.CardArt(r.hero.id) : null;
-                var isS = r.grade == "S"; var isA = r.grade == "A";
-                var (top, bot) = r.grade switch
-                {
-                    "S" => (UiPaint.C(255, 226, 120), UiPaint.C(244, 170, 40)),
-                    "A" => (UiPaint.C(206, 160, 250), UiPaint.C(128, 78, 206)),
-                    "B" => (UiPaint.C(140, 190, 250), UiPaint.C(60, 112, 204)),
-                    _ => (UiPaint.C(176, 188, 204), UiPaint.C(104, 118, 142)),
-                };
-                if (false)
-                {
-                    // the beam: a soft vertical shaft of the grade's light behind the card
-                    var beam = UiKit.Div("reveal-grid__beam", cell);
-                    beam.pickingMode = PickingMode.Ignore;
-                    var t0 = Time.realtimeSinceStartup;
-                    ModalFrame.Painted(beam, (ctx, rr) =>
-                    {
-                        var k = 0.75f + 0.25f * Mathf.Sin((Time.realtimeSinceStartup - t0) * 2.4f);
-                        var c = isS ? UiPaint.C(255, 236, 150) : UiPaint.C(230, 170, 255);
-                        // nested soft bands, widest faintest: a shaft of light with no hard edge
-                        for (var b = 0; b < 7; b++)
-                        {
-                            var f = 1f - b / 7f;
-                            var half = rr.width * 0.5f * f;
-                            var band = UiPaint.RoundRect(Rect.MinMaxRect(rr.center.x - half, rr.yMin, rr.center.x + half, rr.yMax), half * 0.9f);
-                            UiPaint.Fill(ctx, band, UiPaint.WithAlpha(c, 0.1f * k), 2f);
-                        }
-                    });
-                    beam.schedule.Execute(() => beam.MarkDirtyRepaint()).Every(50);
-                }
-                var bodyEl = UiKit.Div("reveal-grid__body", cell);
-                bodyEl.pickingMode = PickingMode.Ignore;
-                ModalFrame.Painted(bodyEl, (ctx, rect) =>
-                {
-                    var slant = SkewPlate.SlantFor(rect.height) * 0.3f;
-                    var outer = UiPaint.SkewRect(rect, slant, 5f);
-                    // a crisp outer glow along the card's edge for the top grades, in place of the airbrushed beam
-                    if (isS) UiPaint.Ring(ctx, outer, UiPaint.C(255, 196, 40, 0.75f), UiPaint.C(255, 196, 40, 0f), 26f);
-                    else if (isA) UiPaint.Ring(ctx, outer, UiPaint.C(176, 96, 250, 0.6f), UiPaint.C(176, 96, 250, 0f), 18f);
-                    UiPaint.Shadow(ctx, outer, new Vector2(0f, 5f), UiPaint.C(20, 40, 80, 0.3f), 10f);
-                    UiPaint.Fill(ctx, outer, Color.white);
-                    var inner = UiPaint.Offset(outer, -3f);
-                    var bandTop = rect.yMax - rect.height * 0.24f;
-                    var artPoly = UiPaint.Clip(inner, new List<Vector2>
-                    {
-                        new Vector2(rect.xMin - 50f, rect.yMin - 50f), new Vector2(rect.xMax + 50f, rect.yMin - 50f),
-                        new Vector2(rect.xMax + 50f, bandTop), new Vector2(rect.xMin - 50f, bandTop),
-                    });
-                    var dest = Rect.MinMaxRect(rect.xMin, rect.yMin + rect.height * 0.04f, rect.xMax, bandTop);
-                    UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(Color.Lerp(top, Color.white, 0.55f), Color.Lerp(bot, Color.white, 0.25f), rect.yMin, bandTop));
-                    if (sprite != null) UiKit.PaintPortrait(ctx, artPoly, sprite, r.hero.id, dest, UiKit.Crop.Bust);
-                    else UiPaint.Image(ctx, artPoly, card, dest, 0.1f);
-                    // the grade's colour washing up from the foot of the art
-                    UiPaint.Fill(ctx, artPoly, UiPaint.Vertical(UiPaint.WithAlpha(bot, 0f), UiPaint.WithAlpha(bot, 0.45f), rect.yMin + rect.height * 0.5f, bandTop), 0f);
-                    var band = UiPaint.Clip(inner, new List<Vector2>
-                    {
-                        new Vector2(rect.xMin - 50f, bandTop), new Vector2(rect.xMax + 50f, bandTop),
-                        new Vector2(rect.xMax + 50f, rect.yMax + 50f), new Vector2(rect.xMin - 50f, rect.yMax + 50f),
-                    });
-                    UiPaint.Fill(ctx, band, UiPaint.Vertical(Color.Lerp(bot, UiPaint.C(20, 30, 60), 0.35f), Color.Lerp(bot, UiPaint.C(14, 20, 44), 0.6f), bandTop, rect.yMax), 0f);
-                    // a thin light line where the art meets the band
-                    UiPaint.Fill(ctx, UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(rect.xMin - 50f, bandTop - 1.5f, rect.xMax + 50f, bandTop + 1.5f), 0f)), UiPaint.WithAlpha(top, 0.95f), 0f);
-                    UiPaint.Stroke(ctx, outer, UiPaint.WithAlpha(bot, 0.9f), 2f);
-                });
-                // the grade on a slanted plate joined to the card's top corner (ui_critique: the floating
-                // outline letter read as a legacy mobile game)
-                var badge = UiKit.Div("reveal-grid__badge", cell);
-                badge.pickingMode = PickingMode.Ignore;
-                ModalFrame.Painted(badge, (ctx, rr) =>
-                {
-                    var plate = UiPaint.SkewRect(rr, SkewPlate.SlantFor(rr.height), 3f);
-                    UiPaint.Shadow(ctx, plate, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.3f), 3f);
-                    UiPaint.Fill(ctx, plate, UiPaint.Vertical(Color.Lerp(top, Color.white, 0.1f), bot, rr.yMin, rr.yMax));
-                    UiPaint.Stroke(ctx, plate, UiPaint.C(255, 255, 255, 0.9f), 1.5f);
-                });
-                UiKit.Text(r.grade, "reveal-grid__badgetext", badge).pickingMode = PickingMode.Ignore;
-                var stars = UiKit.Text(new string('★', Mathf.Clamp(r.starAfter, 1, 5)), "reveal-grid__stars2", cell);
-                stars.pickingMode = PickingMode.Ignore;
-                if (isS)
-                {
-                    var fx = UiKit.Div("reveal-grid__sfx", cell);
-                    fx.pickingMode = PickingMode.Ignore;
-                    var t0 = Time.realtimeSinceStartup;
-                    ModalFrame.Painted(fx, (ctx, rr) =>
-                    {
-                        var t = Time.realtimeSinceStartup - t0;
-                        for (var i = 0; i < 8; i++)
-                        {
-                            var a = i / 8f * Mathf.PI * 2f + t * 0.6f;
-                            var c = rr.center + new Vector2(Mathf.Cos(a) * rr.width * 0.58f, Mathf.Sin(a) * rr.height * 0.56f);
-                            var k = 0.5f + 0.5f * Mathf.Sin(t * 5f + i * 1.7f);
-                            var sz = 8f + 10f * k;
-                            UiPaint.Fill(ctx, Star4(c, sz), UiPaint.C(255, 244, 200, 0.4f + 0.6f * k));
-                        }
-                    });
-                    fx.schedule.Execute(() => fx.MarkDirtyRepaint()).Every(33);
-                }
+            var grid = GachaFx.Grid(results, cards, open);
+            view.Add(grid);
+            foreach (var c in cards) { var cc = c; c.Root.RegisterCallback<ClickEvent>(_ => { if (cc.Open) onCard?.Invoke(cc.R); }); }
+            UiKit.Text("카드를 누르면 사원 정보", "gx-result__hint", view).pickingMode = PickingMode.Ignore;
 
-                if (r.isNew) UiKit.Text("NEW", "reveal-grid__new reveal-grid__new--on", cell).pickingMode = PickingMode.Ignore;
-                var nameLabel = UiKit.Text(r.hero.name, "reveal-grid__name", cell);
-                nameLabel.pickingMode = PickingMode.Ignore;
-                // a long name shrinks to its card rather than running into the next one
-                // a long title breaks onto two lines at its space (VLOOKUP / 분석가), same size as the rest
-                var nm = r.hero.name;
-                if (nm.Length >= 6 && nm.Contains(' ')) { var sp = nm.LastIndexOf(' '); nameLabel.text = nm.Substring(0, sp) + '\n' + nm.Substring(sp + 1); nameLabel.AddToClassList("reveal-grid__name--two"); }
-            }
-
-            var foot = UiKit.Div("reveal-foot", view);
-            // 확인, and beside it the same pull again — the reference's result screen offers both
-            // (ui_critique round 3, 21-Pull10 #3)
+            var foot = UiKit.Div("reveal-foot gx-foot", view);
             var ok = UiKit.Btn("확인", "btn btn--primary reveal-foot__ok", onClose, foot);
             SkewPlate.Apply(ok, SkewPlate.Kind.Primary);
             if (again != null && Game.Player != null)
@@ -647,7 +634,7 @@ namespace ExcelHeroes.UI
 
             var points = UiKit.Div("reveal-points", view);
             UiKit.Text("모집 포인트", "reveal-points__label", points);
-            UiKit.Text(Game.Player.sparkPoints.ToString("N0"), "reveal-points__value", points);
+            UiKit.Text((Game.Player?.sparkPoints ?? 0).ToString("N0"), "reveal-points__value", points);
             return view;
         }
     }

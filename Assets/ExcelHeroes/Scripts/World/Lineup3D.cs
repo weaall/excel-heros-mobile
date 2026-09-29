@@ -120,7 +120,7 @@ namespace ExcelHeroes.World
                 var owned = Game.Player?.Find(id);
                 var spec = BackSheet.For(def, owned);
                 if (!rig.Sprite) ChibiBuilder.AddSheet(rig, SheetTexture.For(spec, id), spec.Left ? 1 : -1, Layer);
-                if (rig.RefModel) SdRef.WearSheet(rig, 1f);
+                if (rig.RefModel) SdRef.WearSheet(rig, 0.78f, back: 0.6f, side: 0.2f, up: 0.74f);   // well behind the squad: a presence, not a thing through the hair
                 SetLayer(rig.Root, Layer);
                 rig.Root.localPosition = rig.Home = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
                 // 0.92 of the floor-to-top height: long hair no longer spills into the next member's card (ui_gate 08-Party)

@@ -195,6 +195,11 @@ namespace ExcelHeroes.Core
                             yield return new WaitForSeconds(0.45f);
                             yield return Shoot($"{n:00}-Fight{f}");
                         }
+                        // the battle's 메뉴, open over the live fight
+                        BattleScreen.Current?.DebugMenu(true);
+                        yield return new WaitForSeconds(0.3f);
+                        yield return Shoot($"{n:00}-Menu");
+                        BattleScreen.Current?.DebugMenu(false);
                         // The boss HUD (bar, layer badge, trail) and the hit rings only exist in a
                         // boss wave, which a capture pass never reaches on its own: bring it on.
                         Debug.Log("[shots] before boss: " + BattleScreen.Current?.DebugState());
@@ -236,6 +241,12 @@ namespace ExcelHeroes.Core
                             yield return new WaitForSeconds(0.16f);
                             yield return Shoot($"{n:00}-Skill{hi}-{st}");
                             yield return new WaitForSeconds(0.6f);
+                        }
+
+                        // a member going down: the death motion, three frames of it and the body lying
+                        if (BattleScreen.Current?.DebugDown(4) == true)
+                        {
+                            for (var df = 0; df < 4; df++) { yield return new WaitForSeconds(df == 3 ? 0.6f : 0.22f); yield return Shoot($"{n:00}-Down{df}"); }
                         }
 
                         // -burst: a run of close frames (24 × 0.07 s) to judge the motion in time —
@@ -316,6 +327,29 @@ namespace ExcelHeroes.Core
                 yield return null;
                 yield return null;
                 yield return Shoot($"{n++:00}-Pull10");
+                app.CloseOverlay();
+                // the entrance of an S, the member's card over the result, and the 일반 banner
+                app.OpenOverlay(GachaScreen.SampleIntro());
+                yield return new WaitForSeconds(0.7f);
+                yield return Shoot($"{n - 1:00}-PullIntro");
+                app.OpenOverlay(GachaScreen.SampleInfo(app.CloseOverlay));
+                yield return new WaitForSeconds(0.4f);
+                yield return Shoot($"{n - 1:00}-PullInfo");
+                app.CloseOverlay();
+                app.Show(AppRoot.Sheet.Gacha);
+                yield return new WaitForSeconds(0.4f);
+                GachaScreen.Current?.DebugBanner(true);
+                yield return null; yield return null;
+                yield return Shoot($"{n - 1:00}-GachaNormal");
+                GachaScreen.Current?.DebugBanner(false);
+
+                // 설정, each tab
+                for (var st = 0; st < 3; st++)
+                {
+                    app.OpenSettings(st);
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Shoot($"{n - 1:00}-Settings{st}");
+                }
                 app.CloseOverlay();
 
                 app.Show(AppRoot.Sheet.Home);

@@ -36,6 +36,9 @@ namespace ExcelHeroes.World
         public float Squash;
         // Spread: both legs out to the sides (degrees each, + = apart) — a wide combat stance
         public float Spread;
+        // Pitch: the whole figure tipped about its feet (degrees, + = forward, − = over backwards) — a fall;
+        // applied at the root by whoever places it (BattleWorld, the preview)
+        public float Pitch;
         // Free: off the ground on purpose (lying down, spinning) — SdPose.Apply does not plant the feet
         public bool Free;
         public string Expr;
@@ -48,7 +51,7 @@ namespace ExcelHeroes.World
             o[8] = KneeL; o[9] = KneeR; o[10] = ThighL; o[11] = ThighR; o[12] = Lean; o[13] = Twist; o[14] = SpineBend; o[15] = SpineTwist;
             o[16] = SpineSide; o[17] = HeadPitch; o[18] = HeadYaw; o[19] = HeadTilt; o[20] = Y; o[21] = HandFlexL; o[22] = HandFlexR;
             o[23] = HandDevL; o[24] = HandDevR; o[25] = ToeL; o[26] = ToeR; o[27] = FistL; o[28] = FistR; o[29] = Sway; o[30] = HipRoll;
-            o[31] = ShrugL; o[32] = ShrugR; o[33] = ReachL; o[34] = ReachR; o[35] = Step; o[36] = Squash; o[37] = Spread; o[38] = 0f; o[39] = 0f;
+            o[31] = ShrugL; o[32] = ShrugR; o[33] = ReachL; o[34] = ReachR; o[35] = Step; o[36] = Squash; o[37] = Spread; o[38] = Pitch; o[39] = 0f;
         }
         public void FromArray(float[] o)
         {
@@ -56,7 +59,7 @@ namespace ExcelHeroes.World
             KneeL = o[8]; KneeR = o[9]; ThighL = o[10]; ThighR = o[11]; Lean = o[12]; Twist = o[13]; SpineBend = o[14]; SpineTwist = o[15];
             SpineSide = o[16]; HeadPitch = o[17]; HeadYaw = o[18]; HeadTilt = o[19]; Y = o[20]; HandFlexL = o[21]; HandFlexR = o[22];
             HandDevL = o[23]; HandDevR = o[24]; ToeL = o[25]; ToeR = o[26]; FistL = o[27]; FistR = o[28]; Sway = o[29]; HipRoll = o[30];
-            ShrugL = o[31]; ShrugR = o[32]; ReachL = o[33]; ReachR = o[34]; Step = o[35]; Squash = o[36]; Spread = o[37];
+            ShrugL = o[31]; ShrugR = o[32]; ReachL = o[33]; ReachR = o[34]; Step = o[35]; Squash = o[36]; Spread = o[37]; Pitch = o[38];
         }
 
         /// <summary>
@@ -120,7 +123,7 @@ namespace ExcelHeroes.World
                 ToeL = Mathf.Lerp(a.ToeL, b.ToeL, t), ToeR = Mathf.Lerp(a.ToeR, b.ToeR, t),
                 Sway = Mathf.Lerp(a.Sway, b.Sway, t), HipRoll = Mathf.Lerp(a.HipRoll, b.HipRoll, t),
                 FistL = Mathf.Lerp(a.FistL, b.FistL, t), FistR = Mathf.Lerp(a.FistR, b.FistR, t),
-                Spread = Mathf.Lerp(a.Spread, b.Spread, t),
+                Spread = Mathf.Lerp(a.Spread, b.Spread, t), Pitch = Mathf.Lerp(a.Pitch, b.Pitch, t),
             };
         }
 
@@ -853,19 +856,36 @@ namespace ExcelHeroes.World
             return p;
         }
 
-        /// <summary>k 0 → 1: the knees buckle, the body folds and falls forward, bounces once and lies.</summary>
+        /// <summary>Seconds of a member going down (BattleWorld): the blow, over backwards, one bounce, lying.</summary>
+        public const float DeadLen = 0.95f;
+
+        /// <summary>
+        /// k 0 → 1 over <see cref="DeadLen"/>: going down the way a chibi reads it (the user: the old fold —
+        /// feet planted, the trunk bent 74° over them, hands at the face — looked like a floating
+        /// kneel and tore the mesh). The blow snaps the knees and throws the head and arms back; she
+        /// tips over backwards about her heels (Pitch, falling faster as she goes), lands on her back
+        /// with one bounce, and lies face up, arms out, one knee raised, the spiral eyes on.
+        /// </summary>
         public static Pose Dead(float k)
         {
-            var p = Pose.Rest; p.Expr = k > 0.3f ? "dizzy" : "hurt";   // the feet stay planted: the body folds forward over them (MotionTest: a hand-set drop sank them 4 cm)      // spiral eyes once down, the knocked-out face
-            var buckle = EaseOut(k / 0.3f);
-            var fall = k < 0.3f ? 0f : EaseIn((k - 0.3f) / 0.5f);
-            var bounce = k > 0.8f ? Mathf.Sin(Mathf.Clamp01((k - 0.8f) / 0.2f) * Mathf.PI) * (1f - (k - 0.8f) / 0.2f) : 0f;
-            p.KneeL = 20f + 40f * buckle; p.KneeR = 25f + 35f * buckle;
-            p.RaiseL = Mathf.Lerp(-36f, -10f, buckle) + fall * 20f; p.RaiseR = Mathf.Lerp(-36f, -14f, buckle) + fall * 16f;
-            p.SwingL = 10f * buckle + fall * 30f; p.SwingR = 8f * buckle + fall * 34f; p.ElbowL = 14f + 40f * buckle; p.ElbowR = 14f + 30f * buckle;
-            p.Lean = 10f * buckle + 74f * fall + bounce * 6f; p.SpineBend = 6f * buckle + 10f * fall;
-            p.HeadPitch = -8f * buckle + 14f * fall; p.HeadTilt = 6f * fall; p.ShrugL = p.ShrugR = 8f * buckle;
-            p.Step = 0.05f * fall;
+            var p = Pose.Rest; p.Free = true;
+            p.Expr = k > 0.3f ? "dizzy" : "hurt";
+            var jolt = k < 0.16f ? EaseOut(k / 0.16f) : 1f;
+            var fall = k < 0.16f ? 0f : EaseIn(Mathf.Clamp01((k - 0.16f) / 0.36f));
+            var land = Mathf.Clamp01((k - 0.52f) / 0.48f);
+            var bounce = k > 0.52f && k < 0.78f ? Mathf.Sin((k - 0.52f) / 0.26f * Mathf.PI) : 0f;
+            p.Pitch = -82f * fall + 9f * bounce;
+            p.Y = 0.1f * fall + 0.04f * bounce;                 // the back on the floor, not the spine in it
+            p.RaiseL = Mathf.Lerp(-36f, 10f, jolt) + 46f * fall; p.RaiseR = Mathf.Lerp(-36f, 18f, jolt) + 40f * fall;
+            p.SwingL = p.SwingR = Mathf.Lerp(3f, 24f, jolt) - 18f * fall;
+            p.ElbowL = 16f + 34f * jolt - 16f * land; p.ElbowR = 16f + 26f * jolt - 8f * land;
+            p.HandFlexL = p.HandFlexR = 12f; p.FistL = p.FistR = 0.25f;
+            p.KneeL = 28f * jolt * (1f - fall) + 12f * fall; p.KneeR = 22f * jolt * (1f - fall) + 44f * fall;
+            p.ThighR = 26f * fall; p.Spread = 7f * fall;
+            p.Lean = 10f * jolt * (1f - fall); p.SpineBend = -8f * jolt * (1f - land * 0.5f);
+            p.HeadPitch = -9f * jolt * (1f - fall) + 4f * fall; p.HeadTilt = 10f * land; p.HeadYaw = 16f * land;
+            p.ShrugL = p.ShrugR = 10f * jolt * (1f - land);
+            p.Squash = -0.06f * jolt * (1f - fall) - 0.05f * bounce;
             return p;
         }
 

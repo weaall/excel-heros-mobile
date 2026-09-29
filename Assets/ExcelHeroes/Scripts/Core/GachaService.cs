@@ -58,7 +58,9 @@ namespace ExcelHeroes.Core
             return a + s <= 0f ? 0f : s / (a + s);
         }
 
-        public static PullResult Pull(PlayerState p)
+        /// <param name="pickup">the 픽업 모집 banner (half of S / A on the featured card, 모집 포인트 accrue);
+        /// false is 일반 모집 — every card of the grade equally, no points (they buy the featured card)</param>
+        public static PullResult Pull(PlayerState p, bool pickup = true)
         {
             var grade = RollGrade(p, out var pityReason);
             var pool = GameData.OfGrade(grade).ToList();
@@ -67,12 +69,12 @@ namespace ExcelHeroes.Core
             // 오늘의 픽업: half of every S and A lands on the featured card instead of rolling
             // uniformly across the grade. This is what makes a banner worth showing up for.
             var featured = GameData.Featured(grade, DateTime.UtcNow);
-            var onPickup = featured != null && Random.value < (GameData.Pickup?.rate ?? 0.5f);
+            var onPickup = pickup && featured != null && Random.value < (GameData.Pickup?.rate ?? 0.5f);
             var hero = onPickup ? featured : pool[Random.Range(0, pool.Count)];
 
             // 모집 포인트 accrue on every pull and never expire, so even the worst run converges
             // on the card eventually — the floor under the floor.
-            p.sparkPoints++;
+            if (pickup) p.sparkPoints++;
 
             p.totalPulls++;
             p.pullsSinceA = GameData.GradeRank(grade) >= GameData.GradeRank("A") ? 0 : p.pullsSinceA + 1;
@@ -126,10 +128,10 @@ namespace ExcelHeroes.Core
             return Math.Max(1, grade.promote[i] / Math.Max(1, GameData.Balance.unlockShards));
         }
 
-        public static List<PullResult> PullMany(PlayerState p, int count)
+        public static List<PullResult> PullMany(PlayerState p, int count, bool pickup = true)
         {
             var results = new List<PullResult>(count);
-            for (var i = 0; i < count; i++) results.Add(Pull(p));
+            for (var i = 0; i < count; i++) results.Add(Pull(p, pickup));
             return results;
         }
 
@@ -141,11 +143,11 @@ namespace ExcelHeroes.Core
         public static bool CanAfford(PlayerState p, int count) => p.gems >= CostFor(count);
 
         /// <summary>Spends gems and rolls. Returns null when the player cannot pay.</summary>
-        public static List<PullResult> Buy(PlayerState p, int count)
+        public static List<PullResult> Buy(PlayerState p, int count, bool pickup = true)
         {
             if (!CanAfford(p, count)) return null;
             p.gems -= CostFor(count);
-            return PullMany(p, count);
+            return PullMany(p, count, pickup);
         }
 
         /// <summary>Pulls left before each floor triggers — shown on the banner so the player can plan.</summary>
