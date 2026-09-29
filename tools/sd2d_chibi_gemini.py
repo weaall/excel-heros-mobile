@@ -30,6 +30,16 @@ ASK = ("Image 1 shows a character (her face, hair, eyes, glasses, outfit and col
        "face, hair, clothes or colours. Plain flat pure white background, no shadow, no text, one character.")
 
 
+# per-character corrections for a redo, read off a bad result
+NOTES = {
+    "staff_park": "She wears NO glasses. Her hands hold nothing but her ID lanyard.",
+    "translator_ji": "She wears NO glasses.",
+    "cpo": "She wears NO glasses. She holds her notebook to her chest as in image 1.",
+    "helpdesk": "Her hands are empty (no tablet, no phone); the headphones hang around her neck as in image 1.",
+    "reception_go": "Her hands are clasped in front of her, empty (no tablet).",
+}
+
+
 def part(path):
     im = Image.open(path).convert("RGBA"); bg = Image.new("RGBA", im.size, (255, 255, 255, 255)); bg.alpha_composite(im)
     buf = io.BytesIO(); bg.convert("RGB").save(buf, "PNG")
@@ -39,9 +49,12 @@ def part(path):
 def make(key, hid):
     src = os.path.join(QWEN, hid + ".png")
     if not os.path.exists(src): src = os.path.join(STAND, hid + ".png")
-    ref = os.path.join(OLD, hid + ".png")
+    # SD_REF: another proportion reference (her own old SD carries her old hair, glasses and props into the new one)
+    ref = os.environ.get("SD_REF") or os.path.join(OLD, hid + ".png")
     if not os.path.exists(ref): ref = os.path.join(OLD, "cso.png")
-    body = json.dumps({"contents": [{"parts": [part(src), part(ref), {"text": ASK}]}],
+    # SD_NOTE: a correction appended for a redo ("she wears NO glasses")
+    note = NOTES.get(hid, "") or os.environ.get("SD_NOTE", "")
+    body = json.dumps({"contents": [{"parts": [part(src), part(ref), {"text": ASK + (" " + note if note else "")}]}],
                        "generationConfig": {"responseModalities": ["IMAGE"], "temperature": 0.5, "imageConfig": {"aspectRatio": "4:5"}}}).encode("utf-8")
     for model in g.MODELS:
         req = urllib.request.Request(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent", data=body, method="POST",
