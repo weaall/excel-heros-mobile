@@ -7000,3 +7000,8 @@
 .sheet-head__stat { font-size: 38px; }
 .sheet-head .muted { color: rgb(60, 76, 100); font-size: 26px; }
 .pslot--stand .pslot__name { font-size: 24px; }
+.pslot--stand .pslot__name.pslot__name--two { height: 50px; font-size: 21px; white-space: normal; }
+.party-intel__k { font-size: 24px; }
+.party-strip .synergy-line { color: rgb(0, 86, 170); margin-bottom: 6px; }
+.party-strip .statcell__val { color: rgb(20, 36, 64); -unity-font-style: bold; }
+.party-strip .statcell__key { color: rgb(110, 126, 148); }

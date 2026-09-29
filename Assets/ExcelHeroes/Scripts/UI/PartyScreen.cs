@@ -321,6 +321,8 @@ namespace ExcelHeroes.UI
                 UiKit.Text($"Lv.{owned.level}", "pslot__lv", lvRow);
                 if (owned.star > 0) UiKit.Text($"★{System.Math.Clamp(owned.star, 0, 5)}", "pslot__lvstar", lvRow);
                 var nm = UiKit.Text(def.name, "pslot__name", lines);
+                // a long title breaks at its space rather than running to the plate's edge
+                if (def.name.Length > 8 && def.name.Contains(' ')) { var sp = def.name.LastIndexOf(' '); nm.text = def.name.Substring(0, sp) + "\n" + def.name.Substring(sp + 1); nm.AddToClassList("pslot__name--two"); }
                 
 
                 // the member's attack type, with ▲ / ▼ against this phase's errors
