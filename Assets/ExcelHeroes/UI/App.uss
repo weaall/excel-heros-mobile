@@ -6886,3 +6886,21 @@
 .navtab__label { font-size: 34px; }
 .gstage__notebox .gstage__note { color: rgb(255, 255, 255); }
 .gstage__sub { -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(255, 255, 255, 0.9); }
+/* gate r17 */
+.home__campaign-tag-text { color: rgb(0, 229, 255); -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Bold%20SDF.asset"); }
+.home__icon-label { font-size: 30px; }
+.navtab__label { font-size: 30px; }
+.navtab__icon.art-icon { width: 84px; height: 84px; }
+.shell--lobby .plate__name { -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Bold%20SDF.asset"); font-size: 38px; }
+.gstage__title { -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Bold%20SDF.asset"); font-size: 104px; letter-spacing: -2px; }
+.gstage__kicker { margin-bottom: 10px; }
+.gstage__sub { color: rgb(0, 98, 190); }
+.gstage__notebox .gstage__note { color: rgb(30, 44, 70); }
+.gstage__days-text { -unity-text-align: middle-center; }
+/* battle objective: a kicker over the count */
+.bkill { flex-wrap: wrap; height: 86px; padding-top: 4px; }
+.bkill__kicker { width: 100%; font-size: 15px; letter-spacing: 3px; color: rgb(0, 214, 255); margin: 0 0 -4px 0; padding: 0; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-SemiBold%20SDF.asset"); -unity-font-style: normal; }
+/* EX cost badge above the card's corner, off the face */
+.ex-button__cost { top: -34px; left: -12px; }
+.qrow__meta, .qrow__track { align-self: center; }
+.stamp__go .plate__label { -unity-text-align: middle-center; margin: 0; padding: 0; }

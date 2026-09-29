@@ -98,7 +98,7 @@ namespace ExcelHeroes.UI
             // a dark glass strip with a cyan edge, white type (ui_critique r6 09-Gacha #2)
             ModalFrame.Painted(noteBox, (ctx, r) =>
             {
-                UiPaint.Fill(ctx, UiPaint.RoundRect(r, 4f), UiPaint.C(20, 36, 62));
+                UiPaint.Fill(ctx, UiPaint.RoundRect(r, 4f), UiPaint.C(255, 255, 255, 0.9f));
                 UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMin + 5f, r.yMax), 0f), UiPaint.C(0, 212, 255));
             });
             UiKit.Text($"S 등급 {GameData.Grade("S")?.rate ?? 0.005f:P1} 중 절반이 픽업 사원으로 · 첫 10회 모집은 S 확정",

@@ -140,7 +140,7 @@ namespace ExcelHeroes.UI
             ModalFrame.Painted(tag, (ctx, r) =>
             {
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height), 4f);
-                UiPaint.Fill(ctx, poly, UiPaint.C(255, 43, 102));
+                UiPaint.Fill(ctx, poly, UiPaint.C(20, 33, 54));
             });
             UiKit.Text("캠페인 진행중", "home__campaign-tag-text", tag).pickingMode = PickingMode.Ignore;
             Juice.Press(campaign);
