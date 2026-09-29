@@ -6826,3 +6826,7 @@
 .bresult__kicker { margin: 6px 0 0 8px; }
 .saybubble__tail { left: 25%; }
 .bresult__btn .plate__label { font-size: 38px; }
+.pslot--stand .pslot__plate { height: 104px; justify-content: center; }
+.pslot--stand .pslot__row { align-items: center; height: 100%; padding: 6px 0 10px 0; }
+.pslot--stand .pslot__lines { justify-content: center; }
+.pslot--stand .pslot__name { height: 36px; margin-top: 2px; }
