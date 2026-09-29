@@ -668,7 +668,7 @@ namespace ExcelHeroes.UI
             {
                 var conv = Row(body, $"남는 중복 {spare}장",
                     $"강화 카드 {spare * ScoutService.CardValue(owned):N0}장으로 바꿉니다");
-                UiKit.Btn("변환", "skin-row__btn", () =>
+                UiKit.Btn("변환", "skin-row__btn skin-row__btn--buy", () =>
                 {
                     var got = ScoutService.Convert(p, owned);
                     if (got <= 0) return;

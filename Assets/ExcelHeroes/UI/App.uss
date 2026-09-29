@@ -6637,3 +6637,23 @@
 .pslot--stand .pslot__lines { padding-right: 8px; }
 .pslot__atk { top: 8px; bottom: auto; right: 10px; height: 26px; }
 .pslot__stars-inline { right: auto; left: 128px; top: 10px; }
+/* gate r2 */
+.chip__icon { margin-right: 14px; }
+.chip__value { margin-right: 16px; -unity-text-align: middle-left; }
+.topbar .chip { padding-left: 22px; padding-right: 8px; }
+.home__bubble { left: 48.5%; }
+.stamp__go .plate__label { font-size: 36px; -unity-font-style: bold; -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgba(0, 70, 130, 0.55); letter-spacing: 1px; }
+.plate--off .plate__label { color: rgb(96, 110, 132); }
+.dplate__heart { -unity-text-align: middle-left; align-self: center; margin-top: 8px; }
+.saybubble { width: auto; max-width: 620px; white-space: nowrap; }
+.bresult__info { opacity: 0.94; }
+.notice__list .nrow--on { background-color: rgb(214, 238, 252); border-color: rgb(0, 170, 240); border-width: 2px; border-left-width: 6px; }
+.modal__title { font-size: 44px; }
+.pslot__lv, .pslot__stars-inline { -unity-text-align: middle-left; }
+.party-strip .synergy-line { margin-bottom: 8px; }
+.promo-cond__track { height: 12px; border-radius: 6px; }
+.promo-cond__fill { border-radius: 6px; }
+.skin-row__name { font-size: 30px; -unity-font-style: bold; margin: 0 0 4px 0; padding: 0; }
+.skin-row__desc { font-size: 22px; color: rgb(96, 110, 132); margin: 0; padding: 0; }
+.skin-row__text { justify-content: center; }
+.skin-row__on, .skin-row__btn { min-width: 220px; }
