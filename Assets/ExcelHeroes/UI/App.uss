@@ -6231,3 +6231,10 @@
 .home__campaign-sub { font-size: 22px; margin-top: -6px; }
 .home__campaign-mark { width: 120px; height: 120px; top: 64px; right: 40px; }
 .home__campaign-tag { height: 48px; }
+.skin-row__btn { background-color: rgba(0, 0, 0, 0); border-width: 0; min-width: 170px; height: 72px; }
+.skin-row__btn .plate__label { font-size: 26px; }
+.skin-row__text .muted, .skin-row .muted { font-size: 20px; }
+/* ten-pull names: two lines inside the card, never across the next one */
+.reveal-grid__name { font-size: 19px; white-space: normal; -unity-text-align: middle-center; overflow: hidden; }
+.reveal-grid__stars2 { font-size: 26px; }
+.reveal-grid__name { white-space: nowrap; left: 6%; right: 10%; }

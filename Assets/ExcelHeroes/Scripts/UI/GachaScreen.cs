@@ -596,7 +596,11 @@ namespace ExcelHeroes.UI
                 }
 
                 if (r.isNew) UiKit.Text("NEW", "reveal-grid__new reveal-grid__new--on", cell).pickingMode = PickingMode.Ignore;
-                UiKit.Text(r.hero.name, "reveal-grid__name", cell).pickingMode = PickingMode.Ignore;
+                var nameLabel = UiKit.Text(r.hero.name, "reveal-grid__name", cell);
+                nameLabel.pickingMode = PickingMode.Ignore;
+                // a long name shrinks to its card rather than running into the next one
+                var len = r.hero.name.Length;
+                if (len > 5) nameLabel.style.fontSize = Mathf.Max(14f, 19f * 5.5f / len);
             }
 
             var foot = UiKit.Div("reveal-foot", view);

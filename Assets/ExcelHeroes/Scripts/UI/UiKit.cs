@@ -43,6 +43,10 @@ namespace ExcelHeroes.UI
             // The plate is drawn, not styled: the reference's buttons are parallelograms and USS
             // has no skew. See SkewPlate for why this is a mesh rather than a 9-sliced picture.
             var kind = SkewPlate.KindFor(classes);
+            // the rows' small action buttons were flat web buttons: the kit's plate too — the buying
+            // one filled, the rest the secondary outline (a caller may still re-apply another kind)
+            if (!kind.HasValue && classes != null && classes.Contains("skin-row__btn"))
+                kind = classes.Contains("skin-row__btn--buy") ? SkewPlate.Kind.Primary : SkewPlate.Kind.Light;
             if (kind.HasValue) SkewPlate.Apply(b, kind.Value);
             parent?.Add(b);
             return b;
