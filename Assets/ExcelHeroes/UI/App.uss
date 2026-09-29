@@ -6938,3 +6938,4 @@
 /* gate r20: the English sub-title reads at a glance */
 .navback__en { font-size: 32px; color: rgb(0, 96, 176); letter-spacing: 3px; margin-top: 8px; }
 .gstage__days { border-radius: 2px; }
+.cost-slot { padding: 0 20px 0 10px; height: 68px; } .cost-slot__box { margin-right: 12px; } .chip__icon { margin-right: 16px; } .chip__plus { margin-left: 14px; }
