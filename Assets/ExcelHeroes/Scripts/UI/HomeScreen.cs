@@ -79,7 +79,6 @@ namespace ExcelHeroes.UI
             LobbyIcon(icons, "notice", Icons.Chart, "공지", "home__glyph--blue", () => InboxPanels.OpenNotice(_app, RefreshDots), () => NoticeService.Unread(Game.Player) > 0);
             LobbyIcon(icons, "mail", Icons.Chart, "우편", "home__glyph--blue", () => InboxPanels.OpenMail(_app, RefreshDots), () => MailService.Unclaimed(Game.Player) > 0);
             LobbyIcon(icons, "messenger", Icons.Story, "메신저", "home__glyph--pink", () => _app.Show(AppRoot.Sheet.Story));
-            LobbyIcon(icons, "tasks", Icons.Tasks, "업무", "home__glyph--blue", () => _app.Show(AppRoot.Sheet.Quests));
             LobbyIcon(icons, "shop", Icons.Gacha, "상점", "home__glyph--cyan", () => _app.Show(AppRoot.Sheet.Shop), () => ShopService.HasFree(Game.Player));
 
             // ---- Right-Floating Speech Bubble ---------------------------------------------
@@ -107,23 +106,38 @@ namespace ExcelHeroes.UI
             // The reference's lobby enters the game through a cyan folder with a white plate
             // under it and a pink "in progress" tag — not a button. It is the one object on the
             // screen that is obviously the way in.
+            // the lobby's way in: one cyan slanted panel (ui_critique 05-Home #1) — an English sub-label,
+            // 업무 large, the phase and a gauge through it, the battle mark on the right, the pink tag on top
             var campaign = UiKit.Div("home__campaign", _root);
-            var folder = UiKit.Div("home__folder", campaign);
-            ModalFrame.Painted(folder, DrawFolder);
-            UiKit.Text(Icons.Battle, "icon home__folder-glyph", folder).pickingMode = PickingMode.Ignore;
-            var plate = UiKit.Div("home__campaign-plate", campaign);
-            // cyan, white type: the white plate sank into the bright lounge (ui_critique, 05-Home #1),
-            // and the lobby's one way in has to be its loudest object after the character
-            ModalFrame.Painted(plate, (ctx, r) => SkewPlate.DrawPlate(ctx, r, SkewPlate.Kind.Primary, accents: false));
-            UiKit.Text("업무", "home__campaign-label", plate).pickingMode = PickingMode.Ignore;
-            UiKit.Text($"PHASE {Mathf.Max(1, Game.Player?.stage ?? 1)}", "home__campaign-sub", plate).pickingMode = PickingMode.Ignore;
+            var stage = Mathf.Max(1, Game.Player?.stage ?? 1);
+            var prog = ((stage - 1) % 10 + 1) / 10f;
+            ModalFrame.Painted(campaign, (ctx, r) =>
+            {
+                var body = Rect.MinMaxRect(r.xMin, r.yMin + 26f, r.xMax, r.yMax);
+                var slant = SkewPlate.SlantFor(body.height) * 0.9f;
+                var lip = UiPaint.SkewRect(Rect.MinMaxRect(body.xMin, body.yMin + 6f, body.xMax, body.yMax), slant, 6f);
+                UiPaint.Shadow(ctx, lip, new Vector2(0f, 8f), UiPaint.C(0, 60, 130, 0.3f), 16f);
+                UiPaint.Fill(ctx, lip, UiPaint.C(0, 132, 206));
+                var face = UiPaint.SkewRect(Rect.MinMaxRect(body.xMin, body.yMin, body.xMax, body.yMax - 6f), slant, 6f);
+                UiPaint.Fill(ctx, face, UiPaint.Horizontal(UiPaint.C(0, 148, 255), UiPaint.C(0, 210, 255), body.xMin, body.xMax));
+                UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(body.xMin - 20f, body.yMin), new(body.xMax + 20f, body.yMin), new(body.xMax + 20f, body.yMin + body.height * 0.34f), new(body.xMin - 20f, body.yMin + body.height * 0.4f) }, face), UiPaint.C(255, 255, 255, 0.2f), 0f);
+                UiPaint.Stroke(ctx, face, UiPaint.C(179, 229, 252), 2f);
+                // the gauge
+                var gx0 = body.xMin + slant + 30f; var gx1 = body.xMax - 150f; var gy = body.yMax - 34f;
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx1, gy + 10f), 3f), UiPaint.C(0, 0, 0, 0.22f));
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx0 + (gx1 - gx0) * prog, gy + 10f), 3f), UiPaint.C(255, 232, 20));
+            });
+            var words = UiKit.Div("home__campaign-words", campaign); words.pickingMode = PickingMode.Ignore;
+            UiKit.Text("TASK OPERATION", "home__campaign-en", words).pickingMode = PickingMode.Ignore;
+            UiKit.Text("업무", "home__campaign-label", words).pickingMode = PickingMode.Ignore;
+            UiKit.Text($"PHASE {stage}", "home__campaign-sub", words).pickingMode = PickingMode.Ignore;
+            var mark = UiKit.Div("home__campaign-mark", campaign); mark.pickingMode = PickingMode.Ignore;
+            var battleArt = GameData.Icon("battle"); if (battleArt != null) UiKit.SetArt(mark, battleArt);
             var tag = UiKit.Div("home__campaign-tag", campaign);
             ModalFrame.Painted(tag, (ctx, r) =>
             {
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height), 4f);
-                UiPaint.Shadow(ctx, poly, new Vector2(0f, 2f), UiPaint.C(80, 10, 40, 0.3f), 4f);
-                UiPaint.Fill(ctx, poly, Color.white);
-                UiPaint.Fill(ctx, UiPaint.Offset(poly, -2f), UiPaint.Vertical(UiPaint.C(255, 92, 150), UiPaint.C(232, 40, 110), r.yMin, r.yMax));
+                UiPaint.Fill(ctx, poly, UiPaint.C(255, 43, 102));
             });
             UiKit.Text("캠페인 진행중", "home__campaign-tag-text", tag).pickingMode = PickingMode.Ignore;
             Juice.Press(campaign);

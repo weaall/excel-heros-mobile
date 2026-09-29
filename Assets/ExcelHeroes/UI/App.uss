@@ -6212,3 +6212,22 @@
 .overlay--page .dplate__lv { color: rgb(24, 119, 242); padding-left: 26px; }
 .dplate__bond { color: rgb(120, 136, 155); }
 .dplate__stars { -unity-text-outline-color: rgb(200, 140, 0); }
+
+/* the lobby's way in (ui_critique 05-Home #1) */
+.home__campaign { right: 60px; bottom: 210px; width: 500px; height: 216px; align-items: stretch; }
+.home__campaign-words { position: absolute; left: 70px; top: 42px; }
+.home__campaign-en { font-size: 18px; -unity-font-style: bold; color: rgb(225, 245, 254); letter-spacing: 2px; padding: 0; margin: 0; }
+.home__campaign-label { font-size: 64px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: -6px 0 0 0; -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgba(0, 70, 140, 0.5); }
+.home__campaign-sub { font-size: 20px; color: rgb(224, 246, 255); -unity-font-style: bold-and-italic; letter-spacing: 2px; padding: 0; margin: -4px 0 0 0; }
+.home__campaign-mark { position: absolute; right: 30px; top: 58px; width: 104px; height: 104px; -unity-background-scale-mode: scale-to-fit; }
+.home__campaign-tag { left: 40px; top: 0; height: 44px; padding: 0 24px; }
+.home__campaign-tag-text { font-size: 22px; color: rgb(255, 255, 255); }
+.navcta { width: 500px; height: 150px; }
+.navcta__label { font-size: 64px; }
+.home__campaign { width: 560px; height: 250px; bottom: 230px; right: 50px; }
+.home__campaign-words { left: 80px; top: 50px; }
+.home__campaign-label { font-size: 80px; margin-top: -8px; }
+.home__campaign-en { font-size: 20px; }
+.home__campaign-sub { font-size: 22px; margin-top: -6px; }
+.home__campaign-mark { width: 120px; height: 120px; top: 64px; right: 40px; }
+.home__campaign-tag { height: 48px; }
