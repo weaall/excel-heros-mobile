@@ -22,7 +22,10 @@ namespace ExcelHeroes.World
         const float Stiffness = 460f, Damping = 17f, MaxBend = 34f, MaxStep = 1f / 90f;
         // air drag: the chains trail the body's own travel — the rest point is pushed back along the
         // velocity by Drag seconds of it, so a running SD's hair and skirt stream behind her
-        const float Drag = 0.05f, MaxWind = 3.5f;
+        const float Drag = 0.05f, MaxWind = 2.5f;
+        // a breeze (m/s of air): standing still, BA's hair never quite rests — two slow gusts that never line up
+        const float Breeze = 0.5f;
+        float _clock, _phase;
         static readonly Vector3 Gravity = new(0f, -2f, 0f);
 
         class Node
@@ -47,7 +50,7 @@ namespace ExcelHeroes.World
 
         public void Init(Transform model, string style = "")
         {
-            _nodes.Clear(); _body = model; _bodyHas = false;
+            _nodes.Clear(); _body = model; _bodyHas = false; _phase = (model.GetInstanceID() & 1023) * 0.37f;
             var all = model.GetComponentsInChildren<Transform>(true);
             // a library hair (SdRefHairLib) brings its own chain, tagged; the base cap is hidden then,
             // so its hair bones swing nothing and are left out
@@ -150,15 +153,25 @@ namespace ExcelHeroes.World
                 var bp = _body.position;
                 var v = _bodyHas ? (bp - _bodyPrev) / dt : Vector3.zero; _bodyPrev = bp; _bodyHas = true;
                 if (v.sqrMagnitude > 400f) v = Vector3.zero;
-                _bodyVel = Vector3.Lerp(_bodyVel, v, 1f - Mathf.Exp(-dt * 20f));
+                // over ~0.3 s: the air is the TRAVEL (a run), not a lunge or a knock-back — at 20/s an attack's
+                // 0.16 m step read as a 3 m/s gust and flipped long hair forward over the chest
+                _bodyVel = Vector3.Lerp(_bodyVel, v, 1f - Mathf.Exp(-dt * 3.5f));
             }
-            var wind = Vector3.ClampMagnitude(_bodyVel + Travel, MaxWind) * -Drag;
+            _clock += dt;
+            var gc = _clock + _phase;
+            var gust = new Vector3(Mathf.Sin(gc * 1.1f) * 0.6f + Mathf.Sin(gc * 0.43f) * 0.4f, 0f, Mathf.Sin(gc * 0.77f + 1.3f) * 0.5f) * (Breeze * (0.6f + 0.4f * Mathf.Sin(gc * 0.29f)));
+            var wind = Vector3.ClampMagnitude(_bodyVel + Travel - gust, MaxWind) * -Drag;
             foreach (var nd in _nodes)
             {
                 var t = nd.T;
                 t.localRotation = nd.RestLocal;                            // back to the rest each step: the target must not include last step's swing
                 var target = t.TransformPoint(nd.RestTipLocal) + wind * nd.Weight;   // where the rigid rest puts the tip, given the parent's current pose, pushed back by the air
                 var restDir = (target - t.position).normalized;
+                // a snap (the first frame after Init at the A-pose, a spawn turned 100° to face the fight, a
+                // teleport): the tip is left > ~75° off its rest in one sub-step, which no real swing does —
+                // start it at the rest instead. Sprung from there, the chain could fold past MaxBend onto the
+                // wrong side and stay caught (long hair stuck curled forward over the chest)
+                if ((target - nd.Tip).sqrMagnitude > nd.Len * nd.Len * 1.44f) { nd.Tip = target; nd.Vel = Vector3.zero; nd.HasPrev = false; }
                 var targetVel = nd.HasPrev ? (target - nd.PrevTarget) / dt : Vector3.zero;
                 nd.PrevTarget = target; nd.HasPrev = true;
                 nd.Vel += (target - nd.Tip) * (Stiffness * dt);

@@ -156,21 +156,25 @@ namespace ExcelHeroes.EditorTools
                 foreach (var act0 in actions)
                 {
                     // "own" tokens: this hero's own idle / victory / attack variant (the audit renders what the game plays)
-                    var act = act0 == "idleX" ? "idle" + SdPose.IdleOf(id) : act0 == "winX" ? "win" + SdPose.WinOf(id) : act0 == "attackX" ? "attack" + kind : act0;
+                    var act = act0 == "idleX" ? "idle" + SdPose.IdleOf(id) : act0 == "winX" ? "win" + SdPose.WinOf(id) : act0 == "attackX" ? "attack" + kind : act0 == "atktX" ? "atkt" + kind : act0 == "skilltX" ? "skillt" + kind : act0;
                     var frames = new System.Collections.Generic.List<(ExcelHeroes.World.Pose, float)>();
-                    if (act == "seq")
+                    if (act.StartsWith("seq"))
                     {
-                        // the runtime blend: targets by time, springs at 60 Hz, a frame kept every 0.07 s
+                        // the runtime blend (BattleWorld): targets by time on the pose's own clocks, springs
+                        // at 60 Hz with the game's stiffness, a frame kept every 0.07 s.
+                        // seq = ready → attack → ready → hit; seqskill = the EX; seqwin = the victory entry
                         var shown = SdPose.Ready(kind, 0f, 0f); var vel = new float[ExcelHeroes.World.Pose.Count];
-                        var next = 0f;
-                        for (var t = 0f; t < 1.68f; t += 1f / 60f)
+                        var next = 0f; var wv = SdPose.WinOf(id);
+                        var len = act == "seqwin" ? 2.4f : act == "seqskill" ? 1.6f : 2.0f;
+                        for (var t = 0f; t < len; t += 1f / 60f)
                         {
-                            ExcelHeroes.World.Pose target; float omega;
-                            if (t < 0.3f) { target = SdPose.Ready(kind, t, 0f); omega = 26f; }
-                            else if (t < 0.62f) { target = SdPose.Attack(kind, (t - 0.3f) / 0.32f); omega = 42f; }
-                            else if (t < 1.0f) { target = SdPose.Ready(kind, t, 0f); omega = 26f; }
-                            else if (t < 1.16f) { target = SdPose.Hit(1f - (t - 1.0f) / 0.16f); omega = 42f; }
-                            else { target = SdPose.Ready(kind, t, 0f); omega = 26f; }
+                            ExcelHeroes.World.Pose target; float omega = 26f;
+                            var ready = SdPose.Ready(kind, t, 0f);
+                            if (act == "seqwin") target = t < 0.3f ? ready : SdPose.Victory(wv, t - 0.3f);
+                            else if (act == "seqskill") { if (t >= 0.3f && t < 0.3f + SdPose.SkillLen) { target = SdPose.SkillAt(kind, (t - 0.3f) / SdPose.SkillLen); omega = 64f; } else target = ready; }
+                            else if (t >= 0.3f && t < 0.3f + SdPose.AttackLen) { target = SdPose.AttackAt(kind, (t - 0.3f) / SdPose.AttackLen); omega = 64f; }
+                            else if (t >= 1.2f && t < 1.2f + SdPose.HitLen) { target = SdPose.Hit(1f - (t - 1.2f) / SdPose.HitLen); omega = 58f; }
+                            else target = ready;
                             ExcelHeroes.World.Pose.Spring(ref shown, vel, target, 1f / 60f, omega, 0.78f);
                             if (t >= next) { frames.Add((shown, 1f / 60f)); next += 0.07f; }
                             else frames.Add((shown, -1f));          // simulated but not shown
@@ -185,6 +189,7 @@ namespace ExcelHeroes.EditorTools
                             ExcelHeroes.World.Pose p;
                             if (act.StartsWith("idle")) p = SdPose.Idle(int.Parse(act.Substring(4)), u * 6f, 0f);
                             else if (act.StartsWith("ready")) p = SdPose.Ready(int.Parse(act.Substring(5)), u * 4f, 0f);
+                            else if (act.StartsWith("atkt")) p = SdPose.AttackAt(int.Parse(act.Substring(4)), u);   // on the game's timeline
                             else if (act.StartsWith("attack")) p = SdPose.Attack(int.Parse(act.Substring(6)), u);
                             else if (act == "hit") p = SdPose.Hit(1f - u);
                             else if (act == "walk") p = SdPose.Walk(f / (float)nf * Mathf.PI * 2f);
@@ -201,6 +206,7 @@ namespace ExcelHeroes.EditorTools
                                 p = (ExcelHeroes.World.Pose)bx;
                             }
                             else if (act.StartsWith("win")) p = SdPose.Victory(int.Parse(act.Substring(3)), u * 1.4f);
+                            else if (act.StartsWith("skillt")) p = SdPose.SkillAt(int.Parse(act.Substring(6)), u);
                             else if (act.StartsWith("skill")) p = SdPose.Skill(int.Parse(act.Substring(5)), u);
                             else if (act == "dead") p = SdPose.Dead(u);
                             else p = ExcelHeroes.World.Pose.Rest;

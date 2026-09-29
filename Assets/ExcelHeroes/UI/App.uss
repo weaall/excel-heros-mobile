@@ -4191,9 +4191,14 @@
     margin-right: var(--ex-space-2);
 }
 
-.brace__field { width: 190px; height: 76px; font-size: 38px; }
-
-.brace__submit { height: 76px; padding-left: 34px; padding-right: 34px; font-size: 26px; }
+.brace__opt {
+    width: 150px;
+    height: 76px;
+    margin-left: 6px;
+    margin-right: 6px;
+    font-size: 36px;
+    -unity-font-style: bold;
+}
 
 .brace__clock { font-size: 22px; color: rgba(255, 255, 255, 0.7); margin-top: 6px; }
 

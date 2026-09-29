@@ -150,6 +150,21 @@ namespace ExcelHeroes.EditorTools
             b.Open_("전체 감사", alreadyBraced: false);
             Check(b.Submit(b.Answer.ToString()), "the right answer is accepted");
 
+            // Four choices to tap: distinct, one of them the answer, the others near misses.
+            for (var n = 0; n < 50; n++)
+            {
+                b = new BraceService();
+                b.Open_("전체 감사", alreadyBraced: false);
+                var ch = b.Choices;
+                if (ch.Length != 4 || System.Array.IndexOf(ch, b.Answer) < 0 || ch.Distinct().Count() != 4 || ch.Any(v => Mathf.Abs(v - b.Answer) > 11))
+                { Check(false, $"four distinct near choices with the answer ({string.Join(",", ch)} for {b.Answer})"); break; }
+                if (n == 49) Check(true, "four distinct near choices with the answer, 50 draws");
+            }
+            b = new BraceService();
+            b.Open_("전체 감사", alreadyBraced: false);
+            var wrong = b.Choices.First(v => v != b.Answer);
+            Check(!b.Pick(wrong) && !b.Open, "picking a wrong choice is a miss and closes it");
+
             // Garbage in a numeric field is a miss, not a crash.
             b = new BraceService();
             b.Open_("전체 감사", alreadyBraced: false);

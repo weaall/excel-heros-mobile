@@ -120,6 +120,7 @@ namespace ExcelHeroes.World
                 ToeL = Mathf.Lerp(a.ToeL, b.ToeL, t), ToeR = Mathf.Lerp(a.ToeR, b.ToeR, t),
                 Sway = Mathf.Lerp(a.Sway, b.Sway, t), HipRoll = Mathf.Lerp(a.HipRoll, b.HipRoll, t),
                 FistL = Mathf.Lerp(a.FistL, b.FistL, t), FistR = Mathf.Lerp(a.FistR, b.FistR, t),
+                Spread = Mathf.Lerp(a.Spread, b.Spread, t),
             };
         }
 
@@ -166,6 +167,51 @@ namespace ExcelHeroes.World
         public const float WalkCycle = 0.85f;
         /// <summary>Metres per run cycle at root scale 1: a run's stride is longer than the walk's (the feet leave the floor).</summary>
         public const float RunCycle = 1.25f;   // SdMotionTest.Calibrate: slip 0.26 of the travel (was ~1.0 at the fixed 11 rad/s)
+
+        /// <summary>Seconds of the SD's attack / hit / EX pose (BattleWorld runs them on their own clocks; the sim's timers are shorter).</summary>
+        public const float AttackLen = 0.55f, HitLen = 0.36f, SkillLen = 1.05f;
+
+        // The timing of a blow (BA's, and any good 2D animator's): a quick wind-up, the release in two
+        // or three frames, then the extension HELD while the effect lands, and a slow settle. Each
+        // attack below is keyed on its own 0..1; these maps (real time u → that a) squeeze the
+        // wind-up and the release to the front and stretch the moment just after the strike.
+        static readonly float[][] AttackKeys =
+        {
+            new[] { 0f, 0f, 0.2f, 0.28f, 0.29f, 0.5f, 0.6f, 0.57f, 1f, 1f },           // 0 punch: wind 0–0.28 (0.11 s), strike 0.28–0.5 in 3 frames
+            new[] { 0f, 0f, 0.16f, 0.16f, 0.23f, 0.26f, 0.64f, 0.6f, 1f, 1f },           // 1 shot: the recoil inside the hold
+            new[] { 0f, 0f, 0.2f, 0.4f, 0.3f, 0.61f, 0.6f, 0.7f, 1f, 1f },               // 2 caster: raise, thrust peak at 0.61
+            new[] { 0f, 0f, 0.1f, 0.18f, 0.86f, 0.8f, 1f, 1f },                          // 3 taps
+            new[] { 0f, 0f, 0.1f, 0.18f, 0.86f, 0.8f, 1f, 1f },                          // 4 taps
+            new[] { 0f, 0f, 0.16f, 0.26f, 0.3f, 0.56f, 0.6f, 0.62f, 1f, 1f },            // 5 sweep
+            new[] { 0f, 0f, 0.24f, 0.45f, 0.32f, 0.6f, 0.58f, 0.7f, 1f, 1f },            // 6 =SUM: gather, push
+            new[] { 0f, 0f, 0.12f, 0.2f, 0.82f, 0.78f, 1f, 1f },                         // 7 point, held
+            new[] { 0f, 0f, 0.18f, 0.32f, 0.28f, 0.58f, 0.58f, 0.62f, 1f, 1f },          // 8 lob
+            new[] { 0f, 0f, 0.18f, 0.35f, 0.28f, 0.62f, 0.6f, 0.66f, 1f, 1f },           // 9 backhand
+            new[] { 0f, 0f, 0.18f, 0.35f, 0.28f, 0.62f, 0.6f, 0.66f, 1f, 1f },           // 10 chop
+            new[] { 0f, 0f, 0.1f, 0.175f, 0.16f, 0.31f, 0.3f, 0.33f, 0.4f, 0.5f, 0.5f, 0.675f, 0.56f, 0.81f, 0.76f, 0.83f, 1f, 1f },   // 11 X: two cuts
+            new[] { 0f, 0f, 0.12f, 0.2f, 0.86f, 0.8f, 1f, 1f },                          // 12 scissors
+        };
+        // the EX: the same first 0.525 s (the landing still meets the sim's hit), then the landing
+        // pose held — the finishing key pose is what a skill is remembered by
+        static readonly float[][] SkillKeys =
+        {
+            new[] { 0f, 0f, 0.5f, 0.7f, 0.8f, 0.74f, 1f, 1f },
+            new[] { 0f, 0f, 0.5f, 0.7f, 0.66f, 0.8f, 0.86f, 0.9f, 1f, 1f },
+            new[] { 0f, 0f, 0.5f, 0.7f, 0.8f, 0.8f, 1f, 1f },
+        };
+
+        static float Remap(float[] k, float u)
+        {
+            u = Mathf.Clamp01(u);
+            for (var i = 2; i < k.Length; i += 2)
+                if (u <= k[i]) return Mathf.Lerp(k[i - 1], k[i + 1], (u - k[i - 2]) / Mathf.Max(1e-5f, k[i] - k[i - 2]));
+            return 1f;
+        }
+
+        /// <summary>The attack at real-time fraction u of <see cref="AttackLen"/>.</summary>
+        public static Pose AttackAt(int kind, float u) => Attack(kind, Remap(AttackKeys[Mathf.Clamp(kind, 0, AttackKeys.Length - 1)], u));
+        /// <summary>The EX at real-time fraction u of <see cref="SkillLen"/>.</summary>
+        public static Pose SkillAt(int kind, float u) => Skill(kind, Remap(SkillKeys[Mathf.Clamp(kind, 0, SkillKeys.Length - 1)], u));
 
         // easing: a body accelerates into a move and settles out of it
         static float EaseOut(float t) { t = Mathf.Clamp01(t); return 1f - (1f - t) * (1f - t) * (1f - t); }
@@ -318,7 +364,8 @@ namespace ExcelHeroes.World
             // "smile": eyes OPEN with a smiling mouth — BA's shut ^^ arcs are a hairline at the result
             // camera's distance and read as a face with no eyes (the user)
             var p = Pose.Rest; p.Expr = "smile";
-            var hop = Mathf.Abs(Mathf.Sin(t * 7f));
+            // three hops of joy, then the pose HELD with a small bounce (hopping forever read as a loop, not a pose)
+            var hop = t < 1.35f ? Mathf.Abs(Mathf.Sin(t * 7f)) : Mathf.Abs(Mathf.Sin((t - 1.35f) * 3.5f)) * 0.25f;
             switch (variant % WinCount)
             {
                 case 0:
@@ -326,7 +373,7 @@ namespace ExcelHeroes.World
                     p.HandFlexL = p.HandFlexR = -20f; p.HandDevL = p.HandDevR = 25f; p.FistL = p.FistR = 0f;   // palms open, fingers spread up
                     p.Y = hop * 0.2f; p.Squash = (hop - 0.45f) * 0.22f; p.KneeL = p.KneeR = (1f - hop) * 30f; p.ToeL = p.ToeR = hop * 24f; p.HeadPitch = -6f; p.ShrugL = p.ShrugR = 12f; p.SpineBend = -6f; p.Spread = (1f - hop) * 8f; break;
                 case 1:
-                    var pump = Mathf.Abs(Mathf.Sin(t * 9f));
+                    var pump = t < 1.2f ? Mathf.Abs(Mathf.Sin(t * 9f)) : 1f;   // three pumps, then the fist held high
                     p.RaiseR = 70f + pump * 25f; p.SwingR = -20f; p.ElbowR = 70f - pump * 40f; p.HandFlexR = 50f; p.FistR = 1f;   // a fist
                     p.RaiseL = -22f; p.SwingL = -12f; p.ElbowL = 22f; p.InL = 52f; p.HandFlexL = 45f; p.HandDevL = -15f;
                     p.KneeL = 8f + (1f - hop) * 10f; p.KneeR = (1f - hop) * 10f; p.Sway = 0.01f; p.HipRoll = 3f;
@@ -368,6 +415,16 @@ namespace ExcelHeroes.World
                         p.Lean = 22f * bow2; p.HeadPitch = 8f * bow2 - 2f * clap; p.SpineBend = 6f * bow2;
                         p.ShrugL = p.ShrugR = 5f * clap; p.Y = 0f; break;
                     }
+            }
+            // the entry: a quick crouch (anticipation), then the body pops up into the pose — the spring
+            // overshoots it a little — instead of drifting into it from the fight stance
+            var pre = t < 0.12f ? EaseOut(t / 0.12f) : t < 0.26f ? 1f - EaseOut((t - 0.12f) / 0.14f) : 0f;
+            if (pre > 0f && variant % WinCount is not 3 and not 7)
+            {
+                var c = Pose.Rest; c.Expr = p.Expr;
+                c.KneeL = c.KneeR = 40f; c.Squash = -0.11f; c.Lean = 10f; c.HeadPitch = 5f; c.Spread = 7f;
+                c.RaiseL = c.RaiseR = -42f; c.SwingL = c.SwingR = -18f; c.ElbowL = c.ElbowR = 30f; c.FistL = c.FistR = 0.8f;
+                var yaw = p.Yaw; p = Pose.Lerp(p, c, pre); p.Yaw = yaw;
             }
             return p;
         }

@@ -26,6 +26,13 @@ namespace ExcelHeroes.Core
         public bool Open => Left > 0f;
         public int Answer => A + B;
 
+        /// <summary>
+        /// Four answers to pick from, shuffled, one right (the user: pick the number, not type it —
+        /// a phone has no keyboard in a fight). The wrong three are the slips a head makes: a carry
+        /// dropped or doubled (±10), off by one or two — so it still takes doing the sum.
+        /// </summary>
+        public int[] Choices { get; private set; } = new int[0];
+
         /// <summary>The move being announced, so the panel can name what is coming.</summary>
         public string Move { get; private set; }
 
@@ -44,7 +51,26 @@ namespace ExcelHeroes.Core
             B = Random.Range(10, max + 1);
             Move = move;
             Left = Mathf.Max(1f, b.braceLimit);
+            Choices = MakeChoices(A + B);
         }
+
+        static readonly int[] Slips = { -10, 10, -1, 1, -2, 2, -11, 9, 11, -9 };
+
+        static int[] MakeChoices(int answer)
+        {
+            var c = new System.Collections.Generic.List<int> { answer };
+            var pool = new System.Collections.Generic.List<int>(Slips);
+            while (c.Count < 4 && pool.Count > 0)
+            {
+                var i = Random.Range(0, pool.Count); var v = answer + pool[i]; pool.RemoveAt(i);
+                if (v > 0 && !c.Contains(v)) c.Add(v);
+            }
+            for (var i = c.Count - 1; i > 0; i--) { var j = Random.Range(0, i + 1); (c[i], c[j]) = (c[j], c[i]); }
+            return c.ToArray();
+        }
+
+        /// <summary>Grades a picked choice (see <see cref="Submit"/>).</summary>
+        public bool Pick(int value) => Submit(value.ToString());
 
         /// <summary>Counts the clock down. Returns true on the frame it runs out.</summary>
         public bool Tick(float dt)

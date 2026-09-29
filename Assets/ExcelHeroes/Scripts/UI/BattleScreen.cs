@@ -1693,7 +1693,6 @@ namespace ExcelHeroes.UI
 
         readonly BraceService _brace = new();
         VisualElement _bracePane;
-        TextField _braceField;
         Label _braceClock;
 
         /// <summary>
@@ -1706,7 +1705,7 @@ namespace ExcelHeroes.UI
         void OpenBrace(string move)
         {
             if (_root == null || _root.panel == null) return;
-            if (_sim == null || _sim.Braced) return;
+            if (_sim == null || _sim.Braced || _sim.Finished) return;
 
             _brace.Open_(move, _sim.Braced);
             if (!_brace.Open) return;
@@ -1715,26 +1714,29 @@ namespace ExcelHeroes.UI
             _bracePane = UiKit.Div("brace", _stage);
             UiKit.Text($"검산 · {move}", "brace__title", _bracePane);
 
+            UiKit.Text($"= {_brace.A} + {_brace.B}", "brace__sum", _bracePane);
+            // four answers to tap (a typed field needed a keyboard mid-fight); 1–4 on a keyboard too
             var row = UiKit.Div("brace__row", _bracePane);
-            UiKit.Text($"= {_brace.A} + {_brace.B}", "brace__sum", row);
-
-            _braceField = new TextField { maxLength = 4 };
-            _braceField.AddToClassList("brace__field");
-            _braceField.RegisterCallback<KeyDownEvent>(e =>
+            for (var i = 0; i < _brace.Choices.Length; i++)
             {
-                if (e.keyCode is KeyCode.Return or KeyCode.KeypadEnter) SubmitBrace();
+                var v = _brace.Choices[i];
+                UiKit.Btn(v.ToString(), "btn btn--primary brace__opt", () => PickBrace(v), row);
+            }
+            _bracePane.focusable = true;
+            _bracePane.RegisterCallback<KeyDownEvent>(e =>
+            {
+                var k = e.keyCode - KeyCode.Alpha1; if (k < 0 || k > 3) k = e.keyCode - KeyCode.Keypad1;
+                if (k >= 0 && k < _brace.Choices.Length) PickBrace(_brace.Choices[k]);
             });
-            row.Add(_braceField);
-            UiKit.Btn("제출", "btn btn--primary brace__submit", SubmitBrace, row);
 
             _braceClock = UiKit.Text("", "brace__clock", _bracePane);
-            _braceField.Focus();
+            _bracePane.Focus();
         }
 
-        void SubmitBrace()
+        void PickBrace(int value)
         {
             if (!_brace.Open) { CloseBrace(); return; }
-            var ok = _brace.Submit(_braceField?.value);
+            var ok = _brace.Pick(value);
             if (ok)
             {
                 _sim?.MarkBraced();
@@ -1749,7 +1751,6 @@ namespace ExcelHeroes.UI
         {
             _bracePane?.RemoveFromHierarchy();
             _bracePane = null;
-            _braceField = null;
             _braceClock = null;
         }
 
@@ -1757,6 +1758,8 @@ namespace ExcelHeroes.UI
         {
             if (!_brace.Open) { if (_bracePane != null) CloseBrace(); return; }
             if (_brace.Tick(dt)) { CloseBrace(); return; }
+            // floaters and the boss's callout are added to the stage after it: keep the sum on top, readable
+            if (_bracePane != null && _bracePane.parent != null && _bracePane.parent.IndexOf(_bracePane) != _bracePane.parent.childCount - 1) _bracePane.BringToFront();
             if (_braceClock != null) _braceClock.text = $"{_brace.Left:0.0}초";
         }
 
@@ -1788,6 +1791,9 @@ namespace ExcelHeroes.UI
         void ApplyResult()
         {
             _resultApplied = true;
+            // the fight is over: a sum still open would sit over the result (a boss special called on the last frame)
+            _brace.Close();
+            CloseBrace();
 
             // Counted whether or not the run was won: the player still put those errors down.
             QuestService.Note(Game.Player, "kills", _sim.Kills);

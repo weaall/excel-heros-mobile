@@ -1664,6 +1664,11 @@ namespace ExcelHeroes.World
             /// for EX, a hop and wave for the win.
             /// </summary>
             Pose _pose, _shown; bool _shownInit; float _winT; float[] _vel;
+            // the pose's own clocks: the sim's Attack (0.32 s) and Hit (0.16 s) are too short for a body to
+            // read — the wind-up, the held extension and the settle need about half a second (BA's
+            // blows snap out in two or three frames and then HOLD) — so the SD's pose runs on its own
+            // longer timeline, started when the sim's timer restarts
+            float _atkT = 9f, _hitT = 9f, _sklT = 9f, _pAtk, _pHit, _pSkl;
             public float _enemyX, _heroX;         // world x of the nearest living enemy / hero, for the look
 
             void Update3D(float dt, float time, bool walking, MaterialPropertyBlock mpb, float closeUp)
@@ -1698,22 +1703,29 @@ namespace ExcelHeroes.World
                     // idle and victory, an attack by role — instead of offsets on the A-pose
                     var cheering = (Cheer > 0f || closeUp > 0.5f) && C.Alive;
                     _winT = cheering ? _winT + dt : 0f;
+                    var live = Freeze > 0f ? dt * 0.05f : dt;
+                    if (Attack > _pAtk + 1e-4f) _atkT = 0f; else _atkT += live;
+                    if (Hit > _pHit + 1e-4f) _hitT = 0f; else _hitT += live;
+                    if (Skill > _pSkl + 1e-4f) _sklT = 0f; else _sklT += dt;
+                    _pAtk = Attack; _pHit = Hit; _pSkl = Skill;
+                    var atkOn = _atkT < SdPose.AttackLen; var hitOn = _hitT < SdPose.HitLen; var sklOn = _sklT < SdPose.SkillLen;
                     if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / 0.45f) : 1f);
                     else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(Pid), _winT);
-                    else if (Skill > 0f) _pose = SdPose.Skill(SdPose.AttackOf(Pid, C.role), 1f - Skill / 0.75f);
-                    else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
-                    else if (Attack > 0f) _pose = SdPose.Attack(AttackPose(C), 1f - Attack / 0.32f);
+                    else if (sklOn) _pose = SdPose.SkillAt(SdPose.AttackOf(Pid, C.role), _sklT / SdPose.SkillLen);
+                    else if (hitOn) _pose = SdPose.Hit(1f - _hitT / SdPose.HitLen);
+                    else if (atkOn) _pose = SdPose.AttackAt(AttackPose(C), _atkT / SdPose.AttackLen);
                     else if (walking) _pose = _speed > RunSpeed * Rig.Root.localScale.x ? SdPose.Run(_walk) : SdPose.Walk(_walk);
                     else _pose = SdPose.Ready(SdPose.AttackOf(Pid, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
                     // the head looks at the fight: heroes toward the enemy line, enemies toward the squad
-                    if (!cheering && (Attack <= 0f) && C.Alive)
+                    if (!cheering && !atkOn && C.Alive)
                     {
                         var look = hero ? Mathf.Clamp((_enemyX - X) * 6f, -14f, 14f) : Mathf.Clamp((_heroX - X) * -6f, -14f, 14f);
                         _pose.HeadYaw += look;
                     }
                     // a damped spring between states instead of a fade: a body overshoots a little
                     // and settles; stiffer into an attack or a hit
-                    var omega = Attack > 0f || Hit > 0f ? 42f : 26f;
+                    // stiff enough to follow a three-frame snap (at 42 the spring smeared the release into a swing)
+                    var omega = atkOn || sklOn ? 64f : hitOn ? 58f : 26f;
                     if (!_shownInit) { _shown = _pose; _vel = new float[Pose.Count]; _shownInit = true; }
                     // hitstop: the body all but stops for the few frames of the blow (as the clips did), then springs on
                     else Pose.Spring(ref _shown, _vel, _pose, Freeze > 0f ? dt * 0.05f : dt, omega, 0.78f);
