@@ -6870,3 +6870,19 @@
 .bresult__btn { height: 100px; width: 340px; }
 .bresult__info { height: 72px; }
 .bresult__squad-label { font-size: 28px; padding: 4px 24px; }
+/* gate r16 */
+.stamp-day { height: 150px; justify-content: center; padding: 6px 0 8px 0; }
+.stamp-day__n { margin: 0; }
+.stamp-day__icon { width: 48px; height: 48px; min-width: 48px; min-height: 48px; margin: 4px 0 4px 0; }
+.stamp-day__gems { margin: 0; font-size: 24px; }
+.stamp-day__mark { top: 36px; }
+.pslot__lvstar { margin-left: 20px; }
+.shell--lobby .plate__name { -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); font-size: 42px; }
+.shell--lobby .plate__rank-word, .shell--lobby .plate__rank-num { font-size: 30px; }
+.album__name { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); -unity-text-outline-width: 0; }
+.navback__en { font-size: 28px; margin-left: 20px; }
+.sheet-head { align-items: center; }
+.home__icon-label { font-size: 34px; }
+.navtab__label { font-size: 34px; }
+.gstage__notebox .gstage__note { color: rgb(255, 255, 255); }
+.gstage__sub { -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(255, 255, 255, 0.9); }

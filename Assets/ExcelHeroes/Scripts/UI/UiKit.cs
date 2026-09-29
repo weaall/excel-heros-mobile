@@ -294,7 +294,7 @@ namespace ExcelHeroes.UI
                 // .92 on paper: this project is in Linear colour space and UI Toolkit composites a
                 // background alpha far weaker than the number says (HANDOFF, "an unowned card
                 // bleached"); at .74 the art still read at a glance as owned
-                scrim.style.backgroundColor = new Color(0.06f, 0.1f, 0.19f, 0.93f);
+                scrim.style.backgroundColor = new Color(0.06f, 0.1f, 0.19f, 0.8f);
                 ModalFrame.Painted(Div("card__lock", card), DrawLock);
             }
 
