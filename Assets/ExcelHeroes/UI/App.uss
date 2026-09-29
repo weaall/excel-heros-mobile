@@ -6981,3 +6981,6 @@
 .bkill__num { font-size: 40px; }
 .bhud__sq-label { font-size: 22px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Bold%20SDF.asset"); -unity-font-style: normal; }
 .bhud__auto .bhud__sq-label { font-size: 26px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); }
+/* party r25: the attack chip in the glass card's top corner, clear of the figure's feet */
+.pslot__atk { top: -548px; right: 12px; }
+.pslot--stand .pslot__name { overflow: visible; text-overflow: clip; }

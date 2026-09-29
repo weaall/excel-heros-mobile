@@ -69,9 +69,14 @@ def parity(key, ours, ref, name):
     """Blind and order-balanced: our screen and its BA/NIKKE-level redraw, unlabelled, scored in both
     orders (the model favours one position), averaged. At parity when ours >= the redraw - 0.5."""
     o, rf = [], []
+    def tryb(a, b):
+        for _ in range(3):
+            try: return blind(key, a, b)
+            except Exception: pass
+        raise RuntimeError("blind failed")
     for _ in range(2):
-        x = blind(key, ours, ref); o.append(float(x["a"])); rf.append(float(x["b"]))
-        y = blind(key, ref, ours); o.append(float(y["b"])); rf.append(float(y["a"]))
+        x = tryb(ours, ref); o.append(float(x["a"])); rf.append(float(x["b"]))
+        y = tryb(ref, ours); o.append(float(y["b"])); rf.append(float(y["a"]))
     mo, mr = sum(o) / len(o), sum(rf) / len(rf)
     return {"ours": round(mo, 2), "ref": round(mr, 2), "at_parity": mo >= mr - 0.5, "raw": [o, rf]}
 
