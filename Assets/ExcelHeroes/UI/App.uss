@@ -6962,3 +6962,10 @@
 .reveal-title__en { margin-bottom: 6px; }
 .reveal-title__ko { margin-top: 4px; }
 .reveal-grid__name { padding-left: 12px; padding-right: 22px; }
+/* battle HUD light glass (par reference): navy ink on the glass */
+.bkill__num { color: rgb(22, 36, 64); }
+.bkill__glyph { color: rgb(0, 150, 220); }
+.bkill__kicker { color: rgb(0, 140, 210); }
+.bhud__wave, .bhud__num, .bhud__time { color: rgb(22, 36, 64); }
+.bhud__sq-label { color: rgb(22, 36, 64); }
+.bhud__auto .bhud__sq-label { color: rgb(22, 36, 64); }

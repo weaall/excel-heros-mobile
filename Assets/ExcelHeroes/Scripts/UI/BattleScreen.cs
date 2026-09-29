@@ -161,8 +161,9 @@ namespace ExcelHeroes.UI
             {
                 // a slanted navy-glass plate with a cyan foot, the family of the objective panel
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 6f);
-                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(26, 40, 66, 0.84f), UiPaint.C(14, 24, 44, 0.84f), r.yMin, r.yMax));
-                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.2f), 1.5f);
+                UiPaint.Ring(ctx, poly, UiPaint.C(0, 214, 255, 0.3f), UiPaint.C(0, 214, 255, 0f), 8f);
+                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.9f), UiPaint.C(224, 242, 252, 0.86f), r.yMin, r.yMax));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(0, 200, 250, 0.9f), 2f);
                 UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMax - 4f, r.xMax + 10f, r.yMax + 2f), 0f)), UiPaint.C(0, 214, 255, 0.9f), 0f);
             });
             _waveLabel = UiKit.Text("", "battle__wave bhud__wave", pill);
@@ -203,9 +204,11 @@ namespace ExcelHeroes.UI
             // the same navy glass as the status pill opposite, a cyan edge at its foot — one HUD family
             ModalFrame.Painted(kills, (ctx, r) =>
             {
+                // light glass with a cyan rim and glow (the par_07-BattleHud reference)
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 6f);
-                UiPaint.Fill(ctx, poly, UiPaint.C(18, 28, 50, 0.72f));
-                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.22f), 1.5f);
+                UiPaint.Ring(ctx, poly, UiPaint.C(0, 214, 255, 0.35f), UiPaint.C(0, 214, 255, 0f), 8f);
+                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.9f), UiPaint.C(224, 242, 252, 0.86f), r.yMin, r.yMax));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(0, 200, 250, 0.9f), 2f);
                 UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMax - 4f, r.xMax + 10f, r.yMax + 2f), 0f)), UiPaint.C(0, 214, 255, 0.9f), 0f);
             });
             UiKit.Text("OBJECTIVE", "bkill__kicker", kills).pickingMode = PickingMode.Ignore;
@@ -438,8 +441,9 @@ namespace ExcelHeroes.UI
                 var on = b.ClassListContains("bhud__sq--on");
                 var accent = UiPaint.C(0, 229, 255);
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.45f, 5f);   // the HUD's slant language
-                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(26, 40, 66, on ? 0.92f : 0.8f), UiPaint.C(14, 24, 44, on ? 0.92f : 0.8f), r.yMin, r.yMax));
-                UiPaint.Stroke(ctx, poly, on ? WithAlpha(accent, 0.85f) : UiPaint.C(255, 255, 255, 0.28f), 1.5f);
+                UiPaint.Ring(ctx, poly, UiPaint.C(0, 214, 255, 0.3f), UiPaint.C(0, 214, 255, 0f), 8f);
+                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.9f), UiPaint.C(224, 242, 252, 0.86f), r.yMin, r.yMax));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(0, 200, 250, 0.9f), 2f);
                 // AUTO on is the one lit key: the whole face amber (the convention players read at a glance)
                 if (on && b.ClassListContains("bhud__auto")) UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(90, 226, 255), UiPaint.C(0, 170, 236), r.yMin, r.yMax));
                 if (on) UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 4f, r.yMax - 6f, r.xMax + 4f, r.yMax + 4f), 0f)), accent, 0f);
@@ -466,7 +470,7 @@ namespace ExcelHeroes.UI
 
         static void DrawSpeedIcon(MeshGenerationContext ctx, Rect r)
         {
-            var c = UiPaint.C(255, 255, 255);
+            var c = UiPaint.C(22, 36, 64);
             var h = r.height * 0.5f; var y = r.center.y; var x = r.center.x - h * 0.55f;
             for (var i = 0; i < 2; i++)
             {
@@ -477,7 +481,7 @@ namespace ExcelHeroes.UI
 
         static void DrawMenuIcon(MeshGenerationContext ctx, Rect r)
         {
-            var c = UiPaint.C(255, 255, 255);
+            var c = UiPaint.C(22, 36, 64);
             var w = r.width * 0.46f; var x0 = r.center.x - w * 0.5f;
             for (var i = -1; i <= 1; i++)
                 UiPaint.Fill(ctx, UiPaint.RoundRect(new Rect(x0, r.center.y + i * r.height * 0.18f - 2.5f, w, 5f), 2.5f), c);
@@ -865,7 +869,7 @@ namespace ExcelHeroes.UI
                     var arm = Affinity.ArmorOfStage(_sim.Stage);
                     _armorChip.userData = Affinity.ColorOf(arm);
                     _armorText.text = $"◆ {Affinity.ArmorShortName(arm)}";
-                    _armorText.style.color = Color.white;
+                    _armorText.style.color = Color.Lerp(Affinity.ColorOf(arm), Color.black, 0.25f);
                     _armorChip.MarkDirtyRepaint();
                 }
             }
@@ -1903,8 +1907,9 @@ namespace ExcelHeroes.UI
                 ModalFrame.Painted(frameEl, (ctx, r) =>
                 {
                     var outer = UiPaint.RoundRect(r, 8f, 4); var inner = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 5f, r.yMin + 5f, r.xMax - 5f, r.yMax - 5f), 5f, 4);
-                    UiPaint.Stroke(ctx, outer, UiPaint.C(20, 32, 56), 6f);
-                    UiPaint.Stroke(ctx, inner, UiPaint.C(170, 200, 230, 0.8f), 1.5f);
+                    UiPaint.Ring(ctx, outer, UiPaint.C(0, 214, 255, 0.35f), UiPaint.C(0, 214, 255, 0f), 8f);
+                    UiPaint.Stroke(ctx, outer, UiPaint.C(120, 226, 255), 4f);
+                    UiPaint.Stroke(ctx, inner, UiPaint.C(255, 255, 255, 0.9f), 1.5f);
                 });
                 var badge = UiKit.Div("ex-button__cost", btn);
                 // a hexagon with a gold rim, COST over the number (target_3)
@@ -1947,7 +1952,7 @@ namespace ExcelHeroes.UI
             // the frame starts under the disc, so number and gauge are one piece (ui_gate 07-BattleHud)
             var frame = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin + r.height * 0.5f, bar.yMin, bar.xMax, bar.yMax), slant, 4f);
             UiPaint.Shadow(ctx, frame, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.35f), 6f);
-            UiPaint.Fill(ctx, frame, UiPaint.Vertical(UiPaint.C(28, 42, 74, 0.94f), UiPaint.C(14, 24, 46, 0.94f), bar.yMin, bar.yMax));
+            UiPaint.Fill(ctx, frame, UiPaint.Vertical(UiPaint.C(250, 253, 255, 0.92f), UiPaint.C(222, 240, 252, 0.9f), bar.yMin, bar.yMax));
             UiPaint.Stroke(ctx, frame, UiPaint.C(0, 214, 255, 0.45f), 1.5f);
             var cells = (int)BattleSim.MaxCost;
             var inner = new Rect(bar.xMin + 6f, bar.yMin + 5f, bar.width - 12f, bar.height - 10f);
@@ -1956,7 +1961,7 @@ namespace ExcelHeroes.UI
             {
                 var c = new Rect(inner.xMin + i * cw + 2f, inner.yMin, cw - 4f, inner.height);
                 var poly = UiPaint.SkewRect(c, slant * (inner.height / bar.height), 2f, 2);
-                UiPaint.Fill(ctx, poly, UiPaint.C(60, 80, 120, 0.8f));
+                UiPaint.Fill(ctx, poly, UiPaint.C(40, 64, 104, 0.85f));
                 var lit = Mathf.Clamp01(cost - i);
                 if (lit >= 1f)
                 {

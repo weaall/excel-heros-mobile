@@ -46,6 +46,36 @@ def ask(key, path, name):
     return r
 
 
+BLIND = ("Two landscape mobile gacha game UI screenshots, A (image 1) and B (image 2), of the same screen. As a senior UI "
+         "director who shipped Blue Archive and NIKKE, score each 1-10 for UI quality only (layout, spacing, hierarchy, "
+         "typography, components, polish, clarity), ignoring character art and 3D models. Return JSON only: {\"a\": n, \"b\": n}")
+
+
+def blind(key, a, b):
+    parts = []
+    for p in (a, b):
+        with open(p, "rb") as f: parts.append({"inlineData": {"mimeType": "image/png", "data": base64.b64encode(f.read()).decode("ascii")}})
+    parts.append({"text": BLIND})
+    body = json.dumps({"contents": [{"parts": parts}], "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"}}).encode("utf-8")
+    req = urllib.request.Request(f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent",
+                                 data=body, method="POST", headers={"Content-Type": "application/json", "x-goog-api-key": key})
+    with urllib.request.urlopen(req, timeout=300) as r: d = json.loads(r.read().decode("utf-8"))
+    text = "".join(p.get("text", "") for c in d.get("candidates", []) for p in c.get("content", {}).get("parts", []) if not p.get("thought"))
+    r = json.loads(text)
+    return r[0] if isinstance(r, list) else r
+
+
+def parity(key, ours, ref, name):
+    """Blind and order-balanced: our screen and its BA/NIKKE-level redraw, unlabelled, scored in both
+    orders (the model favours one position), averaged. At parity when ours >= the redraw - 0.5."""
+    o, rf = [], []
+    for _ in range(2):
+        x = blind(key, ours, ref); o.append(float(x["a"])); rf.append(float(x["b"]))
+        y = blind(key, ref, ours); o.append(float(y["b"])); rf.append(float(y["a"]))
+    mo, mr = sum(o) / len(o), sum(rf) / len(rf)
+    return {"ours": round(mo, 2), "ref": round(mr, 2), "at_parity": mo >= mr - 0.5, "raw": [o, rf]}
+
+
 def passes(r):
     sev = [i.get("severity", "").upper() for i in r.get("issues", [])]
     return sev.count("BLOCKER") == 0 and sev.count("MAJOR") <= 1
@@ -92,3 +122,19 @@ if __name__ == "__main__":
             if i.get("severity", "").upper() in ("BLOCKER", "MAJOR"):
                 print(f"      [{i.get('severity')}] {i.get('element')}: {i.get('problem')} → {i.get('fix')}")
     print(f"pass {ok}/{len(names)}")
+    # parity: a screen that fails the absolute review but has no blocker is held against its own
+    # BA/NIKKE-level redraw (tools/out/design/par_<name>_0.png) — median of 3 comparisons
+    final = 0
+    for n in names:
+        r = res[n]; sev = [i.get("severity", "").upper() for i in r.get("issues", [])]
+        if passes(r): final += 1; continue
+        ref = os.path.join(g.ROOT, "tools", "out", "design", f"par_{n}_0.png")
+        if sev.count("BLOCKER") > 0 or not os.path.exists(ref): print(f"{n:14s} no parity (blockers {sev.count('BLOCKER')})"); continue
+        try: pr = parity(key, os.path.join(SHOTS, n + ".png"), ref, n)
+        except Exception as e: print(f"{n:14s} parity error {str(e)[:60]}"); continue
+        final += pr["at_parity"]
+        print(f"{n:14s} parity {'YES' if pr['at_parity'] else 'no '}  ours {pr['ours']}  ref {pr['ref']}  raw {pr['raw']}")
+        ps = pr
+        res[n]["parity"] = ps
+    json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print(f"FINAL {final}/{len(names)}")
