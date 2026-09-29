@@ -1838,6 +1838,17 @@ namespace ExcelHeroes.UI
                 });
                 UiKit.Text("COST", "ex-button__costword", badge).pickingMode = PickingMode.Ignore;
                 var label = UiKit.Text(cost.ToString(), "ex-button__label", badge);
+                // 업무 상성 on the card: the attack colour as a strip along the foot, ▲ / ▼ against
+                // this Phase's errors in a tag at the top right — which EX to spend first
+                var atk = combatant.atkType >= 0 ? combatant.atkType : Affinity.AtkOf(combatant.heroId);
+                var verdict = Affinity.Verdict(atk, Affinity.ArmorOfStage(_sim.Stage));
+                var strip = UiKit.Div("ex-button__atk", btn); strip.pickingMode = PickingMode.Ignore;
+                strip.style.backgroundColor = Affinity.ColorOf(atk);
+                if (verdict != 0)
+                {
+                    var vt = UiKit.Text(verdict > 0 ? "▲" : "▼", "ex-button__verdict" + (verdict > 0 ? " ex-button__verdict--up" : ""), btn);
+                    vt.pickingMode = PickingMode.Ignore;
+                }
                 Juice.Press(btn);
 
                 _exButtons[combatant] = (btn, charge, label);

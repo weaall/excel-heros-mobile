@@ -6412,3 +6412,6 @@
 .bhud__sq--on .bhud__sq-label { color: rgb(0, 229, 255); }
 .bhud__auto .bhud__sq-label { height: 96px; font-size: 26px; color: rgb(214, 226, 242); }
 .bhud__auto.bhud__sq--on .bhud__sq-label { color: rgb(255, 196, 0); }
+.ex-button__atk { position: absolute; left: 6px; right: 6px; bottom: 5px; height: 8px; border-radius: 2px; }
+.ex-button__verdict { position: absolute; right: 8px; top: 6px; width: 34px; height: 34px; border-radius: 17px; background-color: rgba(20, 30, 50, 0.85); color: rgb(170, 184, 204); font-size: 20px; -unity-text-align: middle-center; padding: 0; margin: 0; }
+.ex-button__verdict--up { background-color: rgb(255, 176, 0); color: rgb(255, 255, 255); }
