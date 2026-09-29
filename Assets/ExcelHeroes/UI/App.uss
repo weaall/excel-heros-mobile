@@ -6747,3 +6747,17 @@
 /* roster card small print */
 .card__sub, .card__meta { font-size: 18px; color: rgb(214, 224, 238); }
 .ex-button { border-width: 0; }
+/* gate r7 */
+.pslot__lvrow { flex-direction: row; align-items: center; }
+.pslot__lvstar { font-size: 22px; color: rgb(255, 180, 20); margin: 0 0 0 12px; padding: 0; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; }
+.home__bubble { left: 46.5%; }
+.skin-row__name, .arow__name { margin-bottom: 8px; }
+.skin-row--locked { background-color: rgba(255, 255, 255, 0.92); }
+.skin-row--locked .skin-row__name { color: rgb(110, 124, 146); }
+.ex-cost-words { display: none; }
+.bhud__pill { padding-left: 34px; padding-right: 34px; height: 72px; }
+.bhud__wave { margin-right: 22px; }
+.bkill { height: 72px; padding: 0 36px 0 30px; }
+.bkill__num { color: rgb(255, 255, 255); font-size: 40px; }
+.bkill__glyph { color: rgb(0, 214, 255); font-size: 40px; }
+.bkill__glyph { margin-right: 16px; } .bhud__wave { font-size: 30px; }

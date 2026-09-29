@@ -316,11 +316,13 @@ namespace ExcelHeroes.UI
                 badge.style.backgroundColor = gradeColor;
                 UiKit.Text(def.grade, "pslot__grade-text", badge);
                 var lines = UiKit.Div("pslot__lines", row);
-                UiKit.Text($"Lv.{owned.level}", "pslot__lv", lines);
+                // Lv and ★ on one row (inline, so a short "Lv.1" never runs into the star)
+                var lvRow = UiKit.Div("pslot__lvrow", lines);
+                UiKit.Text($"Lv.{owned.level}", "pslot__lv", lvRow);
+                if (owned.star > 0) UiKit.Text($"★{System.Math.Clamp(owned.star, 0, 5)}", "pslot__lvstar", lvRow);
                 var nm = UiKit.Text(def.name, "pslot__name", lines);
                 if (def.name.Length > 6) nm.style.fontSize = Mathf.Max(18f, 26f * 6.5f / def.name.Length);   // "VLOOKUP 분석가" whole, not "VLOOKUP …"
-                if (owned.star > 0)
-                    UiKit.Text($"★{System.Math.Clamp(owned.star, 0, 5)}", "pslot__stars-inline", plate);   // compact: five stars ran under the attack chip
+
                 // the member's attack type, with ▲ / ▼ against this phase's errors
                 var atk = Affinity.AtkOf(def);
                 var verdict = Affinity.Verdict(atk, Affinity.ArmorOfStage(Mathf.Max(1, Game.Player?.stage ?? 1)));

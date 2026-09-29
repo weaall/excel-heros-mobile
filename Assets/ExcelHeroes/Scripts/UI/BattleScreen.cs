@@ -194,7 +194,14 @@ namespace ExcelHeroes.UI
 
             var kills = _kills = UiKit.Div("bkill", _root);
             // target_3: "격파: 12 / 50" on a glass plate, a navy sword before it
-            ModalFrame.Painted(kills, (ctx, r) => Chrome.DrawGlassTile(ctx, r, false));
+            // the same navy glass as the status pill opposite, a cyan edge at its foot — one HUD family
+            ModalFrame.Painted(kills, (ctx, r) =>
+            {
+                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 6f);
+                UiPaint.Fill(ctx, poly, UiPaint.C(18, 28, 50, 0.72f));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.22f), 1.5f);
+                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMax - 4f, r.xMax + 10f, r.yMax + 2f), 0f)), UiPaint.C(0, 214, 255, 0.9f), 0f);
+            });
             UiKit.Text("", "icon bkill__glyph", kills);   // swords
             _killLabel = UiKit.Text("", "bkill__num", kills);
 
