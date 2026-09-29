@@ -6238,3 +6238,55 @@
 .reveal-grid__name { font-size: 19px; white-space: normal; -unity-text-align: middle-center; overflow: hidden; }
 .reveal-grid__stars2 { font-size: 26px; }
 .reveal-grid__name { white-space: nowrap; left: 6%; right: 10%; }
+.overlay--page .dtab { height: 60px; margin-right: 4px; }
+.dtab__label { font-size: 24px; color: rgb(122, 137, 156); -unity-font-style: bold; }
+.dtab--on .dtab__label { color: rgb(255, 255, 255); -unity-text-outline-width: 0; }
+/* review: the milestone claim in the "something to collect" orange; the send button slimmer */
+.head-btn--notice { background-color: rgb(255, 174, 33); border-color: rgb(255, 210, 125); border-width: 1px; color: rgb(255, 255, 255); -unity-font-style: bold; }
+.prog-cols__right .btn--primary { height: 86px; margin-left: 30px; margin-right: 30px; }
+/* audit round: labels a few px taller than their boxes */
+.kit__btn { font-size: 38px; }
+.party-strip .section-title { height: 48px; }
+.prog-head .section-title, .prog-cols__left .section-title { height: 50px; }
+.bigstat__icon { height: 76px; }
+.reveal-grid__stars2 { height: 34px; }
+.gtab__label { flex-shrink: 0; white-space: nowrap; }
+/* quests: the empty part of a bar a pale track, not a navy slab (only the progress should read) */
+.qrow__track { background-color: rgb(216, 227, 239); border-width: 0; border-radius: 3px; height: 10px; }
+.qrow__fill { background-color: rgb(40, 190, 250); border-radius: 3px; }
+/* party side buttons: room for "빈 칸 채우기" */
+.party-rail--icons .btn.party-icon { width: 170px; }
+.party-rail--icons .btn.party-icon .plate__label { font-size: 21px; }
+/* shop: the grade a small navy tag in the art's corner, cards a little taller */
+.scard { height: 280px; }
+.scard__qty { left: 14px; top: 14px; bottom: auto; font-size: 20px; padding: 2px 10px; margin: 0; border-radius: 4px; background-color: rgba(28, 44, 74, 0.88); -unity-text-outline-width: 0; }
+.scard__icon { margin-top: 44px; }
+/* mail rows: the three text lines had no room and ran into the row's edges; the gift counts sat on
+   their icons */
+.mrow { height: 152px; padding: 0 22px; }
+.mrow__title, .mrow__meta, .mrow__body { padding: 0; margin: 0; }
+.mrow__title { font-size: 30px; margin-bottom: 4px; }
+.mrow__meta { font-size: 20px; margin-bottom: 2px; }
+.mrow__body { font-size: 21px; }
+.mrow .rchip { width: 88px; height: 96px; justify-content: flex-start; padding-top: 8px; }
+.mrow .rchip__icon { width: 46px; height: 46px; margin: 0; }
+.mrow .rchip__amount { position: relative; right: auto; bottom: auto; font-size: 20px; margin: 2px 0 0 0; padding: 0; -unity-text-outline-width: 0; -unity-text-align: middle-center; }
+.mrow__take { width: 170px; height: 72px; }
+/* quest reward chips: icon over its count, the count not printed on the icon */
+.qrow .rchip { flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 6px; height: 82px; }
+.qrow .rchip__icon { width: 38px; height: 38px; margin: 0; }
+.qrow .rchip__amount { position: relative; right: auto; bottom: auto; font-size: 19px; margin: 2px 0 0 0; padding: 0; -unity-text-outline-width: 0; -unity-text-align: middle-center; color: rgb(24, 36, 60); }
+/* codex: the grid centred with even gutters, cards a little taller; the undiscovered ones a quiet
+   pale glass with a soft "?" instead of five navy slabs shouting */
+.codex-grid { padding: 6px 30px 0 30px; justify-content: space-between; }
+.codex .mcard { width: 19%; height: 300px; margin: 0 0 22px 0; }
+.mcard--locked { background-image: none; background-color: rgba(222, 231, 241, 0.72); border-color: rgba(176, 196, 218, 0.8); border-width: 1.5px; border-radius: 8px; }
+.mcard--locked .mcard__unknown { color: rgb(150, 168, 190); font-size: 70px; }
+.mcard--locked .mcard__name { color: rgb(128, 144, 166); font-size: 22px; }
+/* stats: panels hug their rows instead of standing two-thirds empty; the rows a touch roomier */
+.charts__cols { align-items: flex-start; padding: 24px 36px; }
+.chart-obj { padding: 26px 34px 30px 34px; margin-left: 12px; margin-right: 12px; }
+.chart-obj__title { font-size: 34px; padding-bottom: 20px; }
+.chart-row { height: 84px; }
+.chart-row__label { font-size: 30px; }
+.chart-row__value { font-size: 30px; -unity-font-style: bold; }

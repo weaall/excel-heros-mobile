@@ -125,6 +125,7 @@ namespace ExcelHeroes.UI
             var s = new ScrollView(ScrollViewMode.Vertical);
             AddClasses(s, classes);
             s.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+            s.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             parent?.Add(s);
             return s;
         }

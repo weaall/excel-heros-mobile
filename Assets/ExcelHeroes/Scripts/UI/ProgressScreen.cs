@@ -254,7 +254,7 @@ namespace ExcelHeroes.UI
             var pending = ProgressService.Pending(p);
 
             if (pending.Count > 0)
-                UiKit.Btn($"{pending.Count}건 수령", "head-btn", () =>
+                UiKit.Btn($"{pending.Count}건 수령", "head-btn head-btn--notice", () =>
                 {
                     var (count, gems, cards) = ProgressService.GrantPending(Game.Player);
                     if (count == 0) return;

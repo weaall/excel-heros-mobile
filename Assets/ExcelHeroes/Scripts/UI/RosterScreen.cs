@@ -1121,15 +1121,19 @@ namespace ExcelHeroes.UI
                 };
                 // the open tab lit cyan with white type and a small pointer under it (target_2, and the
                 // lobby's lit nav tile); the others pale glass — ui_critique round 9, 17-Enhance #3
-                var shape = UiPaint.Round(poly, 6f, 3);
+                // flat folder tabs that sit ON the panel (ui_critique 17-Detail #1): the open one solid BA
+                // blue with a cyan line along its foot, the others a flat pale grey with a hairline top
+                var shape = UiPaint.Round(poly, 4f, 3);
                 if (on)
                 {
-                    UiPaint.Shadow(ctx, shape, new Vector2(0f, 3f), UiPaint.C(0, 90, 150, 0.25f), 6f);
-                    UiPaint.Fill(ctx, shape, UiPaint.Vertical(UiPaint.C(96, 214, 250), UiPaint.C(28, 164, 226), r.yMin, r.yMax));
-                    var cx = (r.xMin + r.xMax - slant) * 0.5f;
-                    UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2> { new(cx - 12f, r.yMax), new(cx + 12f, r.yMax), new(cx, r.yMax + 11f) }, UiPaint.C(28, 164, 226));
+                    UiPaint.Fill(ctx, shape, UiPaint.C(40, 134, 229));
+                    UiPaint.Fill(ctx, UiPaint.Clip(shape, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 20f, r.yMax - 4f, r.xMax + 20f, r.yMax + 3f), 0f)), UiPaint.C(0, 240, 255), 0f);
                 }
-                else UiPaint.Fill(ctx, shape, UiPaint.Vertical(UiPaint.C(236, 243, 249, 0.92f), UiPaint.C(214, 226, 238, 0.88f), r.yMin, r.yMax));
+                else
+                {
+                    UiPaint.Fill(ctx, shape, UiPaint.C(221, 229, 238));
+                    UiPaint.Fill(ctx, UiPaint.Clip(shape, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 20f, r.yMin, r.xMax + 20f, r.yMin + 1.5f), 0f)), UiPaint.C(186, 202, 217), 0f);
+                }
             });
             Juice.Press(b);
         }
