@@ -159,9 +159,11 @@ namespace ExcelHeroes.UI
             var pill = UiKit.Div("bhud__pill", hud);
             ModalFrame.Painted(pill, (ctx, r) =>
             {
-                var poly = UiPaint.RoundRect(r, r.height * 0.5f, 8);
-                UiPaint.Fill(ctx, poly, UiPaint.C(18, 28, 50, 0.66f));
-                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.22f), 2f);
+                // a slanted navy-glass plate with a cyan foot, the family of the objective panel
+                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 6f);
+                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(26, 40, 66, 0.84f), UiPaint.C(14, 24, 44, 0.84f), r.yMin, r.yMax));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.2f), 1.5f);
+                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMax - 4f, r.xMax + 10f, r.yMax + 2f), 0f)), UiPaint.C(0, 214, 255, 0.9f), 0f);
             });
             _waveLabel = UiKit.Text("", "battle__wave bhud__wave", pill);
             // this Phase's error armour as its own coloured chip (업무 상성), not text run into the wave
@@ -434,12 +436,12 @@ namespace ExcelHeroes.UI
                 // "on" is a lit bar along the foot and a lit label — AUTO amber, speed cyan — not
                 // a whole yellow block beside two grey ones
                 var on = b.ClassListContains("bhud__sq--on");
-                var accent = b.ClassListContains("bhud__auto") ? UiPaint.C(255, 196, 0) : UiPaint.C(0, 229, 255);
+                var accent = UiPaint.C(0, 229, 255);
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.45f, 5f);   // the HUD's slant language
                 UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(26, 40, 66, on ? 0.92f : 0.8f), UiPaint.C(14, 24, 44, on ? 0.92f : 0.8f), r.yMin, r.yMax));
                 UiPaint.Stroke(ctx, poly, on ? WithAlpha(accent, 0.85f) : UiPaint.C(255, 255, 255, 0.28f), 1.5f);
                 // AUTO on is the one lit key: the whole face amber (the convention players read at a glance)
-                if (on && b.ClassListContains("bhud__auto")) UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 214, 64), UiPaint.C(255, 180, 20), r.yMin, r.yMax));
+                if (on && b.ClassListContains("bhud__auto")) UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(90, 226, 255), UiPaint.C(0, 170, 236), r.yMin, r.yMax));
                 if (on) UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 4f, r.yMax - 6f, r.xMax + 4f, r.yMax + 4f), 0f)), accent, 0f);
             });
             if (icon != null)
@@ -1896,7 +1898,14 @@ namespace ExcelHeroes.UI
                     UiPaint.Fill(ctx, UiPaint.RoundRect(r, 0f), UiPaint.Vertical(UiPaint.C(16, 26, 48, 0.2f), UiPaint.C(16, 26, 48, 0.92f), r.yMin, r.yMin + r.height * 0.45f));
                 });
                 UiKit.Text(def?.skillName ?? "", "ex-button__skill", band).pickingMode = PickingMode.Ignore;
-                UiKit.CardFrame(Color.Lerp(GameData.Grade(def?.grade)?.Color ?? Color.white, Color.white, 0.4f), btn, 12f);   // a softer rim (ui_gate 07-BattleHud)
+                // a navy-glass card frame with a thin light rim (r8 HUD redesign), not a grade-coloured border
+                var frameEl = UiKit.Div("ex-button__frame", btn); frameEl.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(frameEl, (ctx, r) =>
+                {
+                    var outer = UiPaint.RoundRect(r, 8f, 4); var inner = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 5f, r.yMin + 5f, r.xMax - 5f, r.yMax - 5f), 5f, 4);
+                    UiPaint.Stroke(ctx, outer, UiPaint.C(20, 32, 56), 6f);
+                    UiPaint.Stroke(ctx, inner, UiPaint.C(170, 200, 230, 0.8f), 1.5f);
+                });
                 var badge = UiKit.Div("ex-button__cost", btn);
                 // a hexagon with a gold rim, COST over the number (target_3)
                 ModalFrame.Painted(badge, (ctx, r) =>
@@ -1904,7 +1913,7 @@ namespace ExcelHeroes.UI
                     var hex = new List<Vector2>();
                     for (var h = 0; h < 6; h++) { var an = Mathf.PI / 6f + h * Mathf.PI / 3f; hex.Add(r.center + new Vector2(Mathf.Cos(an) * r.width * 0.5f, Mathf.Sin(an) * r.height * 0.5f)); }
                     UiPaint.Shadow(ctx, hex, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.35f), 4f);
-                    UiPaint.Fill(ctx, hex, UiPaint.Vertical(UiPaint.C(255, 230, 130), UiPaint.C(214, 160, 40), r.yMin, r.yMax));
+                    UiPaint.Fill(ctx, hex, UiPaint.Vertical(UiPaint.C(120, 236, 255), UiPaint.C(0, 170, 230), r.yMin, r.yMax));   // cyan rim (r8 HUD redesign)
                     UiPaint.Fill(ctx, UiPaint.Offset(hex, -3.5f), UiPaint.Vertical(UiPaint.C(46, 70, 118), UiPaint.C(22, 36, 70), r.yMin, r.yMax));
                 });
                 UiKit.Text("COST", "ex-button__costword", badge).pickingMode = PickingMode.Ignore;
@@ -1962,7 +1971,7 @@ namespace ExcelHeroes.UI
             }
             var disc = UiPaint.Ellipse(new Vector2(r.xMin + r.height * 0.5f, r.center.y), r.height * 0.5f, r.height * 0.5f);
             UiPaint.Shadow(ctx, disc, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.35f), 6f);
-            UiPaint.Fill(ctx, disc, Color.white);
+            UiPaint.Fill(ctx, disc, UiPaint.C(0, 200, 250));
             UiPaint.Fill(ctx, UiPaint.Ellipse(new Vector2(r.xMin + r.height * 0.5f, r.center.y), r.height * 0.5f - 4f, r.height * 0.5f - 4f),
                          UiPaint.Vertical(UiPaint.C(46, 70, 118), UiPaint.C(24, 38, 72), r.yMin, r.yMax));
         }

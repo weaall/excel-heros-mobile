@@ -6931,3 +6931,7 @@
 /* album */
 .album__cell--locked .album__name { font-size: 26px; -unity-font-style: bold; color: rgb(230, 236, 246); }
 .sheet-head__stat { color: rgb(255, 255, 255); }
+.ex-button__frame { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.ex-button { border-radius: 8px; overflow: visible; }
+.ex-button__art { border-radius: 8px; }
+.bhud__auto.bhud__sq--on .bhud__sq-label { color: rgb(255, 255, 255); }
