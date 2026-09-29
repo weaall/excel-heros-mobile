@@ -46,11 +46,12 @@ namespace ExcelHeroes.UI
             {
                 var body = UiPaint.RoundRect(r, 18f, 6);
                 UiPaint.Shadow(ctx, body, new Vector2(0f, 8f), UiPaint.C(20, 40, 80, 0.22f), 18f);
-                UiPaint.Fill(ctx, body, UiPaint.C(255, 255, 255));
-                var head = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + 92f), 18f, 6);
-                UiPaint.Fill(ctx, head, UiPaint.Vertical(UiPaint.C(255, 160, 176), UiPaint.C(250, 128, 150), r.yMin, r.yMin + 92f));
-                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin + 70f, r.xMax, r.yMin + 92f), 0f, 1),
-                             UiPaint.C(250, 128, 150));
+                // the same light glass as every panel (the user's BA reference), a cyan line under the head
+                UiPaint.Fill(ctx, body, UiPaint.C(190, 208, 228));
+                UiPaint.Fill(ctx, UiPaint.Offset(body, -2f), UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.95f), UiPaint.C(236, 244, 251, 0.92f), r.yMin, r.yMax));
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 2f, r.yMin + 90f, r.xMax - 2f, r.yMin + 93f), 0f),
+                             UiPaint.Horizontal(UiPaint.C(64, 200, 240), UiPaint.C(64, 200, 240, 0.15f), r.xMin, r.xMax), 0f);
+                UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2> { new(r.xMax, r.yMax), new(r.xMax - r.width * 0.25f, r.yMax), new(r.xMax, r.yMax - r.height * 0.45f) }, body), UiPaint.C(210, 230, 247, 0.6f), 0.8f);
             });
 
             var head = UiKit.Div("mt__head", win);
@@ -58,12 +59,12 @@ namespace ExcelHeroes.UI
             {
                 // a speech bubble with three dots
                 var c = r.center;
-                UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(0f, -3f), r.width * 0.46f, r.height * 0.38f), UiPaint.C(255, 255, 255));
+                UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(0f, -3f), r.width * 0.46f, r.height * 0.38f), UiPaint.C(64, 170, 230));
                 UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2>
                     { c + new Vector2(-r.width * 0.2f, r.height * 0.2f), c + new Vector2(-r.width * 0.32f, r.height * 0.46f), c + new Vector2(-r.width * 0.02f, r.height * 0.28f) },
-                    UiPaint.C(255, 255, 255));
+                    UiPaint.C(64, 170, 230));
                 for (var i = -1; i <= 1; i++)
-                    UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(i * r.width * 0.2f, -3f), 3.5f, 3.5f), UiPaint.C(250, 128, 150));
+                    UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(i * r.width * 0.2f, -3f), 3.5f, 3.5f), UiPaint.C(255, 255, 255));
             });
             UiKit.Text("사내 메신저", "mt__title", head);
             UiKit.Text("// TALK ARCHIVE", "mt__title-en", head);

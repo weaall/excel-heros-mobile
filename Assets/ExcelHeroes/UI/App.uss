@@ -6135,3 +6135,24 @@
 .modal__title { -unity-text-align: middle-center; color: rgb(24, 38, 66); font-size: 48px; }
 .modal__close { top: 22px; right: 22px; width: 64px; height: 64px; }
 .plate--light .plate__label { color: rgb(40, 58, 90); }
+
+/* ---------------------------------------------------------------- glass panels everywhere (the user's BA reference;
+   Gemini's redraws tools/out/design/refmock_*): a light frosted card with a blue-grey rim and faint triangle facets
+   in the corners, 9-sliced so every panel — built once or rebuilt by paging — gets it from the stylesheet alone */
+.panel, .qs-block, .chart-obj, .mt-column, .mcard, .ep, .prog-head {
+    background-color: rgba(0, 0, 0, 0);
+    background-image: url("project://database/Assets/ExcelHeroes/Art/UI/glass_panel.png");
+    -unity-slice-left: 64; -unity-slice-right: 110; -unity-slice-top: 64; -unity-slice-bottom: 104;
+    border-width: 0;
+}
+.mcard--locked { background-image: none; background-color: rgb(34, 48, 78); border-radius: 12px; border-width: 2px; border-color: rgba(120, 150, 200, 0.5); }
+.section-title, .block__title { border-bottom-width: 2px; border-bottom-color: rgba(64, 196, 240, 0.7); }
+.chart-row__track { background-color: rgba(64, 196, 240, 0.18); height: 16px; border-radius: 3px; }
+.chart-row__fill { background-color: rgb(64, 196, 240); border-radius: 3px; }
+/* messenger in the shared glass style */
+.mt__title { color: rgb(24, 38, 66); }
+.mt__title-en { color: rgb(110, 128, 156); }
+.mt__list { border-right-color: rgba(176, 198, 222, 0.6); padding: 10px; }
+.mt-room { margin-bottom: 10px; border-bottom-width: 0; background-image: url("project://database/Assets/ExcelHeroes/Art/UI/glass_panel.png");
+    -unity-slice-left: 64; -unity-slice-right: 110; -unity-slice-top: 64; -unity-slice-bottom: 104; background-color: rgba(0, 0, 0, 0); }
+.mt-room--on { background-color: rgba(120, 210, 250, 0.25); }
