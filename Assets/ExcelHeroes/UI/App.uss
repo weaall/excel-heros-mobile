@@ -6114,3 +6114,24 @@
 .kit__btn { height: 84px; margin-bottom: 14px; }
 /* the reference's "new" dot: lime yellow with a white rim (red stays for counted badges) */
 .home__dot, .shop__dot { background-color: rgb(226, 242, 60); border-color: rgb(255, 255, 255); width: 22px; height: 22px; border-radius: 11px; }
+
+/* ---------------------------------------------------------------- top bar v2 (the user's BA reference): one glass bar */
+.shell--lobby .topbar { padding-top: 14px; }
+.shell--lobby .plate { height: 112px; margin-top: 0; padding-right: 34px; }
+.shell--lobby .plate__avatar { width: 84px; height: 84px; border-radius: 42px; padding: 4px; border-color: rgb(30, 43, 69); border-width: 3px; }
+.shell--lobby .plate__name { font-size: 36px; }
+.shell--lobby .plate__rank-word, .shell--lobby .plate__rank-num { font-size: 24px; }
+.plate__bar { width: 220px; height: 8px; border-radius: 4px; background-color: rgb(40, 58, 96); margin-top: 6px; overflow: hidden; }
+.plate__bar-fill { height: 100%; background-color: rgb(64, 196, 240); border-radius: 4px; }
+.shell--lobby .topbar .chip { height: 112px; margin-left: 30px; padding-left: 20px; }
+.shell--lobby .chip__value { color: rgb(30, 43, 69); }
+.shell--lobby .chip__plus { width: 44px; height: 44px; border-radius: 22px; font-size: 32px; background-color: rgba(0, 0, 0, 0); color: rgb(64, 180, 230); border-width: 0; }
+
+/* icons smaller in their tiles (the user) */
+.home__art-icon { width: 60px; height: 60px; }
+.navtab__icon.art-icon { width: 72px; height: 72px; }
+/* modal v5 (the user's BA reference): the title centred in navy on the card, the ✕ plain */
+.modal__head { justify-content: center; padding-left: 0; }
+.modal__title { -unity-text-align: middle-center; color: rgb(24, 38, 66); font-size: 48px; }
+.modal__close { top: 22px; right: 22px; width: 64px; height: 64px; }
+.plate--light .plate__label { color: rgb(40, 58, 90); }

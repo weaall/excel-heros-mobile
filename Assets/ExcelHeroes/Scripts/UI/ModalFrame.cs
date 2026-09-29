@@ -58,16 +58,22 @@ namespace ExcelHeroes.UI
 
         public static void DrawFrame(MeshGenerationContext ctx, Rect r)
         {
-            // The UI kit's modal (tools/out/design/kit_0): a clean white card with a soft drop shadow and
-            // a navy line round it — no glow ring, no corner brackets (they read as clutter) — its content
-            // area a light grey panel inset under the head.
-            const float radius = 20f;
+            // The user's Blue Archive reference: a light glass card — white fading to the palest blue,
+            // a thin blue-grey rim, a cyan line under the title, big faint triangles in the lower right.
+            const float radius = 14f;
             var outer = UiPaint.RoundRect(r, radius, 6);
-            UiPaint.Shadow(ctx, outer, new Vector2(0f, 12f), C(6, 16, 40, 0.35f), 30f);
-            UiPaint.Fill(ctx, outer, C(255, 255, 255));
-            var inset = Rect.MinMaxRect(r.xMin + 22f, r.yMin + HeadH + 18f, r.xMax - 22f, r.yMax - 22f);
-            if (inset.height > 40f) UiPaint.Fill(ctx, UiPaint.RoundRect(inset, 14f, 5), C(238, 242, 248));
-            UiPaint.Stroke(ctx, outer, C(30, 43, 69), 3f);
+            UiPaint.Shadow(ctx, outer, new Vector2(0f, 10f), C(10, 30, 70, 0.28f), 26f);
+            UiPaint.Fill(ctx, outer, C(196, 214, 232));
+            var body = UiPaint.Offset(outer, -2f);
+            UiPaint.Fill(ctx, body, UiPaint.Vertical(C(255, 255, 255), C(236, 244, 251), r.yMin, r.yMax));
+            // the facets
+            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMax, r.yMax), new(r.xMax - r.width * 0.3f, r.yMax), new(r.xMax, r.yMax - r.height * 0.5f) }, body), C(214, 232, 247, 0.7f), 0.8f);
+            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMax - r.width * 0.18f, r.yMax), new(r.xMax - r.width * 0.02f, r.yMax - r.height * 0.28f), new(r.xMax, r.yMax) }, body), C(200, 224, 244, 0.6f), 0.8f);
+            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMin, r.yMin + HeadH), new(r.xMin + r.width * 0.12f, r.yMin + HeadH), new(r.xMin, r.yMin + HeadH + r.height * 0.22f) }, body), C(222, 236, 249, 0.6f), 0.8f);
+            // the cyan line under the head, brightest on the left, fading right
+            var ly = r.yMin + HeadH;
+            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 2f, ly - 1.5f, r.xMax - 2f, ly + 1.5f), 0f),
+                         UiPaint.Horizontal(C(64, 200, 240), C(64, 200, 240, 0.15f), r.xMin, r.xMax), 0f);
         }
 
         /// <summary>The head band's height, which the frame's inset starts under.</summary>
@@ -95,14 +101,9 @@ namespace ExcelHeroes.UI
         /// </summary>
         public static void DrawHead(MeshGenerationContext ctx, Rect r)
         {
-            // full width, navy, its top corners the card's; a thin cyan line and a slanted cyan tab at the
-            // left edge are its only ornament (the kit's modal)
-            var band = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMax + 24f), 18f, 6);
-            var clip = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMin - 10f, r.xMax + 10f, r.yMax), 0f);
-            UiPaint.Fill(ctx, UiPaint.Clip(band, clip), UiPaint.Vertical(C(40, 58, 96), C(28, 42, 72), r.yMin, r.yMax), 0.6f);
-            var tab = new List<Vector2> { new(r.xMin + 36f, r.yMin + r.height * 0.3f), new(r.xMin + 52f, r.yMin + r.height * 0.3f), new(r.xMin + 44f, r.yMax - r.height * 0.3f), new(r.xMin + 28f, r.yMax - r.height * 0.3f) };
-            UiPaint.Fill(ctx, tab, C(42, 184, 240));
-            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMax - 4f, r.xMax, r.yMax), 0f), C(42, 184, 240), 0.6f);
+            // no band: the title sits on the card (the reference), with a faint light sweep behind it
+            UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(r.xMin, r.yMin), new(r.xMax, r.yMin), new(r.xMax, r.yMax), new(r.xMin, r.yMax) }, UiPaint.RoundRect(r, 12f, 5)),
+                         UiPaint.Horizontal(C(232, 245, 253, 0.9f), C(255, 255, 255, 0f), r.xMin, r.xMax), 0f);
         }
 
         static List<Vector2> Expand(Rect r)

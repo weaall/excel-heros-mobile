@@ -104,8 +104,9 @@ namespace ExcelHeroes.UI
             Kind.Chip    => new Look(C(120, 222, 255), C(64, 196, 244), Navy, C(255, 255, 255, 0.6f), 3f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0f),
             // secondary: white with a thick navy outline, no pattern — it must not compete with the cyan CTA
-            _            => new Look(C(255, 255, 255), C(248, 250, 253), Navy, C(255, 255, 255, 0.9f), 3f,
-                                     Color.white, C(0, 0, 0, 0f), 0f, 0f),
+            // secondary: the reference's CLOSE — a pale grey plate with a soft edge, quiet beside the cyan
+            _            => new Look(C(246, 248, 251), C(222, 228, 236), C(186, 198, 214), C(255, 255, 255, 0.95f), 1.5f,
+                                     C(200, 212, 228), C(0, 0, 0, 0f), 0f, 0.14f),
         };
 
         /// <summary>

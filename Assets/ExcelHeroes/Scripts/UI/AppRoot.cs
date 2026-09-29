@@ -288,6 +288,15 @@ namespace ExcelHeroes.UI
             ring.Add(face);
             _plate.Insert(0, ring);
             UiKit.SetPortrait(face, HomeScreen.LeadHeroId(), UiKit.Crop.Face, round: true);
+            // the reference's thin cyan bar under the name: progress through the current ten phases
+            body?.Q<VisualElement>("plateBar")?.RemoveFromHierarchy();
+            if (body != null && Game.Player != null)
+            {
+                var track = new VisualElement { name = "plateBar", pickingMode = PickingMode.Ignore }; track.AddToClassList("plate__bar");
+                var fill = new VisualElement { pickingMode = PickingMode.Ignore }; fill.AddToClassList("plate__bar-fill");
+                fill.style.width = Length.Percent(Mathf.Clamp01(((Game.Player.stage - 1) % 10 + 1) / 10f) * 100f);
+                track.Add(fill); body.Add(track);
+            }
         }
 
         void OnGameChanged()

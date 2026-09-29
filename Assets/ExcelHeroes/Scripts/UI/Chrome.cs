@@ -52,7 +52,7 @@ namespace ExcelHeroes.UI
             SetScene(root, Lobby);
 
             var top = root.Q<VisualElement>("topbar");
-            if (top != null) ModalFrame.Painted(top, DrawTopStrip);
+            if (top != null) ModalFrame.Painted(top, (ctx, r) => DrawTopStrip(ctx, r, top));
 
             foreach (var chip in root.Query<VisualElement>(className: "chip").ToList())
                 ModalFrame.Painted(chip, DrawPill);
@@ -199,8 +199,40 @@ namespace ExcelHeroes.UI
         /// </summary>
         public const float BandHeight = 66f;
 
-        public static void DrawTopStrip(MeshGenerationContext ctx, Rect r)
+        public static void DrawTopStrip(MeshGenerationContext ctx, Rect r) => DrawTopStrip(ctx, r, null);
+
+        /// <summary>
+        /// The user's Blue Archive reference: on the lobby, the player (level disc, name, progress bar)
+        /// and every currency sit on ONE long slanted glass bar, divided by thin slashes — not a plate
+        /// and separate pills. Its extent is read off the children it carries.
+        /// </summary>
+        public static void DrawTopStrip(MeshGenerationContext ctx, Rect r, VisualElement top)
         {
+            if (Lobby && top != null)
+            {
+                var plate = top.Q<VisualElement>("playerPlate"); var gem = top.Q<VisualElement>("gemChip"); var gold = top.Q<VisualElement>("goldChip");
+                if (plate == null || gem == null || float.IsNaN(gem.layout.width)) return;
+                var x0 = plate.layout.xMin - 10f; var x1 = gem.layout.xMax + 26f;
+                var y0 = Mathf.Min(plate.layout.yMin, gem.layout.yMin); var y1 = Mathf.Max(plate.layout.yMax, gem.layout.yMax);
+                var bar = Rect.MinMaxRect(x0, y0, x1, y1);
+                var slant = SkewPlate.SlantFor(bar.height) * 0.8f;
+                var poly = UiPaint.SkewRect(bar, slant, 8f);
+                UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), C(20, 50, 90, 0.2f), 10f);
+                UiPaint.Fill(ctx, poly, C(255, 255, 255, 0.92f));
+                var inner = UiPaint.Offset(poly, -2f);
+                UiPaint.Fill(ctx, inner, UiPaint.Vertical(C(255, 255, 255, 0.9f), C(224, 238, 248, 0.86f), bar.yMin, bar.yMax));
+                var gloss = new List<Vector2> { new(bar.xMin - 20f, bar.yMin), new(bar.xMax + 20f, bar.yMin), new(bar.xMax + 20f, bar.yMin + bar.height * 0.45f), new(bar.xMin - 20f, bar.yMin + bar.height * 0.5f) };
+                UiPaint.Fill(ctx, UiPaint.Clip(gloss, inner), C(255, 255, 255, 0.35f), 1f);
+                UiPaint.Fill(ctx, UiPaint.Clip(UiPaint.RoundRect(Rect.MinMaxRect(bar.xMin - 20f, bar.yMax - 5f, bar.xMax + 20f, bar.yMax), 0f), inner), C(64, 196, 240, 0.85f), 0f);
+                // the slashes between the sections
+                foreach (var el in new[] { gold, gem })
+                {
+                    if (el == null) continue;
+                    var x = el.layout.xMin - 4f; var h = bar.height * 0.5f; var cy = bar.center.y;
+                    UiPaint.Fill(ctx, new List<Vector2> { new(x + h * 0.2f, cy - h * 0.5f), new(x + h * 0.2f + 3f, cy - h * 0.5f), new(x - h * 0.2f + 3f, cy + h * 0.5f), new(x - h * 0.2f, cy + h * 0.5f) }, C(150, 180, 210, 0.8f));
+                }
+                return;
+            }
             if (Lobby) return;
             var br = Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + BandHeight);
             UiPaint.Fill(ctx, UiPaint.RoundRect(br, 0f), UiPaint.Vertical(C(255, 255, 255, 0.94f), C(246, 250, 253, 0.86f), br.yMin, br.yMax), 0f);
@@ -215,7 +247,8 @@ namespace ExcelHeroes.UI
             // A pill on every screen: inside a screen it used to be bare numbers divided by a slash,
             // which read as a web toolbar (ui_critique round 1, 07-Roster #2 / 10-Quests #3).
             // Inside, it is inset a little so it sits within the 66px band.
-            if (!Lobby) r = Rect.MinMaxRect(r.xMin, r.yMin + 7f, r.xMax, r.yMax - 7f);
+            if (Lobby) return;   // on the lobby the one bar behind (DrawTopStrip) carries them
+            r = Rect.MinMaxRect(r.xMin, r.yMin + 7f, r.xMax, r.yMax - 7f);
             var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 6f);
             UiPaint.Shadow(ctx, poly, new Vector2(0f, 2f), C(30, 60, 100, 0.16f), 6f);
             UiPaint.Fill(ctx, poly, C(186, 208, 228, 0.9f));
@@ -223,7 +256,7 @@ namespace ExcelHeroes.UI
         }
 
         /// <summary>The lobby's player plate: target_1's glass plate, the avatar at its left end.</summary>
-        public static void DrawPlayerPlate(MeshGenerationContext ctx, Rect r) => DrawGlassTile(ctx, r, false);
+        public static void DrawPlayerPlate(MeshGenerationContext ctx, Rect r) { }   // the lobby's top bar is behind it
 
         public static void DrawPlayerPlateNavy(MeshGenerationContext ctx, Rect r)
         {

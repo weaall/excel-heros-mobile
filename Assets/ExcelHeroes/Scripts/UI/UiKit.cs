@@ -71,8 +71,7 @@ namespace ExcelHeroes.UI
                 close.AddToClassList("modal__close");
                 ModalFrame.Painted(close, (ctx, r) =>
                 {
-                    var c = r.center; var rad = Mathf.Min(r.width, r.height) * 0.5f;
-                    UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad), Color.white);
+                    var c = r.center; var rad = Mathf.Min(r.width, r.height) * 0.5f;   // a plain navy ✕, as the reference
                     var k = rad * 0.38f; var t = rad * 0.11f;
                     foreach (var sgn in new[] { 1f, -1f })
                     {
