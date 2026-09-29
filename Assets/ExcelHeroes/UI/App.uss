@@ -6984,3 +6984,13 @@
 /* party r25: the attack chip in the glass card's top corner, clear of the figure's feet */
 .pslot__atk { top: -548px; right: 12px; }
 .pslot--stand .pslot__name { overflow: visible; text-overflow: clip; }
+/* album r26 (par reference) */
+.sheet-head__stat { border-radius: 0; border-bottom-width: 0; border-left-width: 6px; border-color: rgb(0, 214, 255); padding: 4px 28px 4px 22px; -unity-text-align: middle-left; }
+.album__grade { left: 10px; top: 10px; width: 44px; height: 34px; }
+.album__name { bottom: 14px; height: 48px; -unity-text-align: middle-center; }
+.album__fade { height: 38%; }
+/* result r26: title heavier, buttons with depth */
+.bresult__title, .bresult__band .bresult__title { font-size: 112px; text-shadow: 5px 6px 0 rgba(0, 150, 230, 0.9); }
+.bresult__kicker { -unity-text-align: middle-left; margin-top: 2px; }
+.bresult__info { height: 76px; }
+.bresult__phase, .bresult__time, .bresult__gain-text { font-size: 30px; }
