@@ -168,8 +168,12 @@ namespace ExcelHeroes.UI
             _armorChip = UiKit.Div("bhud__armor", pill);
             ModalFrame.Painted(_armorChip, (ctx, r) =>
             {
+                // outlined in the armour colour with a faint tint inside: a status, not a button
                 var col = _armorChip.userData is Color c0 ? c0 : Color.gray;
-                UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 3f), col);
+                var chip = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 3f);
+                var tint = col; tint.a = 0.22f;
+                UiPaint.Fill(ctx, chip, tint);
+                UiPaint.Stroke(ctx, chip, col, 2f);
             });
             _armorText = UiKit.Text("", "bhud__armor-text", _armorChip);
             ModalFrame.Painted(UiKit.Div("bhud__icon", pill), DrawEnemyIcon);
@@ -857,7 +861,8 @@ namespace ExcelHeroes.UI
                 {
                     var arm = Affinity.ArmorOfStage(_sim.Stage);
                     _armorChip.userData = Affinity.ColorOf(arm);
-                    _armorText.text = Affinity.ArmorShortName(arm);
+                    _armorText.text = $"◆ {Affinity.ArmorShortName(arm)}";
+                    _armorText.style.color = Color.Lerp(Affinity.ColorOf(arm), Color.white, 0.35f);
                     _armorChip.MarkDirtyRepaint();
                 }
             }

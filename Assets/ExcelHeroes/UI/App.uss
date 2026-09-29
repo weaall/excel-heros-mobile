@@ -6761,3 +6761,20 @@
 .bkill__num { color: rgb(255, 255, 255); font-size: 40px; }
 .bkill__glyph { color: rgb(0, 214, 255); font-size: 40px; }
 .bkill__glyph { margin-right: 16px; } .bhud__wave { font-size: 30px; }
+/* gate r8: the home sheet right behind the head, not over the window */
+.home__sheet { top: 8%; width: 20%; height: 40%; }
+.home__sheet.backsheet--left { left: 26%; }
+.home__sheet.backsheet--right { left: 44%; }
+/* upgrade rows: the cost as one pill (icon + have/need) that reads as part of the action */
+.cost-slot { flex-direction: row; align-items: center; height: 64px; padding: 0 16px 0 8px; margin-right: 14px; border-radius: 32px; background-color: rgb(238, 244, 250); border-width: 1.5px; border-color: rgb(208, 222, 238); }
+.cost-slot__box { width: 44px; height: 44px; margin-right: 8px; }
+.cost-slot__n { font-size: 24px; margin: 0; padding: 0; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; color: rgb(40, 54, 76); }
+.growth__d { color: rgb(0, 128, 200); }
+.overlay--page .dplate__name { font-size: 60px; }
+/* roster card small print legible */
+.card__sub { font-size: 20px; color: rgb(230, 238, 248); -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(10, 20, 40, 0.7); }
+.album__cell--locked .album__name { font-size: 26px; color: rgb(214, 224, 238); }
+/* battle HUD: armour chip outlined rather than a solid red slab */
+.bhud__armor-text { font-size: 22px; }
+.cost-slot__icon { width: 40px; height: 40px; }
+.cost-slot__n--short { color: rgb(226, 58, 70); }
