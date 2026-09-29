@@ -6691,3 +6691,16 @@
 .bresult__mini { border-radius: 8px; }
 .bresult__mvp { left: auto; right: -6px; top: -12px; }
 .bresult__share { font-size: 26px; }
+/* gate r4: disabled plates keep full opacity (the theme's :disabled fade made their labels unreadable) */
+.skewplate:disabled { opacity: 1; }
+.skewplate:disabled .plate__label { color: rgb(104, 118, 140); }
+.pslot__stars-inline { left: 124px; font-size: 22px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); }
+/* achievements: taller rows, bars in the accent */
+.prog-cols__left .arow { height: 132px; margin-bottom: 16px; }
+.arow__track { height: 12px; background-color: rgb(214, 226, 240); }
+/* gacha: the partner line in a deeper blue; cost rows centred */
+.gstage__sub { color: rgb(0, 120, 214); }
+.pull-btn__cost--bar { align-items: center; }
+.pull-btn__cost--bar .pull-btn__gem { margin-top: 2px; }
+/* roster cards: lighter name gradient, bigger stars */
+.card__stars { font-size: 26px; letter-spacing: 1px; }
