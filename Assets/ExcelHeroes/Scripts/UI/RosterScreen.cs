@@ -153,6 +153,10 @@ namespace ExcelHeroes.UI
                 var on = _grade == v;
                 var tab = UiKit.Btn(text, "roster-tab", () => { _grade = v; _page = 0; AudioService.Play("tap", 0.5f); Refresh(); }, _gradeRow);
                 SkewPlate.Apply(tab, on ? SkewPlate.Kind.Navy : SkewPlate.Kind.Light);
+                // the open one carries a cyan bar along its foot; the others letter in their grade's colour
+                if (on) UiKit.Div("roster-tab__bar", tab).pickingMode = PickingMode.Ignore;
+                else if (v != "" && tab.Q<Label>(className: "plate__label") is { } lab)
+                    lab.style.color = Color.Lerp(GameData.Grade(v)?.Color ?? Color.gray, new Color(0.12f, 0.16f, 0.25f), 0.25f);
                 Juice.Press(tab);
             }
         }

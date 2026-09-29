@@ -123,7 +123,7 @@ namespace ExcelHeroes.UI
                 if (gem != null) UiKit.SetArt(UiKit.Div("stamp-day__icon", cell), gem);
                 UiKit.Text($"{file.loginGems + bonus * file.streakGemsPerDay}", "stamp-day__gems", cell);
                 if (today) UiKit.Text("TODAY", "stamp-day__today", cell);
-                if (stamped) UiKit.Text("승인", "stamp-day__mark", cell);
+                if (stamped) UiKit.Text("출근", "stamp-day__mark", cell);
             }
 
             if (QuestService.CanCheckIn(p))
