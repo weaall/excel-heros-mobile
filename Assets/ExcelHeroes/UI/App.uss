@@ -6849,3 +6849,14 @@
 .pslot__atk .aff-chip__text { font-size: 21px; }
 .pslot--stand .pslot__name { font-size: 28px; }
 .pslot__lvstar { margin-left: 14px; }
+/* gate r15 */
+.stamp-day__icon { width: 56px; height: 56px; min-width: 56px; min-height: 56px; margin: 8px 0 12px 0; }
+.qrow__text { margin-right: 32px; }
+.qrow__rewards { margin-left: 12px; }
+.album__name { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7); }
+.navback__title { margin-left: 22px; }
+.pslot__tag-pos, .pslot__tag-role { color: rgb(255, 255, 255); -unity-font-style: bold; }
+.gtab { height: 132px; }
+.gtab--on { background-color: rgb(255, 255, 255); }
+.gstage__title { text-shadow: 0 4px 10px rgba(10, 30, 60, 0.3); }
+.chip__plus { margin-left: 10px; }
