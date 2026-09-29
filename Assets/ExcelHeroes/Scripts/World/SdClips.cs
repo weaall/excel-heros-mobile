@@ -38,6 +38,14 @@ namespace ExcelHeroes.World
 
         public static bool Available => Clip("Idle_Loop") != null;
 
+        /// <summary>
+        /// Whether the lobby and the fight play these clips. Off: retargeted onto the 2.4-head bodies the
+        /// adult clips hug the arms to the sides, barely lift the feet in the jog and lean the whole
+        /// figure forward (SdBasePreview.ClipStrip, 2026-09-29) — the pose library (SdPose), written for
+        /// these proportions, moves them the way Blue Archive's SDs move. The previews keep the clips.
+        /// </summary>
+        public static bool InGame = false;
+
         readonly ChibiRig _rig;
         PlayableGraph _graph;
         AnimationMixerPlayable _mixer;

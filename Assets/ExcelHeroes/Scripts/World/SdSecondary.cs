@@ -17,7 +17,12 @@ namespace ExcelHeroes.World
     /// </summary>
     public class SdSecondary : MonoBehaviour
     {
-        const float Stiffness = 700f, Damping = 38f, MaxBend = 20f, MaxStep = 1f / 90f;   // ~4 Hz, ζ≈0.7: a soft bounce that settles in a few frames
+        // ~3.4 Hz and lightly damped: hair that swings on a turn and bounces once or twice when a run
+        // stops (Blue Archive's), where the old 700 / 38 / 20° only twitched on a hard acceleration
+        const float Stiffness = 460f, Damping = 17f, MaxBend = 34f, MaxStep = 1f / 90f;
+        // air drag: the chains trail the body's own travel — the rest point is pushed back along the
+        // velocity by Drag seconds of it, so a running SD's hair and skirt stream behind her
+        const float Drag = 0.05f, MaxWind = 3.5f;
         static readonly Vector3 Gravity = new(0f, -2f, 0f);
 
         class Node
@@ -36,10 +41,13 @@ namespace ExcelHeroes.World
         const float DrapeFollow = 0.3f;
         readonly List<Node> _nodes = new();     // root-first
         bool _ready;
+        Transform _body; Vector3 _bodyPrev, _bodyVel; bool _bodyHas;
+        /// <summary>A travel velocity (world) added to the body's own — for previews that run on the spot.</summary>
+        public Vector3 Travel;
 
         public void Init(Transform model, string style = "")
         {
-            _nodes.Clear();
+            _nodes.Clear(); _body = model; _bodyHas = false;
             var all = model.GetComponentsInChildren<Transform>(true);
             // a library hair (SdRefHairLib) brings its own chain, tagged; the base cap is hidden then,
             // so its hair bones swing nothing and are left out
@@ -136,11 +144,20 @@ namespace ExcelHeroes.World
 
         void Sub(float dt)
         {
+            // the body's travel, smoothed over a few steps (a teleport or a snap turn must not whip the hair)
+            if (_body != null)
+            {
+                var bp = _body.position;
+                var v = _bodyHas ? (bp - _bodyPrev) / dt : Vector3.zero; _bodyPrev = bp; _bodyHas = true;
+                if (v.sqrMagnitude > 400f) v = Vector3.zero;
+                _bodyVel = Vector3.Lerp(_bodyVel, v, 1f - Mathf.Exp(-dt * 20f));
+            }
+            var wind = Vector3.ClampMagnitude(_bodyVel + Travel, MaxWind) * -Drag;
             foreach (var nd in _nodes)
             {
                 var t = nd.T;
                 t.localRotation = nd.RestLocal;                            // back to the rest each step: the target must not include last step's swing
-                var target = t.TransformPoint(nd.RestTipLocal);           // where the rigid rest puts the tip, given the parent's current pose
+                var target = t.TransformPoint(nd.RestTipLocal) + wind * nd.Weight;   // where the rigid rest puts the tip, given the parent's current pose, pushed back by the air
                 var restDir = (target - t.position).normalized;
                 var targetVel = nd.HasPrev ? (target - nd.PrevTarget) / dt : Vector3.zero;
                 nd.PrevTarget = target; nd.HasPrev = true;
@@ -171,6 +188,7 @@ namespace ExcelHeroes.World
         public void Settle()
         {
             foreach (var nd in _nodes) { nd.T.localRotation = nd.RestLocal; nd.Tip = nd.T.TransformPoint(nd.RestTipLocal); nd.Vel = Vector3.zero; nd.HasPrev = false; }
+            _bodyHas = false; _bodyVel = Vector3.zero;
         }
     }
 }

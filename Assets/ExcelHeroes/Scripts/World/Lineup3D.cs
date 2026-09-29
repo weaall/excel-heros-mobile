@@ -180,7 +180,7 @@ namespace ExcelHeroes.World
                     {
                         // the character's own idle from the pose library (root name = "sdref:<id>")
                         var id = rig.Root.name.Contains(":") ? rig.Root.name.Substring(rig.Root.name.IndexOf(':') + 1) : rig.Root.name;
-                        if (SdClips.Available)
+                        if (SdClips.Available && SdClips.InGame)
                         {
                             // keyframed: each member's own standing idle, started at their own point in it
                             if (!_clips.TryGetValue(rig, out var cl))

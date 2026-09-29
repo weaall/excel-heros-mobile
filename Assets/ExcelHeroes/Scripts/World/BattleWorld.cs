@@ -1703,7 +1703,7 @@ namespace ExcelHeroes.World
                     else if (Skill > 0f) _pose = SdPose.Skill(SdPose.AttackOf(Pid, C.role), 1f - Skill / 0.75f);
                     else if (Hit > 0f) _pose = SdPose.Hit(Hit / 0.16f);
                     else if (Attack > 0f) _pose = SdPose.Attack(AttackPose(C), 1f - Attack / 0.32f);
-                    else if (walking) _pose = SdPose.Walk(_walk);
+                    else if (walking) _pose = _speed > RunSpeed * Rig.Root.localScale.x ? SdPose.Run(_walk) : SdPose.Walk(_walk);
                     else _pose = SdPose.Ready(SdPose.AttackOf(Pid, C.role), time, Z * 2f);   // in a fight: the combat stance, not the lobby idle
                     // the head looks at the fight: heroes toward the enemy line, enemies toward the squad
                     if (!cheering && (Attack <= 0f) && C.Alive)
@@ -1715,7 +1715,8 @@ namespace ExcelHeroes.World
                     // and settles; stiffer into an attack or a hit
                     var omega = Attack > 0f || Hit > 0f ? 42f : 26f;
                     if (!_shownInit) { _shown = _pose; _vel = new float[Pose.Count]; _shownInit = true; }
-                    else Pose.Spring(ref _shown, _vel, _pose, dt, omega, 0.78f);
+                    // hitstop: the body all but stops for the few frames of the blow (as the clips did), then springs on
+                    else Pose.Spring(ref _shown, _vel, _pose, Freeze > 0f ? dt * 0.05f : dt, omega, 0.78f);
                     y = _shown.Y; spin = _shown.Yaw;
                 }
                 // The reference's squads FACE the enemy (right), seen from behind-and-above; they only
@@ -1742,7 +1743,7 @@ namespace ExcelHeroes.World
                 if (Rig.RefModel)
                 {
                     // keyframed clips (SdClips) when the library is there; the hand-written poses otherwise
-                    if (SdClips.Available && ClipMotion(dt, walking, closeUp)) { }
+                    if (SdClips.Available && SdClips.InGame && ClipMotion(dt, walking, closeUp)) { }
                     else SdPose.Apply(Rig, _shown);
                     if (C.heroId != null) SdExpr.Tick(Rig, C.heroId, _shown.Expr, time);
                     y += Rig.FootDrop * root.localScale.y;
@@ -2112,7 +2113,8 @@ namespace ExcelHeroes.World
             TrailRenderer _trail;
             public float LastRing = -1f;     // world time of the last hit ring on this actor (HitRing throttle)
             public float Enter;             // 1 → 0: running in from the left at the start of a run
-            float _walk, _lastX;
+            float _walk, _lastX, _speed;
+            const float RunSpeed = 1.6f;   // world units a second at root scale 1: faster than this, the SD runs
 
             public void Update(float dt, float time, float targetX, Transform cam, MaterialPropertyBlock mpb, float closeUp)
             {
@@ -2130,11 +2132,16 @@ namespace ExcelHeroes.World
                 // the walk turns with DISTANCE, 2π per stride cycle at this figure's size, so the
                 // planted foot stays put however fast the body moves (a fixed 11 rad/s skated at every
                 // speed but one). The sprite and doll rigs keep the old rate.
-                _walk += walking ? (Rig.RefModel ? moved / Mathf.Max(0.05f, SdPose.WalkCycle * Rig.Root.localScale.x) * Mathf.PI * 2f : dt * 11f) : 0f;
+                // above a jog's speed the SD runs (SdPose.Run, its longer stride); the eased speed keeps it from flickering between the two
+                _speed = Mathf.Lerp(_speed, walking ? speed : 0f, 1f - Mathf.Exp(-dt * 8f));
+                var cycle = _speed > RunSpeed * Rig.Root.localScale.x ? SdPose.RunCycle : SdPose.WalkCycle;
+                _walk += walking ? (Rig.RefModel ? moved / Mathf.Max(0.05f, cycle * Rig.Root.localScale.x) * Mathf.PI * 2f : dt * 11f) : 0f;
 
-                Attack = Mathf.Max(0f, Attack - dt);
+                // the blow's own clock stops in the hitstop too, so the pose holds on the contact frame
+                var live = Freeze > 0f ? dt * 0.05f : dt;
+                Attack = Mathf.Max(0f, Attack - live);
                 Freeze = Mathf.Max(0f, Freeze - dt);
-                Hit = Mathf.Max(0f, Hit - dt);
+                Hit = Mathf.Max(0f, Hit - live);
                 Skill = Mathf.Max(0f, Skill - dt);
                 Cheer = Mathf.Max(0f, Cheer - dt);
 

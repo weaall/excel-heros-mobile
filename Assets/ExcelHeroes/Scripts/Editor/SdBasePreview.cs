@@ -74,6 +74,55 @@ namespace ExcelHeroes.EditorTools
         }
 
         /// <summary>
+        /// The GAME's motion: the keyframed clips (SdClips, Quaternius UAL) that the lobby and the fight
+        /// actually play — the pose library (Strip) is only their fallback. One row per clip (SD_CLIPS),
+        /// SD_STRIPFRAMES frames across it, the secondary motion stepped at 60 Hz all the way through.
+        ///     SD_IDS=cfo,cso SD_CLIPS=Idle_Loop,Jog_Fwd_Loop,Sword_Regular_A → tools/out/sd3d/clips_<id>.png
+        /// </summary>
+        public static void ClipStrip()
+        {
+            var outDir = System.Environment.GetEnvironmentVariable("SD_PREVIEW_OUT") ?? Path.Combine(Application.dataPath, "..", "tools", "out", "sd3d");
+            Directory.CreateDirectory(outDir);
+            var ids = (System.Environment.GetEnvironmentVariable("SD_IDS") ?? "intern").Split(',');
+            var clips = (System.Environment.GetEnvironmentVariable("SD_CLIPS") ?? "Idle_Loop,Jog_Fwd_Loop,Sword_Regular_A,Hit_Chest,Dance_Loop").Split(',');
+            var nf = int.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPFRAMES"), out var nf0) ? nf0 : 6;
+            var sc = int.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPSCALE"), out var sc0) ? sc0 : 2;
+            var yaw0 = float.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPYAW"), out var y0) ? y0 : 215f;
+            int W = 150 * sc, H = 220 * sc;
+            Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
+            if (!ExcelHeroes.Data.GameData.Loaded) ExcelHeroes.Data.GameData.Load();
+            foreach (var id in ids)
+            {
+                var holder = new GameObject("preview").transform;
+                var rig = SdRef.Build(id, holder, 0);
+                if (rig == null) { Object.DestroyImmediate(holder.gameObject); continue; }
+                rig.Root.rotation = Quaternion.Euler(0f, yaw0, 0f);
+                var sec = rig.Root.GetComponent<SdSecondary>();
+                var cl = new SdClips(rig, id);
+                var sheet = new Texture2D(W * nf, H * clips.Length, TextureFormat.RGB24, false);
+                for (var r = 0; r < clips.Length; r++)
+                {
+                    var c = SdClips.Clip(clips[r]); if (c == null) { Debug.LogWarning("[ClipStrip] no clip " + clips[r]); continue; }
+                    cl.Play(clips[r], 0f, 0f, 1f, restart: true); cl.Tick(0f); sec?.Settle();
+                    var len = c.length; var t = 0f;
+                    for (var f = 0; f < nf; f++)
+                    {
+                        var at = len * f / Mathf.Max(1, nf - 1) * (c.isLooping ? (nf - 1f) / nf : 1f);
+                        while (t < at - 1e-4f) { var dt = Mathf.Min(1f / 60f, at - t); cl.Tick(dt); rig.Root.localPosition = new Vector3(0f, rig.FootDrop, 0f); sec?.Step(dt); t += dt; }
+                        cl.Tick(0f); rig.Root.localPosition = new Vector3(0f, rig.FootDrop, 0f);
+                        var img = Shoot(SdBase.Height, W, H, 0.72f, 0.58f);
+                        sheet.SetPixels(W * f, H * (clips.Length - 1 - r), W, H, img.GetPixels());
+                        Object.DestroyImmediate(img);
+                    }
+                }
+                sheet.Apply();
+                File.WriteAllBytes(Path.Combine(outDir, "clips_" + id + ".png"), sheet.EncodeToPNG());
+                cl.Dispose();
+                Object.DestroyImmediate(holder.gameObject);
+            }
+        }
+
+        /// <summary>
         /// Filmstrips: for each id in SD_IDS, one row per action in SD_ACTIONS, frames across the
         /// action's time, three-quarter view showing the right arm, the root's hop and spin applied
         /// — the way to judge an arc, not a single frame. "seq" rows simulate the RUNTIME blend:
@@ -139,6 +188,18 @@ namespace ExcelHeroes.EditorTools
                             else if (act.StartsWith("attack")) p = SdPose.Attack(int.Parse(act.Substring(6)), u);
                             else if (act == "hit") p = SdPose.Hit(1f - u);
                             else if (act == "walk") p = SdPose.Walk(f / (float)nf * Mathf.PI * 2f);
+                            else if (act == "run") p = SdPose.Run(f / (float)nf * Mathf.PI * 2f);
+                            else if (act.StartsWith("set:"))
+                            {
+                                // a probe: Rest with fields set, scaled by the frame (set:HeadPitch=-20;Lean=-15)
+                                object bx = ExcelHeroes.World.Pose.Rest;
+                                foreach (var kv in act.Substring(4).Split(';'))
+                                {
+                                    var sp = kv.Split('='); var fi = typeof(ExcelHeroes.World.Pose).GetField(sp[0]);
+                                    if (fi != null) fi.SetValue(bx, (float)fi.GetValue(bx) + (float.Parse(sp[1], System.Globalization.CultureInfo.InvariantCulture) - (float)fi.GetValue(bx)) * u);
+                                }
+                                p = (ExcelHeroes.World.Pose)bx;
+                            }
                             else if (act.StartsWith("win")) p = SdPose.Victory(int.Parse(act.Substring(3)), u * 1.4f);
                             else if (act.StartsWith("skill")) p = SdPose.Skill(int.Parse(act.Substring(5)), u);
                             else if (act == "dead") p = SdPose.Dead(u);
@@ -155,6 +216,8 @@ namespace ExcelHeroes.EditorTools
                 for (var r = 0; r < rows.Count; r++)
                 {
                     sec?.Settle();
+                    // a run on the spot: the hair and skirt get the air of a run at its cycle's speed (1/12 s a frame)
+                    if (sec != null) sec.Travel = rows[r].Item1 == "run" ? Quaternion.Euler(0f, yaw0, 0f) * Vector3.forward * (SdPose.RunCycle * 12f / Mathf.Max(1, rows[r].Item2.Count)) : Vector3.zero;
                     var col = 0;
                     foreach (var (p, dt) in rows[r].Item2)
                     {

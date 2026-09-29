@@ -34,6 +34,16 @@ namespace ExcelHeroes.World
 
         static readonly Dictionary<Color, Texture2D> Solids = new();
 
+        /// <summary>
+        /// Sheer tights: the illustration's dark legwear, cooled and darkened a little — the toon ramp lifts
+        /// it, and the plain mix with skin rendered every pair of black tights as brown stockings.
+        /// </summary>
+        static Color Tights(SdLook k)
+        {
+            var c = Color.Lerp(k.Socks, k.Skin, 0.06f);
+            return new Color(c.r * 0.72f, c.g * 0.74f, c.b * 0.82f, 1f);
+        }
+
         /// <summary>The group key of the own skirt's triangles (drawn with rig.SkirtSheet, UVs kept).</summary>
         static readonly Color SkirtKey = new Color(0.123f, 0.456f, 0.789f, 0.321f);
 
@@ -181,8 +191,8 @@ namespace ExcelHeroes.World
                     Zone.Skirt when rig.SkirtSheet != null && !r.name.StartsWith("lower:") => SkirtKey,
                     Zone.Hip => k.Bottom,
                     // bare legs are skin: the samples' own stockings and garters painted there showed as marks
-                    Zone.Thigh => legs == "pants" ? k.Bottom : legs == "tights" ? Color.Lerp(k.Socks, k.Skin, 0.12f) : k.Skin,
-                    Zone.Calf => legs == "pants" ? k.Bottom : legs == "socks" ? k.Socks : legs == "tights" ? Color.Lerp(k.Socks, k.Skin, 0.12f) : k.Skin,
+                    Zone.Thigh => legs == "pants" ? k.Bottom : legs == "tights" ? Tights(k) : k.Skin,
+                    Zone.Calf => legs == "pants" ? k.Bottom : legs == "socks" ? k.Socks : legs == "tights" ? Tights(k) : k.Skin,
                     Zone.Foot => k.Shoes,
                     _ => null,
                 };

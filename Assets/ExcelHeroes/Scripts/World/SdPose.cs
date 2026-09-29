@@ -161,7 +161,9 @@ namespace ExcelHeroes.World
     {
         public const int IdleCount = 8, WinCount = 8;
         /// <summary>Metres of travel per walk cycle (2π) at root scale 1 — BattleWorld drives the phase by distance with it, so the planted foot stays put. Calibrated by SdMotionTest.Calibrate.</summary>
-        public const float WalkCycle = 0.85f;   // SdMotionTest.Calibrate: slip 0.26 of the travel (was ~1.0 at the fixed 11 rad/s)
+        public const float WalkCycle = 0.85f;
+        /// <summary>Metres per run cycle at root scale 1: a run's stride is longer than the walk's (the feet leave the floor).</summary>
+        public const float RunCycle = 1.25f;   // SdMotionTest.Calibrate: slip 0.26 of the travel (was ~1.0 at the fixed 11 rad/s)
 
         // easing: a body accelerates into a move and settles out of it
         static float EaseOut(float t) { t = Mathf.Clamp01(t); return 1f - (1f - t) * (1f - t) * (1f - t); }
@@ -602,6 +604,37 @@ namespace ExcelHeroes.World
             return p;
         }
 
+        /// <summary>
+        /// The run (Blue Archive's squads trot everywhere, never walk): the trunk well forward, the
+        /// arms bent near 90° pumping front to back against the legs, the knees coming high, a real
+        /// flight phase (both feet up) twice a cycle with a squash on each landing, the head held
+        /// level against the lean so the face still reads, the pelvis rocking with the stride.
+        /// </summary>
+        public static Pose Run(float ph)
+        {
+            var p = Pose.Rest; p.Expr = "";
+            var sw = Mathf.Sin(ph);                             // +1 left thigh forward
+            var pass = Mathf.Cos(ph);
+            p.ThighL = sw * 40f + 6f; p.ThighR = -sw * 40f + 6f;
+            p.KneeL = 18f + Mathf.Max(0f, pass) * 78f; p.KneeR = 18f + Mathf.Max(0f, -pass) * 78f;   // the back leg folds high as it swings through
+            p.ToeL = Mathf.Max(0f, -sw) * 30f; p.ToeR = Mathf.Max(0f, sw) * 30f;
+            // the arms: bent, pumping against the legs; the forearm a little across the body in front
+            p.RaiseL = p.RaiseR = -30f;
+            p.SwingL = -sw * 38f + 8f; p.SwingR = sw * 38f + 8f;
+            p.ElbowL = 82f + Mathf.Max(0f, sw) * 14f; p.ElbowR = 82f + Mathf.Max(0f, -sw) * 14f;
+            p.InL = p.InR = 12f; p.FistL = p.FistR = 0.7f; p.HandFlexL = p.HandFlexR = 10f;
+            // flight: up in the middle of each stride, down at each contact (two a cycle)
+            var air = Mathf.Abs(sw);
+            p.Y = Mathf.Max(0f, air - 0.35f) * 0.09f;
+            p.Squash = (air - 0.55f) * 0.08f;                   // stretched in the air, squashed at the landing
+            p.Lean = 16f + (1f - air) * 3f;                     // into the run, a dip at each landing
+            p.HeadPitch = -9f - (1f - air) * 2f;                // the head up against the lean
+            p.Sway = -pass * 0.008f; p.HipRoll = pass * 5f; p.Twist = sw * 8f;
+            p.SpineTwist = -sw * 10f; p.ReachL = sw * 6f; p.ReachR = -sw * 6f;
+            p.HeadYaw = -sw * 2.5f;                             // p.Y is the flight: SdPose.Apply plants the lowest foot, Y lifts it off
+            return p;
+        }
+
         /// <summary>k runs 1 → 0 from the impact: the flinch snaps in (peak at 25 % of the way) and settles out.</summary>
         public static Pose Hit(float k)
         {
@@ -612,7 +645,7 @@ namespace ExcelHeroes.World
             var f = t < 0.12f ? EaseOut(t / 0.12f) : t < 0.4f ? 1f : 1f - EaseInOut((t - 0.4f) / 0.6f);
             p.RaiseL = p.RaiseR = -36f + 44f * f; p.SwingL = p.SwingR = -18f * f; p.ElbowL = p.ElbowR = 14f + 60f * f;
             p.ShrugL = p.ShrugR = 16f * f; p.ReachL = p.ReachR = -8f * f;
-            p.Lean = -10f * f; p.SpineBend = -18f * f; p.HeadPitch = -14f * f; p.HeadTilt = 7f * f;     // bent back in a C, chin up
+            p.Lean = -7f * f; p.SpineBend = -11f * f; p.HeadPitch = -3f * f; p.HeadTilt = 11f * f; p.Twist = -8f * f;   // the body jolts back and turns off the blow; the head barely tips — tipped back ~40° the big fringe fell over the eyes
             p.KneeL = p.KneeR = 16f * f; p.Step = -0.09f * f;
             p.Squash = -0.1f * f + 0.04f * Mathf.Sin(Mathf.Clamp01((t - 0.12f) / 0.3f) * Mathf.PI);
             return p;

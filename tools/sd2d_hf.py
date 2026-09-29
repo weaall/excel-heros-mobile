@@ -25,7 +25,17 @@ PROMPT = ("Redraw this exact character as a cute Blue Archive style SD chibi fig
           "a small body, full body from head to shoes, standing in a relaxed three-quarter pose facing the viewer, same face, "
           "same hairstyle and hair colour, same eye colour, same outfit design and colours, same accessories. Clean anime cel "
           "shading, crisp line art, plain flat pure white background, no shadow, no text, single character.")
-SPACES = [("Qwen/Qwen-Image-Edit", "qwen", 20), ("black-forest-labs/FLUX.1-Kontext-Dev", "kontext", 24), ("multimodalart/Qwen-Image-Edit-Fast", "qwen", 8)]
+# two images (Qwen-Image-Edit-2509): image 1 = the illustration (who she is, what she wears), image 2 = her
+# previous 2D SD, or cso's for the ten who never had one (the SD proportions and finish). One image
+# alone came back 4.5 heads tall — a mini standing, not an SD.
+PROMPT2 = ("Image 1 is a character illustration; image 2 is a super-deformed chibi figure from the same game. Draw the character of "
+           "IMAGE 1 as a chibi figure with EXACTLY the proportions, head size, body shape, line art and shading style of image 2: about "
+           "2.4 heads tall, the head as big as the whole rest of the body, short limbs, small hands and feet, full body from head to "
+           "shoes, a relaxed three-quarter standing pose facing the viewer. From image 1 ONLY: the face, hairstyle and hair colour, eye "
+           "colour, glasses, the complete outfit design and colours, accessories and job prop. Take NOTHING of image 2's face, hair, clothes or "
+           "colours. Plain flat pure white background, no shadow, no text, single character.")
+OLD_SD = os.path.join(ROOT, "Assets", "ExcelHeroes", "ArtSource", "SD")
+SPACES = [("Qwen/Qwen-Image-Edit-2509", "qwen2", 24), ("Qwen/Qwen-Image-Edit", "qwen", 20), ("black-forest-labs/FLUX.1-Kontext-Dev", "kontext", 24), ("multimodalart/Qwen-Image-Edit-Fast", "qwen", 8)]
 
 
 def hints(hid):
@@ -47,11 +57,11 @@ def hints(hid):
     return " ".join(out)
 
 
-def flat(src):
+def flat(src, name="_in.png"):
     from PIL import Image
     im = Image.open(src).convert("RGBA")
     bg = Image.new("RGBA", im.size, (255, 255, 255, 255)); bg.alpha_composite(im)
-    p = os.path.join(OUT, "_in.png"); bg.convert("RGB").save(p); return p
+    p = os.path.join(OUT, name); bg.convert("RGB").save(p); return p
 
 
 def run(ids, seed=7):
@@ -69,12 +79,19 @@ def run(ids, seed=7):
                 if (sp, pi) in dead: continue
                 try:
                     c = Client(sp, token=tok, verbose=False) if tok else Client(sp, verbose=False)
-                    if kind == "qwen":
+                    old = os.path.join(OLD_SD, hid + ".png")
+                    if not os.path.exists(old): old = os.path.join(OLD_SD, "cso.png")
+                    if kind == "qwen2":
+                        r = c.predict(images=[handle_file(inp), handle_file(flat(old, "_old.png"))], prompt=PROMPT2 + ' ' + hints(hid), seed=seed, randomize_seed=False,
+                                      true_guidance_scale=4.0, num_inference_steps=steps, height=1024, width=768, rewrite_prompt=False, api_name="/infer")
+                    elif kind == "qwen":
                         r = c.predict(image=handle_file(inp), prompt=PROMPT + ' ' + hints(hid), seed=seed, randomize_seed=False, true_guidance_scale=1.0 if "Fast" in sp else 4.0,
                                       num_inference_steps=steps, rewrite_prompt=False, api_name="/infer")
                     else:
                         r = c.predict(input_image=handle_file(inp), prompt=PROMPT + ' ' + hints(hid), seed=seed, randomize_seed=False, guidance_scale=2.5, steps=steps, api_name="/infer")
                     path = r[0] if isinstance(r, (list, tuple)) else r
+                    if isinstance(path, (list, tuple)) and path: path = path[0]
+                    if isinstance(path, dict): path = path.get("image") or path.get("path") or path.get("url")
                     if isinstance(path, dict): path = path.get("path") or path.get("url")
                     if isinstance(path, (list, tuple)): path = path[0]
                     if isinstance(path, dict): path = path.get("image", path).get("path") if isinstance(path.get("image", path), dict) else path.get("path")
