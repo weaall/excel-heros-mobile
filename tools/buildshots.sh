@@ -15,5 +15,5 @@ grep -E "\[BuildGame\]" "$OUT/build.log" | tail -2
 [ $rc -ne 0 ] && { echo "build rc=$rc"; tail -30 "$OUT/build.log"; exit 1; }
 rm -rf "$OUT/shots"; mkdir -p "$OUT/shots"
 cd "$ROOT/Build/Windows" && timeout 300 ./ExcelHeroes.exe -screenshots "$(cygpath -w "$OUT/shots" 2>/dev/null || echo "$OUT/shots")" \
-  -screen-width 1200 -screen-height 540 -screen-fullscreen 0 ${BURST:+-burst} > /dev/null 2>&1
+  -screen-width ${SHOT_W:-1200} -screen-height ${SHOT_H:-540} -screen-fullscreen 0 ${BURST:+-burst} > /dev/null 2>&1
 echo "shots: $(ls "$OUT/shots" | wc -l) -> $OUT/shots"

@@ -78,8 +78,11 @@ namespace ExcelHeroes.UI
             MailService.Seed(Game.Player);
             LobbyIcon(icons, "notice", Icons.Chart, "공지", "home__glyph--blue", () => InboxPanels.OpenNotice(_app, RefreshDots), () => NoticeService.Unread(Game.Player) > 0);
             LobbyIcon(icons, "mail", Icons.Chart, "우편", "home__glyph--blue", () => InboxPanels.OpenMail(_app, RefreshDots), () => MailService.Unclaimed(Game.Player) > 0);
-            LobbyIcon(icons, "messenger", Icons.Story, "메신저", "home__glyph--pink", () => _app.Show(AppRoot.Sheet.Story));
             LobbyIcon(icons, "shop", Icons.Gacha, "상점", "home__glyph--cyan", () => _app.Show(AppRoot.Sheet.Shop), () => ShopService.HasFree(Game.Player));
+            // IA (ui_score 05-Home): 메신저 lives on the bottom bar only; 앨범 and 통계 — look-up
+            // screens, not the daily loop — moved here so the bar keeps six entries plus 모집
+            LobbyIcon(icons, "album", Icons.Story, "앨범", "home__glyph--pink", () => _app.Show(AppRoot.Sheet.Album));
+            LobbyIcon(icons, "chart", Icons.Chart, "통계", "home__glyph--blue", () => _app.Show(AppRoot.Sheet.Chart));
 
             // ---- Right-Floating Speech Bubble ---------------------------------------------
             _bubble = UiKit.Div("home__bubble", _root);

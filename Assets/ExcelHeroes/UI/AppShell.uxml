@@ -62,7 +62,7 @@
         <ui:VisualElement name="content" class="sheet" />
 
         <ui:VisualElement name="navbar" class="navbar">
-            <ui:Button name="tabHome" class="navtab navtab--active">
+            <ui:Button name="tabHome" class="hidden navtab navtab--active">
                 <ui:Label name="tabHomeIcon" text="" class="navtab__icon icon" />
                 <ui:Label text="로비" class="navtab__label" />
             </ui:Button>
@@ -88,7 +88,7 @@
                 <ui:Label name="tabStoryIcon" text="" class="navtab__icon icon" />
                 <ui:Label text="메신저" class="navtab__label" />
             </ui:Button>
-            <ui:Button name="tabAlbum" class="navtab">
+            <ui:Button name="tabAlbum" class="hidden navtab">
                 <ui:Label name="tabAlbumIcon" text="" class="navtab__icon icon" />
                 <ui:Label text="앨범" class="navtab__label" />
             </ui:Button>
@@ -96,7 +96,7 @@
                 <ui:Label name="tabCodexIcon" text="" class="navtab__icon icon" />
                 <ui:Label text="도감" class="navtab__label" />
             </ui:Button>
-            <ui:Button name="tabChart" class="navtab">
+            <ui:Button name="tabChart" class="hidden navtab">
                 <ui:Label name="tabChartIcon" text="" class="navtab__icon icon" />
                 <ui:Label text="통계" class="navtab__label" />
             </ui:Button>

@@ -37,6 +37,7 @@ namespace ExcelHeroes.Core
         public string typeId;           // monster type, for its sprite; null on heroes
         public int atkType = -1;        // 업무 상성 (Affinity): a hero's 수식 · 매크로 · 검토
         public int armorType = -1;      // an error's 서식 · 참조 · 논리 — the phase's, set on spawn
+        public long dealt;              // damage this fighter has done this run (the result's MVP)
 
         // Ported from the web build's entity: where a dashing melee hero is headed (0 = home),
         // whether a monster has finished walking in, and how far out it stops.
@@ -1016,6 +1017,7 @@ namespace ExcelHeroes.Core
             if (amount <= 0) return;
 
             to.hp -= amount;
+            if (from != null) from.dealt += amount;
             if (!silent) Events.Enqueue(new BattleEvent { kind = EventKind.Damage, actor = from, target = to, amount = amount, crit = crit, affinity = affinity });
             if (to.hp <= 0)
             {

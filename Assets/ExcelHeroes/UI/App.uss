@@ -6423,3 +6423,28 @@
 .party-strip .party-strip__panel { background-image: none; background-color: rgba(0, 0, 0, 0); border-width: 0; border-left-width: 1px; border-color: rgb(206, 222, 238); border-radius: 0; margin: 14px 0 14px 0; padding: 0 26px; }
 .party-strip .power-readout--strip { margin: 0 12px 0 0; }
 .party-strip .synergy-line { color: rgb(0, 136, 222); -unity-font-style: bold; }
+.navtab { width: 200px; margin-right: 18px; }
+/* result r7: title band, kicker, squad cards with damage share + MVP */
+.bresult__band { position: absolute; left: 0; top: 16px; width: 1100px; height: 150px; padding-left: 70px; justify-content: center; }
+.bresult__band .bresult__title { position: relative; left: 0; top: 0; font-size: 84px; margin: 0; padding: 0; }
+.bresult__kicker { font-size: 20px; -unity-font-style: bold; letter-spacing: 6px; color: rgb(0, 229, 255); margin: -4px 0 0 8px; padding: 0; }
+.bresult__band--lose .bresult__kicker { color: rgb(255, 130, 146); }
+.bresult__cell { width: 116px; margin-right: 12px; align-items: stretch; }
+.bresult__cell .bresult__mini { width: 116px; height: 116px; margin: 0; }
+.bresult__meter { height: 8px; margin-top: 6px; border-radius: 2px; background-color: rgba(10, 20, 40, 0.55); overflow: hidden; }
+.bresult__meter-fill { height: 100%; background-color: rgb(0, 214, 255); }
+.bresult__share { font-size: 18px; -unity-font-style: bold; color: rgb(255, 255, 255); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(10, 20, 40); -unity-text-align: middle-center; margin: 2px 0 0 0; padding: 0; }
+.bresult__mvp { position: absolute; left: -6px; top: -12px; padding: 0 10px; height: 28px; font-size: 18px; -unity-font-style: bold-and-italic; color: rgb(40, 28, 0); background-color: rgb(255, 208, 40); -unity-text-align: middle-center; rotate: -6deg; }
+/* the detail nameplate: upright heavy gothic, not a handwritten italic */
+.overlay--page .dplate__name { -unity-font-style: bold; }
+.saybubble { width: 400px; min-width: 0; max-width: 400px; white-space: normal; -unity-text-align: middle-center; }
+/* modal dim: the lobby must not read through a popup (ui_score 23-Mail #1). Linear colour space
+   composites UI alpha weaker than written, so the number is high. Page overlays keep their own. */
+#overlay { background-color: rgba(8, 16, 30, 0.9); }
+#overlay.overlay--page { background-color: rgba(0, 0, 0, 0); }
+#overlay.overlay--clear { background-color: rgba(0, 0, 0, 0); }
+.mrow .rchip { width: 96px; }
+.mrow .rchip__amount { font-size: 18px; white-space: nowrap; }
+.qs-reset { height: 60px; padding: 0 30px; justify-content: center; margin-right: 18px; align-self: center; }
+.qs-reset__text { font-size: 24px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; }
+.sheet-head--tight .claim-all { height: 72px; align-self: center; }

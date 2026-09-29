@@ -78,12 +78,13 @@ namespace ExcelHeroes.UI
         {
             var head = UiKit.Div("sheet-head sheet-head--tight", _root);
 
-            var left = UiKit.Div(null, head);
-            UiKit.Text($"업무일 {DateTime.Now:MM-dd}", "sheet-head__title", left);
-            var midnight = DateTime.Today.AddDays(1) - DateTime.Now;
-            UiKit.Text($"초기화까지 {midnight.Hours:00}:{midnight.Minutes:00}", "sheet-head__sub", left);
-
+            // the day and its reset as one navy chip on the header line (ui_score 10-Quests), the
+            // claim-all beside it — not a title block floating over the panels
             UiKit.Div("spacer", head);
+            var midnight = DateTime.Today.AddDays(1) - DateTime.Now;
+            var chip = UiKit.Div("qs-reset", head);
+            ModalFrame.Painted(chip, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 4f), UiPaint.C(27, 42, 70, 0.92f)));
+            UiKit.Text($"<color=#9AB0C4>업무일 {DateTime.Now:MM-dd} · 초기화까지</color>  <color=#2CE0F8>{midnight.Hours:00}:{midnight.Minutes:00}</color>", "qs-reset__text", chip);
 
             var ready = QuestService.ClaimableCount(p);
             var claimAll = UiKit.Btn($"한꺼번에 수령 {ready}", "btn btn--primary claim-all", () =>

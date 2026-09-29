@@ -173,7 +173,7 @@ namespace ExcelHeroes.UI
                     void Gift(string icon, string amount) { var g = UiKit.Div("rchip", gifts); var a = GameData.Icon(icon); if (a != null) UiKit.SetArt(UiKit.Div("rchip__icon", g), a); UiKit.Text(amount, "rchip__amount", g); }
                     if (m.gems > 0) Gift("gem", m.gems.ToString("N0"));
                     if (m.gold > 0) Gift("gold", m.gold.ToString("N0"));
-                    if (!string.IsNullOrEmpty(m.itemSlot)) Gift("eq_" + m.itemSlot, m.itemGrade);
+                    if (!string.IsNullOrEmpty(m.itemSlot)) Gift("eq_" + m.itemSlot, $"{m.itemGrade}급 ×1");
                     if (m.claimed) UiKit.Text("수령 완료", "mrow__done", row);
                     else
                         UiKit.Btn("받기", "btn btn--primary mrow__take", () =>

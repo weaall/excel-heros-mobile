@@ -1601,7 +1601,10 @@ namespace ExcelHeroes.UI
             var top = anchor.resolvedStyle.top;
             if (float.IsNaN(top) || top <= 0f) top = _groundY - 90f;
             el.style.left = anchor.style.left;
-            el.style.top = top - 96f;
+            // anchored by its FOOT: a two-line line grows upward instead of running down over
+            // the head (the r7 result capture had the second line printed through the first)
+            el.style.top = top - 18f;
+            el.style.translate = new Translate(Length.Percent(-20), Length.Percent(-100));
             _bubbles.Add((el, 3.2f));
         }
 
@@ -1969,9 +1972,23 @@ namespace ExcelHeroes.UI
                 NewRun();
             }
 
+            // the title on a slanted band that fades out to the right, a cyan hairline under it and
+            // the phase in small caps (ui_score 07-Fight1 #1) — a result, not a word on the street
+            var band = UiKit.Div("bresult__band" + (_sim.Won ? "" : " bresult__band--lose"), popup);
+            band.pickingMode = PickingMode.Ignore;
+            var won = _sim.Won;
+            ModalFrame.Painted(band, (ctx, r) =>
+            {
+                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 0f);
+                var c0 = won ? UiPaint.C(16, 30, 60, 0.9f) : UiPaint.C(40, 20, 30, 0.9f);
+                UiPaint.Fill(ctx, poly, UiPaint.Horizontal(c0, UiPaint.C(16, 30, 60, 0f), r.xMin + r.width * 0.45f, r.xMax));
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMax - 4f, r.xMin + r.width * 0.7f, r.yMax), 0f),
+                             UiPaint.Horizontal(won ? UiPaint.C(0, 229, 255) : UiPaint.C(255, 90, 110), UiPaint.C(0, 229, 255, 0f), r.xMin, r.xMin + r.width * 0.7f));
+            });
             var title = UiKit.Text(_sim.Won ? "Battle Complete" : _sim.TimedOut ? "Time Over" : "Battle Failed",
-                                   "bresult__title" + (_sim.Won ? "" : " bresult__title--lose"), popup);
+                                   "bresult__title" + (_sim.Won ? "" : " bresult__title--lose"), band);
             title.pickingMode = PickingMode.Ignore;
+            UiKit.Text($"PHASE {_sim.Stage}  ·  {(_sim.Won ? "CLEAR" : "FAILED")}", "bresult__kicker", band).pickingMode = PickingMode.Ignore;
 
             var info = UiKit.Div("bresult__info", popup);
             ModalFrame.Painted(info, (ctx, r) =>
@@ -1991,11 +2008,21 @@ namespace ExcelHeroes.UI
             var squad = UiKit.Div("bresult__squad", popup);
             UiKit.Text("STRIKER", "bresult__squad-label", squad);
             var strip = UiKit.Div("bresult__strip", squad);
+            // who did the work: each card with its share of the damage, the top one marked MVP
+            var dealt = _sim.Heroes.ToDictionary(h => h.heroId, h => h.dealt);
+            var total = System.Math.Max(1L, dealt.Values.Sum());
+            var mvp = dealt.Count > 0 ? dealt.OrderByDescending(kv => kv.Value).First().Key : null;
             foreach (var id in Game.Player.party)
             {
                 var def = GameData.Hero(id);
                 if (def == null) continue;
-                var mini = UiKit.Div("bresult__mini", strip);
+                var cell = UiKit.Div("bresult__cell", strip);
+                var mini = UiKit.Div("bresult__mini", cell);
+                var share = dealt.TryGetValue(id, out var dv) ? dv / (float)total : 0f;
+                var meter = UiKit.Div("bresult__meter", cell);
+                UiKit.Div("bresult__meter-fill", meter).style.width = Length.Percent(share * 100f);
+                UiKit.Text($"{share:P0}", "bresult__share", cell);
+                if (id == mvp && dv > 0) UiKit.Text("MVP", "bresult__mvp", cell).pickingMode = PickingMode.Ignore;
                 var standing = GameData.StandingArt(id);
                 var sprite = standing ?? GameData.WornCardArt(id);
                 var gradeColor = GameData.Grade(def.grade)?.Color ?? Color.gray;
