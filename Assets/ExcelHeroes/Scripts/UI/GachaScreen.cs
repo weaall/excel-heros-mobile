@@ -624,8 +624,9 @@ namespace ExcelHeroes.UI
                 var nameLabel = UiKit.Text(r.hero.name, "reveal-grid__name", cell);
                 nameLabel.pickingMode = PickingMode.Ignore;
                 // a long name shrinks to its card rather than running into the next one
-                var len = r.hero.name.Length;
-                if (len > 5) nameLabel.style.fontSize = Mathf.Max(14f, 19f * 5.5f / len);
+                // a long title breaks onto two lines at its space (VLOOKUP / 분석가), same size as the rest
+                var nm = r.hero.name;
+                if (nm.Length >= 6 && nm.Contains(' ')) { var sp = nm.LastIndexOf(' '); nameLabel.text = nm.Substring(0, sp) + '\n' + nm.Substring(sp + 1); nameLabel.AddToClassList("reveal-grid__name--two"); }
             }
 
             var foot = UiKit.Div("reveal-foot", view);

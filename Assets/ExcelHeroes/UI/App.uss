@@ -6958,3 +6958,7 @@
 .overlay--page .dplate__lv { margin-right: 16px; }
 .dplate__stars { font-size: 32px; }
 .card__plate { padding-top: 6px; padding-bottom: 8px; }
+.reveal-grid__name--two { height: 60px; font-size: 21px; white-space: normal; -unity-text-align: middle-center; }
+.reveal-title__en { margin-bottom: 6px; }
+.reveal-title__ko { margin-top: 4px; }
+.reveal-grid__name { padding-left: 12px; padding-right: 22px; }
