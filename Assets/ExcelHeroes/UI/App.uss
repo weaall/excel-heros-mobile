@@ -6112,3 +6112,5 @@
 .kit__round-icon { width: 60px; height: 60px; -unity-background-scale-mode: scale-to-fit; }
 
 .kit__btn { height: 84px; margin-bottom: 14px; }
+/* the reference's "new" dot: lime yellow with a white rim (red stays for counted badges) */
+.home__dot, .shop__dot { background-color: rgb(226, 242, 60); border-color: rgb(255, 255, 255); width: 22px; height: 22px; border-radius: 11px; }
