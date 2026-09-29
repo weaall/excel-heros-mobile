@@ -190,14 +190,14 @@ namespace ExcelHeroes.UI
             var look = LookFor(kind);
             var h = r.height;
             var w = r.width;
-            var slant = Mathf.Min(Mathf.Tan(12f * Mathf.Deg2Rad) * h, w * 0.2f);
-            var radius = Mathf.Clamp(h * 0.1f, 3f, 8f);
+            var slant = Mathf.Min(Mathf.Tan(9f * Mathf.Deg2Rad) * h, w * 0.14f);
+            var radius = Mathf.Clamp(h * 0.08f, 3f, 6f);
             // the shapes: slanted plates for actions; a pill for tabs and chips; a circle for icon buttons
             var round = kind is Kind.Pill or Kind.PillOn or Kind.Chip;
             // the raised actions (CTA, premium, danger) stand on a darker lip, as the kit's buttons do —
             // inside the element's rect (outside it the paint is clipped): the face is lifted by the lip
             var lip = kind is Kind.Primary or Kind.Gold or Kind.Danger;
-            var lipH = lip ? Mathf.Clamp(h * 0.09f, 4f, 8f) : 0f;
+            var lipH = lip ? Mathf.Clamp(h * 0.05f, 2.5f, 4f) : 0f;   // a thin lip: a thick one read as a toy
             if (lip)
             {
                 var lipCol = kind switch { Kind.Primary => C(22, 112, 186), Kind.Gold => C(178, 118, 10), _ => C(152, 30, 42) };
@@ -236,7 +236,7 @@ namespace ExcelHeroes.UI
 
             // the mock-up's marks: two short slanted ticks inside the top-left, a small solid corner
             // wedge at the bottom-right — they make a plate read as a game button, not a web one
-            if (accents && kind is Kind.Primary && h >= 40f)
+            if (false)   // the // ticks and corner wedge read as cheap decoration (the user); the plates stay clean
             {
                 var ink = kind is Kind.Navy or Kind.Glow ? C(255, 255, 255, 0.55f) : kind == Kind.Primary ? C(255, 255, 255, 0.85f) : UiPaint.WithAlpha(look.Edge, 0.9f);
                 var tl = new Vector2(r.xMin + slant + h * 0.16f, r.yMin + h * 0.16f);

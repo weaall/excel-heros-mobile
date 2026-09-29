@@ -6156,3 +6156,53 @@
 .mt-room { margin-bottom: 10px; border-bottom-width: 0; background-image: url("project://database/Assets/ExcelHeroes/Art/UI/glass_panel.png");
     -unity-slice-left: 64; -unity-slice-right: 110; -unity-slice-top: 64; -unity-slice-bottom: 104; background-color: rgba(0, 0, 0, 0); }
 .mt-room--on { background-color: rgba(120, 210, 250, 0.25); }
+
+/* ---------------------------------------------------------------- polish pass: slimmer buttons, calmer type */
+:root { --ex-tap: 92px; --ex-tap-lg: 104px; --ex-text-xs: 22px; --ex-text-sm: 26px; --ex-text-base: 30px; --ex-text-lg: 40px; --ex-text-xl: 54px; }
+.btn .plate__label { -unity-font-style: bold; }
+.plate--primary .plate__label, .plate--danger .plate__label { -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgba(8, 60, 110, 0.6); }
+.party-sortie { width: 380px; height: 128px; }
+.party-sortie .plate__label { font-size: 54px; }
+.detail__acts .btn { height: 96px; }
+.detail__acts .btn .plate__label { font-size: 34px; }
+/* party side buttons: icon over the word, a calm glass tile; the synergy strip fits its panel */
+.party-rail--icons .btn.party-icon { flex-direction: column; justify-content: center; width: 150px; height: 128px; padding: 6px 4px; margin-bottom: 14px; }
+.party-icon__art { width: 54px; height: 54px; margin-bottom: 4px; -unity-background-scale-mode: scale-to-fit; }
+.party-rail--icons .btn.party-icon .plate__label { font-size: 22px; white-space: nowrap; }
+.party-strip { height: 240px; }
+.party-strip__panel { padding: 10px 22px 14px 22px; }
+.synergy-total { font-size: 24px; margin-top: 4px; }
+/* the enhance / skin rows: room to breathe, buttons a size that can be read */
+.skin-row { height: 116px; margin-bottom: 12px; padding: 0 20px; }
+.skin-row__btn.plate--primary, .skin-row__btn.plate--gold, .skin-row__btn.plate--light, .skin-row__btn.plate--off { min-width: 170px; height: 72px; font-size: 26px; }
+.skin-row__btn--narrow { min-width: 110px; }
+.cost-slot__box { width: 56px; height: 56px; }
+.cost-slot__n { font-size: 20px; }
+.detail__acts > .btn, .detail__acts > .btn--ivory { height: 100px; }
+.detail__acts > .btn .plate__label { font-size: 34px; }
+/* quests: calmer section titles, the note never running off, the blocks padded like the reference */
+.qs-title__name { font-size: 36px; }
+.qs-title__note { font-size: 20px; }
+.qs-block { padding: 22px 26px 24px 26px; }
+.qrow { height: 96px; }
+.qrow__name { font-size: 28px; }
+.stamp-day { height: 132px; }
+.claim-all { height: 84px; }
+/* review: panels padded, rows as glass, readable sub-lines */
+.prog-cols { padding: 16px 30px; }
+.prog-cols__left { padding: 22px 26px; background-image: url("project://database/Assets/ExcelHeroes/Art/UI/glass_panel.png");
+    -unity-slice-left: 64; -unity-slice-right: 110; -unity-slice-top: 64; -unity-slice-bottom: 104; margin-right: 24px; }
+.prog-cols__right .panel { padding: 18px 24px 20px 24px; margin-bottom: 18px; }
+.arow { height: 100px; padding: 0 20px; margin-bottom: 10px; border-width: 1.5px; border-color: rgb(206, 220, 236); border-bottom-width: 3px; border-bottom-color: rgb(190, 206, 226); background-color: rgba(255, 255, 255, 0.9); border-radius: 10px; }
+.arow__claim { width: 150px; height: 70px; flex-direction: row; justify-content: center; align-items: center; background-color: rgba(0, 0, 0, 0); border-width: 0; }
+.arow__amount { font-size: 26px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+.plate--off .arow__amount { color: rgb(140, 152, 170); }
+.arow { height: 104px; overflow: visible; }
+.arow__claim:disabled .arow__amount { color: rgb(120, 134, 156); }
+.arow__claim:disabled .arow__gem { opacity: 0.75; }
+.prog-cols__right .panel { padding: 16px 26px 26px 26px; }
+.prog-cols__right .section-title { margin-left: -14px; }
+.modal__close { top: 20px; right: 22px; width: 70px; height: 70px; }
+/* no screen scrolls sideways: a horizontal scroller is always an overflow symptom */
+.unity-scroller--horizontal { display: none; }
+.prog-cols__right { width: 36%; }

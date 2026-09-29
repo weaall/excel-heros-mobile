@@ -82,7 +82,7 @@ namespace ExcelHeroes.UI
             // means opening 55 cards, and the best party is not the five biggest numbers — 부문
             // 시너지, a healer and a spread of roles all beat raw 전투력, and none of them shows on
             // a card by itself.
-            var auto = UiKit.Btn("⚙\n자동 편성", "btn party-icon", () =>
+            var auto = UiKit.Btn("자동 편성", "btn party-icon", () =>
             {
                 AutoPartyService.Auto(Game.Player);
                 AudioService.Play("bond");
@@ -93,7 +93,7 @@ namespace ExcelHeroes.UI
 
             // 비품 자동 장착 sits next to it: both answer "just put the good stuff on", and
             // four slots across five heroes is the other thing nobody compares by hand.
-            var gear = UiKit.Btn("▣\n비품 장착", "btn party-icon", () =>
+            var gear = UiKit.Btn("비품 장착", "btn party-icon", () =>
             {
                 var (heroes, slotsChanged) = AutoEquipService.EquipParty(Game.Player);
                 AudioService.Play("upgrade", 0.6f);
@@ -104,8 +104,8 @@ namespace ExcelHeroes.UI
             }, actions);
             gear.SetEnabled(Game.Player.items.Count > 0 && p.PartyCount() > 0);
 
-            UiKit.Btn("＋\n빈 칸 채우기", "btn party-icon", OpenPicker, actions);
-            var bulk = UiKit.Btn("▲\n일괄 강화", "btn party-icon btn--primary", () =>
+            UiKit.Btn("빈 칸 채우기", "btn party-icon", OpenPicker, actions);
+            var bulk = UiKit.Btn("일괄 강화", "btn party-icon btn--primary", () =>
             {
                 var before = Game.Player.gold;
                 foreach (var member in Game.Player.PartyMembers())
@@ -118,6 +118,16 @@ namespace ExcelHeroes.UI
             }, actions);
             bulk.SetEnabled(p.PartyCount() > 0);
 
+            // each side button its icon over the word (the new icon set), not a font glyph on a line of its own
+            foreach (var sb in actions.Query<Button>(className: "party-icon").ToList())
+            {
+                var word = sb.Q<Label>(className: "plate__label")?.text ?? "";
+                var ic = word.Contains("자동") ? "party" : word.Contains("비품") ? "settings" : word.Contains("빈") ? "add" : "levelup";
+                var art = GameData.Icon(ic);
+                if (art == null) continue;
+                var el = new VisualElement { pickingMode = PickingMode.Ignore }; el.AddToClassList("party-icon__art");
+                UiKit.SetArt(el, art); sb.Insert(0, el);
+            }
             // 출격: the way from the line-up to the fight, big and cyan at the bottom-right (the Gemini
             // party mock-up, tools/out/design/mock_party_0 — BA's 출격)
 

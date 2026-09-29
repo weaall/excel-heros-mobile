@@ -110,6 +110,7 @@ namespace ExcelHeroes.UI
             if (gemArt != null) { var gi = UiKit.Div("arow__gem", claim); gi.pickingMode = PickingMode.Ignore; UiKit.SetArt(gi, gemArt); }
             UiKit.Text(gems.ToString(), "arow__amount", claim).pickingMode = PickingMode.Ignore;
             claim.SetEnabled(ProgressService.CanClaim(p, a));
+            SkewPlate.Apply(claim, SkewPlate.Kind.Primary);   // the kit's plate, not a flat grey box
         }
 
         static string Tier(int claimed, int total) =>

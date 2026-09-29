@@ -71,8 +71,11 @@ namespace ExcelHeroes.UI
                 close.AddToClassList("modal__close");
                 ModalFrame.Painted(close, (ctx, r) =>
                 {
-                    var c = r.center; var rad = Mathf.Min(r.width, r.height) * 0.5f;   // a plain navy ✕, as the reference
-                    var k = rad * 0.38f; var t = rad * 0.11f;
+                    var c = r.center; var rad = Mathf.Min(r.width, r.height) * 0.5f;
+                    // a soft round hit area behind a bold navy ✕: the plain ✕ was a small target
+                    UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad), UiPaint.C(226, 236, 247));
+                    UiPaint.Stroke(ctx, UiPaint.Ellipse(c, rad, rad), UiPaint.C(196, 212, 230), 1.5f);
+                    var k = rad * 0.34f; var t = rad * 0.09f;
                     foreach (var sgn in new[] { 1f, -1f })
                     {
                         var d = new Vector2(k, sgn * k); var n = new Vector2(-d.y, d.x).normalized * t;
