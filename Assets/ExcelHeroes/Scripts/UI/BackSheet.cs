@@ -101,7 +101,7 @@ namespace ExcelHeroes.UI
 
         /// <summary>
         /// The sheet as strokes and washes in the unit square:
-        ///   a 4×3 grid (A1:D3) leaning in perspective — frame, then fainter inner lines;
+        ///   one row of four cells (A1:D1) leaning in perspective — frame, then fainter inner lines;
         ///   ★ + level lights columns left to right (a faint wash);
         ///   C+ corner brackets (Excel's selection), B+ the active cell A1 and its fill handle,
         ///   A an arc ring in the grade colour, S the full ring, an inner ring and sparkles.
@@ -116,9 +116,10 @@ namespace ExcelHeroes.UI
             var grade = s.Frame == FrameFor("S") ? 4 : s.Frame == FrameFor("A") ? 3 : s.Frame == FrameFor("B") ? 2 : s.Frame == FrameFor("C") ? 1 : 0;
 
             var centre = new Vector2(0.5f, 0.5f);
-            const float gw = 0.64f, gh = 0.42f;
+            // one row of four (A1:D1): the cells a little wider than tall
+            const float gw = 0.64f, gh = 0.13f;
             var U = new Vector2(gw, -0.1f * gw * dir);       // along the columns, rising to the outer side
-            var V = new Vector2(0.16f * gh * dir, gh);        // down the rows, leaning
+            var V = new Vector2(0.3f * gh * dir, gh);         // down the row, leaning
             var O = centre - U * 0.5f - V * 0.5f;
             Vector2 G(float u, float v) => O + U * u + V * v;
             void Line(Vector2 a, Vector2 b, Color c, float w, float glow) => strokes.Add(new Stroke { A = a, B = b, C = c, Width = w, Glow = glow });
@@ -131,7 +132,6 @@ namespace ExcelHeroes.UI
             Line(G(0, 0), G(1, 0), ink, 4f, 10f); Line(G(1, 0), G(1, 1), ink, 4f, 10f);
             Line(G(1, 1), G(0, 1), ink, 4f, 10f); Line(G(0, 1), G(0, 0), ink, 4f, 10f);
             for (var c = 1; c < 4; c++) Line(G(c / 4f, 0), G(c / 4f, 1), WithA(ink, 0.75f), 2.2f, 6f);
-            for (var r = 1; r < 3; r++) Line(G(0, r / 3f), G(1, r / 3f), WithA(ink, 0.75f), 2.2f, 6f);
 
             if (grade >= 1)
             {
@@ -140,17 +140,17 @@ namespace ExcelHeroes.UI
                 foreach (var (u, v) in new[] { (0f, 0f), (1f, 0f), (1f, 1f), (0f, 1f) })
                 {
                     var su = u < 0.5f ? -1f : 1f; var sv = v < 0.5f ? -1f : 1f;
-                    var p = G(u + su * e, v + sv * e * 1.4f);
+                    var p = G(u + su * e, v + sv * e * 2.2f);
                     Line(p, p - U.normalized * (su * l * gw), ink, 3.2f, 7f);
-                    Line(p, p - V.normalized * (sv * l * gh * 1.2f), ink, 3.2f, 7f);
+                    Line(p, p - V.normalized * (sv * 0.045f), ink, 3.2f, 7f);
                 }
             }
             if (grade >= 2)
             {
                 // the active cell A1, heavier, and its fill handle
-                var a1 = Cell(0f, 0f, 0.25f, 1f / 3f);
+                var a1 = Cell(0f, 0f, 0.25f, 1f);
                 for (var i = 0; i < 4; i++) Line(a1[i], a1[(i + 1) % 4], Color.Lerp(ink, Color.white, 0.3f), 5f, 10f);
-                var h = G(0.25f, 1f / 3f); const float hs = 0.022f;
+                var h = G(0.25f, 1f); const float hs = 0.022f;
                 washes.Add((new List<Vector2> { h + new Vector2(-hs, -hs), h + new Vector2(hs, -hs), h + new Vector2(hs, hs), h + new Vector2(-hs, hs) }, Color.Lerp(ink, Color.white, 0.4f)));
             }
             if (grade >= 3)
