@@ -6778,3 +6778,6 @@
 .bhud__armor-text { font-size: 22px; }
 .cost-slot__icon { width: 40px; height: 40px; }
 .cost-slot__n--short { color: rgb(226, 58, 70); }
+.ex-button__band { position: absolute; left: 0; right: 0; bottom: 0; height: 58px; justify-content: flex-end; padding: 0 8px 12px 8px; }
+.ex-button__skill { font-size: 19px; -unity-font-style: bold; color: rgb(255, 255, 255); -unity-text-align: middle-center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0; margin: 0; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(8, 16, 34, 0.8); }
+.ex-button__atk { height: 6px; bottom: 4px; z-index: 1; }

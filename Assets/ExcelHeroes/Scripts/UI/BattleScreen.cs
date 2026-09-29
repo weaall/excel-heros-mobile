@@ -862,7 +862,7 @@ namespace ExcelHeroes.UI
                     var arm = Affinity.ArmorOfStage(_sim.Stage);
                     _armorChip.userData = Affinity.ColorOf(arm);
                     _armorText.text = $"◆ {Affinity.ArmorShortName(arm)}";
-                    _armorText.style.color = Color.Lerp(Affinity.ColorOf(arm), Color.white, 0.35f);
+                    _armorText.style.color = Color.white;
                     _armorChip.MarkDirtyRepaint();
                 }
             }
@@ -1886,6 +1886,13 @@ namespace ExcelHeroes.UI
                 var charge = UiKit.Div("ex-button__charge", btn);
                 var cost = BattleSim.CostOf(combatant);
                 var def = GameData.Hero(combatant.heroId);
+                // the skill's name on a navy band across the card's foot, as BA's EX cards carry it
+                var band = UiKit.Div("ex-button__band", btn); band.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(band, (ctx, r) =>
+                {
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(r, 0f), UiPaint.Vertical(UiPaint.C(16, 26, 48, 0.2f), UiPaint.C(16, 26, 48, 0.92f), r.yMin, r.yMin + r.height * 0.45f));
+                });
+                UiKit.Text(def?.skillName ?? "", "ex-button__skill", band).pickingMode = PickingMode.Ignore;
                 UiKit.CardFrame(Color.Lerp(GameData.Grade(def?.grade)?.Color ?? Color.white, Color.white, 0.4f), btn, 12f);   // a softer rim (ui_gate 07-BattleHud)
                 var badge = UiKit.Div("ex-button__cost", btn);
                 // a hexagon with a gold rim, COST over the number (target_3)
@@ -1925,9 +1932,11 @@ namespace ExcelHeroes.UI
             var cost = _sim != null ? Mathf.Clamp(_sim.Cost, 0f, BattleSim.MaxCost) : 0f;
             var bar = Rect.MinMaxRect(r.xMin + r.height * 1.1f, r.yMin + r.height * 0.25f, r.xMax, r.yMax - r.height * 0.18f);
             var slant = SkewPlate.SlantFor(bar.height);
-            var frame = UiPaint.SkewRect(bar, slant, 4f);
+            // the frame starts under the disc, so number and gauge are one piece (ui_gate 07-BattleHud)
+            var frame = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin + r.height * 0.5f, bar.yMin, bar.xMax, bar.yMax), slant, 4f);
             UiPaint.Shadow(ctx, frame, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.35f), 6f);
-            UiPaint.Fill(ctx, frame, UiPaint.C(20, 32, 60, 0.92f));
+            UiPaint.Fill(ctx, frame, UiPaint.Vertical(UiPaint.C(28, 42, 74, 0.94f), UiPaint.C(14, 24, 46, 0.94f), bar.yMin, bar.yMax));
+            UiPaint.Stroke(ctx, frame, UiPaint.C(0, 214, 255, 0.45f), 1.5f);
             var cells = (int)BattleSim.MaxCost;
             var inner = new Rect(bar.xMin + 6f, bar.yMin + 5f, bar.width - 12f, bar.height - 10f);
             var cw = inner.width / cells;
@@ -1938,7 +1947,10 @@ namespace ExcelHeroes.UI
                 UiPaint.Fill(ctx, poly, UiPaint.C(60, 80, 120, 0.8f));
                 var lit = Mathf.Clamp01(cost - i);
                 if (lit >= 1f)
-                    UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(120, 236, 255), UiPaint.C(30, 190, 245), c.yMin, c.yMax));
+                {
+                    UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(140, 242, 255), UiPaint.C(20, 170, 240), c.yMin, c.yMax));
+                    UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(c.xMin - 10f, c.yMin, c.xMax + 10f, c.yMin + c.height * 0.35f), 0f)), UiPaint.C(255, 255, 255, 0.35f), 0f);
+                }
                 else if (lit > 0f)
                 {
                     var part = UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(c.xMin - 10f, c.yMin - 2f, c.xMin + (c.width + 10f) * lit, c.yMax + 2f), 0f));
