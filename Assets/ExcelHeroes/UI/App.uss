@@ -6386,3 +6386,7 @@
 .kittile__pic { width: 112px; height: 112px; }
 .kittile__plus { width: 40px; height: 40px; border-radius: 20px; font-size: 30px; }
 .gstage__notebox .gstage__note { color: rgb(236, 244, 252); }
+.kit__sheets--all { flex-wrap: wrap; justify-content: flex-start; margin-top: 0; }
+.kit__sheet-cell--mini { width: 205px; height: 180px; }
+.kit__sheet-cell--mini .kit__sheet { bottom: 30px; }
+.kit__sheet-cell--mini .kit__sheet-label { font-size: 17px; bottom: 2px; }

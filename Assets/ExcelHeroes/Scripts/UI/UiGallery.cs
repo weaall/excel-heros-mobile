@@ -28,6 +28,20 @@ namespace ExcelHeroes.UI
                 ("D", "swift", 1, 0.6f, false), ("C", "crit", 2, 0.5f, false), ("B", "lifesteal", 3, 0.7f, false),
                 ("A", "rally", 4, 0.8f, false), ("S", "splash", 5, 1f, true),
             };
+            // every hero's sheet, small, to check that each reads as its own (the mark + colour)
+            if (System.Environment.GetEnvironmentVariable("SHEETS_ALL") == "1")
+            {
+                row.AddToClassList("kit__sheets--all");
+                foreach (var def in Data.GameData.Heroes)
+                {
+                    var o = new Core.OwnedHero(def.id) { star = 3 };
+                    o.level = UnityEngine.Mathf.RoundToInt(Core.StatMath.LevelCap(o) * 0.5f);
+                    var cell = UiKit.Div("kit__sheet-cell kit__sheet-cell--mini", row);
+                    BackSheet.Add(cell, def, o, "backsheet kit__sheet");
+                    UiKit.Text(def.name, "kit__sheet-label", cell);
+                }
+                return root;
+            }
             foreach (var (grade, trait, star, fill, awake) in samples)
             {
                 var def = Data.GameData.Heroes.Find(h => h.grade == grade && h.trait == trait) ?? Data.GameData.Heroes.Find(h => h.grade == grade);
