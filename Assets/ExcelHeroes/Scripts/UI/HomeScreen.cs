@@ -127,8 +127,8 @@ namespace ExcelHeroes.UI
                 UiPaint.Stroke(ctx, face, UiPaint.C(179, 229, 252), 2f);
                 // the gauge
                 var gx0 = body.xMin + slant + 30f; var gx1 = body.xMax - 150f; var gy = body.yMax - 34f;
-                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx1, gy + 10f), 3f), UiPaint.C(0, 0, 0, 0.22f));
-                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx0 + (gx1 - gx0) * prog, gy + 10f), 3f), UiPaint.C(255, 232, 20));
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx1, gy + 16f), 3f), UiPaint.C(0, 0, 0, 0.22f));
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx0 + (gx1 - gx0) * prog, gy + 16f), 3f), UiPaint.C(255, 232, 20));
             });
             var words = UiKit.Div("home__campaign-words", campaign); words.pickingMode = PickingMode.Ignore;
             UiKit.Text("TASK OPERATION", "home__campaign-en", words).pickingMode = PickingMode.Ignore;

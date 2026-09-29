@@ -88,7 +88,7 @@ namespace ExcelHeroes.UI
         /// a white rim, a small cyan triangle in the top-right corner and three faint diagonal
         /// stripes in the lower right. Lit, the same plate in cyan with white marks.
         /// </summary>
-        public static void DrawGlassTile(MeshGenerationContext ctx, Rect r, bool active, bool corner = true, Color? edge = null)
+        public static void DrawGlassTile(MeshGenerationContext ctx, Rect r, bool active, bool corner = false, Color? edge = null)   // the corner wedge read as an alert (ui_gate 05-Home)
         {
             var h = r.height; var w = r.width;
             var slant = Mathf.Min(Mathf.Tan(10f * Mathf.Deg2Rad) * h, w * 0.14f);

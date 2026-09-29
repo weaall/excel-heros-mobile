@@ -140,7 +140,7 @@ namespace ExcelHeroes.UI
                 else UiKit.Text("UNKNOWN", "mcard__unknown-en", card);
             });
 
-            _count.text = $"<size=55%><color=#00D2FF>DISCOVERED</color></size>   <color=#FFFFFF>{found}</color> <size=70%><color=#7E95B3>/ {types.Count + GameData.Bosses.Count}</color></size>";
+            _count.text = $"<color=#00D2FF>DISCOVERED</color>   <color=#FFFFFF>{found}</color> <color=#7E95B3>/ {types.Count + GameData.Bosses.Count}</color>";
         }
     }
 }

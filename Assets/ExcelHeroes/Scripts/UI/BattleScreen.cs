@@ -1635,14 +1635,11 @@ namespace ExcelHeroes.UI
         {
             if (at == null || !_views.TryGetValue(at, out var anchor)) return;
 
-            // break a long line at the space nearest its middle, never inside a word
-            if (text != null && text.Length > 16 && text.IndexOf('\n') < 0)
-            {
-                var mid = text.Length / 2; var best = -1;
-                for (var i = 0; i < text.Length; i++) if (text[i] == ' ' && (best < 0 || Mathf.Abs(i - mid) < Mathf.Abs(best - mid))) best = i;
-                if (best > 0) text = text.Substring(0, best) + '\n' + text.Substring(best + 1);
-            }
+            // one line, as wide as it needs (lines are short; a wrapped two-line bubble overflowed its box)
             var el = UiKit.Text(text, "saybubble", _stage);
+            // an absolute label sizes to nothing here, so give it the width its longest line needs
+            var longest = 0; foreach (var line in (text ?? "").Split('\n')) longest = Mathf.Max(longest, line.Length);
+            el.style.width = Mathf.Clamp(longest * 25f + 60f, 180f, 900f);
             // the tail: a small rotated square under the bubble, pointing at the head
             UiKit.Div("saybubble__tail", el).pickingMode = PickingMode.Ignore;
             var top = anchor.resolvedStyle.top;
@@ -2044,7 +2041,9 @@ namespace ExcelHeroes.UI
             {
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 8f);
                 UiPaint.Shadow(ctx, poly, new Vector2(0f, 4f), UiPaint.C(0, 0, 0, 0.3f), 10f);
-                UiPaint.Fill(ctx, poly, UiPaint.C(20, 34, 64, 0.88f));
+                UiPaint.Fill(ctx, poly, UiPaint.Horizontal(UiPaint.C(20, 34, 64, 0.9f), UiPaint.C(30, 52, 92, 0.82f), r.xMin, r.xMax));
+                UiPaint.Stroke(ctx, poly, UiPaint.C(0, 210, 255, 0.55f), 1.5f);
+                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMax - 3f, r.xMax, r.yMax + 2f), 0f)), UiPaint.C(0, 210, 255, 0.8f), 0f);
             });
             var line = UiKit.Div("bresult__line", info);
             UiKit.Text($"Phase {_sim.Stage}", "bresult__phase", line);

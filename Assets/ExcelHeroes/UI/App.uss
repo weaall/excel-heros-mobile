@@ -6657,3 +6657,37 @@
 .skin-row__desc { font-size: 22px; color: rgb(96, 110, 132); margin: 0; padding: 0; }
 .skin-row__text { justify-content: center; }
 .skin-row__on, .skin-row__btn { min-width: 220px; }
+/* every plate label in the real bold cut (the weight table was not reaching some buttons) */
+.plate__label { -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/NotoSansKR-Bold%20SDF.asset"); -unity-font-style: normal; }
+.gpulls .pull-btn .plate__label, .party-sortie .plate__label {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); }
+.saybubble { white-space: normal; max-width: 640px; }
+/* party plate: grade badge bolder, stars and Lv readable */
+.pslot__grade { width: 46px; height: 46px; border-radius: 6px; }
+.pslot__grade-text { font-size: 30px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-text-align: middle-center; }
+.pslot__lv { font-size: 22px; color: rgb(0, 130, 210); }
+.pslot__stars-inline { font-size: 20px; }
+.bresult__squad-label { padding: 4px 18px; font-size: 22px; }
+/* album names readable on light art */
+.album__name { -unity-text-outline-width: 1.5px; -unity-text-outline-color: rgba(10, 20, 40, 0.8); }
+.navback__en { margin-top: 26px; }
+/* battle objective and status spacing */
+.bkill__num { font-size: 50px; }
+.bhud__pill { padding-left: 30px; padding-right: 30px; }
+.bhud__num { margin-right: 28px; }
+.bhud__armor { margin-right: 28px; }
+/* lobby: alert dots inside the tile's corner, larger, red like every other badge */
+.home__dot { top: 12px; right: 22px; width: 24px; height: 24px; border-radius: 12px; background-color: rgb(255, 64, 92); border-width: 3px; border-color: rgb(255, 255, 255); }
+.shell--lobby .chip__plus { width: 50px; height: 50px; border-radius: 25px; background-color: rgb(46, 196, 240); color: rgb(255, 255, 255); font-size: 36px; }
+.home__campaign-en { font-size: 24px; }
+.home__campaign-tag { top: 4px; height: 44px; }
+.saybubble { height: auto; min-height: 52px; max-width: 900px; white-space: nowrap; -unity-text-align: middle-center; padding: 10px 24px; }
+/* gate r3 */
+.sheet-head__stat { -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; font-size: 36px; letter-spacing: 2px; }
+.album__fade { height: 46%; }
+.navback__en { color: rgb(0, 120, 200); font-size: 24px; }
+.stamp-day__icon { margin: 6px 0 8px 0; }
+.stamp-day__gems { margin-top: 4px; }
+.bresult__mini { border-radius: 8px; }
+.bresult__mvp { left: auto; right: -6px; top: -12px; }
+.bresult__share { font-size: 26px; }
