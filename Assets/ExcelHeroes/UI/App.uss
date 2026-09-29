@@ -6915,3 +6915,19 @@
 .ex-cost-text { -unity-text-align: middle-center; }
 .bresult__kicker { font-size: 34px; }
 .saybubble { border-width: 2px; border-color: rgb(0, 190, 245); }
+/* gate r19: detail */
+.bigstat__val { font-size: 56px; }
+.bigstat__key { font-size: 24px; }
+.schip { margin-right: 10px; height: 42px; padding: 0 20px; }
+.minicard__icon { width: 96px; height: 96px; }
+.kittile__pic { opacity: 1; }
+.kittile--empty .kittile__pic { opacity: 0.7; }
+.detail__acts > .btn, .detail__acts .btn { height: 84px; }
+.detail__acts > .btn .plate__label, .detail__acts .btn .plate__label { font-size: 30px; -unity-text-align: middle-center; }
+.overlay--page .dplate__namerow { padding-left: 34px; }
+.overlay--page .dplate__top { padding-left: 34px; }
+/* party names one size (long ones wrap in the space, not shrink) */
+.pslot--stand .pslot__name { font-size: 26px; }
+/* album */
+.album__cell--locked .album__name { font-size: 26px; -unity-font-style: bold; color: rgb(230, 236, 246); }
+.sheet-head__stat { color: rgb(255, 255, 255); }
