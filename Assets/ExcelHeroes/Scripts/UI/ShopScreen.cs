@@ -57,7 +57,25 @@ namespace ExcelHeroes.UI
             foreach (var t in ShopService.Tabs)
             {
                 var on = t == _tab;
-                var tab = UiKit.Btn(t, on ? "btn btn--pill-on shop__tab shop__tab--on" : "btn btn--pill shop__tab", () => { _tab = t; Refresh(); }, _tabs);
+                // docked tabs (ui_critique 16-Shop #2): flush against the panel, the open one navy with a
+                // cyan bar at its outer edge, the rest white with a hairline — no floating pills
+                var tab = UiKit.Btn("", on ? "shop__tab shop__tab--on" : "shop__tab", () => { _tab = t; Refresh(); }, _tabs);
+                ModalFrame.Painted(tab, (ctx, r) =>
+                {
+                    var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 4f);
+                    if (on)
+                    {
+                        UiPaint.Shadow(ctx, box, new Vector2(0f, 4f), UiPaint.C(10, 30, 60, 0.22f), 8f);
+                        UiPaint.Fill(ctx, box, UiPaint.C(30, 43, 62));
+                        UiPaint.Fill(ctx, UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 30f, r.yMin, r.xMin + 22f, r.yMax), 0f)), UiPaint.C(0, 229, 255), 0f);
+                    }
+                    else
+                    {
+                        UiPaint.Fill(ctx, box, UiPaint.C(255, 255, 255, 0.92f));
+                        UiPaint.Stroke(ctx, box, UiPaint.C(216, 226, 236), 1.5f);
+                    }
+                });
+                UiKit.Text(t, "shop__tab-label", tab).pickingMode = PickingMode.Ignore;
                 if (t == "무료 보급" && ShopService.HasFree(p)) UiKit.Div("shop__dot", tab).pickingMode = PickingMode.Ignore;
             }
             _grid.Clear();
@@ -90,7 +108,7 @@ namespace ExcelHeroes.UI
             var price = UiKit.Btn("", g.Pay == ShopService.Pay.Free ? "btn btn--primary scard__buy" : "btn btn--gold scard__buy", () =>
             {
                 var got = ShopService.Buy(Game.Player, g);
-                if (got == null) return;
+                if (got == null) { _app.SetStatus(g.Pay == ShopService.Pay.Gems ? "보석이 부족합니다" : "재화가 부족합니다"); return; }
                 AudioService.Play("bond", 0.8f);
                 _app.SetStatus($"{g.Name} 구매 · {got}");
                 Game.Touch();
@@ -100,7 +118,14 @@ namespace ExcelHeroes.UI
             var cur = g.Pay switch { ShopService.Pay.Gold => "gold", ShopService.Pay.Gems => "gem", _ => null };
             if (cur != null && GameData.Icon(cur) != null) UiKit.SetArt(UiKit.Div("scard__cur", row), GameData.Icon(cur));
             UiKit.Text(g.Pay switch { ShopService.Pay.Free => "무료", ShopService.Pay.Points => $"포인트 {g.Price}", _ => g.Price.ToString("N0") }, "scard__price-text", row);
-            price.SetEnabled(ShopService.CanBuy(p, g));
+            // short of money the price stays a live white plate with the figure in red (BA's way —
+            // a tap says why), only a sold-out good greys its button out
+            if (!soldOut && !ShopService.CanBuy(p, g))
+            {
+                price.AddToClassList("scard__buy--short");
+                SkewPlate.Apply(price, SkewPlate.Kind.Light);
+            }
+            price.SetEnabled(!soldOut);
             if (soldOut)
             {
                 card.AddToClassList("scard--sold");

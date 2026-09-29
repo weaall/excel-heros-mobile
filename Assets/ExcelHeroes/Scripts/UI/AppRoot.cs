@@ -56,7 +56,7 @@ namespace ExcelHeroes.UI
         UIDocument _doc;
         VisualElement _content;
         Label _progressBadge;
-        Label _gems, _gold, _dailyBadge, _status, _stage, _plateSub, _screenTitle;
+        Label _gems, _gold, _dailyBadge, _status, _stage, _plateSub, _screenTitle, _screenEn;
         VisualElement _plate, _navBack, _navbar;
         readonly Dictionary<Sheet, IScreen> _screens = new();
         readonly Dictionary<Sheet, Button> _tabs = new();
@@ -87,6 +87,12 @@ namespace ExcelHeroes.UI
             _plate = root.Q<VisualElement>("playerPlate");
             _navBack = root.Q<VisualElement>("navBack");
             _screenTitle = root.Q<Label>("screenTitle");
+            // the screen's English sub-label beside its name (ui_critique: the tactical-admin micro type)
+            if (_screenTitle?.parent != null)
+            {
+                _screenEn = new Label { pickingMode = PickingMode.Ignore }; _screenEn.AddToClassList("navback__en");
+                _screenTitle.parent.Insert(_screenTitle.parent.IndexOf(_screenTitle) + 1, _screenEn);
+            }
             _navbar = root.Q<VisualElement>("navbar");
 
             _screens[Sheet.Home] = new HomeScreen(this);
@@ -368,7 +374,16 @@ namespace ExcelHeroes.UI
             var battle = sheet == Sheet.Battle;
             _doc.rootVisualElement.Q<VisualElement>("root")?.EnableInClassList("shell--battle", battle);
             if (_screenTitle != null) _screenTitle.text = TitleOf(sheet);
+            if (_screenEn != null) _screenEn.text = EnOf(sheet);
         }
+
+        static string EnOf(Sheet sheet) => sheet switch
+        {
+            Sheet.Roster => "EMPLOYEES", Sheet.Party => "FORMATION", Sheet.Gacha => "RECRUIT",
+            Sheet.Quests => "DAILY TASKS", Sheet.Progress => "REVIEW", Sheet.Story => "MESSENGER",
+            Sheet.Album => "ALBUM", Sheet.Codex => "ERROR CODEX", Sheet.Chart => "STATISTICS", Sheet.Shop => "SHOP",
+            _ => "",
+        };
 
         static string TitleOf(Sheet sheet) => sheet switch
         {

@@ -228,19 +228,23 @@ namespace ExcelHeroes.UI
             // reward reads off grade, and the bench is already sorted by power.
             var picked = info.Bench.Take(b.dispatchSlots).Select(o => o.id).ToList();
             var preview = DispatchService.Preview(p, picked);
+            // who goes and what they bring back on the left, the send button beside it at a fixed
+            // size (ui_critique 11-Progress #2 — a full-width slab wasted the panel)
+            var sendRow = UiKit.Div("disp-row", panel);
+            var sendText = UiKit.Div("disp-row__text", sendRow);
             UiKit.Text(string.Join(", ", picked.Select(id => GameData.Hero(id)?.name ?? id)),
-                "synergy-line", panel);
+                "synergy-line", sendText);
             UiKit.Text($"{b.dispatchHours:0}시간 · 보석 +{preview.Gems} 강화 카드 +{preview.Cards}",
-                "muted", panel);
+                "muted", sendText);
 
-            UiKit.Btn("출장 보내기", "btn btn--primary", () =>
+            UiKit.Btn("출장 보내기", "btn btn--primary disp-row__go", () =>
             {
                 if (!DispatchService.Start(Game.Player, picked)) return;
                 AudioService.Play("tap", 0.6f);
                 _app.SetStatus($"출장 시작 · {b.dispatchHours:0}시간 후 복귀");
                 Game.Touch();
                 Refresh();
-            }, panel);
+            }, sendRow);
         }
 
         void BuildMilestones(VisualElement parent, PlayerState p)

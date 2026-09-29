@@ -6290,3 +6290,34 @@
 .chart-row { height: 84px; }
 .chart-row__label { font-size: 30px; }
 .chart-row__value { font-size: 30px; -unity-font-style: bold; }
+/* screen title: no yellow office underline; the English sub-label beside it */
+.navback__title { border-bottom-width: 0; padding-bottom: 0; }
+.navback__en { margin: 24px 0 0 18px; padding: 0; font-size: 18px; -unity-font-style: bold; color: rgb(138, 157, 176); letter-spacing: 2px; }
+/* shop: docked tabs */
+.shop__tabs { width: 300px; padding-top: 40px; }
+.shop__tab { height: 86px; margin: 0 0 12px 0; padding: 0; background-color: rgba(0, 0, 0, 0); border-width: 0; justify-content: center; align-items: center; }
+.shop__tab--on { translate: 0 0; }
+.shop__tab-label { font-size: 28px; -unity-font-style: bold; color: rgb(122, 139, 158); padding: 0; margin: 0; }
+.shop__tab--on .shop__tab-label { color: rgb(255, 255, 255); }
+.shop__panel { margin-left: 0; }
+.scard__buy--short .scard__price-text { color: rgb(226, 58, 70); }
+/* codex: the cards on one base glass panel, not floating */
+.codex-grid { margin: 0 30px; padding: 26px 26px 4px 26px; border-radius: 16px; background-color: rgba(255, 255, 255, 0.45); border-width: 1.5px; border-color: rgba(255, 255, 255, 0.9); }
+.navback__en { margin-top: 30px; }
+/* review right column: readable small print, the dispatch send button beside its preview */
+.prog-cols__right .muted { font-size: 21px; color: rgb(104, 120, 142); }
+.prog-cols__right .synergy-line { font-size: 27px; color: rgb(31, 41, 55); }
+.disp-row { flex-direction: row; align-items: center; margin-top: 4px; }
+.disp-row__text { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.prog-cols__right .btn--primary.disp-row__go { width: 290px; height: 80px; flex-shrink: 0; margin: 0 0 0 16px; font-size: 28px; }
+/* achievements: rows with air — name, bar and meta no longer pressed to the row's edges */
+.prog-cols__left .arow { height: 124px; padding: 12px 24px; margin-bottom: 14px; }
+.arow__name { font-size: 30px; padding: 0; margin: 0 0 6px 0; }
+.arow__track { height: 10px; border-radius: 3px; background-color: rgb(222, 232, 243); }
+.arow__fill { border-radius: 3px; background-color: rgb(38, 140, 246); }
+.arow__meta { font-size: 20px; margin-top: 6px; padding: 0; }
+.arow__text { margin-right: 24px; }
+.prog-head .muted { font-size: 20px; }
+.schip { height: 40px; padding: 0 20px; margin-right: 8px; justify-content: center; }
+.schip__text { font-size: 21px; -unity-font-style: bold; color: rgb(52, 70, 98); padding: 0; margin: 0; }
+.schip--strong .schip__text { color: rgb(255, 255, 255); }

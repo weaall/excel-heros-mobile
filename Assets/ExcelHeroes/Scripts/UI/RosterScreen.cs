@@ -1030,12 +1030,12 @@ namespace ExcelHeroes.UI
             // 등급, 역할 and 부문 are back. They were dropped when this was a list because nine
             // rows did not fit; three chips on one line do.
             var chips = UiKit.Div("chiprow", body);
-            var gc = UiKit.Text($"{def.grade} · {grade?.label}", "ichip ichip--grade", chips);
-            gc.style.backgroundColor = grade?.Color ?? Color.gray;
-            UiKit.Text(UiKit.RoleName(def.role), "ichip", chips);
-            UiKit.Text(division?.name ?? def.division, "ichip", chips);
+            // slanted tags, not pills (ui_critique 17-Detail): the grade in its colour, the rest pale
+            SlantChip(chips, $"{def.grade} · {grade?.label}", grade?.Color ?? Color.gray, true);
+            SlantChip(chips, UiKit.RoleName(def.role), UiPaint.C(226, 235, 245), false);
+            SlantChip(chips, division?.name ?? def.division, UiPaint.C(226, 235, 245), false);
             var need = GachaService.PromoteCost(owned);
-            UiKit.Text(need > 0 ? $"승급 {owned.copies}/{need}" : "최대 ★", "ichip", chips);
+            SlantChip(chips, need > 0 ? $"승급 {owned.copies}/{need}" : "최대 ★", UiPaint.C(226, 235, 245), false);
 
             // ---- 스킬 and 특성, as cards with their levels --------------------------------
             var cards = UiKit.Div("minicards", body);
@@ -1076,6 +1076,18 @@ namespace ExcelHeroes.UI
                 UiKit.Text(worn == null ? "비어 있음" : EquipService.Label(worn), "kittile__name", words);
                 if (worn != null) UiKit.Text($"+{EquipService.Pct(worn) * 100f:0}%", "kittile__val", words);
             }
+        }
+
+        static void SlantChip(VisualElement parent, string text, Color fill, bool strong)
+        {
+            var chip = UiKit.Div("schip" + (strong ? " schip--strong" : ""), parent);
+            ModalFrame.Painted(chip, (ctx, r) =>
+            {
+                var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.7f, 3f);
+                UiPaint.Fill(ctx, box, fill);
+                if (!strong) UiPaint.Stroke(ctx, box, UiPaint.C(196, 212, 230), 1f);
+            });
+            UiKit.Text(text, "schip__text", chip).pickingMode = PickingMode.Ignore;
         }
 
         static void BigStat(VisualElement parent, string glyph, string key, string value)
