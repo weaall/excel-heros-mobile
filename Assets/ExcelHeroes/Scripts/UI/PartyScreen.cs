@@ -49,6 +49,25 @@ namespace ExcelHeroes.UI
             var left = UiKit.Div("party-cols__left", cols);
             var right = UiKit.Div("party-cols__right", cols);
 
+            // 적 정보: this phase's error armour and the attack that beats it (업무 상성), above the
+            // line-up, so who goes out is read against what they will face
+            var armor = Affinity.ArmorOfStage(Mathf.Max(1, p.stage));
+            var counter = Affinity.CounterOf(armor);
+            var good = p.PartyMembers().Count(o => Affinity.AtkOf(o.id) == counter);
+            var intel = UiKit.Div("party-intel", left);
+            ModalFrame.Painted(intel, (ctx, r) =>
+            {
+                var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 4f);
+                UiPaint.Fill(ctx, box, UiPaint.C(22, 34, 56, 0.86f));
+                UiPaint.Fill(ctx, UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 20f, r.yMax - 3f, r.xMax + 20f, r.yMax), 0f)), Affinity.ColorOf(armor), 0f);
+            });
+            UiKit.Text("ENEMY INTEL", "party-intel__en", intel).pickingMode = PickingMode.Ignore;
+            UiKit.Text($"Phase {Mathf.Max(1, p.stage)} 적", "party-intel__k", intel).pickingMode = PickingMode.Ignore;
+            AffinityChip(intel, Affinity.ArmorName(armor), Affinity.ColorOf(armor));
+            UiKit.Text("→", "party-intel__k", intel).pickingMode = PickingMode.Ignore;
+            AffinityChip(intel, Affinity.AtkName(counter), Affinity.ColorOf(counter));
+            UiKit.Text($"공격 효과적  <color=#8FA4C4>편성 {good}명</color>", "party-intel__v", intel).pickingMode = PickingMode.Ignore;
+
             var slots = UiKit.Div("party-slots party-slots--sd", left);
             // The row of SD figures: measured once the slots are laid out, so every figure stands
             // exactly over its own plate.
@@ -289,6 +308,11 @@ namespace ExcelHeroes.UI
                 UiKit.Text(def.name, "pslot__name", lines);
                 if (owned.star > 0)
                     UiKit.Text(new string('★', System.Math.Clamp(owned.star, 0, 5)), "pslot__stars-inline", plate);
+                // the member's attack type, with ▲ / ▼ against this phase's errors
+                var atk = Affinity.AtkOf(def);
+                var verdict = Affinity.Verdict(atk, Affinity.ArmorOfStage(Mathf.Max(1, Game.Player?.stage ?? 1)));
+                var chip = AffinityChip(plate, Affinity.AtkName(atk) + (verdict > 0 ? " ▲" : verdict < 0 ? " ▼" : ""), Affinity.ColorOf(atk));
+                chip.AddToClassList("pslot__atk");
             }
             else
             {
@@ -380,6 +404,16 @@ namespace ExcelHeroes.UI
             el.style.left = l.xMin; el.style.top = l.yMin; el.style.width = l.width; el.style.height = l.height;
             el.userData = (centres, ids, slotW, floor);
             el.MarkDirtyRepaint();
+        }
+
+        /// <summary>A small slanted chip in an affinity colour with white type.</summary>
+        static VisualElement AffinityChip(VisualElement parent, string text, Color colour)
+        {
+            var chip = UiKit.Div("aff-chip", parent);
+            chip.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(chip, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 2f), colour));
+            UiKit.Text(text, "aff-chip__text", chip).pickingMode = PickingMode.Ignore;
+            return chip;
         }
 
         void OpenPicker()

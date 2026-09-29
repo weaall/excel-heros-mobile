@@ -1033,6 +1033,9 @@ namespace ExcelHeroes.UI
             // slanted tags, not pills (ui_critique 17-Detail): the grade in its colour, the rest pale
             SlantChip(chips, $"{def.grade} · {grade?.label}", grade?.Color ?? Color.gray, true);
             SlantChip(chips, UiKit.RoleName(def.role), UiPaint.C(226, 235, 245), false);
+            // 업무 상성: the attack type in its colour
+            var atkType = Affinity.AtkOf(def);
+            SlantChip(chips, $"{Affinity.AtkName(atkType)} 공격", Affinity.ColorOf(atkType), true);
             SlantChip(chips, division?.name ?? def.division, UiPaint.C(226, 235, 245), false);
             var need = GachaService.PromoteCost(owned);
             SlantChip(chips, need > 0 ? $"승급 {owned.copies}/{need}" : "최대 ★", UiPaint.C(226, 235, 245), false);

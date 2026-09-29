@@ -6390,3 +6390,19 @@
 .kit__sheet-cell--mini { width: 205px; height: 180px; }
 .kit__sheet-cell--mini .kit__sheet { bottom: 30px; }
 .kit__sheet-cell--mini .kit__sheet-label { font-size: 17px; bottom: 2px; }
+/* 업무 상성: the error's armour at the head of its bar; damage that says 효과적 / 저항 */
+.fighter__armor { position: absolute; left: -20px; top: -7px; width: 26px; height: 26px; }
+.fighter--3d.fighter--boss .fighter__armor { width: 32px; height: 32px; left: -26px; top: -8px; }
+.floater--weak { font-size: 70px; color: rgb(255, 196, 64); -unity-text-outline-color: rgb(120, 50, 0); }
+.floater--resist { font-size: 44px; color: rgb(196, 206, 220); -unity-text-outline-color: rgb(40, 50, 70); }
+/* 업무 상성 on the party screen */
+.party-intel { flex-direction: row; align-items: center; align-self: center; height: 58px; padding: 0 34px; margin: 4px 0 6px 0; flex-shrink: 0; }
+.party-intel__en { font-size: 15px; -unity-font-style: bold; letter-spacing: 3px; color: rgb(0, 214, 255); margin: 0 18px 0 0; padding: 0; }
+.party-intel__k { font-size: 22px; -unity-font-style: bold; color: rgb(220, 232, 246); margin: 0 10px 0 0; padding: 0; }
+.party-intel__v { font-size: 22px; -unity-font-style: bold; color: rgb(255, 255, 255); margin: 0 0 0 10px; padding: 0; }
+.aff-chip { height: 34px; padding: 0 16px; justify-content: center; margin-right: 8px; flex-shrink: 0; }
+.aff-chip__text { font-size: 19px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; white-space: nowrap; }
+.pslot__atk { position: absolute; right: 10px; bottom: 10px; height: 28px; padding: 0 12px; margin: 0; }
+.pslot__atk .aff-chip__text { font-size: 17px; }
+.pslot--stand .pslot__lines { padding-right: 70px; min-width: 0; flex-shrink: 1; }
+.pslot--stand .pslot__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

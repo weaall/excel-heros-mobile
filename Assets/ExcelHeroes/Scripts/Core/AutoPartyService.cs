@@ -31,12 +31,14 @@ namespace ExcelHeroes.Core
 
             var power = 0f;
             var roles = new HashSet<string>();
+            // 업무 상성: a damage dealer is worth what they will actually do to this phase's errors
+            var armor = Affinity.ArmorOfStage(System.Math.Max(1, p.stage));
             foreach (var id in ids)
             {
                 var o = p.Find(id);
                 if (o == null) continue;
-                power += StatMath.Power(o);
                 var role = GameData.Hero(id)?.role;
+                power += StatMath.Power(o) * (role == "healer" ? 1f : Affinity.Mult(Affinity.AtkOf(id), armor));
                 if (!string.IsNullOrEmpty(role)) roles.Add(role);
             }
 

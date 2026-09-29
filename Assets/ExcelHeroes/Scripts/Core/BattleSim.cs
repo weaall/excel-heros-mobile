@@ -35,6 +35,8 @@ namespace ExcelHeroes.Core
         public float skillPower;        // ★-boosted, from StatMath.SkillPower
         public bool elite;              // crowned wave enemy: tougher, pays better
         public string typeId;           // monster type, for its sprite; null on heroes
+        public int atkType = -1;        // 업무 상성 (Affinity): a hero's 수식 · 매크로 · 검토
+        public int armorType = -1;      // an error's 서식 · 참조 · 논리 — the phase's, set on spawn
 
         // Ported from the web build's entity: where a dashing melee hero is headed (0 = home),
         // whether a monster has finished walking in, and how far out it stops.
@@ -97,6 +99,7 @@ namespace ExcelHeroes.Core
         public int amount;
         public string text;
         public bool crit;
+        public int affinity;            // Damage: +1 효과적, -1 저항, 0 보통
 
         // Fx only: what to draw, where, in what colour and how big.
         public FxKind fx;
@@ -332,6 +335,7 @@ namespace ExcelHeroes.Core
                     traitValue = traitValue,
                     skillPower = StatMath.SkillPower(owned),
                     star = owned.star,
+                    atkType = Affinity.AtkOf(def),
                 };
 
                 // 빠른 손놀림 shortens this hero's own swing; 철벽 멘탈 is a standing damage cut.
@@ -525,6 +529,7 @@ namespace ExcelHeroes.Core
         void Spawn(Combatant m, float x)
         {
             m.x = x;
+            if (m.armorType < 0) m.armorType = Affinity.ArmorOfStage(Stage);
             if (DebugTanky > 1 && m.boss == null) { m.maxHp = (int)Math.Min(int.MaxValue / 2L, (long)m.maxHp * DebugTanky); m.hp = m.maxHp; }
             Spawned++;
             Monsters.Add(m);
@@ -983,6 +988,13 @@ namespace ExcelHeroes.Core
         {
             if (!to.Alive || amount <= 0) return;
             if (from != null && from.side == Side.Monster) amount = (int)(amount * EnrageMultiplier);
+            // 업무 상성: a hero's attack against the error's armour
+            var affinity = 0;
+            if (from != null && from.side == Side.Hero && to.side == Side.Monster && from.atkType >= 0 && to.armorType >= 0)
+            {
+                affinity = Affinity.Verdict(from.atkType, to.armorType);
+                amount = Math.Max(1, (int)(amount * Affinity.Mult(from.atkType, to.armorType)));
+            }
             amount = (int)(amount * (1f - to.Mitigation));
             if (to.shield > 0f)
             {
@@ -993,7 +1005,7 @@ namespace ExcelHeroes.Core
             if (amount <= 0) return;
 
             to.hp -= amount;
-            if (!silent) Events.Enqueue(new BattleEvent { kind = EventKind.Damage, actor = from, target = to, amount = amount, crit = crit });
+            if (!silent) Events.Enqueue(new BattleEvent { kind = EventKind.Damage, actor = from, target = to, amount = amount, crit = crit, affinity = affinity });
             if (to.hp <= 0)
             {
                 to.hp = 0;

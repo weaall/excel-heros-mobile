@@ -713,6 +713,20 @@ namespace ExcelHeroes.UI
 
             var bar = UiKit.Div("fighter__hpbar", el);
             UiKit.Div("fighter__hpfill", bar);
+            // an error's armour as a small coloured diamond at the head of its bar (업무 상성)
+            if (c.side == Side.Monster && c.armorType >= 0)
+            {
+                var armor = UiKit.Div("fighter__armor", el);
+                armor.pickingMode = PickingMode.Ignore;
+                var col = Affinity.ColorOf(c.armorType);
+                ModalFrame.Painted(armor, (ctx, r) =>
+                {
+                    var d = new List<Vector2> { new(r.center.x, r.yMin), new(r.xMax, r.center.y), new(r.center.x, r.yMax), new(r.xMin, r.center.y) };
+                    UiPaint.Fill(ctx, d, Color.white);
+                    var i = new List<Vector2> { new(r.center.x, r.yMin + 3f), new(r.xMax - 3f, r.center.y), new(r.center.x, r.yMax - 3f), new(r.xMin + 3f, r.center.y) };
+                    UiPaint.Fill(ctx, i, col);
+                });
+            }
 
             // Heroes carry a second, blue bar under the first: the charge on their skill, which
             // fires on its own the moment it is full.
@@ -810,7 +824,7 @@ namespace ExcelHeroes.UI
                     ? (_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패")
                     : _sim.Enraged
                         ? $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
-                        : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}";
+                        : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}  <color={Affinity.Hex(Affinity.ArmorOfStage(_sim.Stage))}>◆{Affinity.ArmorShortName(Affinity.ArmorOfStage(_sim.Stage))}</color>";
             }
             if (_enemyLabel != null)
             {
@@ -891,7 +905,15 @@ namespace ExcelHeroes.UI
                         break;
                     case EventKind.Damage:
                         // the reference target (tools/out/design/target_3): a crit is gold and says so
-                        Float(e.target, e.crit ? "CRITICAL\n" + e.amount.ToString("N0") : e.amount.ToString("N0"), e.crit ? "floater floater--crit" : (e.target != null && e.target.side == Side.Hero ? "floater floater--taken" : "floater"));
+                        {
+                            // 업무 상성 says itself over the number: 효과적 (amber, bigger) / 저항 (grey, smaller)
+                            var num = e.amount.ToString("N0");
+                            var tag = e.affinity > 0 ? "<size=46%>효과적</size>\n" : e.affinity < 0 ? "<size=46%>저항</size>\n" : "";
+                            var cls = e.crit ? "floater floater--crit"
+                                : e.target != null && e.target.side == Side.Hero ? "floater floater--taken"
+                                : e.affinity > 0 ? "floater floater--weak" : e.affinity < 0 ? "floater floater--resist" : "floater";
+                            Float(e.target, e.crit ? tag + "CRITICAL\n" + num : tag + num, cls);
+                        }
                         // Only the party's own hits get a sound; every monster swing too would be mud.
                         if (e.actor != null && e.actor.side == Side.Hero) AudioService.Play("hit", 0.22f);
                         Pulse(e.actor, "fighter__body--swing", 110);
