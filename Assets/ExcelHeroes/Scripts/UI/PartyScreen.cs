@@ -152,6 +152,15 @@ namespace ExcelHeroes.UI
 
             var power = p.PartyMembers().Sum(StatMath.Power);
             var strip = UiKit.Div("party-strip", left);
+            // one dock under the line-up (ui_critique r6 08-Party #3): a single glass bar that the
+            // readout, synergy and composition sit in, with hairline dividers — not three loose cards
+            ModalFrame.Painted(strip, (ctx, r) =>
+            {
+                var dock = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax - 440f, r.yMax), 10f, 5);
+                UiPaint.Shadow(ctx, dock, new Vector2(0f, 6f), UiPaint.C(20, 40, 80, 0.12f), 12f);
+                UiPaint.Fill(ctx, dock, UiPaint.C(255, 255, 255, 0.82f));
+                UiPaint.Stroke(ctx, dock, UiPaint.C(197, 216, 235), 1.5f);
+            });
             var readout = UiKit.Div("power-readout power-readout--strip", strip);
             ModalFrame.Painted(readout, (ctx, r) =>
             {

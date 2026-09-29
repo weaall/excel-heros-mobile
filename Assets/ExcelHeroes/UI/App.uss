@@ -6419,3 +6419,7 @@
 /* attendance: a stamped day gets a red ink seal, tilted, over the tile (not a flat pill) */
 .stamp-day__mark { left: 50%; right: auto; width: 76px; height: 76px; margin-left: -38px; top: 30px; border-radius: 38px; border-width: 4px; border-color: rgba(230, 52, 70, 0.9); color: rgba(230, 52, 70, 0.95); font-size: 24px; rotate: -14deg; background-color: rgba(255, 240, 242, 0.55); -unity-text-align: middle-center; }
 .stamp-day--on { background-color: rgb(239, 244, 248); }
+/* party dock: the three blocks inside one glass bar, divided by hairlines */
+.party-strip .party-strip__panel { background-image: none; background-color: rgba(0, 0, 0, 0); border-width: 0; border-left-width: 1px; border-color: rgb(206, 222, 238); border-radius: 0; margin: 14px 0 14px 0; padding: 0 26px; }
+.party-strip .power-readout--strip { margin: 0 12px 0 0; }
+.party-strip .synergy-line { color: rgb(0, 136, 222); -unity-font-style: bold; }
