@@ -208,13 +208,13 @@ namespace ExcelHeroes.UI
             // the tail is drawn INSIDE the element (paint outside its rect is clipped — the gate caught
             // a bubble whose tail had vanished and pointed at nothing): the body starts 34px in and
             // the tail reaches back down-left to the speaker's face
-            var bodyRect = Rect.MinMaxRect(r.xMin + 34f, r.yMin, r.xMax, r.yMax);
+            var bodyRect = Rect.MinMaxRect(r.xMin + 44f, r.yMin, r.xMax, r.yMax);
             var body = UiPaint.RoundRect(bodyRect, Mathf.Min(26f, r.height * 0.4f), 6);
             UiPaint.Shadow(ctx, body, new Vector2(0f, 4f), UiPaint.C(20, 40, 80, 0.16f), 10f);
             var cy = r.yMin + Mathf.Min(r.height * 0.62f, 70f);
             var tail = new List<Vector2>
             {
-                new Vector2(bodyRect.xMin + 4f, cy - 20f), new Vector2(r.xMin + 2f, cy + 22f), new Vector2(bodyRect.xMin + 4f, cy + 8f),
+                new Vector2(bodyRect.xMin + 6f, cy - 26f), new Vector2(r.xMin + 2f, cy + 30f), new Vector2(bodyRect.xMin + 6f, cy + 4f),
             };
             var edge = UiPaint.C(176, 200, 226);
             UiPaint.Fill(ctx, UiPaint.Offset(body, 2f), edge);

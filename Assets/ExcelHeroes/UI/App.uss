@@ -6904,3 +6904,14 @@
 .ex-button__cost { top: -34px; left: -12px; }
 .qrow__meta, .qrow__track { align-self: center; }
 .stamp__go .plate__label { -unity-text-align: middle-center; margin: 0; padding: 0; }
+/* gate r18 */
+.home__bubble { padding-left: 78px; }
+.home__campaign-words { top: 48px; }
+.navtab__badge { width: 34px; height: 34px; font-size: 20px; top: 8px; right: 12px; }
+.bigstats { justify-content: space-between; }
+.bigstat { margin-bottom: 14px; }
+.album__name { bottom: 8px; }
+.album__grade { width: 64px; height: 44px; }
+.ex-cost-text { -unity-text-align: middle-center; }
+.bresult__kicker { font-size: 34px; }
+.saybubble { border-width: 2px; border-color: rgb(0, 190, 245); }
