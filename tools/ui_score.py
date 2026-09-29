@@ -21,14 +21,17 @@ OUT = os.path.join(g.ROOT, "tools", "out", "ui_score.json")
 SCREENS = ["05-Home", "07-Roster", "17-Detail", "18-Enhance", "20-Skins", "08-Party", "09-Gacha", "22-Pull10",
            "10-Quests", "11-Progress", "12-Story", "13-Album", "14-Codex", "15-Chart", "16-Shop", "23-Mail",
            "24-Notice", "07-BattleHud", "07-Fight1", "19-Scout", "21-Promotion"]
-ASK = ("This is one screen ({name}) of our landscape mobile gacha game. You are the UI director who shipped Blue Archive "
-       "and GODDESS OF VICTORY: NIKKE, doing the publisher's final UI review. Judge ONLY the UI (layout, hierarchy, spacing, "
-       "typography, buttons, panels, icons, consistency, clarity of function, polish) — not the character art or 3D models. "
-       "Intentional signature motifs, do NOT treat them as debug leftovers: the small glowing 1x4 spreadsheet 'sheet halo' "
-       "behind or under each character (our equivalent of Blue Archive's halos), and the office/Excel theme. "
-       "Score 1-10 where 8 means 'ships as-is next to Blue Archive / NIKKE' and 10 is their best screens. Be strict and "
-       "consistent. Return JSON only: {{\"score\": number, \"pass\": boolean (score>=8), \"blockers\": [up to 3 short Korean "
-       "strings, most important first, each a concrete fix with element, size/colour/placement], \"strengths\": [1-2 short Korean strings]}}")
+ASK = ("This is one screen ({name}) of our landscape mobile gacha game (2400x1080 capture). You are the UI director who "
+       "shipped Blue Archive and GODDESS OF VICTORY: NIKKE, doing the publisher's final UI review. Judge ONLY the UI "
+       "(layout, hierarchy, spacing, typography, components, consistency, functional clarity, polish) — not the character "
+       "illustrations or 3D models. Intentional motifs, NOT defects: the small glowing 1x4 spreadsheet 'sheet halo' behind or "
+       "under each character (our version of BA halos); the lobby's single long slanted glass top bar (taken from BA's own "
+       "lobby); the office/Excel theme. Calibrate the scale: 3 = prototype / programmer art; 5 = polished indie; 6 = mid-tier "
+       "commercial gacha; 7 = strong commercial release; 8 = ships as-is beside Blue Archive / NIKKE; 9-10 = their best "
+       "screens. Score each category 1-10, then an overall score. Return JSON only: {{\"categories\": {{\"layout\": n, "
+       "\"hierarchy\": n, \"typography\": n, \"components\": n, \"consistency\": n, \"clarity\": n, \"polish\": n}}, "
+       "\"score\": number, \"pass\": boolean (score>=8), \"blockers\": [up to 3 short Korean strings, most important first, "
+       "each a concrete fix naming the element and the size/colour/placement], \"strengths\": [1-2 short Korean strings]}}")
 
 
 def ask(key, path, name):

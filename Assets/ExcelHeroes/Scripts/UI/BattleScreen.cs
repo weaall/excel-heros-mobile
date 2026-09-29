@@ -86,6 +86,8 @@ namespace ExcelHeroes.UI
         public void DebugBoss(float hpFrac) { _pendingBoss = hpFrac; Debug.Log($"[shots] boss requested (sim {(_sim == null ? "none" : _sim.Finished ? "finished" : "live")})"); }
         float _pendingBoss;
         VisualElement _resultPopup;
+        VisualElement _armorChip;
+        Label _armorText;
         VisualElement _kills;
         int _hudWave = -1, _hudEnrage = -1, _hudAlive = -1, _hudKills = -1, _hudTotal = -1, _hudTime = -1;
         float _hudForecastAt;
@@ -162,6 +164,14 @@ namespace ExcelHeroes.UI
                 UiPaint.Stroke(ctx, poly, UiPaint.C(255, 255, 255, 0.22f), 2f);
             });
             _waveLabel = UiKit.Text("", "battle__wave bhud__wave", pill);
+            // this Phase's error armour as its own coloured chip (업무 상성), not text run into the wave
+            _armorChip = UiKit.Div("bhud__armor", pill);
+            ModalFrame.Painted(_armorChip, (ctx, r) =>
+            {
+                var col = _armorChip.userData is Color c0 ? c0 : Color.gray;
+                UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 3f), col);
+            });
+            _armorText = UiKit.Text("", "bhud__armor-text", _armorChip);
             ModalFrame.Painted(UiKit.Div("bhud__icon", pill), DrawEnemyIcon);
             _enemyLabel = UiKit.Text("", "bhud__num", pill);
             ModalFrame.Painted(UiKit.Div("bhud__icon", pill), DrawClockIcon);
@@ -717,7 +727,11 @@ namespace ExcelHeroes.UI
             UiKit.Div("fighter__shadow", el);
 
             var bar = UiKit.Div("fighter__hpbar", el);
+            // a pale "damage taken" bar under the fill that drains after it (ui_score 07-BattleHud #1:
+            // the reference's bars show the chunk a hit took before it empties), and a gloss on top
+            UiKit.Div("fighter__hplag", bar);
             UiKit.Div("fighter__hpfill", bar);
+            UiKit.Div("fighter__hpgloss", bar).pickingMode = PickingMode.Ignore;
             // an error's armour as a small coloured diamond at the head of its bar (업무 상성)
             if (c.side == Side.Monster && c.armorType >= 0)
             {
@@ -829,7 +843,14 @@ namespace ExcelHeroes.UI
                     ? (_sim.Won ? "업무 완료" : _sim.TimedOut ? "시간 초과" : "업무 실패")
                     : _sim.Enraged
                         ? $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount} · 야근 ×{_sim.EnrageMultiplier:F1}"
-                        : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}  <color={Affinity.Hex(Affinity.ArmorOfStage(_sim.Stage))}>◆{Affinity.ArmorShortName(Affinity.ArmorOfStage(_sim.Stage))}</color>";
+                        : $"P{_sim.Stage} · {_sim.Wave}/{_sim.WaveCount}";
+                if (_armorChip != null)
+                {
+                    var arm = Affinity.ArmorOfStage(_sim.Stage);
+                    _armorChip.userData = Affinity.ColorOf(arm);
+                    _armorText.text = Affinity.ArmorShortName(arm);
+                    _armorChip.MarkDirtyRepaint();
+                }
             }
             if (_enemyLabel != null)
             {
@@ -1207,12 +1228,32 @@ namespace ExcelHeroes.UI
                 var feet = _groundY + (z - 0.5f) * DepthSpread * _scale;
                 el.style.top = feet - (c.boss != null ? 138f : 92f);
 
-                if (!_hpFill.TryGetValue(el, out var fill)) _hpFill[el] = fill = el.Q(className: "fighter__hpfill");
-                if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);
+                SetHp(el, c.maxHp <= 0 ? 0f : (float)c.hp / c.maxHp);
                 el.EnableInClassList("fighter--dead", !c.Alive);
             }
 
             SortByDepth();
+        }
+
+        readonly Dictionary<VisualElement, (VisualElement lag, float shown, float hold)> _hpLag = new();
+
+        void SetHp(VisualElement el, float frac)
+        {
+            if (!_hpFill.TryGetValue(el, out var fill)) _hpFill[el] = fill = el.Q(className: "fighter__hpfill");
+            if (fill != null) fill.style.width = Length.Percent(frac * 100f);
+            if (!_hpLag.TryGetValue(el, out var st)) st = (el.Q(className: "fighter__hplag"), frac, 0f);
+            if (st.lag == null) return;
+            var dt = Time.unscaledDeltaTime;
+            if (frac < st.shown - 0.001f)
+            {
+                // hold the chunk a beat, then drain it
+                if (st.hold <= 0f) st.hold = 0.35f;
+                st.hold -= dt;
+                if (st.hold <= 0f) st.shown = Mathf.Max(frac, st.shown - dt * 0.9f);
+            }
+            else { st.shown = frac; st.hold = 0f; }
+            st.lag.style.width = Length.Percent(st.shown * 100f);
+            _hpLag[el] = st;
         }
 
         /// <summary>The drawn lane x of a fighter: its sim x, with a melee lunge played out.</summary>
@@ -1280,8 +1321,7 @@ namespace ExcelHeroes.UI
                 el.style.left = head.x * width - w * 0.5f;
                 el.style.top = head.y * height - 26f;
 
-                if (!_hpFill.TryGetValue(el, out var fill)) _hpFill[el] = fill = el.Q(className: "fighter__hpfill");
-                if (fill != null) fill.style.width = Length.Percent(c.maxHp <= 0 ? 0 : 100f * c.hp / c.maxHp);
+                SetHp(el, c.maxHp <= 0 ? 0f : (float)c.hp / c.maxHp);
                 el.EnableInClassList("fighter--dead", !c.Alive);
             }
         }

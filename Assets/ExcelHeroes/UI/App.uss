@@ -6528,3 +6528,12 @@
 .reveal-title__ko { font-size: 56px; -unity-font-style: bold; color: rgb(24, 36, 60); padding: 0; margin: -6px 0 0 0; }
 .reveal-title { top: auto; bottom: 56px; left: 80px; }
 .plate--off .plate__label, .skin-row__btn.plate--off .plate__label { color: rgb(104, 118, 140); }
+/* world HP bars r7: navy bezel, drained-chunk ghost, gloss */
+.fighter--3d .fighter__hpbar { width: 116px; height: 14px; border-width: 2px; border-color: rgb(16, 24, 40); border-radius: 3px; background-color: rgba(16, 24, 40, 0.8); overflow: hidden; }
+.fighter--3d.fighter--boss .fighter__hpbar { width: 200px; height: 18px; }
+.fighter__hplag { position: absolute; left: 0; top: 0; bottom: 0; background-color: rgb(255, 236, 170); }
+.fighter__hpfill { position: absolute; left: 0; top: 0; bottom: 0; }
+.fighter__hpgloss { position: absolute; left: 0; right: 0; top: 0; height: 40%; background-color: rgba(255, 255, 255, 0.28); }
+.bhud__armor { height: 36px; padding: 0 14px; justify-content: center; margin-right: 22px; }
+.bhud__armor-text { font-size: 20px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; }
+.bhud__wave { -unity-font-style: bold; margin-right: 16px; }
