@@ -6843,3 +6843,9 @@
 .aff-chip__text { font-size: 20px; }
 .pslot__atk { height: 30px; padding: 0 14px; }
 .pslot__grade-text { -unity-text-align: middle-center; padding: 0 0 2px 0; }
+/* gate r14: the attack chip leaves the name plate for the glass card's lower corner; the plate
+   is just grade · Lv/★ · name */
+.pslot__atk { top: -96px; right: 16px; bottom: auto; height: 34px; padding: 0 16px; }
+.pslot__atk .aff-chip__text { font-size: 21px; }
+.pslot--stand .pslot__name { font-size: 28px; }
+.pslot__lvstar { margin-left: 14px; }
