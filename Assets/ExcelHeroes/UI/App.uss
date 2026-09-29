@@ -6860,3 +6860,13 @@
 .gtab--on { background-color: rgb(255, 255, 255); }
 .gstage__title { text-shadow: 0 4px 10px rgba(10, 30, 60, 0.3); }
 .chip__plus { margin-left: 10px; }
+/* result r16: BA-style title (white italic, cyan drop), labels in the HUD's navy/cyan family */
+.bresult__title, .bresult__band .bresult__title { color: rgb(255, 255, 255); text-shadow: 4px 5px 0 rgba(0, 170, 240, 0.85); letter-spacing: 1px; }
+.bresult__kicker { font-size: 30px; color: rgb(120, 230, 255); letter-spacing: 8px; }
+.bresult__squad-label { background-color: rgb(20, 33, 54); color: rgb(0, 229, 255); border-left-width: 6px; border-color: rgb(0, 214, 255); font-size: 22px; padding: 4px 20px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; letter-spacing: 3px; }
+.bresult__mvp { background-color: rgb(255, 196, 40); color: rgb(60, 36, 0); border-radius: 3px; }
+.bresult__meter { height: 10px; }
+.bresult__cell .bresult__mini { border-width: 3px; border-color: rgb(255, 255, 255); border-radius: 8px; }
+.bresult__btn { height: 100px; width: 340px; }
+.bresult__info { height: 72px; }
+.bresult__squad-label { font-size: 28px; padding: 4px 24px; }

@@ -2096,7 +2096,9 @@ namespace ExcelHeroes.UI
                 var mini = UiKit.Div("bresult__mini", cell);
                 var share = dealt.TryGetValue(id, out var dv) ? dv / (float)total : 0f;
                 var meter = UiKit.Div("bresult__meter", cell);
-                UiKit.Div("bresult__meter-fill", meter).style.width = Length.Percent(share * 100f);
+                var mf = UiKit.Div("bresult__meter-fill", meter);
+                mf.style.width = Length.Percent(share * 100f);
+                mf.style.backgroundColor = Affinity.ColorOf(Affinity.AtkOf(id));   // the bar in the member's attack colour
                 UiKit.Text($"{share:P0}", "bresult__share", cell);
                 if (id == mvp && dv > 0) UiKit.Text("MVP", "bresult__mvp", cell).pickingMode = PickingMode.Ignore;
                 var standing = GameData.StandingArt(id);
