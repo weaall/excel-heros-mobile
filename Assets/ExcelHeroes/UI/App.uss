@@ -6537,3 +6537,12 @@
 .bhud__armor { height: 36px; padding: 0 14px; justify-content: center; margin-right: 22px; }
 .bhud__armor-text { font-size: 20px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; }
 .bhud__wave { -unity-font-style: bold; margin-right: 16px; }
+.battle--3d .ex-button--poor .ex-button__dim { background-color: rgba(10, 16, 30, 0.72); }
+.ex-button--poor .ex-button__label { color: rgb(255, 110, 120); }
+.battle--result .fighter__hpbar, .battle--result .fighter__skillbar, .battle--result .fighter__armor { display: none; }
+.promo-cond { align-items: center; }
+.promo-cond__what { width: 260px; flex-grow: 0; flex-shrink: 0; }
+.promo-cond__track { flex-grow: 1; height: 10px; margin: 0 24px; border-radius: 3px; background-color: rgb(222, 232, 243); overflow: hidden; }
+.promo-cond__fill { height: 100%; background-color: rgb(0, 190, 245); }
+.promo-cond__fill--met { background-color: rgb(46, 200, 120); }
+.promo-cond__num { width: 120px; -unity-text-align: middle-right; -unity-font-style: bold; }

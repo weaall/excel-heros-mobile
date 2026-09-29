@@ -423,7 +423,7 @@ namespace ExcelHeroes.UI
                 // a whole yellow block beside two grey ones
                 var on = b.ClassListContains("bhud__sq--on");
                 var accent = b.ClassListContains("bhud__auto") ? UiPaint.C(255, 196, 0) : UiPaint.C(0, 229, 255);
-                var poly = UiPaint.RoundRect(r, 8f, 4);
+                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.45f, 5f);   // the HUD's slant language
                 UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(26, 40, 66, on ? 0.92f : 0.8f), UiPaint.C(14, 24, 44, on ? 0.92f : 0.8f), r.yMin, r.yMax));
                 UiPaint.Stroke(ctx, poly, on ? WithAlpha(accent, 0.85f) : UiPaint.C(255, 255, 255, 0.28f), 1.5f);
                 if (on) UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 4f, r.yMax - 6f, r.xMax + 4f, r.yMax + 4f), 0f)), accent, 0f);
@@ -1635,6 +1635,13 @@ namespace ExcelHeroes.UI
         {
             if (at == null || !_views.TryGetValue(at, out var anchor)) return;
 
+            // break a long line at the space nearest its middle, never inside a word
+            if (text != null && text.Length > 16 && text.IndexOf('\n') < 0)
+            {
+                var mid = text.Length / 2; var best = -1;
+                for (var i = 0; i < text.Length; i++) if (text[i] == ' ' && (best < 0 || Mathf.Abs(i - mid) < Mathf.Abs(best - mid))) best = i;
+                if (best > 0) text = text.Substring(0, best) + '\n' + text.Substring(best + 1);
+            }
             var el = UiKit.Text(text, "saybubble", _stage);
             // the tail: a small rotated square under the bubble, pointing at the head
             UiKit.Div("saybubble__tail", el).pickingMode = PickingMode.Ignore;
@@ -1974,6 +1981,8 @@ namespace ExcelHeroes.UI
                 var readyAndAffordable = h.SkillReady && _sim.CanAfford(h);
                 btn.EnableInClassList("ex-button--ready", readyAndAffordable);
                 btn.EnableInClassList("ex-button--spent", !readyAndAffordable);
+                // cost not there yet: the card dims and its cost turns red (ui_score 07-BattleHud #1)
+                btn.EnableInClassList("ex-button--poor", !_sim.CanAfford(h));
                 btn.SetEnabled(h.Alive); // cannot cast if dead
             }
         }

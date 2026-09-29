@@ -881,9 +881,9 @@ namespace ExcelHeroes.UI
             var me = p.Find(GameData.MainId);
             var cond = UiKit.Div("panel", body);
             UiKit.Text($"{job?.title} → 승진 조건", "section-title", cond);
-            Condition(cond, $"강화 카드 {info.Cards:N0}", $"{p.cards:N0} / {info.Cards:N0}", info.HasCards);
-            Condition(cond, $"최고 클리어 {info.Stage}", $"{p.maxCleared} / {info.Stage}", info.HasStage);
-            Condition(cond, $"레벨 {info.Level}", $"{me?.level ?? 0} / {info.Level}", info.HasLevel);
+            Condition(cond, $"강화 카드 {info.Cards:N0}", $"{p.cards:N0} / {info.Cards:N0}", info.HasCards, p.cards / (float)Mathf.Max(1, info.Cards));
+            Condition(cond, $"최고 클리어 {info.Stage}", $"{p.maxCleared} / {info.Stage}", info.HasStage, p.maxCleared / (float)Mathf.Max(1, info.Stage));
+            Condition(cond, $"레벨 {info.Level}", $"{me?.level ?? 0} / {info.Level}", info.HasLevel, (me?.level ?? 0) / (float)Mathf.Max(1, info.Level));
 
             // the whole ladder, with where 김 stands on it (ui_score 21-Promotion: half the panel empty)
             var ladder = UiKit.Div("ladder", body);
@@ -960,11 +960,17 @@ namespace ExcelHeroes.UI
         }
 
         /// <summary>One requirement line: what it is, where the player is, and whether it is met.</summary>
-        void Condition(VisualElement parent, string what, string progress, bool met)
+        void Condition(VisualElement parent, string what, string progress, bool met, float frac = -1f)
         {
             var row = UiKit.Div("promo-cond" + (met ? " promo-cond--met" : ""), parent);
             UiKit.Text(met ? "✓" : "·", "promo-cond__mark", row);
             UiKit.Text(what, "promo-cond__what", row);
+            // how far along, as a bar between the requirement and its numbers
+            if (frac >= 0f)
+            {
+                var track = UiKit.Div("promo-cond__track", row);
+                UiKit.Div("promo-cond__fill" + (met ? " promo-cond__fill--met" : ""), track).style.width = Length.Percent(Mathf.Clamp01(frac) * 100f);
+            }
             UiKit.Text(progress, "promo-cond__num", row);
         }
 

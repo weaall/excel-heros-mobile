@@ -50,7 +50,8 @@ namespace ExcelHeroes.UI
             Kpi("보유 사원", "EMPLOYEES", $"{owned.Count}", $"/ {GameData.Heroes.Count}", owned.Count / (float)Mathf.Max(1, GameData.Heroes.Count), UiPaint.C(0, 170, 240));
             Kpi("편성 전투력", "PARTY POWER", totalPower.ToString("N0"), "", -1f, UiPaint.C(255, 176, 0));
             Kpi("최고 Phase", "BEST PHASE", $"{Mathf.Max(p.stage, p.maxCleared)}", "", -1f, UiPaint.C(120, 90, 230));
-            Kpi("보유 골드", "GOLD", p.gold.ToString("N0"), "", -1f, UiPaint.C(230, 160, 20));
+            var awakened = p.owned.Count(o => o.awakened);
+            Kpi("각성 사원", "AWAKENED", $"{awakened}", $"/ {owned.Count}", owned.Count == 0 ? 0f : awakened / (float)owned.Count, UiPaint.C(230, 160, 20));
 
             // S first, in each grade's own colour on a slanted badge (ui_score 15-Chart #1, #2)
             Chart("등급별 보유", "BY GRADE", GameData.GradeOrder.AsEnumerable().Reverse()
