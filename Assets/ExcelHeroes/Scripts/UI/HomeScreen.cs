@@ -120,14 +120,15 @@ namespace ExcelHeroes.UI
                 var slant = SkewPlate.SlantFor(body.height) * 0.9f;
                 var lip = UiPaint.SkewRect(Rect.MinMaxRect(body.xMin, body.yMin + 6f, body.xMax, body.yMax), slant, 6f);
                 UiPaint.Shadow(ctx, lip, new Vector2(0f, 8f), UiPaint.C(0, 60, 130, 0.3f), 16f);
-                UiPaint.Fill(ctx, lip, UiPaint.C(0, 132, 206));
+                UiPaint.Fill(ctx, lip, UiPaint.C(0, 150, 220));
                 var face = UiPaint.SkewRect(Rect.MinMaxRect(body.xMin, body.yMin, body.xMax, body.yMax - 6f), slant, 6f);
-                UiPaint.Fill(ctx, face, UiPaint.Horizontal(UiPaint.C(0, 148, 255), UiPaint.C(0, 210, 255), body.xMin, body.xMax));
+                // light glass into cyan (the r5 lobby redesign): the saturated slab read as too loud
+                UiPaint.Fill(ctx, face, UiPaint.Horizontal(UiPaint.C(236, 246, 253, 0.96f), UiPaint.C(70, 206, 250, 0.96f), body.xMin + body.width * 0.25f, body.xMax));
                 UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(body.xMin - 20f, body.yMin), new(body.xMax + 20f, body.yMin), new(body.xMax + 20f, body.yMin + body.height * 0.34f), new(body.xMin - 20f, body.yMin + body.height * 0.4f) }, face), UiPaint.C(255, 255, 255, 0.2f), 0f);
                 UiPaint.Stroke(ctx, face, UiPaint.C(179, 229, 252), 2f);
                 // the gauge
                 var gx0 = body.xMin + slant + 30f; var gx1 = body.xMax - 150f; var gy = body.yMax - 34f;
-                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx1, gy + 16f), 3f), UiPaint.C(0, 0, 0, 0.22f));
+                UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx1, gy + 16f), 3f), UiPaint.C(20, 60, 110, 0.18f));
                 UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0, gy, gx0 + (gx1 - gx0) * prog, gy + 16f), 3f), UiPaint.C(255, 232, 20));
             });
             var words = UiKit.Div("home__campaign-words", campaign); words.pickingMode = PickingMode.Ignore;
@@ -217,10 +218,9 @@ namespace ExcelHeroes.UI
                 new Vector2(bodyRect.xMin + 6f, cy - 26f), new Vector2(r.xMin + 2f, cy + 30f), new Vector2(bodyRect.xMin + 6f, cy + 4f),
             };
             var edge = UiPaint.C(176, 200, 226);
-            UiPaint.Fill(ctx, UiPaint.Offset(body, 2f), edge);
-            UiPaint.Fill(ctx, UiPaint.Offset(tail, 2f), edge);
-            UiPaint.Fill(ctx, body, UiPaint.C(255, 255, 255, 0.98f));
-            UiPaint.Fill(ctx, tail, UiPaint.C(255, 255, 255, 0.98f));
+            // navy with white type (the r5 redesign): it reads against the light room, the tail is plain
+            UiPaint.Fill(ctx, body, UiPaint.C(26, 40, 66, 0.95f));
+            UiPaint.Fill(ctx, tail, UiPaint.C(26, 40, 66, 0.95f));
         }
 
         /// <summary>The reference's campaign folder: a cyan folder with a tab, lit from above.</summary>

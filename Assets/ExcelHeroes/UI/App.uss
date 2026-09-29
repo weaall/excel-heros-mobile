@@ -6939,3 +6939,11 @@
 .navback__en { font-size: 32px; color: rgb(0, 96, 176); letter-spacing: 3px; margin-top: 8px; }
 .gstage__days { border-radius: 2px; }
 .cost-slot { padding: 0 20px 0 10px; height: 68px; } .cost-slot__box { margin-right: 12px; } .chip__icon { margin-right: 16px; } .chip__plus { margin-left: 14px; }
+/* lobby r21 (r5 redesign) */
+.home__speech { color: rgb(255, 255, 255); }
+.home__who { color: rgb(0, 214, 255); }
+.home__campaign-en { color: rgb(0, 110, 190); }
+.home__campaign-label { color: rgb(20, 36, 64); text-shadow: 0 0 0 rgba(0,0,0,0); }
+.home__campaign-sub { color: rgb(0, 110, 190); }
+.home__campaign-mark { opacity: 0.95; }
+.home__icon { width: 260px; height: 92px; margin-bottom: 16px; }
