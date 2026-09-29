@@ -2053,7 +2053,7 @@ namespace ExcelHeroes.UI
             {
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 0f);
                 var c0 = won ? UiPaint.C(16, 30, 60, 0.9f) : UiPaint.C(40, 20, 30, 0.9f);
-                UiPaint.Fill(ctx, poly, UiPaint.Horizontal(c0, UiPaint.C(16, 30, 60, 0f), r.xMin + r.width * 0.45f, r.xMax));
+                UiPaint.Fill(ctx, poly, UiPaint.Horizontal(c0, UiPaint.C(16, 30, 60, 0f), r.xMin + r.width * 0.72f, r.xMax));   // solid well past the title's end, then fade
                 UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMax - 4f, r.xMin + r.width * 0.7f, r.yMax), 0f),
                              UiPaint.Horizontal(won ? UiPaint.C(0, 229, 255) : UiPaint.C(255, 90, 110), UiPaint.C(0, 229, 255, 0f), r.xMin, r.xMin + r.width * 0.7f));
             });

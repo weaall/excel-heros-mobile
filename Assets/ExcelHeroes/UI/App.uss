@@ -6810,3 +6810,14 @@
 .skin-row__name { -unity-font-style: bold; }
 .navtab__badge { top: 14px; right: 26px; }
 .shell--lobby .plate__body { justify-content: center; }
+/* gate r11 */
+.bresult__band { width: 1240px; }
+.bresult__squad-label { margin-bottom: 12px; }
+.gstage__notebox { justify-content: center; min-height: 56px; }
+.gstage__notebox .gstage__note { -unity-text-align: middle-left; margin: 0; }
+.gfoot__btn, .gfoot__points { margin-right: 26px; }
+.reveal-grid__name { font-size: 24px; }
+.album__grade { left: 14px; top: 14px; }
+.album__name { -unity-text-align: middle-center; bottom: 0; }
+.pager { align-self: center; justify-content: center; }
+.stamp-day__icon { margin-bottom: 12px; }
