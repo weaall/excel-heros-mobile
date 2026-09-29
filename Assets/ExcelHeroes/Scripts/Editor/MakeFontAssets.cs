@@ -73,5 +73,40 @@ namespace ExcelHeroes.EditorTools
 
             Debug.Log("[fonts] done");
         }
+
+        /// <summary>
+        /// The display faces (both OFL, from github.com/google/fonts, licences beside them in
+        /// Fonts/OFL): Barlow Condensed for numbers and English labels — the condensed techy
+        /// numerals BA and NIKKE set their stats, costs and kickers in — and Black Han Sans for
+        /// Korean headlines. Each falls back to Noto Sans KR Bold for any glyph it lacks, so a
+        /// mixed "강화 UPGRADE" label never drops a character.
+        /// </summary>
+        [MenuItem("Excel Heroes/Rebuild display font assets")]
+        public static void Display()
+        {
+            var bold = AssetDatabase.LoadAssetAtPath<FontAsset>($"{Dir}/NotoSansKR-Bold SDF.asset");
+            foreach (var face in new[] { "BarlowCondensed-Bold", "BarlowCondensed-ExtraBoldItalic", "BarlowCondensed-SemiBold", "BlackHanSans-Regular" })
+            {
+                var ttf = $"{Dir}/OFL/{face}.ttf";
+                var outPath = $"{Dir}/OFL/{face} SDF.asset";
+                var font = AssetDatabase.LoadAssetAtPath<Font>(ttf);
+                if (font == null) { Debug.LogError($"[fonts] missing {ttf}"); continue; }
+                if (File.Exists(outPath)) AssetDatabase.DeleteAsset(outPath);
+                var asset = FontAsset.CreateFontAsset(
+                    font, 90, 9, UnityEngine.TextCore.LowLevel.GlyphRenderMode.SDFAA,
+                    1024, 1024, AtlasPopulationMode.Dynamic, enableMultiAtlasSupport: true);
+                asset.name = $"{face} SDF";
+                AssetDatabase.CreateAsset(asset, outPath);
+                asset.atlasTextures[0].name = $"{face} Atlas";
+                AssetDatabase.AddObjectToAsset(asset.atlasTextures[0], asset);
+                AssetDatabase.AddObjectToAsset(asset.material, asset);
+                if (bold != null) asset.fallbackFontAssetTable = new System.Collections.Generic.List<FontAsset> { bold };
+                EditorUtility.SetDirty(asset);
+                Debug.Log($"[fonts] built {outPath}");
+            }
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[fonts] display done");
+        }
     }
 }

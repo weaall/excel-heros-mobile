@@ -1956,7 +1956,7 @@ namespace ExcelHeroes.UI
             {
                 _hudCost = whole;
                 _costLabel.text = whole.ToString();
-                if (_costWords != null) _costWords.text = $"코스트 {whole:00}/{(int)BattleSim.MaxCost}";
+                if (_costWords != null) _costWords.text = $"COST  {whole:00}<size=70%> / {(int)BattleSim.MaxCost}</size>";
             }
             // the painted gauge again only when its fill has moved a visible step (a repaint rebuilds its polygons)
             var step = Mathf.RoundToInt(_sim.Cost / BattleSim.MaxCost * 240f);
