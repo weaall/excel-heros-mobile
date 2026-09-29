@@ -320,6 +320,7 @@ namespace ExcelHeroes.UI
                 BuildSkillLevel(body, owned, heroId, onClose);
                 BuildAwaken(body, owned, heroId, onClose);
                 BuildScout(body, owned, heroId, onClose);
+                BuildGrowthPreview(body, owned);
             }
             if (owned == null)
                 UiKit.Text("아직 모집하지 않은 사원입니다.", "muted", body);
@@ -858,6 +859,13 @@ namespace ExcelHeroes.UI
         /// appear as three buttons with what each one is for written under it, and the confirm says
         /// plainly that the other two close for good.
         /// </summary>
+        static bool IsOnTrack(PlayerState p, string jobId)
+        {
+            var cur = PromotionService.Job(p);
+            var j = GameData.MainJob(jobId);
+            return cur != null && j != null && !string.IsNullOrEmpty(cur.track) && cur.track == j.track;
+        }
+
         void BuildPromotion(VisualElement body, System.Action onClose)
         {
             var p = Game.Player;
@@ -877,6 +885,31 @@ namespace ExcelHeroes.UI
             Condition(cond, $"최고 클리어 {info.Stage}", $"{p.maxCleared} / {info.Stage}", info.HasStage);
             Condition(cond, $"레벨 {info.Level}", $"{me?.level ?? 0} / {info.Level}", info.HasLevel);
 
+            // the whole ladder, with where 김 stands on it (ui_score 21-Promotion: half the panel empty)
+            var ladder = UiKit.Div("ladder", body);
+            var lhead = UiKit.Div("growth__head", ladder);
+            UiKit.Text("커리어 트랙", "growth__title", lhead);
+            UiKit.Text("CAREER PATH", "growth__en", lhead);
+            var steps = UiKit.Div("ladder__steps", ladder);
+            var chain = new List<MainJobDef>();
+            for (var j = GameData.MainJobs.FirstOrDefault(); j != null && chain.Count < 8;)
+            {
+                chain.Add(j);
+                var nid = j.next != null && j.next.Length > 0 ? (j.next.Length == 1 ? j.next[0] : (j.next.FirstOrDefault(n => PromotionService.Job(p)?.id == n || IsOnTrack(p, n)) ?? j.next[0])) : null;
+                j = nid == null ? null : GameData.MainJob(nid);
+            }
+            var currentTier = job?.tier ?? 0;
+            for (var i = 0; i < chain.Count; i++)
+            {
+                var jd = chain[i];
+                var state = jd.tier < currentTier ? "ladder__step--done" : jd.tier == currentTier ? "ladder__step--now" : "";
+                var st = UiKit.Div("ladder__step " + state, steps);
+                if (i < chain.Count - 1) UiKit.Div("ladder__line" + (jd.tier < currentTier ? " ladder__line--done" : ""), st);
+                UiKit.Div("ladder__dot", st);
+                UiKit.Text(jd.title, "ladder__name", st);
+                UiKit.Text($"{jd.grade}급", "ladder__grade", st);
+            }
+
             // The fork. One option is a promotion; three is a decision, and it says so.
             if (info.Options.Count > 1)
                 UiKit.Text("한 번 고르면 되돌릴 수 없습니다.", "muted", body);
@@ -894,6 +927,36 @@ namespace ExcelHeroes.UI
                     () => ConfirmPromotion(target, info, onClose), row);
                 go.SetEnabled(info.Ok);
             }
+        }
+
+        /// <summary>
+        /// What the next level buys, in numbers (ui_score 18-Enhance — the tab listed costs and
+        /// said nothing about the result): now → next for 공격력, 체력 and 전투력, the gain in cyan.
+        /// </summary>
+        static void BuildGrowthPreview(VisualElement body, OwnedHero owned)
+        {
+            var cap = StatMath.LevelCap(owned);
+            var panel = UiKit.Div("growth", body);
+            var head = UiKit.Div("growth__head", panel);
+            UiKit.Text("다음 레벨 미리보기", "growth__title", head);
+            UiKit.Text("NEXT LEVEL", "growth__en", head);
+            if (owned.level >= cap) { UiKit.Text("레벨 상한 — 각성 또는 승급으로 상한을 올리세요", "growth__note", panel); return; }
+            var a0 = StatMath.Atk(owned); var h0 = StatMath.Hp(owned); var p0 = StatMath.Power(owned);
+            owned.level++;
+            var a1 = StatMath.Atk(owned); var h1 = StatMath.Hp(owned); var p1 = StatMath.Power(owned);
+            owned.level--;
+            var row = UiKit.Div("growth__row", panel);
+            void Cell(string k, int from, int to)
+            {
+                var c = UiKit.Div("growth__cell", row);
+                UiKit.Text(k, "growth__k", c);
+                UiKit.Text($"{from:N0}  <color=#00B4F0>→</color>  {to:N0}", "growth__v", c);
+                UiKit.Text($"+{to - from:N0}", "growth__d", c);
+            }
+            Cell($"레벨 {owned.level} → {owned.level + 1}", a0, a1);
+            row.Q<Label>(className: "growth__k").text = "공격력";
+            Cell("체력", h0, h1);
+            Cell("전투력", p0, p1);
         }
 
         /// <summary>One requirement line: what it is, where the player is, and whether it is met.</summary>

@@ -493,6 +493,22 @@ namespace ExcelHeroes.UI
             // pale field, each card a portrait over a dark plate of stars, NEW called out in the
             // corner, one wide confirm underneath and the pity points in the corner opposite.
             var view = UiKit.Div("reveal");
+            // a stage under the ten cards, not a flat pale sheet (ui_score 22-Pull10): a soft light
+            // from the centre, diagonal beams, and the result's title top-left
+            var stage = UiKit.Div("reveal-stage", view); stage.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(stage, (ctx, r) =>
+            {
+                UiPaint.Fill(ctx, UiPaint.RoundRect(r, 0f), UiPaint.Vertical(UiPaint.C(232, 242, 252), UiPaint.C(198, 222, 246), r.yMin, r.yMax));
+                UiPaint.Fill(ctx, UiPaint.Ellipse(r.center + new Vector2(0f, -r.height * 0.05f), r.width * 0.42f, r.height * 0.36f), UiPaint.C(255, 255, 255, 0.55f), r.height * 0.3f);
+                for (var i = 0; i < 6; i++)
+                {
+                    var x = r.xMin + r.width * (0.1f + i * 0.17f); var w = r.width * (i % 2 == 0 ? 0.05f : 0.025f);
+                    UiPaint.Fill(ctx, new List<Vector2> { new(x, r.yMin), new(x + w, r.yMin), new(x + w - r.height * 0.45f, r.yMax), new(x - r.height * 0.45f, r.yMax) }, UiPaint.C(255, 255, 255, 0.16f), 0f);
+                }
+            });
+            var rtitle = UiKit.Div("reveal-title", view); rtitle.pickingMode = PickingMode.Ignore;
+            UiKit.Text("RECRUIT RESULT", "reveal-title__en", rtitle);
+            UiKit.Text("모집 결과", "reveal-title__ko", rtitle);
 
             var grid = UiKit.Div("reveal-grid", view);
             // The Gemini card mock-up (tools/out/design/mock_card_0): all ten in ONE row of tall slanted

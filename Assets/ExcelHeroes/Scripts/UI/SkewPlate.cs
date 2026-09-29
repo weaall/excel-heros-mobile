@@ -91,7 +91,9 @@ namespace ExcelHeroes.UI
                                      C(150, 210, 240), C(0, 0, 0, 0f), 0f, 0.18f),
             // off = an OUTLINE, not a grey lump: pale glass with a clear blue-grey border, so a
             // not-yet-claimable button reads as "later", not as broken (ui_critique round 1)
-            Kind.Off     => new Look(C(244, 247, 250, 0.82f), C(232, 238, 244, 0.78f), C(170, 186, 206, 0.95f), C(255, 255, 255, 0.5f), 2.2f,
+            // off (r7): a solid cool-grey plate with no outline — BA's "not yet" — so it reads as a
+            // button that is waiting, not as an empty ghost frame (ui_score: 비활성 대비 부족)
+            Kind.Off     => new Look(C(222, 229, 238), C(210, 219, 230), C(196, 206, 219, 0f), C(255, 255, 255, 0.55f), 0f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0f),
             // the UI kit (tools/out/design/kit_0): red for what cannot be undone
             Kind.Danger  => new Look(C(240, 74, 78), C(232, 62, 68), C(150, 24, 36, 0f), C(255, 200, 200, 0.5f), 0f,
