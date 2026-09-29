@@ -88,6 +88,7 @@ namespace ExcelHeroes.UI
         /// Held until a run is live — a call that lands on a finished run would otherwise do nothing.
         public void DebugAutoSkill(bool on) { if (_sim != null) _sim.AutoSkill = on; }
         public bool DebugDown(int i) => _sim != null && _sim.DebugDown(i);
+        public void DebugWin() => _sim?.DebugWin();
         public void DebugMenu(bool open) { if (_menu == null) return; _menu.EnableInClassList("hidden", !open); if (open) { SyncAutoButton(); SyncOvertimeButton(); UpdateUpgrades(); } }
         public void DebugBoss(float hpFrac) { _pendingBoss = hpFrac; Debug.Log($"[shots] boss requested (sim {(_sim == null ? "none" : _sim.Finished ? "finished" : "live")})"); }
         float _pendingBoss;

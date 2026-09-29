@@ -66,6 +66,7 @@ namespace ExcelHeroes.World
             _cam.enabled = false;
             var data = _cam.GetUniversalAdditionalCameraData();
             data.renderPostProcessing = false;
+            Shader.SetGlobalFloat("_EhOutlinePx", 1.8f);   // crisp outlines at any distance (Toon.shader)
             data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
         }
 
@@ -76,12 +77,13 @@ namespace ExcelHeroes.World
         public RenderTexture Show(VisualElement host, IList<string> ids, IList<float> centres, float slotW, int pxW, int pxH, float floor)
         {
             _host = host;
-            pxW = Mathf.Clamp(pxW, 64, 4096);
-            pxH = Mathf.Clamp(pxH, 64, 4096);
+            // a quarter over the slots' pixels with 4x MSAA (crisp outlines; the BA cross-check's "muddy")
+            pxW = Mathf.Clamp(Mathf.RoundToInt(pxW * 1.25f), 64, 4096);
+            pxH = Mathf.Clamp(Mathf.RoundToInt(pxH * 1.25f), 64, 4096);
             if (_rt == null || _rt.width != pxW || _rt.height != pxH)
             {
                 if (_rt != null) { _cam.targetTexture = null; _rt.Release(); Destroy(_rt); }
-                _rt = new RenderTexture(pxW, pxH, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { name = "LineupRT" };
+                _rt = new RenderTexture(pxW, pxH, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { name = "LineupRT", antiAliasing = 4, filterMode = FilterMode.Bilinear };
                 _rt.Create();
                 _cam.targetTexture = _rt;
             }
@@ -196,8 +198,10 @@ namespace ExcelHeroes.World
                         else
                         {
                             var pp = SdPersona.For(id);
+                            // her own idle and bearing (SdPersona): tried the combat stance here, but with a squad of
+                            // four ranged members it stood four identical tablet poses in a row
                             var ip = SdPose.Idle(SdPose.IdleOf(id), _t * pp.Tempo, phase);
-                            pp.Shape(ref ip, 1f);   // the character's own bearing (SdPersona)
+                            pp.Shape(ref ip, 1f);
                             SdPose.Apply(rig, ip);
                             rig.Root.localPosition = rig.Home + Vector3.up * ((ip.Y + rig.FootDrop) * rig.Root.localScale.y);
                         }

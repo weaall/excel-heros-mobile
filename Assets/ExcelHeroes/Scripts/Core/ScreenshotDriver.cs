@@ -195,6 +195,12 @@ namespace ExcelHeroes.Core
                             yield return new WaitForSeconds(0.45f);
                             yield return Shoot($"{n:00}-Fight{f}");
                         }
+                        // a win: the result over the party's close-up cheer (the BA cross-check's "result")
+                        BattleScreen.Current?.DebugWin();
+                        yield return new WaitForSeconds(2.4f);   // past the entry, into the held victory poses
+                        yield return Shoot($"{n:00}-Win");
+                        yield return new WaitForSeconds(4f);   // the next run starts on its own
+
                         // the battle's 메뉴, open over the live fight
                         BattleScreen.Current?.DebugMenu(true);
                         yield return new WaitForSeconds(0.3f);

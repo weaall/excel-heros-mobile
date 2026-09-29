@@ -1056,6 +1056,18 @@ namespace ExcelHeroes.Core
         }
 
         /// <summary>Player-facing: fire a charged EX skill. Safe to call when not ready — it no-ops.</summary>
+        /// <summary>Capture pass only: the run won now — the last wave, every error down (the victory, photographed).</summary>
+        public void DebugWin()
+        {
+            if (Finished) return;
+            Wave = WaveCount;
+            foreach (var m in Monsters) { m.hp = 0; Events.Enqueue(new BattleEvent { kind = EventKind.Death, target = m }); }
+            Monsters.Clear();
+            foreach (var h in Heroes) if (h.hp <= 0) h.hp = 1;
+            Finished = true; Won = true;
+            Events.Enqueue(new BattleEvent { kind = EventKind.Victory });
+        }
+
         /// <summary>Capture pass only: member i goes down now (the death motion, photographed).</summary>
         public bool DebugDown(int i)
         {

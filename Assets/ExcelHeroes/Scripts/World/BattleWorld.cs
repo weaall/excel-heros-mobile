@@ -195,16 +195,20 @@ namespace ExcelHeroes.World
             _backdropAspect = _cam.aspect;
         }
 
+        const float SuperSample = 1f;   // BattleScreen.Layout3D already asks for 1.25x
+
         public void SetVisible(bool on) => _cam.enabled = on && _rt != null;
 
         /// <summary>Keep the render target the size of the field on screen (in real pixels).</summary>
         public void Resize(int w, int h)
         {
-            w = Mathf.Clamp(w, 64, 4096);
-            h = Mathf.Clamp(h, 64, 4096);
+            // rendered a quarter over the screen's pixels with 4x MSAA, and shown downscaled: crisp outlines and
+            // no stair-stepping on the models (the BA cross-check: "muddy, pixelated")
+            w = Mathf.Clamp(Mathf.RoundToInt(w * SuperSample), 64, 4096);
+            h = Mathf.Clamp(Mathf.RoundToInt(h * SuperSample), 64, 4096);
             if (_rt != null && _rt.width == w && _rt.height == h) return;
             if (_rt != null) { _cam.targetTexture = null; _rt.Release(); Object.Destroy(_rt); }
-            _rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { name = "BattleRT", antiAliasing = 1, filterMode = FilterMode.Bilinear };
+            _rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { name = "BattleRT", antiAliasing = 4, filterMode = FilterMode.Bilinear };
             _rt.Create();
             _cam.targetTexture = _rt;
             _cam.aspect = w / (float)h;

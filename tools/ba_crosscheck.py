@@ -27,7 +27,7 @@ MODEL = os.environ.get("CROSS_MODEL", "gemini-3.1-pro-preview")
 PAIRS = {
     "lobby":     ("05-Home.png", ["ref01.png", "ref03.png", "ref13.png"], "the main lobby"),
     "battle":    ("07-Fight2.png", ["ref02.png", "ref14.png"], "a battle in progress"),
-    "result":    ("07-Down3.png", ["ref04.png"], "the battle result"),
+    "result":    ("07-Win.png", ["ref04.png"], "the battle result"),
     "formation": ("08-Party.png", ["ref06.png"], "the squad formation screen"),
     "profile":   ("17-Detail.png", ["ref10.png"], "a character profile page"),
     "roster":    ("07-Roster.png", ["ref12.png"], "the character roster"),
@@ -76,7 +76,10 @@ def ours(name):
 
 def judge(key, name):
     mine, refs, what = ours(name), [os.path.join(REF, r) for r in PAIRS[name][1]], PAIRS[name][2]
-    a = call(key, [img(r) for r in refs] + [img(mine), {"text": ANCHOR.format(n=len(refs), what=what)}])
+    # REPEAT=n: the anchored score averaged over n asks (one ask moves by ±1)
+    runs = [call(key, [img(r) for r in refs] + [img(mine), {"text": ANCHOR.format(n=len(refs), what=what)}]) for _ in range(int(os.environ.get("REPEAT", "1")))]
+    a = dict(runs[0])
+    for k in AXES: a[k] = round(sum(float(x.get(k) or 0) for x in runs) / len(runs), 2)
     o, b = [], []
     for r in refs[:1]:
         x = call(key, [img(mine), img(r), {"text": BLIND.format(what=what)}]); o.append(float(x["a"])); b.append(float(x["b"]))

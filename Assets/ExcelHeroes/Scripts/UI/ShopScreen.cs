@@ -216,10 +216,22 @@ namespace ExcelHeroes.UI
                 // a banner heading the article, in the tag's colour with its English word large and
                 // faint across it (ui_score 24-Notice #1 — the body stood in a bare white box)
                 var col = n.tag switch { "이벤트" => UiPaint.C(255, 92, 150), "업데이트" => UiPaint.C(46, 150, 246), "신규" => UiPaint.C(250, 170, 40), _ => UiPaint.C(90, 104, 130) };
-                var banner = UiKit.Div("notice__banner", view);
+                // the notice's own illustration (tools/notice_banners_gemini.py) when it has one, the
+                // tag's colour washing in from the left under the English word (the BA cross-check:
+                // the reference's notices are illustrated banners, ours was a flat colour bar)
+                var art = Resources.Load<Sprite>("Art/Notice/" + n.id);
+                var banner = UiKit.Div("notice__banner" + (art != null ? " notice__banner--art" : ""), view);
                 ModalFrame.Painted(banner, (ctx, r) =>
                 {
-                    var box = UiPaint.RoundRect(r, 8f, 4);
+                    var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.25f, 8f);
+                    if (art != null)
+                    {
+                        UiPaint.Shadow(ctx, box, new Vector2(0f, 4f), UiPaint.C(0, 20, 50, 0.22f), 10f);
+                        UiPaint.Image(ctx, box, art, r, 0.4f);
+                        UiPaint.Fill(ctx, box, UiPaint.Horizontal(UiPaint.WithAlpha(col, 0.88f), UiPaint.WithAlpha(col, 0f), r.xMin, r.xMin + r.width * 0.5f), 0f);
+                        UiPaint.Stroke(ctx, box, UiPaint.C(255, 255, 255, 0.9f), 2f);
+                        return;
+                    }
                     UiPaint.Fill(ctx, box, UiPaint.Horizontal(col, Color.Lerp(col, Color.white, 0.55f), r.xMin, r.xMax));
                     for (var i = 0; i < 7; i++)
                     {
@@ -245,7 +257,13 @@ namespace ExcelHeroes.UI
                 foreach (var n in NoticeService.All.OrderByDescending(x => x.date))
                 {
                     var on = n == current;
-                    var row = UiKit.Div("nrow" + (on ? " nrow--on" : ""), list);
+                    var row = UiKit.Div("nrow nrow--thumb" + (on ? " nrow--on" : ""), list);
+                    var thumbArt = Resources.Load<Sprite>("Art/Notice/" + n.id);
+                    if (thumbArt != null)
+                    {
+                        var th = UiKit.Div("nrow__thumb", row); th.pickingMode = PickingMode.Ignore;
+                        ModalFrame.Painted(th, (ctx, r) => { var q = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.4f, 4f); UiPaint.Image(ctx, q, thumbArt, r, 0.4f); });
+                    }
                     Tag(row, n.tag);
                     UiKit.Text(n.title, "nrow__title", row);
                     if (!p.readNotices.Contains(n.id)) UiKit.Div("nrow__new", row);

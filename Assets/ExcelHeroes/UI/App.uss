@@ -7174,3 +7174,15 @@
 .gtab .gtab__label { color: rgb(128, 142, 166); }
 .gtab .gtab__en { color: rgb(150, 164, 186); }
 .gtab { margin-bottom: 22px; }
+
+/* 공지 r10: illustrated banners (tools/notice_banners_gemini.py) heading the article and as list thumbnails */
+.notice__banner--art { height: 300px; justify-content: flex-end; padding-bottom: 26px; }
+.notice__banner--art .notice__banner-en { font-size: 64px; text-shadow: 0 3px 0 rgba(0, 0, 0, 0.3); }
+.nrow--thumb { height: 104px; padding-left: 8px; }
+.nrow__thumb { width: 190px; height: 82px; flex-shrink: 0; margin-right: 12px; }
+.home__ambience { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+/* lobby r10 (BA cross-check: "menu proportions clunky and oversized"): slimmer tiles, more air */
+.navbar { height: 168px; padding-left: 110px; }
+.navtab { width: 152px; height: 138px; margin-right: 18px; }
+.navtab__icon.art-icon { width: 80px; height: 80px; }
+.navtab__label { font-size: 30px; }

@@ -46,6 +46,7 @@ namespace ExcelHeroes.UI
             // The hero's sheet, behind the portrait and leaning out past one shoulder.
             // the halo sheet, drawn by the game behind the figure (v2 standing art is clean)
             if (def != null) BackSheet.Add(_root, def, owned, "backsheet home__sheet");
+            Ambience(_root);
             _charContainer = UiKit.Div("home__char-container", _root);
             if (def != null)
             {
@@ -253,6 +254,41 @@ namespace ExcelHeroes.UI
             if (party != null) return party.id;
             var first = p.owned.FirstOrDefault();
             return first != null ? first.id : "main";
+        }
+
+        /// <summary>
+        /// The room's light, alive (the BA cross-check: "the lobby background lacks depth and
+        /// lighting, and nothing moves"): soft shafts of window light from the upper left that
+        /// breathe in strength and drift a little, and dust motes floating up through them. Painted
+        /// over the room, under the character, so she stands in the light.
+        /// </summary>
+        static void Ambience(VisualElement host)
+        {
+            var fx = UiKit.Div("home__ambience", host); fx.pickingMode = PickingMode.Ignore;
+            var t0 = Time.realtimeSinceStartup;
+            var rng = new System.Random(11);
+            var motes = Enumerable.Range(0, 26).Select(_ => (x: (float)rng.NextDouble(), y: (float)rng.NextDouble(), s: 2.5f + (float)rng.NextDouble() * 5f, v: 0.012f + (float)rng.NextDouble() * 0.02f, ph: (float)rng.NextDouble() * 6f)).ToArray();
+            ModalFrame.Painted(fx, (ctx, r) =>
+            {
+                var t = Time.realtimeSinceStartup - t0;
+                for (var i = 0; i < 4; i++)
+                {
+                    var k = 0.55f + 0.45f * Mathf.Sin(t * 0.35f + i * 1.7f);
+                    var x = r.xMin + r.width * (0.02f + i * 0.13f) + Mathf.Sin(t * 0.12f + i) * 20f;
+                    var w = r.width * (0.05f + 0.025f * (i % 2));
+                    var shaft = new System.Collections.Generic.List<Vector2> { new(x, r.yMin), new(x + w, r.yMin), new(x + w + r.height * 0.55f, r.yMax), new(x + r.height * 0.55f, r.yMax) };
+                    UiPaint.Fill(ctx, shaft, UiPaint.Vertical(UiPaint.C(255, 250, 235, 0.13f * k), UiPaint.C(255, 250, 235, 0f), r.yMin, r.yMax), 18f);
+                }
+                foreach (var m in motes)
+                {
+                    var yy = Mathf.Repeat(m.y - t * m.v, 1f);
+                    var xx = m.x + Mathf.Sin(t * 0.5f + m.ph) * 0.01f;
+                    var a = Mathf.Sin(yy * Mathf.PI) * (0.35f + 0.25f * Mathf.Sin(t * 1.3f + m.ph));
+                    var c = new Vector2(r.xMin + r.width * xx, r.yMin + r.height * yy);
+                    UiPaint.Fill(ctx, UiPaint.Ellipse(c, m.s, m.s, 10), UiPaint.C(255, 252, 240, Mathf.Clamp01(a)), m.s);
+                }
+            });
+            fx.schedule.Execute(() => fx.MarkDirtyRepaint()).Every(50);
         }
 
         void BuildDialogues(HeroDef def, OwnedHero owned)
