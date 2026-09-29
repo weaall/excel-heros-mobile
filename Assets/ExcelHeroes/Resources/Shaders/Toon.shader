@@ -49,6 +49,9 @@ Shader "ExcelHeroes/Toon"
         TEXTURE2D(_MainTex);
         SAMPLER(sampler_MainTex);
         float4 _EhLightDir;
+        // the outline's floor in screen pixels (global; 0 = the world width only): a crisp edge of the
+        // same weight at any distance, as the reference's models keep (the BA cross-check: "no crisp outlines")
+        float _EhOutlinePx;
 
         struct Attributes
         {
@@ -203,7 +206,13 @@ Shader "ExcelHeroes/Toon"
                 Varyings o;
                 float3 ws = TransformObjectToWorld(i.positionOS.xyz);
                 float3 nws = normalize(TransformObjectToWorldNormal(i.normalOS));
-                ws += nws * _OutlineWidth;
+                float w = _OutlineWidth;
+                if (w > 0 && _EhOutlinePx > 0)
+                {
+                    float px = distance(ws, _WorldSpaceCameraPos) * 2.0 / (UNITY_MATRIX_P._m11 * _ScreenParams.y);
+                    w = max(w, px * _EhOutlinePx);
+                }
+                ws += nws * w;
                 o.positionCS = TransformWorldToHClip(ws);
                 o.uv = TRANSFORM_TEX(i.uv, _MainTex);
                 o.color = i.color;

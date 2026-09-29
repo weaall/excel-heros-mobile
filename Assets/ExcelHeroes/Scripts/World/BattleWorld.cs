@@ -69,14 +69,15 @@ namespace ExcelHeroes.World
             _cam.depth = -10;
             _cam.enabled = false;
             var data = _cam.GetUniversalAdditionalCameraData();
-            data.renderPostProcessing = false;
             data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+            PostFx.Use(_cam, Layer);   // bloom, tone curve, saturation, vignette (PostFx)
             data.antialiasingQuality = AntialiasingQuality.High;
             PlaceCamera(0f);
             AbilityHost.Presenter = this;
 
             // light from the upper left, a little in front — the reference's key light
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
+            Shader.SetGlobalFloat("_EhOutlinePx", 1.8f);   // crisp outlines at any distance (Toon.shader)
             _mpb = new MaterialPropertyBlock();
         }
 
@@ -139,6 +140,8 @@ namespace ExcelHeroes.World
                 var bg = GameData.BattleBackdrop(mood == 2 ? "night" : mood == 1 ? "evening" : "day");
                 _set = bg != null ? Backdrop(bg) : OfficeStage.Build(_root, Layer, sim.Stage);
                 _street = bg != null ? StreetSet.Build(_root, Layer, mood) : null;
+                StreetSet.Paint(_street, mood);   // the painted street projected onto the set (Plate.shader)
+                if (_street != null) StreetSet.Props(_street, Layer, mood);
                 _setMood = mood;
                 _cam.backgroundColor = mood == 2 ? new Color(0.16f, 0.18f, 0.32f) : new Color(0.86f, 0.93f, 1f);
             }
@@ -270,7 +273,8 @@ namespace ExcelHeroes.World
                 ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
                 if (a.Rig.Model3D) a.Rig.Sheet.localScale = Vector3.one * 0.9f;
                 if (a.Rig.RefModel) SdRef.FloorSheet(a.Rig, 1.8f);
-                a.Scale = c.role == "tank" ? 1.06f : 1f;
+                // the squad a size up (the BA cross-check: the members read small against the street)
+                a.Scale = (c.role == "tank" ? 1.06f : 1f) * (a.Rig.RefModel ? 1.18f : 1f);
                 a.Accent = spec.Accent;
             }
             else if (c.side == Side.Hero)
@@ -1740,7 +1744,7 @@ namespace ExcelHeroes.World
                 // turned with the quarter-view camera, so each keeps the same angle to the lens
                 // a mascot is a drawing given depth: its face is the drawing's front, so it turns only a
                 // little toward the squad (28° off the lens) — side-on it showed its thin plush seam
-                var yaw = (hero ? Mathf.Lerp(-75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 38f : 75f) + QuarterYaw * (1f - closeUp);
+                var yaw = (hero ? Mathf.Lerp(Rig.RefModel ? -55f : -75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 38f : 75f) + QuarterYaw * (1f - closeUp);   // the SD squad turned a three-quarter towards the lens as the reference's are (faces, not the backs of heads: the BA cross-check)
                 // (an SdEnemy wears the heroes' skeleton and its clips' half turn: mirrored from the heroes,
                 // toward the squad and a little toward the lens, so its face shows)
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad

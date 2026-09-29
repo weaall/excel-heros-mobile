@@ -14,6 +14,88 @@ namespace ExcelHeroes.World
     /// </summary>
     public static class StreetSet
     {
+        // The painted street (Plate.shader, tools/street_plate_gemini.py): the plate camera — the battle
+        // camera's resting pose with a wider lens, so the painting covers its travel — in the set's own
+        // space. StreetPlate.Render shoots the set from here; Paint projects the painting back from here.
+        public const float PlateFov = 50f, PlateAspect = 16f / 9f;
+        static readonly Vector3 PlateTarget = new(1.2f, 0.4f, 1.2f);
+
+        public static (Vector3 pos, Quaternion rot) PlatePose()
+        {
+            var pitch = BattleWorld.QuarterPitch * Mathf.Deg2Rad;
+            var pos = PlateTarget + Quaternion.Euler(0f, BattleWorld.QuarterYaw, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * BattleWorld.QuarterDist;
+            return (pos, Quaternion.LookRotation(PlateTarget - pos, Vector3.up));
+        }
+
+        /// <summary>
+        /// The street furniture the reference's battle streets are full of (the BA cross-check: our road read
+        /// empty): traffic cones and yellow-and-black barriers at the corner, bollards along the curb, a
+        /// vending machine against a shop. Built after the painting, on the toon material with an outline,
+        /// because the painting has none of them in it.
+        /// </summary>
+        public static Transform Props(Transform parent, int layer, int mood)
+        {
+            var root = new GameObject("props") { layer = layer }.transform;
+            root.SetParent(parent, false);
+            var dim = mood == 2 ? 0.6f : mood == 1 ? 0.88f : 1f;
+            Color C(float r, float g, float b) => new(r * dim, g * dim, b * dim, 1f);
+            var k = new MeshKit.Builder();
+            var orange = C(1f, 0.46f, 0.12f); var white = C(0.97f, 0.97f, 0.97f); var yellow = C(1f, 0.84f, 0.1f); var black = C(0.14f, 0.15f, 0.18f);
+            void Cone(float x, float z)
+            {
+                k.Box(new Vector3(x, 0.02f, z), new Vector3(0.36f, 0.04f, 0.36f), orange);
+                k.Frustum(new Vector3(x, 0.04f, z), 0.13f, 0.18f, 0.095f, orange);
+                k.Frustum(new Vector3(x, 0.22f, z), 0.095f, 0.08f, 0.075f, white);
+                k.Frustum(new Vector3(x, 0.3f, z), 0.075f, 0.14f, 0.02f, orange);
+            }
+            void Barrier(float x, float z, float w)
+            {
+                for (var i = 0; i < 8; i++)
+                    k.Box(new Vector3(x - w * 0.5f + w * (i + 0.5f) / 8f, 0.62f, z), new Vector3(w / 8f, 0.22f, 0.05f), i % 2 == 0 ? yellow : black);
+                foreach (var sx in new[] { -0.42f, 0.42f })
+                {
+                    k.Box(new Vector3(x + sx * w, 0.3f, z), new Vector3(0.05f, 0.6f, 0.05f), C(0.85f, 0.86f, 0.88f));
+                    k.Box(new Vector3(x + sx * w, 0.03f, z), new Vector3(0.1f, 0.06f, 0.36f), black);
+                }
+            }
+            Cone(-9.4f, 2.1f); Cone(-10.1f, 1.5f); Cone(-9.6f, 0.8f); Cone(15.8f, 2.2f); Cone(16.5f, 1.8f);
+            Barrier(-10.4f, 3.1f, 1.5f); Barrier(13.2f, 3.05f, 1.6f);
+            for (var x = -6f; x <= 22f; x += 3.5f)                                   // bollards along the curb
+            {
+                k.Frustum(new Vector3(x, 0.12f, 2.82f), 0.06f, 0.42f, 0.055f, C(0.46f, 0.49f, 0.55f));
+                k.Frustum(new Vector3(x, 0.44f, 2.82f), 0.058f, 0.06f, 0.058f, yellow);
+            }
+            // a vending machine against the shop front
+            k.Box(new Vector3(5.6f, 0.95f, 4.15f), new Vector3(0.9f, 1.8f, 0.6f), C(0.86f, 0.18f, 0.2f));
+            k.Box(new Vector3(5.6f, 1.2f, 3.84f), new Vector3(0.74f, 0.9f, 0.04f), C(0.92f, 0.95f, 0.98f));
+            for (var r = 0; r < 3; r++) for (var c = 0; c < 4; c++)
+                k.Box(new Vector3(5.33f + c * 0.18f, 0.92f + r * 0.28f, 3.81f), new Vector3(0.12f, 0.18f, 0.03f), c % 2 == 0 ? C(0.2f, 0.6f, 0.95f) : C(1f, 0.7f, 0.2f));
+            k.Box(new Vector3(5.6f, 0.4f, 3.84f), new Vector3(0.6f, 0.16f, 0.04f), black);
+            MeshKit.Part("props", root, k.Bake("props"), MeshKit.Toon, layer);
+            return root;
+        }
+
+        /// <summary>Gives the set the painting of it for this mood (Art/Battle/plate_&lt;mood&gt;), projected from the plate camera.</summary>
+        public static void Paint(Transform street, int mood)
+        {
+            var tex = Resources.Load<Texture2D>($"Art/Battle/plate_{mood}");
+            var shader = Shader.Find("ExcelHeroes/Plate");
+            if (street == null || tex == null || shader == null) return;
+            var (pos, rot) = PlatePose();
+            var camWorld = street.localToWorldMatrix * Matrix4x4.TRS(pos, rot, Vector3.one);
+            var view = Matrix4x4.Scale(new Vector3(1f, 1f, -1f)) * camWorld.inverse;
+            var vp = Matrix4x4.Perspective(PlateFov, PlateAspect, 0.3f, 80f) * view;
+            var mat = new Material(shader) { name = "plate" };
+            mat.SetTexture("_PlateTex", tex);
+            mat.SetMatrix("_PlateVP", vp);
+            foreach (var r in street.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                for (var i = 0; i < mats.Length; i++) mats[i] = mat;
+                r.sharedMaterials = mats;
+            }
+        }
+
         public static Transform Build(Transform parent, int layer, int mood)
         {
             var root = new GameObject("street") { layer = layer }.transform;

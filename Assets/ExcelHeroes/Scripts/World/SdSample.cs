@@ -689,7 +689,7 @@ namespace ExcelHeroes.World
             for (var i = 0; i < mats.Length; i++)
             {
                 var m = MeshKit.NewToon(0.005f, skirtSub[i] ? sheetL : tex.Body);
-                m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.24f); m.SetColor("_ShadeTint", SdRefLook.WarmShade); m.SetFloat("_Rim", 0.1f);
+                m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.32f); m.SetColor("_ShadeTint", SdRefLook.WarmShade); m.SetFloat("_Rim", 0.14f);
                 mats[i] = m;
             }
             smr.sharedMaterials = mats;
@@ -775,9 +775,9 @@ namespace ExcelHeroes.World
                     if (eye) { m.SetFloat("_OutlineWidth", 0f); m.SetFloat("_ShadeStrength", 0.02f); m.SetFloat("_Rim", 0f); }
                     else
                     {
-                        m.SetFloat("_ShadeStrength", n.Contains("face") ? 0.06f : 0.24f);
+                        m.SetFloat("_ShadeStrength", n.Contains("face") ? 0.06f : 0.32f);   // a clearer two-tone (the BA cross-check)
                         m.SetColor("_ShadeTint", n.Contains("hair") ? SdRefLook.ShadeOf(k.Hair) : SdRefLook.WarmShade);
-                        m.SetFloat("_Rim", 0.1f);
+                        m.SetFloat("_Rim", 0.14f);
                     }
                     SdFace.Configure(m, parts[i], SdRef.Height);
                     if (System.Environment.GetEnvironmentVariable("SD_FACEDBG") == "1")
