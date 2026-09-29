@@ -273,7 +273,7 @@ namespace ExcelHeroes.Core
                 {
                     r.perks.TryGetValue(perk.key, out var have);
                     r.perks[perk.key] = have + perk.value;
-                    r.lines.Add($"　└ {perk.desc}");
+                    r.lines.Add($"　· {perk.desc}");
                 }
             }
 

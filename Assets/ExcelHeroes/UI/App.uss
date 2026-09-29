@@ -6704,3 +6704,20 @@
 .pull-btn__cost--bar .pull-btn__gem { margin-top: 2px; }
 /* roster cards: lighter name gradient, bigger stars */
 .card__stars { font-size: 26px; letter-spacing: 1px; }
+/* gate r5 */
+.ex-button--poor .ex-button__atk, .ex-button--poor .ex-button__verdict { opacity: 0.35; }
+.ex-cost-words { font-size: 34px; right: 30px; }
+.bhud__auto.bhud__sq--on .bhud__sq-label { color: rgb(40, 28, 0); }
+.bhud__armor { height: 32px; }
+/* unowned: the dim stops above the name band so the name stays legible */
+.aff-chip { justify-content: center; align-items: center; }
+.aff-chip__text { -unity-text-align: middle-center; }
+.party-strip .synergy-line { color: rgb(0, 104, 190); font-size: 24px; margin-bottom: 10px; }
+.party-strip .statcell { flex-direction: row; justify-content: space-between; align-items: center; padding: 6px 12px; }
+.party-strip .statcell__key { font-size: 22px; }
+.party-strip .statcell__val { font-size: 28px; -unity-text-align: middle-right; }
+.gstage__notebox { padding: 10px 20px; }
+.navcta { align-items: center; justify-content: center; padding-top: 0; padding-bottom: 0; }
+.navcta__label { -unity-text-align: middle-center; margin: 0 0 0 14px; padding: 0; font-size: 72px; }
+.pslot--stand .pslot__plate { height: 96px; flex-shrink: 0; }
+.pslot--stand .pslot__name { height: 40px; -unity-text-align: middle-left; }

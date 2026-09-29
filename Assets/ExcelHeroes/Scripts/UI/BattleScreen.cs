@@ -426,6 +426,8 @@ namespace ExcelHeroes.UI
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.45f, 5f);   // the HUD's slant language
                 UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(26, 40, 66, on ? 0.92f : 0.8f), UiPaint.C(14, 24, 44, on ? 0.92f : 0.8f), r.yMin, r.yMax));
                 UiPaint.Stroke(ctx, poly, on ? WithAlpha(accent, 0.85f) : UiPaint.C(255, 255, 255, 0.28f), 1.5f);
+                // AUTO on is the one lit key: the whole face amber (the convention players read at a glance)
+                if (on && b.ClassListContains("bhud__auto")) UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 214, 64), UiPaint.C(255, 180, 20), r.yMin, r.yMax));
                 if (on) UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 4f, r.yMax - 6f, r.xMax + 4f, r.yMax + 4f), 0f)), accent, 0f);
             });
             if (icon != null)
