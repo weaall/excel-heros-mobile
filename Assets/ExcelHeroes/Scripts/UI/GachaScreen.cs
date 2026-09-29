@@ -155,7 +155,7 @@ namespace ExcelHeroes.UI
             var rates = UiKit.Btn("확률 정보", "gfoot__btn", OpenRates, info);
             SkewPlate.Apply(rates, SkewPlate.Kind.Glass);
             var points = UiKit.Btn("", "gfoot__points", OpenExchange, info);
-            SkewPlate.Apply(points, SkewPlate.Kind.Navy);
+            SkewPlate.Apply(points, SkewPlate.Kind.Glass);   // the same family as 확률 정보 beside it (ui_gate 09-Gacha)
             _total = UiKit.Text("모집 포인트 0", "gfoot__points-text", points);
 
             // bottom right: the two pulls, 10회 in the reference's gold

@@ -6781,3 +6781,14 @@
 .ex-button__band { position: absolute; left: 0; right: 0; bottom: 0; height: 58px; justify-content: flex-end; padding: 0 8px 12px 8px; }
 .ex-button__skill { font-size: 19px; -unity-font-style: bold; color: rgb(255, 255, 255); -unity-text-align: middle-center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0; margin: 0; -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(8, 16, 34, 0.8); }
 .ex-button__atk { height: 6px; bottom: 4px; z-index: 1; }
+/* gate r9 */
+.home__sheet { top: 5%; width: 18%; height: 36%; }
+.home__sheet.backsheet--left, .home__sheet.backsheet--right { left: 33%; }
+.gfoot__points-text { color: rgb(22, 38, 63); }
+.gstage__days { padding: 0 28px; height: 50px; }
+.gstage__days-text { font-size: 26px; }
+.navback { height: 96px; align-items: center; }
+.navback__title, .navback__en { -unity-text-align: middle-left; }
+.bresult__mvp { rotate: 0deg; right: 4px; top: 4px; left: auto; height: 26px; font-size: 20px; padding: 0 8px; }
+.bresult__share { font-size: 28px; color: rgb(255, 255, 255); }
+.home__sheet { top: -4%; }   /* above the head, where a halo floats (it vanished behind the hair at 5%) */
