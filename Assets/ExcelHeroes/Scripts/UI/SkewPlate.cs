@@ -78,7 +78,7 @@ namespace ExcelHeroes.UI
         static Look LookFor(Kind kind) => kind switch
         {
             // the Gemini button mock-up (tools/out/design/mock_btn_0): a brighter cyan into a deeper blue
-            Kind.Primary => new Look(C(46, 200, 255), C(30, 186, 250), C(0, 150, 214, 0f), C(255, 255, 255, 0.5f), 0f,
+            Kind.Primary => new Look(C(62, 212, 255), C(22, 172, 246), C(0, 150, 214, 0f), C(255, 255, 255, 0.5f), 0f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0.07f),
             Kind.Navy or Kind.Glow => new Look(C(54, 74, 118), C(34, 50, 88), C(16, 26, 54, 0.7f), C(120, 150, 200, 0.45f), 1.5f,
                                      Color.white, C(0, 0, 0, 0f), 0f, 0.07f),
@@ -223,6 +223,22 @@ namespace ExcelHeroes.UI
                 UiPaint.Fill(ctx, UiPaint.Clip(f1, outer), tint, 0.8f);
                 UiPaint.Fill(ctx, UiPaint.Clip(f2, outer), tintSoft, 0.8f);
                 UiPaint.Fill(ctx, UiPaint.Clip(f3, outer), tintSoft, 0.8f);
+            }
+
+            // BA's signature texture: fine diagonal hatching across the right third of a filled plate,
+            // fading out towards the middle (ui_score r7 — "flat, not a commercial button asset")
+            if (kind is Kind.Primary or Kind.Gold or Kind.Danger or Kind.Navy or Kind.Glow or Kind.Light or Kind.Ivory)
+            {
+                var dark = kind is Kind.Light or Kind.Ivory;
+                var step = Mathf.Clamp(h * 0.11f, 6f, 10f); var lw = step * 0.34f; var x0 = r.xMin + w * 0.6f;
+                for (var x = x0; x < r.xMax + h; x += step)
+                {
+                    var t = Mathf.InverseLerp(x0, r.xMax, x);
+                    var a = (dark ? 0.05f : 0.12f) * Mathf.SmoothStep(0f, 1f, t);
+                    if (a < 0.004f) continue;
+                    var line = new List<Vector2> { new(x, r.yMin), new(x + lw, r.yMin), new(x + lw - h * 0.55f, r.yMax), new(x - h * 0.55f, r.yMax) };
+                    UiPaint.Fill(ctx, UiPaint.Clip(line, outer), dark ? C(40, 80, 140, a) : C(255, 255, 255, a), 0f);
+                }
             }
 
             // a hairline of light along the top edge, and the thin border

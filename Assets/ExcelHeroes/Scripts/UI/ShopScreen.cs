@@ -213,10 +213,28 @@ namespace ExcelHeroes.UI
             {
                 current = n; NoticeService.Read(p, n); Game.Touch(); changed?.Invoke();
                 view.Clear();
+                // a banner heading the article, in the tag's colour with its English word large and
+                // faint across it (ui_score 24-Notice #1 — the body stood in a bare white box)
+                var col = n.tag switch { "이벤트" => UiPaint.C(255, 92, 150), "업데이트" => UiPaint.C(46, 150, 246), "신규" => UiPaint.C(250, 170, 40), _ => UiPaint.C(90, 104, 130) };
+                var banner = UiKit.Div("notice__banner", view);
+                ModalFrame.Painted(banner, (ctx, r) =>
+                {
+                    var box = UiPaint.RoundRect(r, 8f, 4);
+                    UiPaint.Fill(ctx, box, UiPaint.Horizontal(col, Color.Lerp(col, Color.white, 0.55f), r.xMin, r.xMax));
+                    for (var i = 0; i < 7; i++)
+                    {
+                        var x = r.xMax - 60f - i * 46f;
+                        UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(x, r.yMin), new(x + 16f, r.yMin), new(x - r.height * 0.5f + 16f, r.yMax), new(x - r.height * 0.5f, r.yMax) }, box), UiPaint.C(255, 255, 255, 0.16f - i * 0.02f), 0f);
+                    }
+                });
+                var en = n.tag switch { "이벤트" => "EVENT", "업데이트" => "UPDATE", "신규" => "NEW", _ => "NOTICE" };
+                UiKit.Text(en, "notice__banner-en", banner).pickingMode = PickingMode.Ignore;
+                UiKit.Text("EXCEL HEROES  ·  사내 공지", "notice__banner-sub", banner).pickingMode = PickingMode.Ignore;
                 var tagRow = UiKit.Div("notice__tagrow", view);
                 Tag(tagRow, n.tag);
                 UiKit.Text(n.date, "notice__date", tagRow);
                 UiKit.Text(n.title, "notice__title", view);
+                UiKit.Div("notice__rule", view);
                 var sc = new ScrollView(ScrollViewMode.Vertical); sc.AddToClassList("notice__scroll"); view.Add(sc);
                 UiKit.Text(n.body, "notice__body", sc);
                 BuildList();

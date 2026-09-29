@@ -66,8 +66,8 @@ namespace ExcelHeroes.UI
                 for (var i = -1; i <= 1; i++)
                     UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(i * r.width * 0.2f, -3f), 3.5f, 3.5f), UiPaint.C(255, 255, 255));
             });
-            UiKit.Text("사내 메신저", "mt__title", head);
-            UiKit.Text("// TALK ARCHIVE", "mt__title-en", head);
+            UiKit.Text("대화방", "mt__title", head);   // the screen title already says 사내 메신저
+            UiKit.Text("// CHAT ROOMS", "mt__title-en", head);
             UiKit.Div("spacer", head);
             var read = GameData.Episodes.Count(e => p.readEpisodes.Contains(e.id));
             // progress and the reward as one pill, the gem drawn (12-Story #2)
@@ -132,8 +132,23 @@ namespace ExcelHeroes.UI
                 var mark = UiKit.Div("mt__empty-mark", empty);
                 var icon = GameData.Icon("messenger");
                 if (icon != null) UiKit.SetArt(mark, icon);
-                UiKit.Text("대화방을 선택해 주세요", "mt__empty-text", empty);
-                UiKit.Text("왼쪽 목록에서 읽지 않은 대화에는 빨간 표시가 붙어 있어요", "mt__empty-sub", empty);
+                // the next unread room, offered with a button (ui_score 12-Story #2): the empty state
+                // is where the player is told what to do next, not a blank
+                var next = GameData.Episodes.OrderBy(e => e.phase).FirstOrDefault(e => p.stage >= e.phase && !p.readEpisodes.Contains(e.id));
+                if (next != null)
+                {
+                    var m = System.Text.RegularExpressions.Regex.Match(next.title ?? "", @"^(#\d+)\s*(.*)$");
+                    UiKit.Text("NEW MESSAGE", "mt__empty-kicker", empty);
+                    UiKit.Text(m.Success ? m.Groups[2].Value : next.title, "mt__empty-text", empty);
+                    UiKit.Text($"{next.room} · 새 메시지 {next.lines.Count(l => l.who != "sys")}개", "mt__empty-sub", empty);
+                    var go = UiKit.Btn("대화 읽기", "btn btn--primary mt__empty-go", () => Open(next), empty);
+                    Juice.Press(go);
+                }
+                else
+                {
+                    UiKit.Text("모든 대화를 읽었습니다", "mt__empty-text", empty);
+                    UiKit.Text("다음 Phase에 도달하면 새 대화방이 열립니다", "mt__empty-sub", empty);
+                }
                 return;
             }
             BuildChat(chat, open);

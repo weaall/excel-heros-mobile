@@ -452,6 +452,10 @@ namespace ExcelHeroes.UI
                 // panel to say what fits comfortably side by side. 방출 stays on its own line
                 // above — its label is a whole sentence when it is blocked, and a sentence in a
                 // third of a row is an ellipsis.
+                // only where they are the page's own business (info, equipment): on 강화 · 호감도 ·
+                // 스킨 · 승진 the tab's own action is the primary one (ui_score 20-Skins #1)
+                if (_tab is "info" or "equip")
+                {
                 var acts = UiKit.Div("detail__acts", foot);
 
                 var fav = Game.Player.favorites.Contains(heroId);
@@ -465,13 +469,14 @@ namespace ExcelHeroes.UI
 
                 var inParty = Game.Player.party.Contains(heroId);
                 UiKit.Btn(inParty ? "편성에서 빼기" : "편성에 넣기",
-                    "btn btn--primary", () =>
+                    inParty ? "btn" : "btn btn--primary", () =>
                 {
                     if (inParty) Game.Player.RemoveFromParty(heroId);
                     else Game.Player.AddToParty(heroId);
                     Game.Touch();
                     Close(onClose);
                 }, acts);
+                }
             }
 
             UiKit.Btn(Icons.Close, "detail__close icon", () => Close(onClose), view);

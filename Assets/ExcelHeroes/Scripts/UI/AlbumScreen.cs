@@ -54,7 +54,7 @@ namespace ExcelHeroes.UI
             if (_pages == null) return;
 
             var p = Game.Player;
-            _count.text = $"보유 {p.owned.Count} / {GameData.Heroes.Count}";
+            _count.text = $"<size=55%><color=#00D2FF>COLLECTION</color></size>   <color=#FFFFFF>{p.owned.Count}</color> <size=70%><color=#7E95B3>/ {GameData.Heroes.Count}</color></size>";
 
             _pages.Fill(GameData.Heroes.Where(h => !_ownedOnly || p.Owns(h.id)).ToList(), (def, grid) =>
             {
@@ -67,9 +67,16 @@ namespace ExcelHeroes.UI
                     // the roster's locked look, so a missing picture reads the same everywhere
                     var scrim = UiKit.Div("album__scrim", cell);
                     scrim.style.backgroundColor = new Color(0.06f, 0.1f, 0.19f, 0.93f);   // Linear-space alpha, see UiKit.Card
-                    ModalFrame.Painted(UiKit.Div("album__lock", cell), UiKit.DrawLock);
                 }
+                // the name on a soft fade rather than a solid slab (ui_score 13-Album #1), the grade as
+                // a small slanted tag in the corner
+                var fade = UiKit.Div("album__fade", cell); fade.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(fade, (ctx, r) => UiPaint.Fill(ctx, UiPaint.RoundRect(r, 0f), UiPaint.Vertical(UiPaint.C(14, 24, 44, 0f), UiPaint.C(14, 24, 44, 0.9f), r.yMin, r.yMax)));
                 UiKit.Text(owned ? def.name : "미보유", "album__name", cell);
+                var gcol = GameData.Grade(def.grade)?.Color ?? Color.gray;
+                var gtag = UiKit.Div("album__grade", cell); gtag.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(gtag, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 2f), owned ? gcol : UiPaint.C(70, 84, 110)));
+                UiKit.Text(def.grade, "album__grade-text", gtag).pickingMode = PickingMode.Ignore;
                 if (!owned) return;
                 var id = def.id;
                 cell.RegisterCallback<ClickEvent>(_ => Open(id));

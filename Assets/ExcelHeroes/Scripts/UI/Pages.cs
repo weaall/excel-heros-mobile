@@ -53,15 +53,17 @@ namespace ExcelHeroes.UI
         {
             ModalFrame.Painted(b, (ctx, r) =>
             {
+                // a slanted navy key with a cyan chevron when there is a page that way, a pale
+                // ghost when there is not (ui_score: pager arrows too faint to read as buttons)
                 var on = b.enabledInHierarchy;
                 var d = Mathf.Min(r.width, r.height);
                 var c = r.center;
-                var disc = UiPaint.Ellipse(c, d * 0.5f, d * 0.5f);
-                UiPaint.Shadow(ctx, disc, new Vector2(0f, 3f), UiPaint.C(20, 40, 80, on ? 0.2f : 0.08f), 6f);
-                UiPaint.Fill(ctx, disc, UiPaint.Vertical(UiPaint.C(255, 255, 255, on ? 1f : 0.6f), UiPaint.C(234, 242, 249, on ? 1f : 0.6f), r.yMin, r.yMax));
-                UiPaint.Stroke(ctx, disc, UiPaint.C(176, 200, 226, on ? 1f : 0.5f), 1.5f);
+                var key = UiPaint.SkewRect(new Rect(c.x - d * 0.5f, c.y - d * 0.42f, d, d * 0.84f), d * 0.12f, 5f);
+                UiPaint.Shadow(ctx, key, new Vector2(0f, 3f), UiPaint.C(20, 40, 80, on ? 0.25f : 0.06f), 6f);
+                UiPaint.Fill(ctx, key, on ? UiPaint.Vertical(UiPaint.C(40, 60, 98), UiPaint.C(24, 38, 66), r.yMin, r.yMax) : UiPaint.Flat(UiPaint.C(220, 229, 239, 0.7f)));
+                if (on) UiPaint.Stroke(ctx, key, UiPaint.C(0, 214, 255, 0.55f), 1.5f);
                 var s = d * 0.16f;
-                var ink = on ? UiPaint.C(36, 52, 84) : UiPaint.C(150, 162, 180);
+                var ink = on ? UiPaint.C(0, 229, 255) : UiPaint.C(170, 182, 198);
                 var chevron = new List<Vector2>
                 {
                     c + new Vector2(-dir * s * 0.6f, -s), c + new Vector2(-dir * s * 0.6f + dir * s * 0.45f, -s),
@@ -104,7 +106,7 @@ namespace ExcelHeroes.UI
             for (var i = _page * _perPage; i < Mathf.Min(_items.Count, (_page + 1) * _perPage); i++)
                 _build(_items[i], _body);
 
-            _label.text = _items.Count == 0 ? _emptyText : $"{_page + 1} / {pages}";
+            _label.text = _items.Count == 0 ? _emptyText : $"<color=#00E5FF>{_page + 1}</color> <size=80%><color=#8FA4C0>/ {pages}</color></size>";
             _prev.SetEnabled(_page > 0);
             _next.SetEnabled(_page < pages - 1);
             // One page of content needs no page turning, and two dead arrows under every short

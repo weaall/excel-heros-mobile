@@ -130,10 +130,17 @@ namespace ExcelHeroes.UI
                 else UiKit.Text("?", "mcard__unknown", art);
 
                 UiKit.Text(e.Name, "mcard__name", card);
-                UiKit.Text(e.Known ? $"{e.Kind}　·　{e.Phase}" : "", "mcard__meta", card);
+                if (e.Known)
+                {
+                    // what it is as a small tag, where it lives beside it (ui_score 14-Codex #2)
+                    var meta = UiKit.Div("mcard__metarow", card);
+                    var kind = UiKit.Text(e.Boss ? "BOSS" : e.Kind, "mcard__kind" + (e.Boss ? " mcard__kind--boss" : ""), meta);
+                    UiKit.Text(e.Phase, "mcard__phase", meta);
+                }
+                else UiKit.Text("UNKNOWN", "mcard__unknown-en", card);
             });
 
-            _count.text = $"발견한 오류 {found} / {types.Count + GameData.Bosses.Count}";
+            _count.text = $"<size=55%><color=#00D2FF>DISCOVERED</color></size>   <color=#FFFFFF>{found}</color> <size=70%><color=#7E95B3>/ {types.Count + GameData.Bosses.Count}</color></size>";
         }
     }
 }
