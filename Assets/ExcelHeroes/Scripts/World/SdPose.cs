@@ -256,7 +256,7 @@ namespace ExcelHeroes.World
                         var cyc = (t * 0.11f + phase * 0.1f) % 1f;
                         var up = cyc < 0.22f ? EaseInOut(cyc / 0.22f) : cyc < 0.38f ? 1f : cyc < 0.5f ? 1f - EaseInOut((cyc - 0.38f) / 0.12f) : 0f;
                         var drop = cyc > 0.5f && cyc < 0.62f ? Impulse((cyc - 0.5f) / 0.12f, 0.3f) : 0f;
-                        p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, 100f, up); p.SwingL = p.SwingR = Mathf.Lerp(3f, -44f, up); p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 6f, up);
+                        p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, 86f, up); p.SwingL = p.SwingR = Mathf.Lerp(3f, -14f, up); p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 10f, up);   // up and out (up and back went through the head)
                         p.FistL = p.FistR = Mathf.Lerp(0.25f, 0.9f, up); p.HandFlexL = p.HandFlexR = Mathf.Lerp(18f, 40f, up);
                         p.SpineBend += -8f * up; p.HeadPitch += -8f * up; p.ShrugL += 8f * up + 9f * drop; p.ShrugR += 8f * up + 9f * drop;
                         p.Lean += 3f * drop; p.HeadPitch += 4f * drop;
@@ -315,7 +315,7 @@ namespace ExcelHeroes.World
             switch (variant % WinCount)
             {
                 case 0:
-                    p.RaiseL = p.RaiseR = 100f; p.SwingL = p.SwingR = -40f; p.ElbowL = p.ElbowR = 10f;
+                    p.RaiseL = p.RaiseR = 84f; p.SwingL = p.SwingR = -12f; p.ElbowL = p.ElbowR = 16f;   // up and OUT: straight up and back, the arms went behind the big head
                     p.HandFlexL = p.HandFlexR = -20f; p.HandDevL = p.HandDevR = 25f; p.FistL = p.FistR = 0f;   // palms open, fingers spread up
                     p.Y = hop * 0.14f; p.Squash = (hop - 0.45f) * 0.18f; p.KneeL = p.KneeR = (1f - hop) * 22f; p.ToeL = p.ToeR = hop * 20f; p.HeadPitch = -6f; p.ShrugL = p.ShrugR = 10f; p.SpineBend = -4f; break;
                 case 1:
@@ -326,7 +326,7 @@ namespace ExcelHeroes.World
                     p.Y = hop * 0.08f; p.Lean = -4f; p.Twist = -8f; p.SpineTwist = -6f; p.ShrugR = 8f + pump * 6f; break;
                 case 2:
                     // hand by the cheek, head tilted onto it, weight on the near leg
-                    p.RaiseR = 25f; p.SwingR = 55f; p.ElbowR = 110f; p.InR = 25f; p.HandFlexR = 35f; p.HandDevR = 10f;
+                    p.RaiseR = 42f; p.SwingR = 34f; p.ElbowR = 104f; p.InR = 4f; p.HandFlexR = 35f; p.HandDevR = 10f;   // the elbow out, so the hand sits beside the cheek, not in it
                     p.RaiseL = -30f; p.SwingL = 5f; p.ElbowL = 20f; p.HandFlexL = 20f;
                     p.KneeL = 10f; p.Sway = 0.012f; p.HipRoll = 3f;
                     p.HeadTilt = 10f; p.Twist = 6f; p.Y = hop * 0.04f; p.ShrugR = 6f; break;
@@ -335,7 +335,7 @@ namespace ExcelHeroes.World
                     p.Lean = 32f * bow; p.HeadPitch = 12f * bow;
                     p.RaiseL = p.RaiseR = -34f; p.SwingL = p.SwingR = 6f; p.ElbowL = p.ElbowR = 12f; break;
                 case 4:
-                    p.RaiseR = 100f; p.SwingR = -40f + Mathf.Sin(t * 12f) * 12f; p.ElbowR = 8f + Mathf.Abs(Mathf.Sin(t * 12f)) * 15f;
+                    p.RaiseR = 72f; p.SwingR = 4f + Mathf.Sin(t * 12f) * 10f; p.ElbowR = 38f + Mathf.Abs(Mathf.Sin(t * 12f)) * 14f;   // out to the side, the forearm up: raised straight the arm vanished into the hair
                     p.HandFlexR = -15f; p.HandDevR = Mathf.Sin(t * 12f) * 25f; p.FistR = 0f;   // the hand itself waves, open
                     p.RaiseL = -22f; p.SwingL = -12f; p.ElbowL = 22f; p.InL = 52f; p.HandFlexL = 45f; p.HandDevL = -15f;
                     p.Y = hop * 0.1f; p.Squash = (hop - 0.45f) * 0.12f; p.KneeL = p.KneeR = (1f - hop) * 20f; p.ShrugR = 8f; break;
@@ -346,7 +346,7 @@ namespace ExcelHeroes.World
                     {
                         // both hands up beside the cheeks in a V, the elbows tucked, a bounce with the head tilting side to side
                         var tilt = Mathf.Sin(t * 5f) * 8f;
-                        p.RaiseL = p.RaiseR = 18f; p.SwingL = p.SwingR = 52f; p.ElbowL = p.ElbowR = 118f; p.InL = p.InR = 28f;
+                        p.RaiseL = p.RaiseR = 34f; p.SwingL = p.SwingR = 38f; p.ElbowL = p.ElbowR = 108f; p.InL = p.InR = 0f;   // the hands beside the cheeks — folded inward they covered the face
                         p.HandFlexL = p.HandFlexR = 30f; p.HandDevL = p.HandDevR = 12f; p.FistL = p.FistR = 0.55f;
                         p.HeadTilt = tilt; p.SpineSide = -tilt * 0.3f; p.Y = hop * 0.06f; p.KneeL = p.KneeR = (1f - hop) * 14f;
                         p.ShrugL = p.ShrugR = 8f; break;
@@ -356,8 +356,8 @@ namespace ExcelHeroes.World
                         // clapping in front of the chest for a second and a half, then a small bow with the hands together
                         var clap = t < 1.5f ? Mathf.Abs(Mathf.Sin(t * 11f)) : 0f;
                         var bow2 = t > 1.5f ? Mathf.Clamp01(Mathf.Sin(Mathf.Min((t - 1.5f) * 2.0f, Mathf.PI))) : 0f;
-                        p.RaiseL = p.RaiseR = -6f; p.SwingL = p.SwingR = 58f + 6f * clap; p.ElbowL = p.ElbowR = 100f;
-                        p.InL = p.InR = 84f - 18f * clap; p.HandFlexL = p.HandFlexR = -10f; p.HandDevL = p.HandDevR = 20f; p.FistL = p.FistR = 0f;
+                        p.RaiseL = p.RaiseR = -14f; p.SwingL = p.SwingR = 36f + 6f * clap; p.ElbowL = p.ElbowR = 78f;   // the hands at the chest (at 58° / 100° they clapped in front of the face)
+                        p.InL = p.InR = 76f - 16f * clap; p.HandFlexL = p.HandFlexR = -10f; p.HandDevL = p.HandDevR = 20f; p.FistL = p.FistR = 0f;
                         p.Lean = 22f * bow2; p.HeadPitch = 8f * bow2 - 2f * clap; p.SpineBend = 6f * bow2;
                         p.ShrugL = p.ShrugR = 5f * clap; p.Y = 0f; break;
                     }
@@ -637,14 +637,14 @@ namespace ExcelHeroes.World
                             // stretched on the way up, a beat of hang time at the apex, tucking to fall
                             p.Squash = c < 0.35f ? 0.14f * (1f - c / 0.35f) : c < 0.6f ? 0f : -0.04f * (c - 0.6f) / 0.4f;
                             p.Y = (c < 0.5f ? EaseOut(c / 0.5f) : c < 0.62f ? 1f : 1f - EaseIn((c - 0.62f) / 0.38f)) * 0.55f; p.KneeL = p.KneeR = 45f * (1f - c) + 30f * arc; p.Lean = Mathf.Lerp(12f, -15f, c);
-                            p.RaiseR = Mathf.Lerp(-26f, 110f, c); p.SwingR = Mathf.Lerp(-30f, -30f, c); p.ElbowR = Mathf.Lerp(94f, 100f, c); p.FistR = p.FistL = 1f;
-                            p.RaiseL = Mathf.Lerp(-36f, 95f, c); p.SwingL = -25f; p.ElbowL = 95f; p.HeadPitch = -8f;
+                            p.RaiseR = Mathf.Lerp(-26f, 86f, c); p.SwingR = Mathf.Lerp(-30f, -12f, c); p.ElbowR = Mathf.Lerp(94f, 72f, c); p.FistR = p.FistL = 1f;
+                            p.RaiseL = Mathf.Lerp(-36f, 80f, c); p.SwingL = -10f; p.ElbowL = 70f; p.HeadPitch = -8f;   // fists up beside the head (behind it they went through it)
                         }
                         else if (k < 0.7f)
                         {
                             // the smash: both fists driven down, the body folding forward
                             var c = (k - 0.55f) / 0.15f;
-                            p.RaiseL = p.RaiseR = Mathf.Lerp(105f, -10f, c); p.SwingL = p.SwingR = Mathf.Lerp(-30f, 70f, c); p.ElbowL = p.ElbowR = Mathf.Lerp(100f, 20f, c);
+                            p.RaiseL = p.RaiseR = Mathf.Lerp(84f, -10f, c); p.SwingL = p.SwingR = Mathf.Lerp(-12f, 70f, c); p.ElbowL = p.ElbowR = Mathf.Lerp(72f, 20f, c);
                             p.FistL = p.FistR = 1f; p.Lean = Mathf.Lerp(-15f, 28f, c); p.KneeL = p.KneeR = 50f + 18f * c; p.Y = Mathf.Lerp(0.15f, 0f, c); p.HeadPitch = 10f * c;
                             p.Squash = -0.2f * EaseOut(c);   // the landing: knees all the way, the body squashed
                         }
@@ -662,7 +662,7 @@ namespace ExcelHeroes.World
                         var up = k < 0.35f ? Mathf.SmoothStep(0f, 1f, k / 0.35f) : 1f;
                         var spin = k > 0.3f && k < 0.75f ? Mathf.SmoothStep(0f, 1f, (k - 0.3f) / 0.45f) : k >= 0.75f ? 1f : 0f;
                         var hurl = k > 0.75f ? Mathf.Sin(Mathf.Clamp01((k - 0.75f) / 0.25f) * Mathf.PI) : 0f;
-                        p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, 100f, up) - hurl * 70f; p.SwingL = p.SwingR = Mathf.Lerp(3f, -40f, up) + hurl * 110f;
+                        p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, 86f, up) - hurl * 60f; p.SwingL = p.SwingR = Mathf.Lerp(3f, -14f, up) + hurl * 90f;
                         p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 25f, up) - hurl * 15f; p.FistL = p.FistR = 0.6f;
                         p.Yaw = spin * 360f; p.Y = Mathf.Sin(spin * Mathf.PI) * 0.3f + hurl * 0.08f; p.Lean = -6f * up + hurl * 22f;
                         p.KneeL = p.KneeR = Mathf.Sin(spin * Mathf.PI) * 30f + hurl * 20f; p.HeadPitch = -8f * up + hurl * 12f;
@@ -673,7 +673,7 @@ namespace ExcelHeroes.World
                         p.Expr = "smile";
                         var up = k < 0.3f ? Mathf.SmoothStep(0f, 1f, k / 0.3f) : k > 0.8f ? 1f - Mathf.SmoothStep(0f, 1f, (k - 0.8f) / 0.2f) : 1f;
                         var hop = k > 0.3f && k < 0.8f ? Mathf.Sin((k - 0.3f) / 0.5f * Mathf.PI) : 0f;
-                        p.RaiseR = Mathf.Lerp(-36f, 100f, up); p.SwingR = Mathf.Lerp(3f, -40f, up); p.ElbowR = 12f; p.HandFlexR = -10f; p.FistR = 0.7f;
+                        p.RaiseR = Mathf.Lerp(-36f, 84f, up); p.SwingR = Mathf.Lerp(3f, -12f, up); p.ElbowR = 16f; p.HandFlexR = -10f; p.FistR = 0.7f;
                         p.RaiseL = Mathf.Lerp(-36f, 40f, up); p.SwingL = Mathf.Lerp(3f, -20f, up); p.ElbowL = 20f; p.HandFlexL = -20f; p.HandDevL = 20f; p.FistL = 0f;
                         p.Y = hop * 0.35f; p.Squash = hop > 0f ? (0.5f - Mathf.Abs(hop - 0.5f)) * 0.2f - 0.02f : 0f; p.KneeL = p.KneeR = hop * 45f; p.ToeL = p.ToeR = hop * 25f; p.HeadPitch = -10f * up; p.HeadRoll = 8f * up;
                         break;

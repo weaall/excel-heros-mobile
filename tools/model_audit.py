@@ -63,6 +63,29 @@ def scan(key, a, hero):
 
 if __name__ == "__main__":
     mode = sys.argv[1]; key = g.read_key(); sys.stdout.reconfigure(encoding="utf-8")
+    if mode == "strip":
+        da = sys.argv[2]
+        files = sorted(f for f in os.listdir(da) if f.startswith("strip_") and f.endswith(".png"))
+        ASKS = ("A filmstrip of ONE 3D chibi character animated: 6 rows = her idle, attack, being hit, victory pose, skill cast, "
+                "walk; 5 frames per row left to right. List every frame where the MESH BREAKS: stretched or torn clothing, "
+                "the skirt or jacket spiking / tearing, legs or arms passing through the skirt or body, detached or bent-wrong "
+                "limbs, hands melting, hair cutting through the face or body, missing or broken eyes, holes, stray shards. "
+                "Ignore frames cut off by the image edge, style, and small overlaps a real cloth would also have. "
+                "Return JSON only: {\"broken\": [{\"row\": 1-6, \"frame\": 1-5, \"what\": \"short\", \"severity\": \"high|medium\"}]}")
+        def one(f):
+            for _ in range(2):
+                try: return f, post(key, [img(os.path.join(da, f)), {"text": ASKS}])
+                except Exception as e: err = str(e)[:80]
+            return f, {"broken": [{"what": err, "severity": "error"}]}
+        res = {}
+        with cf.ThreadPoolExecutor(6) as ex:
+            for f, r in ex.map(one, files):
+                b_ = r.get("broken", []) if isinstance(r, dict) else r
+                res[f[6:-4]] = b_
+                hi = [x for x in b_ if isinstance(x, dict) and x.get("severity") == "high"]
+                print(f"{f[6:-4]:16s} high {len(hi)}  med {sum(1 for x in b_ if isinstance(x, dict) and x.get('severity') == 'medium')}  " + "; ".join(f"r{x.get('row')}f{x.get('frame')} {x.get('what')}" for x in hi)[:230])
+        json.dump(res, open(OUT.replace(".json", "_strip.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        sys.exit(0)
     if mode == "ref":
         da, db = sys.argv[2], sys.argv[3]
         cards = os.path.join(g.ROOT, "Assets", "ExcelHeroes", "Resources", "Art", "Cards")

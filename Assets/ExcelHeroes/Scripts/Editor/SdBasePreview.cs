@@ -89,7 +89,9 @@ namespace ExcelHeroes.EditorTools
             var actions = (System.Environment.GetEnvironmentVariable("SD_ACTIONS") ?? "idle0,idle1,ready0,attack0,attack1,attack2,hit,walk,win0,win1,win3,skill0,skill1,skill2,dead").Split(',');
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
             if (!ExcelHeroes.Data.GameData.Loaded) ExcelHeroes.Data.GameData.Load();
-            const int W = 150, H = 220;
+            // SD_STRIPSCALE=2: twice the size, for the defect audit (150 px figures hid what broke)
+            var sc = int.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPSCALE"), out var sc0) ? sc0 : 1;
+            int W = 150 * sc, H = 220 * sc;
             foreach (var id in ids)
             {
                 var holder = new GameObject("preview").transform;
@@ -97,11 +99,15 @@ namespace ExcelHeroes.EditorTools
                 if (rig == null) { Debug.LogWarning("[SdBasePreview] no figure for " + id); Object.DestroyImmediate(holder.gameObject); continue; }
                 if (rig.FaceRenderer is SkinnedMeshRenderer smr) smr.forceMatrixRecalculationPerRender = true;
                 var sec = rig.Root.GetComponent<SdSecondary>();
+                if (System.Environment.GetEnvironmentVariable("SD_NOSEC") == "1") sec = null;   // debug: the chains left rigid
+                var yaw0 = float.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPYAW"), out var y0) ? y0 : 215f;
                 var kind = SdPose.AttackOf(id, SdRef.RoleOf(id));
                 // frames per row: a plain action gets 8 across its time; a seq gets 24 at 0.07 s
                 var rows = new System.Collections.Generic.List<(string name, System.Collections.Generic.List<(ExcelHeroes.World.Pose p, float dt)>)>();
-                foreach (var act in actions)
+                foreach (var act0 in actions)
                 {
+                    // "own" tokens: this hero's own idle / victory / attack variant (the audit renders what the game plays)
+                    var act = act0 == "idleX" ? "idle" + SdPose.IdleOf(id) : act0 == "winX" ? "win" + SdPose.WinOf(id) : act0 == "attackX" ? "attack" + kind : act0;
                     var frames = new System.Collections.Generic.List<(ExcelHeroes.World.Pose, float)>();
                     if (act == "seq")
                     {
@@ -122,21 +128,24 @@ namespace ExcelHeroes.EditorTools
                         }
                     }
                     else
-                        for (var f = 0; f < 8; f++)
+                    {
+                        var nf = int.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPFRAMES"), out var nf0) ? nf0 : 8;
+                        for (var f = 0; f < nf; f++)
                         {
-                            var u = f / 7f;
+                            var u = f / (float)Mathf.Max(1, nf - 1);
                             ExcelHeroes.World.Pose p;
                             if (act.StartsWith("idle")) p = SdPose.Idle(int.Parse(act.Substring(4)), u * 6f, 0f);
                             else if (act.StartsWith("ready")) p = SdPose.Ready(int.Parse(act.Substring(5)), u * 4f, 0f);
                             else if (act.StartsWith("attack")) p = SdPose.Attack(int.Parse(act.Substring(6)), u);
                             else if (act == "hit") p = SdPose.Hit(1f - u);
-                            else if (act == "walk") p = SdPose.Walk(f / 8f * Mathf.PI * 2f);
+                            else if (act == "walk") p = SdPose.Walk(f / (float)nf * Mathf.PI * 2f);
                             else if (act.StartsWith("win")) p = SdPose.Victory(int.Parse(act.Substring(3)), u * 1.4f);
                             else if (act.StartsWith("skill")) p = SdPose.Skill(int.Parse(act.Substring(5)), u);
                             else if (act == "dead") p = SdPose.Dead(u);
                             else p = ExcelHeroes.World.Pose.Rest;
                             frames.Add((p, 1f / 12f));
                         }
+                    }
                     rows.Add((act, frames));
                 }
                 var cols = rows.Max(r => r.Item2.Count(fr => fr.dt >= 0f));
@@ -151,7 +160,7 @@ namespace ExcelHeroes.EditorTools
                     {
                         SdPose.Apply(rig, p);
                         rig.Root.localPosition = new Vector3(p.Step, p.Y + rig.FootDrop, 0f);
-                        rig.Root.rotation = Quaternion.Euler(0f, 215f + p.Yaw, 0f);
+                        rig.Root.rotation = Quaternion.Euler(0f, yaw0 + p.Yaw, 0f);
                         if (dt < 0f) { sec?.Step(1f / 60f); continue; }
                         if (rig.EyeSub >= 0) { var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(id).EyeSheet(p.Expr ?? "")); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub); }
                         var steps = Mathf.Max(1, Mathf.RoundToInt(dt * 60f));

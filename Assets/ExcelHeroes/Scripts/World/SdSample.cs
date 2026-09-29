@@ -477,6 +477,23 @@ namespace ExcelHeroes.World
             return n.Contains("skirt") || n.Contains("thigh") || n.Contains("calf") || n.Contains("knee") || n.Contains("foot") || n.Contains("toe");   // knee: its helper bones left the own knees behind as black marks
         }
 
+        /// <summary>Drops the body's triangles whose three corners are all dominated by bones `bone` accepts.</summary>
+        static void CutOwn(SkinnedMeshRenderer body, System.Func<string, bool> bone)
+        {
+            var mesh = body.sharedMesh; var bones = body.bones;
+            var hit = mesh.boneWeights.Select(w => bone(Dominant(w, bones))).ToArray();
+            if (!hit.Any(x => x)) return;
+            var cut = Object.Instantiate(mesh); cut.name = mesh.name;
+            for (var s = 0; s < cut.subMeshCount; s++)
+            {
+                var tris = cut.GetTriangles(s); var keep = new List<int>(tris.Length);
+                for (var t = 0; t < tris.Length; t += 3)
+                    if (!(hit[tris[t]] && hit[tris[t + 1]] && hit[tris[t + 2]])) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                cut.SetTriangles(keep, s, false);
+            }
+            body.sharedMesh = cut;
+        }
+
         static string Dominant(BoneWeight w, Transform[] bones)
         {
             var i = w.boneIndex0; var m = w.weight0;
@@ -807,6 +824,10 @@ namespace ExcelHeroes.World
             var lowerKey = System.Environment.GetEnvironmentVariable("SD_LOWER") ?? k.Lower;
             if (!_raw && !string.IsNullOrEmpty(lowerKey) && lowerKey != key && Has(lowerKey)) SwapLower(rig, body, lowerKey, k, root, layer);
             var accEnv = System.Environment.GetEnvironmentVariable("SD_ACC") ?? k.Accessories;
+            // the sample's OWN shawl (Haruka's cape) on a hero whose illustration has none: cut. Skinned to
+            // the upper arms, it rode up with every raised arm and showed its dark lining behind the back
+            // (the strip audit on contract's victory); a hero who wants one asks for it (acc=shawl)
+            if (!_raw && !(accEnv ?? "").Contains("shawl")) CutOwn(body, b => b.StartsWith("bone_shawl_"));
             if (!_raw && !string.IsNullOrEmpty(accEnv)) foreach (var acc in accEnv.Split(',')) Accessory(rig, body, acc.Trim(), k, root, layer);
             // the own skirt in the sample's pleats tinted to the bottom colour, not the painted sheet —
             // painting the illustration onto the skirt UVs left white belt squares and leg shading on it

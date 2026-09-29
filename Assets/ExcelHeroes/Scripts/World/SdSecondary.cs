@@ -23,7 +23,17 @@ namespace ExcelHeroes.World
         class Node
         {
             public Transform T; public Quaternion RestLocal; public Vector3 RestTipLocal; public float Len; public Vector3 Tip, Vel, PrevTarget; public float Weight; public bool HasPrev;
+            public float[] LegRest;   // a skirt bone: its tip's rest distance from each thigh (0 = that thigh is not its neighbour)
         }
+        // the thighs as segments (hip → knee): a skirt bone's tip is never let closer to a thigh than it
+        // hangs at rest, so a leg stepping forward (the walk, a flinch) pushes the hem out instead of
+        // coming through it (the strip audit: "skirt torn, leg clipping")
+        Transform[] _thigh, _knee;
+        // a shawl / cape skinned to the UPPER ARMS (CH0247's bone_shawl_L/R) rode up with a raised arm and
+        // flipped its dark lining out behind the back (the strip audit: "black shape behind head"): it
+        // follows the arm only partly, the rest of the way it stays with the chest
+        readonly List<(Transform t, Transform chest, Quaternion rel, Quaternion restLocal)> _drape = new();
+        const float DrapeFollow = 0.3f;
         readonly List<Node> _nodes = new();     // root-first
         bool _ready;
 
@@ -59,7 +69,28 @@ namespace ExcelHeroes.World
                 if (style == "twin" && !own && t.name.StartsWith("bone_hair_b_")) w = 0.3f;
                 _nodes.Add(new Node { T = t, RestLocal = t.localRotation, RestTipLocal = t.InverseTransformPoint(tipWorld), Len = len, Tip = tipWorld, Weight = w });
             }
-            _ready = _nodes.Count > 0;
+            Transform F(string n) => all.FirstOrDefault(t => t.name == n);
+            _thigh = new[] { F("Bip001 L Thigh"), F("Bip001 R Thigh") }; _knee = new[] { F("Bip001 L Calf"), F("Bip001 R Calf") };
+            if (_thigh.All(t => t != null) && _knee.All(t => t != null))
+            {
+                var gap = (_thigh[0].position - _thigh[1].position).magnitude;
+                foreach (var nd in _nodes.Where(x => x.T.name.StartsWith("bone_skirt_")))
+                {
+                    nd.LegRest = new float[2];
+                    for (var j = 0; j < 2; j++) { var d = (nd.Tip - Closest(_thigh[j].position, _knee[j].position, nd.Tip)).magnitude; nd.LegRest[j] = d < gap * 1.3f ? d * 0.95f : 0f; }
+                }
+            }
+            _drape.Clear();
+            var chest = F("Bip001 Spine1");
+            if (chest != null)
+                foreach (var t in all.Where(t => t.name.StartsWith("bone_shawl_") && t.parent != null && t.parent.name.Contains("UpperArm")))
+                    _drape.Add((t, chest, Quaternion.Inverse(chest.rotation) * t.rotation, t.localRotation));
+            _ready = _nodes.Count > 0 || _drape.Count > 0;
+        }
+
+        static Vector3 Closest(Vector3 a, Vector3 b, Vector3 p)
+        {
+            var ab = b - a; var t = Mathf.Clamp01(Vector3.Dot(p - a, ab) / Mathf.Max(1e-8f, ab.sqrMagnitude)); return a + ab * t;
         }
 
         static int Depth(Transform t) { var d = 0; while (t.parent != null) { d++; t = t.parent; } return d; }
@@ -93,6 +124,11 @@ namespace ExcelHeroes.World
         public void Step(float dt)
         {
             if (!_ready || dt <= 0f) return;
+            foreach (var (t, chest, rel, restLocal) in _drape)
+            {
+                t.localRotation = restLocal;
+                t.rotation = Quaternion.Slerp(chest.rotation * rel, t.rotation, DrapeFollow);
+            }
             var n = Mathf.Clamp(Mathf.CeilToInt(dt / MaxStep), 1, 8);
             var h = dt / n;
             for (var i = 0; i < n; i++) Sub(h);
@@ -118,6 +154,15 @@ namespace ExcelHeroes.World
                 var bend = MaxBend * nd.Weight;
                 if (Vector3.Angle(restDir, dir) > bend) dir = Vector3.RotateTowards(restDir, dir, bend * Mathf.Deg2Rad, 0f);
                 nd.Tip = t.position + dir * nd.Len;
+                if (nd.LegRest != null)
+                    for (var j = 0; j < 2; j++)
+                    {
+                        if (nd.LegRest[j] <= 0f) continue;
+                        var c = Closest(_thigh[j].position, _knee[j].position, nd.Tip); var off = nd.Tip - c; var d = off.magnitude;
+                        if (d >= nd.LegRest[j] || d < 1e-6f) continue;
+                        var pushed = c + off * (nd.LegRest[j] / d);
+                        dir = (pushed - t.position).normalized; nd.Tip = t.position + dir * nd.Len;
+                    }
                 t.rotation = Quaternion.FromToRotation(restDir, dir) * t.rotation;
             }
         }

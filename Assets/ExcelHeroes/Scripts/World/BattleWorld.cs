@@ -121,7 +121,9 @@ namespace ExcelHeroes.World
             _sim = sim;
             ResetAbilities();
             _closeUp = _closeUpTarget = 0f;
-            foreach (var a in _actors.Values) { a.DisposeClips(); Object.Destroy(a.Rig.Root.gameObject); };
+            // the floor sheet is re-parented out of the rig (SdRef.FloorSheet): destroy it with the actor,
+            // or every new run left the last run's sheets on the street — two sheets per member (the user)
+            foreach (var a in _actors.Values) { a.DisposeClips(); if (a.Rig.Sheet != null) Object.Destroy(a.Rig.Sheet.gameObject); Object.Destroy(a.Rig.Root.gameObject); };
             _actors.Clear();
             foreach (var s in _shots.Values) Object.Destroy(s.gameObject);
             _shots.Clear();
@@ -263,8 +265,9 @@ namespace ExcelHeroes.World
                 var def = GameData.Hero(c.heroId);
                 var owned = Game.Player?.Find(c.heroId);
                 var spec = BackSheet.For(def, owned);
-                // a 2D SD already has its sheet painted in; the 3D one carries it on the back
-                if (!a.Rig.Sprite) ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
+                // one sheet per member, the same one everywhere: the 2D SD art no longer has an old
+                // sheet painted in (tools/sd2d_hf.py), so the sprite carries the game's own too
+                ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
                 if (a.Rig.Model3D) a.Rig.Sheet.localScale = Vector3.one * 0.9f;
                 if (a.Rig.RefModel) SdRef.FloorSheet(a.Rig, 1.8f);
                 a.Scale = c.role == "tank" ? 1.06f : 1f;
@@ -445,7 +448,7 @@ namespace ExcelHeroes.World
                 var gone = c.side == Side.Monster && !_sim.Monsters.Contains(c);
                 if (gone && (a.Dying <= 0f || a.Dying > 1.1f))
                 {
-                    { a.DisposeClips(); Object.Destroy(a.Rig.Root.gameObject); };
+                    { a.DisposeClips(); if (a.Rig.Sheet != null) Object.Destroy(a.Rig.Sheet.gameObject); Object.Destroy(a.Rig.Root.gameObject); };
                     _actors.Remove(c);
                     continue;
                 }

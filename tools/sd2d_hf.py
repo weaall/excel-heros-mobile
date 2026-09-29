@@ -25,7 +25,26 @@ PROMPT = ("Redraw this exact character as a cute Blue Archive style SD chibi fig
           "a small body, full body from head to shoes, standing in a relaxed three-quarter pose facing the viewer, same face, "
           "same hairstyle and hair colour, same eye colour, same outfit design and colours, same accessories. Clean anime cel "
           "shading, crisp line art, plain flat pure white background, no shadow, no text, single character.")
-SPACES = [("multimodalart/Qwen-Image-Edit-Fast", "qwen", 8), ("Qwen/Qwen-Image-Edit", "qwen", 20), ("black-forest-labs/FLUX.1-Kontext-Dev", "kontext", 24)]
+SPACES = [("Qwen/Qwen-Image-Edit", "qwen", 20), ("black-forest-labs/FLUX.1-Kontext-Dev", "kontext", 24), ("multimodalart/Qwen-Image-Edit-Fast", "qwen", 8)]
+
+
+def hints(hid):
+    """What the edit models tend to drop: the glasses and the eye colour, stated per character."""
+    import json, colorsys
+    try:
+        d = json.load(open(os.path.join(ROOT, "Assets", "ExcelHeroes", "Resources", "Data", "sdspec.json"), encoding="utf-8"))
+        it = d.get("items", d); row = next((x for x in (it if isinstance(it, list) else [dict(v, id=k) for k, v in it.items()]) if x.get("id") == hid), {})
+    except Exception: row = {}
+    out = []
+    if row.get("sunglasses"): out.append("She wears sunglasses, keep them.")
+    elif row.get("glasses"): out.append(f"She wears {row.get('glassesStyle') or ''} glasses, KEEP THE GLASSES.")
+    else: out.append("No glasses.")
+    e = (row.get("eye") or "").lstrip("#")
+    if len(e) == 6:
+        r, g, b = (int(e[i:i + 2], 16) / 255 for i in (0, 2, 4)); h, l, s = colorsys.rgb_to_hls(r, g, b)
+        name = "grey" if s < 0.18 else ["red", "golden amber", "golden", "yellow", "green", "teal", "cyan", "blue", "blue", "violet", "purple", "pink"][int(h * 12) % 12]
+        out.append(f"Keep her {name} eyes.")
+    return " ".join(out)
 
 
 def flat(src):
@@ -51,10 +70,10 @@ def run(ids, seed=7):
                 try:
                     c = Client(sp, token=tok, verbose=False) if tok else Client(sp, verbose=False)
                     if kind == "qwen":
-                        r = c.predict(image=handle_file(inp), prompt=PROMPT, seed=seed, randomize_seed=False, true_guidance_scale=1.0 if "Fast" in sp else 4.0,
+                        r = c.predict(image=handle_file(inp), prompt=PROMPT + ' ' + hints(hid), seed=seed, randomize_seed=False, true_guidance_scale=1.0 if "Fast" in sp else 4.0,
                                       num_inference_steps=steps, rewrite_prompt=False, api_name="/infer")
                     else:
-                        r = c.predict(input_image=handle_file(inp), prompt=PROMPT, seed=seed, randomize_seed=False, guidance_scale=2.5, steps=steps, api_name="/infer")
+                        r = c.predict(input_image=handle_file(inp), prompt=PROMPT + ' ' + hints(hid), seed=seed, randomize_seed=False, guidance_scale=2.5, steps=steps, api_name="/infer")
                     path = r[0] if isinstance(r, (list, tuple)) else r
                     if isinstance(path, dict): path = path.get("path") or path.get("url")
                     if isinstance(path, (list, tuple)): path = path[0]
