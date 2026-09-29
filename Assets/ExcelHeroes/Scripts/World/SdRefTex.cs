@@ -389,6 +389,7 @@ namespace ExcelHeroes.World
                 switch (expr)
                 {
                     case "happy":                                   // an open smile: a filled D, tongue-pink inside
+                    case "smile":
                         {
                             var top = 0.62f; var bottom = 0.62f - (1f - e * e) * 0.34f;
                             if (Mathf.Abs(e) < 0.7f && lv < top && lv > bottom)

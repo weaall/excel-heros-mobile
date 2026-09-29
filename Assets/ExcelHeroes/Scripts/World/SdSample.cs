@@ -411,7 +411,7 @@ namespace ExcelHeroes.World
 
         /// <summary>The sample exactly as made (its own colours, hair, kit) — for side-by-side comparisons.</summary>
         /// <summary>Set by the repaint tool while it renders the recolour it repaints from.</summary>
-        public static bool SkipPainted;
+        public static bool SkipPainted = System.Environment.GetEnvironmentVariable("SD_NOPAINT") == "1";
 
         /// <summary>
         /// A sample's skeleton only, its skin hidden, at the heroes' height — the frame World/SdEnemy
@@ -521,16 +521,41 @@ namespace ExcelHeroes.World
         static void Transplant(ChibiRig rig, SkinnedMeshRenderer body, string donorKey, System.Func<string, bool> take, bool cutOwn, bool accessory, SdLook k, Transform root, int layer)
         {
             var prefab = Prefab(donorKey); if (prefab == null) return;
+            // THE SEAM (the user: tops and lowers overlapping, a jagged hem): the old cut went by
+            // dominant bone only, so the pelvis-weighted hip and jacket tail stayed and their
+            // straddling triangles poked through the donor's skirt as black-and-white teeth. Now a
+            // clean waist line in the bind pose: ours goes below it, the donor's is kept from a
+            // little above it (the overlap hides under the jacket). Arms and hands, which hang at
+            // hip height, are never cut by the line.
+            var h0 = SdRef.Height * k.Scale;
+            var seamY = rig.Pelvis != null ? rig.Pelvis.position.y + h0 * 0.035f : float.NaN;
+            static bool Limb(string bone)
+            {
+                var n = bone.ToLowerInvariant();
+                return n.Contains("arm") || n.Contains("hand") || n.Contains("finger") || n.Contains("clavicle") || n.Contains("hair") || n.Contains("head") || n.Contains("acc") || n.Contains("phone") || n.Contains("bag");
+            }
             if (cutOwn)
             {
                 var mesh = body.sharedMesh; var bw = mesh.boneWeights; var bones = body.bones;
                 var isLow = bw.Select(w => take(Dominant(w, bones))).ToArray();
+                var isLimb = bw.Select(w => Limb(Dominant(w, bones))).ToArray();
+                var l2w = body.transform.localToWorldMatrix; var vv = mesh.vertices;
+                var wy = vv.Select(x => l2w.MultiplyPoint3x4(x).y).ToArray();
                 var cut = Object.Instantiate(mesh);
+                var names = body.sharedMaterials.Select(m => m ? m.name.ToLowerInvariant() : "").ToArray();
                 for (var s = 0; s < cut.subMeshCount; s++)
                 {
                     var tris = cut.GetTriangles(s); var keep = new List<int>(tris.Length);
+                    var bodySub = s < names.Length && names[s].Contains("body");
                     for (var t = 0; t < tris.Length; t += 3)
-                        if (!(isLow[tris[t]] && isLow[tris[t + 1]] && isLow[tris[t + 2]])) { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
+                    {
+                        int a = tris[t], b = tris[t + 1], c = tris[t + 2];
+                        var drop = isLow[a] && isLow[b] && isLow[c];
+                        // below the seam and not an arm: gone, even when only one corner is below it
+                        if (!drop && bodySub && !float.IsNaN(seamY) && !(isLimb[a] || isLimb[b] || isLimb[c])
+                            && Mathf.Min(wy[a], Mathf.Min(wy[b], wy[c])) < seamY - h0 * 0.01f) drop = true;
+                        if (!drop) { keep.Add(a); keep.Add(b); keep.Add(c); }
+                    }
                     cut.SetTriangles(keep, s, false);
                 }
                 body.sharedMesh = cut;
@@ -563,6 +588,18 @@ namespace ExcelHeroes.World
                 return B(w.boneIndex0, w.weight0) || B(w.boneIndex1, w.weight1) || B(w.boneIndex2, w.weight2) || B(w.boneIndex3, w.weight3);
             }
             var dLow = dbw.Select(Rides).ToArray();
+            // the donor's hip up to a little above the seam belongs to the lower too (its waistband),
+            // never its arms, hands or kit
+            if (!accessory && !float.IsNaN(seamY))
+            {
+                var dl2w = dbody.transform.localToWorldMatrix; var dv = dm.vertices;
+                for (var i = 0; i < dLow.Length; i++)
+                {
+                    if (dLow[i]) continue;
+                    var n = Dominant(dbw[i], dbones);
+                    if (!Limb(n) && dl2w.MultiplyPoint3x4(dv[i]).y < seamY + h0 * 0.02f) dLow[i] = true;
+                }
+            }
             // a lower never brings the donor's kit hanging at the hips (Natsu's phone, a bag)
             if (!accessory)
                 for (var i = 0; i < dLow.Length; i++)
@@ -715,7 +752,8 @@ namespace ExcelHeroes.World
                     var sheet = n.Contains("eyemouth") ? tex.EyeMouth : n.Contains("hair") ? tex.Hair : n.Contains("face") || n.Contains("eyebrow") ? face : n.Contains("alpha") ? tex.Body : tex.Body;
                     // brows in the hair's own dark tone, as BA draws them (a donor face kept Mika's pink ones)
                     if (parts[i] == SdFace.Part.Brow && !_raw) sheet = SdGarment.SolidOf(Color.Lerp(k.Hair, Color.black, 0.45f));
-                    var m = MeshKit.NewToon(eye ? 0f : 0.005f, sheet);
+                    // hair a thinner hull: on thin strand cards the full one stood out as black fins at the tips
+                    var m = MeshKit.NewToon(eye ? 0f : n.Contains("hair") ? 0.0028f : 0.005f, sheet);
                     m.SetFloat("_Cutoff", 0f);
                     if (eye) { m.SetFloat("_OutlineWidth", 0f); m.SetFloat("_ShadeStrength", 0.02f); m.SetFloat("_Rim", 0f); }
                     else
@@ -770,6 +808,9 @@ namespace ExcelHeroes.World
             if (!_raw && !string.IsNullOrEmpty(lowerKey) && lowerKey != key && Has(lowerKey)) SwapLower(rig, body, lowerKey, k, root, layer);
             var accEnv = System.Environment.GetEnvironmentVariable("SD_ACC") ?? k.Accessories;
             if (!_raw && !string.IsNullOrEmpty(accEnv)) foreach (var acc in accEnv.Split(',')) Accessory(rig, body, acc.Trim(), k, root, layer);
+            // the own skirt in the sample's pleats tinted to the bottom colour, not the painted sheet —
+            // painting the illustration onto the skirt UVs left white belt squares and leg shading on it
+            if (!_raw) rig.SkirtSheet = SdSampleTex.Tint(Sheet(key, "body"), k.Bottom, key + ":skirt:" + k.Id);
             if (!_raw) SdGarment.Apply(rig, k, rig.Renderers.OfType<SkinnedMeshRenderer>().Where(r => r == body || r.name.StartsWith("lower:")).ToList());
             if (!_raw) DressHair(rig, heroId, key, k, kept, layer);
             var hairEnv = System.Environment.GetEnvironmentVariable("SD_HAIR") ?? k.HairRecipe ?? "";
@@ -862,7 +903,8 @@ namespace ExcelHeroes.World
             // the hero's colour is the sheet's MID-TONE (most of a hair sheet sits there): shadows a
             // deeper tone of it, highlights a lighter one — never lifted to near-white, which turned
             // navy and black hair grey
-            var dark = Color.HSVToRGB(h, Mathf.Clamp01(sat * 1.1f + 0.08f), Mathf.Clamp01(v * 0.5f));
+            // light hair keeps a light underside (white hair's inner layer at half value read as black shards)
+            var dark = Color.HSVToRGB(h, Mathf.Clamp01(sat * 1.1f + 0.08f), Mathf.Clamp01(v * Mathf.Lerp(0.5f, 0.8f, Mathf.InverseLerp(0.5f, 0.95f, v))));
             var light = Color.HSVToRGB(h, Mathf.Clamp01(sat * 0.7f), Mathf.Clamp01(v + (1f - v) * 0.45f));
             // where the sheet's mid-tone sits (its median luminance), so that maps to the colour
             var ls = px.Select(Luma).OrderBy(x => x).ToArray(); var mid = Mathf.InverseLerp(lo, hi, ls[ls.Length / 2]);
@@ -944,9 +986,24 @@ namespace ExcelHeroes.World
             // coloured clusters take the hero's top / bottom HUE and saturation, their value only half
             // way toward the hero's; the smaller clusters (piping, accents) turn to the accent hue with
             // their own saturation and value; blacks, whites and skin stay the sample's.
+            // the sample's white cloth (Yuuka's white jacket panels, a white lining) in the hero's
+            // SHIRT hue, its shading kept — left white it showed on every hero as white shards where
+            // the painted outfit does not reach (model audit: "white shards on the back of the jacket")
+            Color.RGBToHSV(k.Shirt, out var shH, out var shS, out var shV);
+            var tintWhite = shS > 0.12f || shV < 0.8f;
             for (var i = 0; i < px.Length; i++)
             {
                 var b = bucket[i];
+                if (b == 13 && tintWhite)
+                {
+                    Color.RGBToHSV(px[i], out _, out _, out var wv);
+                    if (wv > 0.55f)
+                    {
+                        var c2 = Color.HSVToRGB(shH, Mathf.Lerp(0f, shS, 0.85f), Mathf.Clamp01(Mathf.Lerp(wv, shV * (wv / 0.9f), 0.7f)));
+                        c2.a = px[i].a; px[i] = c2;
+                    }
+                    continue;
+                }
                 if (b < 0 || b >= 12 || !map.TryGetValue(b, out var target)) continue;
                 var rank = order.IndexOf(b);
                 Color.RGBToHSV(px[i], out _, out var s0, out var v);

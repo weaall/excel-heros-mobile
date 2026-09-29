@@ -297,7 +297,7 @@ namespace ExcelHeroes.World
         public static bool Mount(ChibiRig rig, string name, SdLook k, int layer)
         {
             if (rig.Head == null || !Has(name)) return false;
-            var mat = MeshKit.NewToon(0.004f, SdRefTex.Hair(k, Sheets[name]));
+            var mat = MeshKit.NewToon(0.0028f, SdRefTex.Hair(k, Sheets[name]));
             mat.SetFloat("_ShadeStrength", 0.22f);
             if (Bones.TryGetValue(name, out var lib) && Skinned(rig, name, lib, mat, layer)) return true;
             var go = MeshKit.Part("hair:" + name, rig.Head, Meshes[name], mat, layer);

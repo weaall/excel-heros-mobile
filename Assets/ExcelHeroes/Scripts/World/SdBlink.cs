@@ -39,10 +39,10 @@ namespace ExcelHeroes.World
         /// hurt a wince, angry a narrowed glare.</summary>
         public void Express(string expr)
         {
-            Squint = expr switch { "happy" => 1f, "dizzy" => 1f, "hurt" => 0.7f, "angry" => 0.3f, _ => 0f };
+            Squint = expr switch { "smile" => 0.2f, "happy" => 1f, "dizzy" => 1f, "hurt" => 0.7f, "angry" => 0.3f, _ => 0f };
             Set(Hold >= 0f ? Hold : Squint);
             if (_mouth == null) return;
-            var tex = expr switch { "happy" => Mouth(0), "hurt" => Mouth(1), "dizzy" => Mouth(1), "angry" => Mouth(2), _ => null };
+            var tex = expr switch { "smile" => Mouth(0), "happy" => Mouth(0), "hurt" => Mouth(1), "dizzy" => Mouth(1), "angry" => Mouth(2), _ => null };
             _mouth.enabled = tex != null;
             if (tex != null) _mouth.sharedMaterial.SetTexture("_MainTex", tex);
         }

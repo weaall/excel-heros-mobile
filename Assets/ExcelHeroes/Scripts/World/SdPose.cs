@@ -308,7 +308,9 @@ namespace ExcelHeroes.World
         /// </summary>
         public static Pose Victory(int variant, float t)
         {
-            var p = Pose.Rest; p.Expr = "happy";
+            // "smile": eyes OPEN with a smiling mouth — BA's shut ^^ arcs are a hairline at the result
+            // camera's distance and read as a face with no eyes (the user)
+            var p = Pose.Rest; p.Expr = "smile";
             var hop = Mathf.Abs(Mathf.Sin(t * 7f));
             switch (variant % WinCount)
             {
@@ -668,7 +670,7 @@ namespace ExcelHeroes.World
                     }
                 case 2:
                     {
-                        p.Expr = "happy";
+                        p.Expr = "smile";
                         var up = k < 0.3f ? Mathf.SmoothStep(0f, 1f, k / 0.3f) : k > 0.8f ? 1f - Mathf.SmoothStep(0f, 1f, (k - 0.8f) / 0.2f) : 1f;
                         var hop = k > 0.3f && k < 0.8f ? Mathf.Sin((k - 0.3f) / 0.5f * Mathf.PI) : 0f;
                         p.RaiseR = Mathf.Lerp(-36f, 100f, up); p.SwingR = Mathf.Lerp(3f, -40f, up); p.ElbowR = 12f; p.HandFlexR = -10f; p.FistR = 0.7f;

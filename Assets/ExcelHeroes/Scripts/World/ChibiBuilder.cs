@@ -27,6 +27,7 @@ namespace ExcelHeroes.World
         public int EyeSub = -1;             // its submesh index; -1 = no expression swaps
         public string Expression = "";       // the sheet currently shown
         public SdBlink Blink;                // a sample face's lids (SdSample): expressions are how shut they are
+        public Texture2D SkirtSheet;         // the sample's own sheet tinted to the hero's bottom colour: the own skirt's cloth (SdGarment)
         public bool SheetFloor;              // battle: the sheet lies on the floor under the feet (SdRef.FloorSheet), placed per frame
         public bool SheetWorn;               // the back sheet rides the chest bone (SdRef.WearSheet): no per-frame placement
         /// <summary>Rest local rotations of the posed bones (the sample's Bip001 rest pose is not

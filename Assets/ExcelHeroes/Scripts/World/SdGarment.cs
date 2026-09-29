@@ -34,6 +34,9 @@ namespace ExcelHeroes.World
 
         static readonly Dictionary<Color, Texture2D> Solids = new();
 
+        /// <summary>The group key of the own skirt's triangles (drawn with rig.SkirtSheet, UVs kept).</summary>
+        static readonly Color SkirtKey = new Color(0.123f, 0.456f, 0.789f, 0.321f);
+
         public static Texture2D SolidOf(Color c) => Solid(c);
 
         static Texture2D Solid(Color c)
@@ -175,6 +178,7 @@ namespace ExcelHeroes.World
                 Color? Paint(Zone z) => dbg ? z switch { Zone.Hip => Color.red, Zone.Skirt => Color.yellow, Zone.Thigh => Color.green, Zone.Calf => Color.cyan, Zone.Foot => Color.magenta, _ => null } : z switch
                 {
                     Zone.Skirt when legs == "pants" => k.Bottom,
+                    Zone.Skirt when rig.SkirtSheet != null && !r.name.StartsWith("lower:") => SkirtKey,
                     Zone.Hip => k.Bottom,
                     // bare legs are skin: the samples' own stockings and garters painted there showed as marks
                     Zone.Thigh => legs == "pants" ? k.Bottom : legs == "tights" ? Color.Lerp(k.Socks, k.Skin, 0.12f) : k.Skin,
@@ -223,8 +227,9 @@ namespace ExcelHeroes.World
                     foreach (var kv in groups)
                     {
                         mesh.SetTriangles(kv.Value, gi++, false);
-                        var m = MeshKit.NewToon(0.0025f, Solid(kv.Key));   // a thinner hull: the full one poked through the knee's crease as black marks
-                        m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.3f); m.SetColor("_ShadeTint", SdRefLook.ShadeOf(kv.Key)); m.SetFloat("_Rim", 0.12f);
+                        var skirt = kv.Key == SkirtKey;
+                        var m = MeshKit.NewToon(0.0025f, skirt ? rig.SkirtSheet : Solid(kv.Key));   // a thinner hull: the full one poked through the knee's crease as black marks
+                        m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", skirt ? 0.24f : 0.3f); m.SetColor("_ShadeTint", skirt ? SdRefLook.WarmShade : SdRefLook.ShadeOf(kv.Key)); m.SetFloat("_Rim", 0.12f);
                         mats.Add(m);
                     }
                 }

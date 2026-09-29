@@ -134,6 +134,23 @@ namespace ExcelHeroes.EditorTools
                     for (var t = 0; t < tris.Length; t += 3) Raster(tris[t], tris[t + 1], tris[t + 2], v, n, uv, views, mats, zbufs, acc, wsum, W, H);
                 }
                 for (var i = 0; i < atlas.Length; i++) if (wsum[i] > 0f) { var c = acc[i] / wsum[i]; c.a = atlas[i].a; atlas[i] = c; }
+                // grow the painted texels a few pixels into the unreached ones beside them: an island's
+                // edge left in the sample's colour showed as a bright seam on the figure
+                var got = wsum.Select(x => x > 0f).ToArray();
+                for (var pass = 0; pass < 6; pass++)
+                {
+                    var next = (bool[])got.Clone();
+                    for (var y = 1; y < H - 1; y++)
+                        for (var x = 1; x < W - 1; x++)
+                        {
+                            var i = y * W + x; if (got[i]) continue;
+                            Color sum = default; var cnt = 0;
+                            foreach (var j in new[] { i - 1, i + 1, i - W, i + W }) if (got[j]) { sum += atlas[j]; cnt++; }
+                            if (cnt == 0) continue;
+                            var c = sum / cnt; c.a = atlas[i].a; atlas[i] = c; next[i] = true;
+                        }
+                    got = next;
+                }
                 var tex = new Texture2D(W, H, TextureFormat.RGBA32, false); tex.SetPixels(atlas); tex.Apply();
                 File.WriteAllBytes(Path.Combine(outDir, id + ".png"), tex.EncodeToPNG());
                 Object.DestroyImmediate(tex); Object.DestroyImmediate(holder.gameObject);
