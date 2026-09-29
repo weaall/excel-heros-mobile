@@ -568,6 +568,17 @@ namespace ExcelHeroes.Core
             for (var i = 0; i < Heroes.Count; i++) TickStatus(Heroes[i], dt);
             for (var i = 0; i < Monsters.Count; i++) TickStatus(Monsters[i], dt);
 
+            // auto spends the shared cost on the 효과적 attackers first (업무 상성)
+            if (AutoSkill)
+            {
+                var armor = Affinity.ArmorOfStage(Stage);
+                for (var i = 0; i < Heroes.Count; i++)
+                {
+                    var h = Heroes[i];
+                    if (h.Alive && h.atkType >= 0 && Affinity.Verdict(h.atkType, armor) > 0 && h.SkillReady && CanAfford(h) && WorthFiring(h)) FireSkill(h);
+                }
+            }
+
             foreach (var h in Heroes)
             {
                 if (!h.Alive) continue;
