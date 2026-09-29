@@ -321,7 +321,7 @@ namespace ExcelHeroes.UI
                 UiKit.Text($"Lv.{owned.level}", "pslot__lv", lvRow);
                 if (owned.star > 0) UiKit.Text($"★{System.Math.Clamp(owned.star, 0, 5)}", "pslot__lvstar", lvRow);
                 var nm = UiKit.Text(def.name, "pslot__name", lines);
-                if (def.name.Length > 8) nm.style.fontSize = 20f;   // one step down only for the longest titles
+                
 
                 // the member's attack type, with ▲ / ▼ against this phase's errors
                 var atk = Affinity.AtkOf(def);
