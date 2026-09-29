@@ -124,9 +124,20 @@ namespace ExcelHeroes.World
                 SetLayer(rig.Root, Layer);
                 rig.Root.localPosition = rig.Home = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
                 // 0.92 of the floor-to-top height: long hair no longer spills into the next member's card (ui_gate 08-Party)
-                var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 0.86f / rig.Height, slotW * worldW * 1.3f) : scale;
+                var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 0.92f / rig.Height, slotW * worldW * 1.4f) : scale;
                 rig.Root.localScale = Vector3.one * s;
                 rig.Root.localRotation = rig.Sprite ? Quaternion.identity : rig.Model3D ? Quaternion.Euler(0f, 180f + 20f, 0f) : Quaternion.Euler(0f, 68f, 0f);
+                // measured: a figure wider than its card (long hair, a flared coat) is scaled down until
+                // it fits the card's width — the sheet halo is left out of the measure
+                var bounds = new Bounds(rig.Root.position, Vector3.zero); var any = false;
+                foreach (var r in rig.Root.GetComponentsInChildren<Renderer>())
+                {
+                    if (r == rig.SheetRenderer || !r.enabled) continue;
+                    if (!any) { bounds = r.bounds; any = true; } else bounds.Encapsulate(r.bounds);
+                }
+                var fit = slotW * worldW * 0.86f;
+                // skinned bounds are loose, so the correction is capped: at most 15 % smaller
+                if (any && bounds.size.x > fit) rig.Root.localScale = Vector3.one * s * Mathf.Max(0.85f, fit / bounds.size.x);
                 _figs.Add((rig, i * 1.3f));
             }
             _cam.enabled = true;
