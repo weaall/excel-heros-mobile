@@ -40,7 +40,10 @@ def ask(key, path, name):
                                  data=body, method="POST", headers={"Content-Type": "application/json", "x-goog-api-key": key})
     with urllib.request.urlopen(req, timeout=300) as r: d = json.loads(r.read().decode("utf-8"))
     text = "".join(p.get("text", "") for c in d.get("candidates", []) for p in c.get("content", {}).get("parts", []) if not p.get("thought"))
-    return json.loads(text)
+    r = json.loads(text)
+    if isinstance(r, list): r = {"issues": r, "verdict": "NOT YET"}   # the model sometimes returns the bare list
+    r["issues"] = [i for i in r.get("issues", []) if isinstance(i, dict)]
+    return r
 
 
 def passes(r):

@@ -6821,3 +6821,8 @@
 .album__name { -unity-text-align: middle-center; bottom: 0; }
 .pager { align-self: center; justify-content: center; }
 .stamp-day__icon { margin-bottom: 12px; }
+/* gate r12: result band fits its title */
+.bresult__band { width: 860px; height: 176px; padding-left: 70px; justify-content: center; }
+.bresult__kicker { margin: 6px 0 0 8px; }
+.saybubble__tail { left: 25%; }
+.bresult__btn .plate__label { font-size: 38px; }

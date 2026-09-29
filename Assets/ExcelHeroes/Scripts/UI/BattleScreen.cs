@@ -1662,7 +1662,9 @@ namespace ExcelHeroes.UI
             // anchored by its FOOT: a two-line line grows upward instead of running down over
             // the head (the r7 result capture had the second line printed through the first)
             el.style.top = top - 18f;
-            el.style.translate = new Translate(Length.Percent(-20), Length.Percent(-100));
+            // the tail (at 25 % of the bubble) lands over the speaker's centre (the view is 116 wide)
+            el.style.translate = new Translate(Length.Percent(-25), Length.Percent(-100));
+            el.style.marginLeft = 58f;
             _bubbles.Add((el, 3.2f));
         }
 
@@ -2053,7 +2055,7 @@ namespace ExcelHeroes.UI
             {
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 0f);
                 var c0 = won ? UiPaint.C(16, 30, 60, 0.9f) : UiPaint.C(40, 20, 30, 0.9f);
-                UiPaint.Fill(ctx, poly, UiPaint.Horizontal(c0, UiPaint.C(16, 30, 60, 0f), r.xMin + r.width * 0.72f, r.xMax));   // solid well past the title's end, then fade
+                UiPaint.Fill(ctx, poly, c0);   // a solid slanted band sized to the title — a fade under it read as the title being cut off
                 UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMax - 4f, r.xMin + r.width * 0.7f, r.yMax), 0f),
                              UiPaint.Horizontal(won ? UiPaint.C(0, 229, 255) : UiPaint.C(255, 90, 110), UiPaint.C(0, 229, 255, 0f), r.xMin, r.xMin + r.width * 0.7f));
             });
