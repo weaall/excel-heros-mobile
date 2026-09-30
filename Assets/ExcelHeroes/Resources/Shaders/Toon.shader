@@ -25,6 +25,7 @@ Shader "ExcelHeroes/Toon"
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilPass ("Stencil Pass", Float) = 0
         _DepthPull ("Depth Pull (world units toward camera)", Float) = 0
         [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Float) = 4
+        [Toggle] _EhA2C ("Alpha To Coverage", Float) = 1
     }
 
     SubShader
@@ -83,6 +84,7 @@ Shader "ExcelHeroes/Toon"
             Tags { "LightMode"="UniversalForward" }
             Cull Back
             ZWrite On
+            AlphaToMask [_EhA2C]   // alpha-to-coverage on the cut-out hair and lashes: MSAA smooths their edges (they aliased to a speckled fringe)
             ZTest [_ZTest]
             Stencil { Ref [_StencilRef] Comp [_StencilComp] Pass [_StencilPass] }
 
@@ -155,6 +157,7 @@ Shader "ExcelHeroes/Toon"
             Tags { "LightMode"="Universal2D" }
             Cull Back
             ZWrite On
+            AlphaToMask [_EhA2C]   // alpha-to-coverage on the cut-out hair and lashes: MSAA smooths their edges (they aliased to a speckled fringe)
             ZTest [_ZTest]
             Stencil { Ref [_StencilRef] Comp [_StencilComp] Pass [_StencilPass] }
 
