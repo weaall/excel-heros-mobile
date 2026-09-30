@@ -7424,3 +7424,26 @@
     -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset");
     -unity-font-style: normal;
 }
+
+/* lobby r18 (the user: "not yet at the BA screenshots"): the member large and central, head near the top, cut by the
+   bottom bar at the thighs; the shortcuts two across, free icons with the word under; an event banner bottom-left;
+   the 업무 plate bottom-right over the bar */
+.home__char-container--standing { left: 21%; width: 58%; top: 5%; bottom: -112%; height: auto; }
+.home__icons { left: 56px; top: 150px; width: 330px; flex-direction: row; flex-wrap: wrap; }
+.home__icon.home__icon--free { width: 150px; height: 150px; margin: 0 14px 12px 0; padding: 0; flex-direction: column; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0); }
+.home__icon--free .home__art-icon { width: 96px; height: 96px; }
+.home__icon--free .home__icon-label { margin: 2px 0 0 0; font-size: 28px; color: rgb(255, 255, 255);
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(24, 40, 72); text-shadow: 0 2px 0 rgba(10, 20, 44, 0.5); }
+.home__icon--free .home__dot { right: 22px; top: 10px; }
+.home__event { position: absolute; left: 50px; bottom: 170px; width: 520px; height: 190px; padding: 22px 0 0 34px; }
+.home__event-kicker { font-size: 36px; color: rgb(255, 255, 255); padding: 0; margin: 0; letter-spacing: 1px;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+.home__event-title { font-size: 44px; color: rgb(255, 255, 255); padding: 0; margin: -2px 0 0 0; text-shadow: 2px 3px 0 rgba(90, 0, 40, 0.45);
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); -unity-font-style: normal; }
+.home__event-date { font-size: 24px; color: rgb(255, 235, 245); padding: 0; margin: 4px 0 0 2px; -unity-font-style: bold; }
+.home__campaign { right: 50px; bottom: 170px; }
+.home__bubble { left: 60%; top: 16%; }
+.sheet.sheet--lobby { overflow: visible; }
+.home__icons { top: 130px; width: 470px; }
+.home__icon.home__icon--free { width: 140px; height: 140px; margin: 0 10px 6px 0; }
+.home__event { bottom: 150px; }

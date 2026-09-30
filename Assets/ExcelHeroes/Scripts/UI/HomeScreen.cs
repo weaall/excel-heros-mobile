@@ -85,6 +85,27 @@ namespace ExcelHeroes.UI
             LobbyIcon(icons, "album", Icons.Story, "앨범", "home__glyph--pink", () => _app.Show(AppRoot.Sheet.Album));
             LobbyIcon(icons, "chart", Icons.Chart, "통계", "home__glyph--blue", () => _app.Show(AppRoot.Sheet.Chart));
 
+            // ---- Bottom-left: the event banner (the reference's lobby carries the current event there) --------------
+            var evArt = Resources.Load<Sprite>("Art/Notice/n_event");
+            if (evArt != null)
+            {
+                var ev = UiKit.Div("home__event", _root);
+                ModalFrame.Painted(ev, (ctx, r) =>
+                {
+                    var q = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.35f, 6f);
+                    UiPaint.Shadow(ctx, q, new Vector2(0f, 6f), UiPaint.C(10, 20, 50, 0.3f), 12f);
+                    UiPaint.Fill(ctx, q, Color.white);
+                    var inner = UiPaint.Offset(q, -4f);
+                    UiPaint.Image(ctx, inner, evArt, r, 0.35f);
+                    UiPaint.Fill(ctx, inner, UiPaint.Horizontal(UiPaint.C(255, 70, 140, 0.85f), UiPaint.C(255, 70, 140, 0f), r.xMin, r.xMin + r.width * 0.55f), 0f);
+                });
+                UiKit.Text("EVENT!", "home__event-kicker", ev).pickingMode = PickingMode.Ignore;
+                UiKit.Text("야근 수당 두 배", "home__event-title", ev).pickingMode = PickingMode.Ignore;
+                UiKit.Text("9/30 ~ 10/13", "home__event-date", ev).pickingMode = PickingMode.Ignore;
+                ev.RegisterCallback<ClickEvent>(_ => { AudioService.Play("tap", 0.5f); InboxPanels.OpenNotice(_app, RefreshDots); });
+                Juice.Press(ev);
+            }
+
             // ---- Right-Floating Speech Bubble ---------------------------------------------
             _bubble = UiKit.Div("home__bubble", _root);
             ModalFrame.Painted(_bubble, DrawBubble);
@@ -182,8 +203,8 @@ namespace ExcelHeroes.UI
 
         void LobbyIcon(VisualElement parent, string art, string glyph, string label, string tint, System.Action open, System.Func<bool> badge = null)
         {
-            var btn = UiKit.Div("home__icon", parent);
-            ModalFrame.Painted(btn, (ctx, r) => Chrome.DrawGlassTile(ctx, r, false));   // target_1: a glass tile, icon and word in a row
+            // the reference's lobby shortcuts: the illustrated icon standing free, its word under it — no tile behind
+            var btn = UiKit.Div("home__icon home__icon--free", parent);
             var sprite = GameData.Icon(art);
             if (sprite != null) UiKit.SetArt(UiKit.Div("home__art-icon", btn), sprite);
             else UiKit.Text(glyph, "icon home__glyph " + tint, btn);

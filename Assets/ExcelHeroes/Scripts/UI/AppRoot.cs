@@ -387,6 +387,7 @@ namespace ExcelHeroes.UI
             if (home) PlateAvatar();
             _navBack?.EnableInClassList("hidden", home);
             Chrome.SetLobby(_doc.rootVisualElement, home);
+            _content.EnableInClassList("sheet--lobby", home);   // the lobby's member runs down behind the bottom bar
             // The bottom bar belongs to the lobby only. Inside a screen the reference has none —
             // the top edge's home button is the way out — and the screen gets the height back,
             // which is most of what "made for a phone" means on a 1080-tall landscape display.
