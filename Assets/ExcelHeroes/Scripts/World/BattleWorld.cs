@@ -92,7 +92,7 @@ namespace ExcelHeroes.World
         static float EnvF(string k, float d) => float.TryParse(System.Environment.GetEnvironmentVariable(k), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : d;
         /// <summary>The win's close-up: the camera's distance and aim height, the members' spacing and the depth of the back row.</summary>
         public static float WinDist = EnvF("EH_WINDIST", 5.3f), WinAimY = EnvF("EH_WINAIM", 0.76f), WinSpacing = EnvF("EH_WINSPACE", 1.02f), WinStagger = EnvF("EH_WINSTAGGER", 0.5f);
-        public static float HeroScale = EnvF("EH_HEROSCALE", 1.18f);
+        public static float HeroScale = EnvF("EH_HEROSCALE", 1.08f);   // 1.08: A/B vs BA 33/48 over two runs against 1.18 (1.3: 9/24)
         public static float QuarterPitch = EnvF("EH_PITCH", 26f), QuarterYaw = EnvF("EH_YAW", 28f), QuarterDist = EnvF("EH_DIST", 9f);   // 9 m: the squad larger in frame (part cross-check)   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
         float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN, _punch;
 
