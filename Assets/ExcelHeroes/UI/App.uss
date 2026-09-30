@@ -7266,3 +7266,7 @@
 .bhud .bhud__chip-num { font-size: 52px; margin: 0; padding: 0; -unity-text-align: middle-right; flex-grow: 1; text-shadow: 0 2px 0 rgba(0, 10, 30, 0.45); }
 .bhud .bhud__chip-num.bhud__time { min-width: 0; }
 .bhud__chip--time { width: 260px; }
+/* profile: the division watermark behind the figure (RosterScreen HeroDetail) */
+.detail__mark { position: absolute; left: 0; right: 0; bottom: 150px; -unity-text-align: middle-center; font-size: 230px; letter-spacing: 12px;
+    color: rgba(255, 255, 255, 0.42); -unity-text-outline-width: 2px; -unity-text-outline-color: rgba(120, 190, 240, 0.55); padding: 0; margin: 0; white-space: nowrap;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }

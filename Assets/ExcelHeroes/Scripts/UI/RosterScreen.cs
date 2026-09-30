@@ -238,6 +238,10 @@ namespace ExcelHeroes.UI
             // art had the sheet painted into the picture (tools/bake_sheet.py); v2 is clean, so
             // the game draws it — and draws it the same as everywhere else
             BackSheet.Add(art, def, owned, "backsheet detail__sheet");
+            // the division's name in huge faint letters across the foot of the picture, behind the figure
+            // (the reference's profile: ABYDOS under Shiroko)
+            var mark = def.division switch { "finance" => "FINANCE", "tech" => "TECH", "exec" => "EXECUTIVE", "people" => "PEOPLE", "market" => "MARKETING", "ops" => "OPERATIONS", "admin" => "ADMIN", _ => "EXCEL" };
+            UiKit.Text(mark, "detail__mark", art).pickingMode = PickingMode.Ignore;
             var figure = UiKit.Div("detail__figure", art);
             var standing = GameData.StandingArt(heroId);
             UiKit.SetArt(figure, standing ?? GameData.WornCardArt(heroId));
