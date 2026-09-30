@@ -26,6 +26,12 @@ namespace ExcelHeroes.Core
             var dir = ArgValue("-screenshots");
             if (string.IsNullOrEmpty(dir)) return;
 
+            // a capture run is deterministic: game time advances 1/60 s a frame whatever the machine does, and the
+            // dice are seeded — so two builds photograph the same moment of the same fight and an A/B between
+            // them compares the change, not the luck of the frame (it had: a pitch change "won" the victory
+            // close-up it does not touch, 6/6)
+            Time.captureFramerate = 60;
+            Random.InitState(20260930);
             var go = new GameObject("ScreenshotDriver");
             Object.DontDestroyOnLoad(go);
             go.AddComponent<Runner>().Directory = dir;
