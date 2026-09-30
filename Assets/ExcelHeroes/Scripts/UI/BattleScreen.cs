@@ -820,7 +820,8 @@ namespace ExcelHeroes.UI
             if (OvertimeService.Active != null)
             {
                 UpdateOvertimeLabel();
-                if (OvertimeService.Tick(dt)) { EndOvertime(); return; }
+                // on the fight's clock: at ×3 the sim runs three times the fights in the same real minute
+                if (OvertimeService.Tick(dt * _speedMultiplier)) { EndOvertime(); return; }
             }
 
             if (Game.Player == null) return;
@@ -1022,8 +1023,7 @@ namespace ExcelHeroes.UI
                         // the moment the whole exchange was building to.
                         if (e.target != null && e.target.side == Side.Monster)
                         {
-                            _hitStop = Mathf.Max(_hitStop, e.target.boss != null ? 0.18f : 0.09f);
-                            OvertimeService.Note(e.target.elite);
+                            _hitStop = Mathf.Max(_hitStop, e.target.boss != null ? 0.18f : 0.09f);   // (야근's kills: counted in the sim)
                         }
                         if (_views.TryGetValue(e.target, out var dead)) dead.AddToClassList("fighter--dead");
                         if (e.target != null && e.target.side == Side.Monster) Log($"{e.target.name} 처리 완료");
@@ -1827,8 +1827,9 @@ namespace ExcelHeroes.UI
             QuestService.Note(Game.Player, "chests", _sim.ChestsOpened);
 
             // Gold and dropped gems are per kill, so a failed run still pays for what it cleared.
-            Game.Player.gold += _sim.GoldEarned;
-            Game.Player.gems += _sim.GemsDropped;
+            // clamped as IdleService.Grant is: an int's wrap turned a late-stage purse negative
+            Game.Player.gold = (int)System.Math.Min(int.MaxValue, (long)Game.Player.gold + System.Math.Max(0, _sim.GoldEarned));
+            Game.Player.gems = (int)System.Math.Min(int.MaxValue, (long)Game.Player.gems + _sim.GemsDropped);
 
             if (_sim.Won)
             {

@@ -14,12 +14,13 @@ namespace ExcelHeroes.World
     {
         static readonly System.Collections.Generic.Dictionary<int, Volume> Volumes = new();
 
-        public static void Use(Camera cam, int layer, float bloom = 0.55f)
+        public static void Use(Camera cam, int layer, float bloom = -1f)
         {
             if (cam == null) return;
             var data = cam.GetUniversalAdditionalCameraData();
             data.renderPostProcessing = true;
             data.volumeLayerMask = 1 << layer;
+            if (bloom < 0f) bloom = ToonLook.Bloom;
             if (Volumes.TryGetValue(layer, out var v) && v != null) return;
             var go = new GameObject("postfx") { layer = layer };
             Object.DontDestroyOnLoad(go);
@@ -30,7 +31,7 @@ namespace ExcelHeroes.World
             b.threshold.Override(0.92f); b.intensity.Override(bloom); b.scatter.Override(0.62f); b.tint.Override(new Color(1f, 0.97f, 0.94f));
             var t = p.Add<Tonemapping>(true); t.mode.Override(TonemappingMode.Neutral);
             var c = p.Add<ColorAdjustments>(true);
-            c.postExposure.Override(0.08f); c.contrast.Override(10f); c.saturation.Override(22f);
+            c.postExposure.Override(0.08f); c.contrast.Override(ToonLook.Contrast); c.saturation.Override(ToonLook.Saturation);
             var vg = p.Add<Vignette>(true); vg.intensity.Override(0.16f); vg.smoothness.Override(0.45f); vg.color.Override(new Color(0.08f, 0.12f, 0.24f));
             v.sharedProfile = p;
             Volumes[layer] = v;

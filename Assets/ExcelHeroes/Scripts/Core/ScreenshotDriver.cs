@@ -408,6 +408,9 @@ namespace ExcelHeroes.Core
                 var tex = ScreenCapture.CaptureScreenshotAsTexture();
                 File.WriteAllBytes(path, tex.EncodeToPNG());
                 Destroy(tex);
+                // -shotsuntil <part>: stop after the first shot whose name contains it (A/B variant captures)
+                var until = ArgValue("-shotsuntil");
+                if (!string.IsNullOrEmpty(until) && name.Contains(until)) Application.Quit();
                 yield return null;
             }
         }

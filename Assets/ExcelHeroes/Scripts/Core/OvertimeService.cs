@@ -46,6 +46,9 @@ namespace ExcelHeroes.Core
             // An extra run bought with an ad is spent first; the free one is already gone if the
             // flag is set.
             if (p.overtimeDone) p.overtimeExtra = Math.Max(0, p.overtimeExtra - 1);
+            // spent at the start and saved, so quitting mid-run is not a free retry
+            p.overtimeDone = true;
+            Game.Touch();
 
             Active = new Run { Left = b.overtimeDuration, Kills = 0, Elites = 0, Stage = StageFor(p) };
             return Active;

@@ -14,13 +14,29 @@ namespace ExcelHeroes.Core
         const string FileName = "excel-heroes-save.json";
         static string Path => System.IO.Path.Combine(Application.persistentDataPath, FileName);
 
+        static string Bak => Path + ".bak";
+
+        /// <summary>The save, else the previous one (.bak), else a write that never got moved into place (.tmp).</summary>
+        static PlayerState Read()
+        {
+            foreach (var f in new[] { Path, Bak, Path + ".tmp" })
+            {
+                try
+                {
+                    if (!File.Exists(f)) continue;
+                    var st = JsonUtility.FromJson<PlayerState>(File.ReadAllText(f));
+                    if (st != null && st.party != null) { if (f != Path) Debug.LogWarning($"[Save] recovered from {System.IO.Path.GetFileName(f)}"); return st; }
+                }
+                catch (Exception e) { Debug.LogError($"[Save] {System.IO.Path.GetFileName(f)} unreadable: {e.Message}"); }
+            }
+            return null;
+        }
+
         public static PlayerState Load()
         {
             try
             {
-                if (!File.Exists(Path)) return PlayerState.New();
-                var json = File.ReadAllText(Path);
-                var state = JsonUtility.FromJson<PlayerState>(json);
+                var state = Read();
                 if (state == null) return PlayerState.New();
 
                 // A save written before the party size changed would otherwise field the wrong count.
@@ -56,8 +72,14 @@ namespace ExcelHeroes.Core
                 state.lastSeenUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 var tmp = Path + ".tmp";
                 File.WriteAllText(tmp, JsonUtility.ToJson(state));
-                if (File.Exists(Path)) File.Delete(Path);
-                File.Move(tmp, Path);
+                // swapped in with the old save kept as .bak: deleting first and then moving left no save at
+                // all if the app died in between
+                if (File.Exists(Path))
+                {
+                    try { File.Replace(tmp, Path, Bak); }
+                    catch (Exception) { File.Copy(Path, Bak, true); File.Copy(tmp, Path, true); File.Delete(tmp); }
+                }
+                else File.Move(tmp, Path);
             }
             catch (Exception e)
             {
@@ -161,7 +183,7 @@ namespace ExcelHeroes.Core
 
         public static void Delete()
         {
-            try { if (File.Exists(Path)) File.Delete(Path); }
+            try { foreach (var f in new[] { Path, Bak, Path + ".tmp" }) if (File.Exists(f)) File.Delete(f); }   // the .bak too, or Load would bring the reset save back
             catch (Exception e) { Debug.LogError($"[Save] delete failed: {e.Message}"); }
         }
     }

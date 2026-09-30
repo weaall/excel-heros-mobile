@@ -116,7 +116,17 @@ namespace ExcelHeroes.Core
         public static void Seed(PlayerState p)
         {
             var today = QuestService.TodayKey();
-            void Add(MailItem m) { if (p.mail.All(x => x.id != m.id)) { m.day = today; p.mail.Add(m); } }
+            p.mailGranted ??= new List<string>();
+            // what is in the box counts as delivered (saves from before the list)
+            foreach (var m0 in p.mail) if (!m0.id.StartsWith("daily_") && !p.mailGranted.Contains(m0.id)) p.mailGranted.Add(m0.id);
+            // a one-off gift is delivered once ever: the week's tidy below deleted claimed mail, and the next
+            // Seed found no 'welcome' and sent it again (300 gems and 5000 gold every eight days)
+            void Add(MailItem m)
+            {
+                if (p.mail.Any(x => x.id == m.id) || p.mailGranted.Contains(m.id)) return;
+                m.day = today; p.mail.Add(m);
+                if (!m.id.StartsWith("daily_")) p.mailGranted.Add(m.id);
+            }
             Add(new MailItem { id = "welcome", title = "입사를 환영합니다!", from = "인사팀", body = "엑셀 히어로즈 사무실에 오신 것을 환영합니다. 첫 출근 선물을 준비했어요.", gems = 300, gold = 5000 });
             Add(new MailItem { id = "update_3d", title = "[업데이트] 적 3D 개편 기념", from = "운영팀", body = "오류들이 입체로 돌아왔습니다! 새 상점과 우편함도 열렸어요. 기념 보상을 받아 주세요.", gems = 150, itemSlot = "badge", itemGrade = "B" });
             Add(new MailItem { id = "daily_" + today, title = "오늘의 출근 보상", from = "총무팀", body = "오늘도 출근해 주셔서 감사합니다.", gems = 20, gold = StatMath.StageGold(Mathf.Max(1, p.stage)) * 10 });

@@ -203,7 +203,7 @@ namespace ExcelHeroes.Core
             var b = GameData.Balance;
             var grade = GameData.Hero(o.id)?.grade;
             var tier = Math.Max(1, GameData.GradeRank(grade) + 1);   // D=1 … S=5
-            return Math.Max(1, (int)MathF.Floor(b.upgradeCostBase * tier * MathF.Pow(b.upgradeCostGrowth, Math.Max(1, o.level) - 1)));
+            return Math.Max(1, Sat(Math.Floor(b.upgradeCostBase * tier * Math.Pow(b.upgradeCostGrowth, Math.Max(1, o.level) - 1))));   // Sat: it wrapped past level ~177
         }
 
         public static bool AtLevelCap(OwnedHero o) => o.level >= LevelCap(o);
@@ -301,6 +301,9 @@ namespace ExcelHeroes.Core
         /// flat and the game is beatable for ever. The right answer is a wider number, and that is
         /// the same decision the gold ceiling is waiting on — see 'Blocked' in the handoff.
         /// </summary>
+        /// <summary>A float to int that stops at a billion instead of wrapping negative (deep stages, high levels).</summary>
+        public static int Sat(double v) => v >= 1e9 ? 1_000_000_000 : v <= -1e9 ? -1_000_000_000 : (int)v;
+
         static int Curve(float base_, float growth, int stage)
         {
             var v = MathF.Floor(base_ * MathF.Pow(growth, Math.Max(1, stage) - 1));

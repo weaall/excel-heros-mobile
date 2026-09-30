@@ -195,7 +195,7 @@ namespace ExcelHeroes.Core
             var b = GameData.Balance;
             if (it == null || it.lv >= b.equipMaxLevel) return 0;
             var kills = b.equipUpgradeGoldKills * Mathf.Pow(b.equipUpgradeGrowth, it.lv);
-            return Mathf.Max(1, (int)(StatMath.StageGold(Mathf.Max(1, p.maxCleared)) * kills));
+            return Mathf.Max(1, StatMath.Sat((double)StatMath.StageGold(Mathf.Max(1, p.maxCleared)) * kills));
         }
 
         public static bool Upgrade(PlayerState p, int itemId)
@@ -215,7 +215,7 @@ namespace ExcelHeroes.Core
             if (it == null) return 0;
             var i = b.equipDismantleGrades.IndexOf(it.grade);
             var kills = i >= 0 && i < b.equipDismantleKills.Count ? b.equipDismantleKills[i] : 2;
-            return Mathf.Max(1, StatMath.StageGold(Mathf.Max(1, p.maxCleared)) * kills);
+            return Mathf.Max(1, StatMath.Sat((double)StatMath.StageGold(Mathf.Max(1, p.maxCleared)) * kills));
         }
 
         /// <summary>Breaks an item back into gold. Anything worn comes off first.</summary>

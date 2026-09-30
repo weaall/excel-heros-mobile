@@ -60,6 +60,8 @@ Shader "ExcelHeroes/Toon"
         // the cast's albedo lift (global, 0 = off): a gamma on the sheet that opens up its muddy mid-darks
         // (the BA cross-check: "muddy textures, flat") without washing the whites
         float _EhLift;
+        // the cast's shading multipliers as offsets from 1 (global; unset = 0 = the materials' own): shadow, rim, hair ring
+        float _EhShadeD, _EhRimD, _EhSpecD;
 
         struct Attributes
         {
@@ -124,15 +126,16 @@ Shader "ExcelHeroes/Toon"
                 l = dot(l, l) > 0.0001 ? normalize(l) : normalize(float3(-0.35, 0.85, -0.45));
                 float3 n = normalize(i.normalWS);
                 float lit = smoothstep(-0.02, 0.06, dot(n, l));
-                float3 shade = t.rgb * lerp(float3(1,1,1), _ShadeTint.rgb, _ShadeStrength) * (1 - _ShadeStrength * 0.5);
+                float ss = saturate(_ShadeStrength * (1 + _EhShadeD));
+                float3 shade = t.rgb * lerp(float3(1,1,1), _ShadeTint.rgb, ss) * (1 - ss * 0.5);
                 float3 col = lerp(shade, t.rgb, lit);
-                float rim = pow(1 - saturate(dot(n, normalize(i.viewWS))), 3) * _Rim;
+                float rim = pow(1 - saturate(dot(n, normalize(i.viewWS))), 3) * _Rim * (1 + _EhRimD);
                 col += rim;
                 // the anime hair's angel ring: a crisp bright band where the key light glints (hair materials only)
                 // a horizontal band round the upper head: normals tipped ~35° up, facing the lens
                 float band = 1 - smoothstep(0.035, 0.06, abs(n.y - 0.58));
                 float facing = smoothstep(0.25, 0.5, dot(n, normalize(i.viewWS)));
-                col += band * facing * _Spec * 0.34;
+                col += band * facing * _Spec * 0.34 * (1 + _EhSpecD);
                 float lum = dot(col, float3(0.299, 0.587, 0.114));
                 col = max(0, lerp(lum.xxx, col, 1 + _EhSatBoost));
                 col = lerp(col, float3(1,1,1), _Flash);
@@ -190,15 +193,16 @@ Shader "ExcelHeroes/Toon"
                 l = dot(l, l) > 0.0001 ? normalize(l) : normalize(float3(-0.35, 0.85, -0.45));
                 float3 n = normalize(i.normalWS);
                 float lit = smoothstep(-0.02, 0.06, dot(n, l));
-                float3 shade = t.rgb * lerp(float3(1,1,1), _ShadeTint.rgb, _ShadeStrength) * (1 - _ShadeStrength * 0.5);
+                float ss = saturate(_ShadeStrength * (1 + _EhShadeD));
+                float3 shade = t.rgb * lerp(float3(1,1,1), _ShadeTint.rgb, ss) * (1 - ss * 0.5);
                 float3 col = lerp(shade, t.rgb, lit);
-                float rim = pow(1 - saturate(dot(n, normalize(i.viewWS))), 3) * _Rim;
+                float rim = pow(1 - saturate(dot(n, normalize(i.viewWS))), 3) * _Rim * (1 + _EhRimD);
                 col += rim;
                 // the anime hair's angel ring: a crisp bright band where the key light glints (hair materials only)
                 // a horizontal band round the upper head: normals tipped ~35° up, facing the lens
                 float band = 1 - smoothstep(0.035, 0.06, abs(n.y - 0.58));
                 float facing = smoothstep(0.25, 0.5, dot(n, normalize(i.viewWS)));
-                col += band * facing * _Spec * 0.34;
+                col += band * facing * _Spec * 0.34 * (1 + _EhSpecD);
                 float lum = dot(col, float3(0.299, 0.587, 0.114));
                 col = max(0, lerp(lum.xxx, col, 1 + _EhSatBoost));
                 col = lerp(col, float3(1,1,1), _Flash);

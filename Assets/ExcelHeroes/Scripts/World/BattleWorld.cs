@@ -77,7 +77,7 @@ namespace ExcelHeroes.World
 
             // light from the upper left, a little in front — the reference's key light
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
-            Shader.SetGlobalFloat("_EhOutlinePx", ToonLook.OutlinePx); Shader.SetGlobalFloat("_EhLift", ToonLook.Lift);   // crisp outlines at any distance (Toon.shader)
+            ToonLook.Apply();   // crisp outlines at any distance (Toon.shader)
             _mpb = new MaterialPropertyBlock();
         }
 
@@ -92,7 +92,8 @@ namespace ExcelHeroes.World
         static float EnvF(string k, float d) => float.TryParse(System.Environment.GetEnvironmentVariable(k), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : d;
         /// <summary>The win's close-up: the camera's distance and aim height, the members' spacing and the depth of the back row.</summary>
         public static float WinDist = EnvF("EH_WINDIST", 5.3f), WinAimY = EnvF("EH_WINAIM", 0.76f), WinSpacing = EnvF("EH_WINSPACE", 1.02f), WinStagger = EnvF("EH_WINSTAGGER", 0.5f);
-        public static float QuarterPitch = 26f, QuarterYaw = 28f, QuarterDist = 9f;   // 9 m: the squad larger in frame (part cross-check)   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
+        public static float HeroScale = EnvF("EH_HEROSCALE", 1.18f);
+        public static float QuarterPitch = EnvF("EH_PITCH", 26f), QuarterYaw = EnvF("EH_YAW", 28f), QuarterDist = EnvF("EH_DIST", 9f);   // 9 m: the squad larger in frame (part cross-check)   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
         float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN, _punch;
 
         void PlaceCamera(float shake)
@@ -285,7 +286,7 @@ namespace ExcelHeroes.World
                 if (a.Rig.RefModel) SdRef.FloorSheet(a.Rig, 1.8f);
                 if (a.Rig.RefModel) CastShadow(a.Rig);
                 // the squad a size up (the BA cross-check: the members read small against the street)
-                a.Scale = (c.role == "tank" ? 1.06f : 1f) * (a.Rig.RefModel ? 1.18f : 1f);
+                a.Scale = (c.role == "tank" ? 1.06f : 1f) * (a.Rig.RefModel ? HeroScale : 1f);
                 a.Accent = spec.Accent;
             }
             else if (c.side == Side.Hero)

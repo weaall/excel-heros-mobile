@@ -58,6 +58,7 @@ namespace ExcelHeroes.Core
         public float hasteLeft, hasteAmount;
         public float slowLeft, slowAmount;
         public float tauntLeft;
+        public float burnAcc, regenAcc;   // the damage / healing fractions carried between steps
         public float guardLeft;         // timed damage reduction (보스 방어막, 총대 메기)
         public float dmgReduction;      // the timed part, cleared when those timers run out
         public float baseReduction;     // standing part (철벽 멘탈); never cleared
@@ -138,6 +139,9 @@ namespace ExcelHeroes.Core
         };
 
         const float BossHpMultiplier = 4f;
+        // 1.6 was set while a boss that stopped a pixel or two out never swung (range 1.1 px); with it swinging,
+        // a day-1 party fell from 77 % to 25 % at the first boss (the bench) — 1.2 puts the wall back
+        const float BossAtkMultiplier = 1.2f;
 
         /// <summary>
         /// Hard stop. Without it a party whose regen out-paces the wave's damage simply never
@@ -277,7 +281,12 @@ namespace ExcelHeroes.Core
             foreach (var c in Heroes)
             {
                 var owned = _player.Find(c.heroId);
-                if (owned == null || c.hp <= 0) continue;
+                if (owned == null) continue;
+                // the attack is rebuilt from base for EVERY member, the downed too: ApplyLeadership multiplies
+                // them all, and skipping the downed here compounded 리더십 on them once a refresh (a revive
+                // brought back a huge hitter)
+                c.atk = (int)(StatMath.Atk(owned) * (1f + _synergy.atkBonus));
+                if (c.hp <= 0) continue;
 
                 var maxHp = (int)(StatMath.Hp(owned) * (1f + _synergy.hpBonus + TeamUpgrades.Health(_player)));
                 if (maxHp <= 0) continue;
@@ -301,7 +310,9 @@ namespace ExcelHeroes.Core
             Cost = 4f;
 
             var slot = 0;
-            foreach (var owned in player.PartyMembers())
+            // tanks at the front, ranged at the back (RolePriority) whatever slot they were put in: the party's
+            // slot 0 is always the main hero, a melee intern, who otherwise took every blow ahead of the tank
+            foreach (var owned in player.PartyMembers().OrderBy(o => RolePriority(GameData.Hero(o.id)?.role)))
             {
                 var def = GameData.Hero(owned.id);
                 var role = GameData.Role(def?.role);
@@ -420,7 +431,7 @@ namespace ExcelHeroes.Core
                     maxHp = mimic ? hp : Math.Max(1, hp / 3), hp = mimic ? hp : Math.Max(1, hp / 3),
                     atk = mimic ? (int)(atk * 1.8f) : 0,
                     interval = 1.4f,
-                    range = 1.1f,
+                    range = 1.1f * CellW,   // px, as every other reach (1.1 px left a boss that stopped 1-2 px out never swinging)
                     elite = mimic,
                 };
             }
@@ -443,8 +454,8 @@ namespace ExcelHeroes.Core
                 typeId = type?.id,
                 name = elite ? $"★ {name}" : name,
                 role = "melee",
-                maxHp = elite ? (int)(hp * 2.5f) : hp,
-                atk = elite ? (int)(atk * 1.35f) : atk,
+                maxHp = elite ? StatMath.Sat(hp * 2.5) : hp,
+                atk = elite ? StatMath.Sat(atk * 1.35) : atk,
                 interval = 1.1f,
                 // Ranged monsters hang back and shoot; melee ones close to arm's length, each a
                 // little further out than the last so the wave arrives as a line.
@@ -473,10 +484,10 @@ namespace ExcelHeroes.Core
                 side = Side.Monster,
                 name = def?.name ?? "긴급 티켓",
                 role = "melee",
-                maxHp = (int)(hp * BossHpMultiplier * (def?.hp ?? 1f)),
-                atk = (int)(atk * 1.6f * (def?.atk ?? 1f)),
+                maxHp = StatMath.Sat((double)hp * BossHpMultiplier * (def?.hp ?? 1f)),   // Sat: wrapped negative near stage 99 (an instant win)
+                atk = StatMath.Sat((double)atk * BossAtkMultiplier * (def?.atk ?? 1f)),
                 interval = def?.interval ?? 2f,
-                range = 1.1f,
+                range = 1.1f * CellW,   // px, as every other reach (1.1 px left a boss that stopped 1-2 px out never swinging)
                 boss = def,
             };
             b.hp = b.maxHp;
@@ -539,12 +550,27 @@ namespace ExcelHeroes.Core
 
         readonly List<Combatant> _tickMonsters = new();
 
+        /// <summary>
+        /// Advances the fight by `dt` (already scaled by the speed setting) in fixed 1/60 s steps, so a
+        /// fight plays out the same at 30 fps or 120, at ×1 or ×3 (it was stepped by the frame's dt: burns
+        /// under the frame rate did nothing, regen grew with fps, attack timers dropped their overshoot).
+        /// </summary>
         public void Tick(float dt)
+        {
+            if (Finished) return;
+            _stepAcc += Math.Min(dt, 2f);   // a long hitch plays at most 2 s at once
+            for (var n = 0; _stepAcc >= FixedStep - 1e-6f && n < 150 && !Finished; n++) { Step(FixedStep); _stepAcc -= FixedStep; }
+        }
+
+        public const float FixedStep = 1f / 60f;
+        float _stepAcc;
+
+        void Step(float dt)
         {
             if (Finished) return;
 
             Elapsed += dt;
-            if (Elapsed >= TimeLimit)
+            if (!Overtime && Elapsed >= TimeLimit)   // 야근 is ended by its own clock (at ×3 the 90 s limit came first)
             {
                 Finished = true; Won = false; TimedOut = true;
                 Events.Enqueue(new BattleEvent { kind = EventKind.Defeat, text = "시간 초과" });
@@ -634,7 +660,10 @@ namespace ExcelHeroes.Core
             if (c.burnLeft > 0f)
             {
                 c.burnLeft -= dt;
-                Damage(null, c, (int)(c.burnPerSec * dt), silent: true);
+                // the fraction carried over: a 30/s burn is half a point a step
+                c.burnAcc += c.burnPerSec * dt;
+                var bd = (int)c.burnAcc; c.burnAcc -= bd;
+                if (bd > 0) Damage(null, c, bd, silent: true);
             }
             if (c.hasteLeft > 0f) c.hasteLeft -= dt;
             if (c.slowLeft > 0f) c.slowLeft -= dt;
@@ -649,7 +678,12 @@ namespace ExcelHeroes.Core
             if (c.side == Side.Hero && c.hp < c.maxHp)
             {
                 var regen = Perk("regen") + (c.traitId == "regen" ? c.traitValue : 0f);
-                if (regen > 0f) c.hp = Math.Min(c.maxHp, c.hp + (int)MathF.Ceiling(c.maxHp * regen * dt));
+                if (regen > 0f)
+                {
+                    c.regenAcc += c.maxHp * regen * dt;
+                    var rh = (int)c.regenAcc; c.regenAcc -= rh;
+                    if (rh > 0) c.hp = Math.Min(c.maxHp, c.hp + rh);
+                }
             }
         }
 
@@ -677,7 +711,9 @@ namespace ExcelHeroes.Core
 
         void StepAttack(Combatant a, float dt, List<Combatant> enemies)
         {
-            var target = NearestTarget(a, enemies);
+            // a taunting hero (총대 메기) draws every monster's blows, not only where they stop
+            var target = (a.side == Side.Monster ? enemies.Where(e => e.Alive && e.tauntLeft > 0f).OrderByDescending(e => e.x).FirstOrDefault() : null)
+                         ?? NearestTarget(a, enemies);
             if (target == null) return;
 
             var dist = target.x - a.x;
@@ -693,7 +729,7 @@ namespace ExcelHeroes.Core
 
             a.attackTimer -= dt * Math.Max(0.2f, 1f + a.hasteAmount - a.slowAmount);
             if (a.attackTimer > 0f) return;
-            a.attackTimer = a.interval;
+            a.attackTimer = Math.Max(0f, a.attackTimer + a.interval);   // the overshoot kept, so the rate holds at any step
 
             if (a.side == Side.Hero && a.role is not ("ranged" or "healer"))
             {
@@ -1043,6 +1079,9 @@ namespace ExcelHeroes.Core
                     var chance = (GameData.Balance?.gemDropBase ?? 0.005f) + _gemDropBonus;
                     if (to.elite) chance *= 3f;
                     if (Random.value < chance) GemsDropped++;
+                    // 야근 counts its kills here, not from the screen's event queue (thrown away while the
+                    // player is on another sheet, so a run left running there scored nothing)
+                    if (Overtime) OvertimeService.Note(to.elite);
                 }
                 Events.Enqueue(new BattleEvent { kind = EventKind.Death, target = to });
             }

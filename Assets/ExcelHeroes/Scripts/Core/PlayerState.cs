@@ -166,6 +166,7 @@ namespace ExcelHeroes.Core
         public List<string> shopBought = new();
         // 우편함 (MailService) and 공지 (NoticeService)
         public List<MailItem> mail = new();
+        public List<string> mailGranted = new();   // one-off mail ids ever delivered (the box drops claimed mail after a week)
         public List<string> readNotices = new();
 
         /// <summary>지분 — permanent, never reset. Each one adds to attack and to gold.</summary>
