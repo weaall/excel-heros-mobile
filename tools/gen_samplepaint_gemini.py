@@ -35,7 +35,13 @@ PROMPT = (
     "surface details change. Blue Archive SD texture style: flat cel colours, soft two-tone shading, clean thin dark lines on seams. "
     "Plain pure white background; paint nothing outside the figure; same size and framing as image 1."
 )
-REF_BACK = "Image 3 is the same clothes already repainted from the front: match it exactly. "
+REF_BACK = "The last image is the same clothes already repainted from the front: match it exactly. "
+# SD_DESIGN=1 (2026-09-30): our 2D SD of the hero goes in too — it is drawn from this very model (tools/sd2d_from_model_gemini.py),
+# so it shows the outfit already fitted to the chibi body: its pieces, lengths, trims and colours as they should read on image 1
+SD_DESIGN = os.environ.get("SD_DESIGN") == "1"
+SD = os.path.join(g.ROOT, "Assets", "ExcelHeroes", "Resources", "Art", "SD")
+REF_SD = ("Image 3 is our 2D SD drawing of the same character, drawn from this very model: follow it for how each garment sits on "
+          "this chibi body (pieces, lengths, trims, colours), and image 2 for the finer details. ")
 
 
 def paint(key, hid, view, front=None):
@@ -43,8 +49,11 @@ def paint(key, hid, view, front=None):
     art = os.path.join(STAND, hid + ".png")
     parts = [{"inlineData": {"mimeType": "image/png", "data": sd.b64(src)}},
              {"inlineData": {"mimeType": "image/png", "data": sd.b64(art)}}]
+    sdp = os.path.join(SD, hid + ".png")
+    use_sd = SD_DESIGN and os.path.exists(sdp)
+    if use_sd: parts.append({"inlineData": {"mimeType": "image/png", "data": sd.b64(sdp)}})
     if front is not None: parts.append({"inlineData": {"mimeType": "image/png", "data": sd.b64(front)}})
-    parts.append({"text": PROMPT.format(view=SIDE[view], ref=REF_BACK if front else "")})
+    parts.append({"text": PROMPT.format(view=SIDE[view], ref=(REF_SD if use_sd else "") + (REF_BACK if front else ""))})
     img = sd.call(key, parts)
     out = sd.align(img, src)
     if out is None: raise RuntimeError("align failed")
