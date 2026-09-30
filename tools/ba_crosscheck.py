@@ -79,6 +79,10 @@ def call(key, parts):
 
 def ours(name):
     # CALIBRATE=<ref image> puts a Blue Archive screenshot in our slot: what the judge gives BA itself
+    if os.environ.get("CALIBRATE") == "auto":
+        # the BA-normalized score (the user, 2026-09-30): what BA itself gets on each pair — a held-out BA shot of the
+        # same kind where we have one (lobby: ref15), else the pair's own reference in our slot (the judge's ceiling)
+        return os.path.join(REF, {"lobby": "ref15.png"}.get(name, PAIRS[name][1][0]))
     if os.environ.get("CALIBRATE"): return os.path.join(REF, os.environ["CALIBRATE"])
     if os.environ.get("MOCK"): return os.environ["MOCK"]   # a target mock (tools/target_mock_gemini.py) in our slot
     f = PAIRS[name][0]
@@ -106,6 +110,10 @@ if __name__ == "__main__":
     with cf.ThreadPoolExecutor(5) as ex: res = dict(ex.map(lambda n: judge(key, n), names))
     prev = json.load(open(os.path.join(OUT, "ba_crosscheck.json"), encoding="utf-8")) if os.path.exists(os.path.join(OUT, "ba_crosscheck.json")) else {}
     if not os.environ.get("CALIBRATE") and not os.environ.get("MOCK"): prev.update(res)
+    if os.environ.get("CALIBRATE") == "auto":
+        cp = os.path.join(OUT, "ba_calib.json")
+        cal = json.load(open(cp, encoding="utf-8")) if os.path.exists(cp) else {}
+        cal.update(res); json.dump(cal, open(cp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(prev, open(os.path.join(OUT, "ba_crosscheck.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for n, r in res.items():
         axes = " ".join(f"{k}={r.get(k)}" for k in AXES)
