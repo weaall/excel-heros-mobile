@@ -251,7 +251,9 @@ namespace ExcelHeroes.World
         // ------------------------------------------------------------------ mapping --
 
         /// <summary>Sim lane x (the web build's 832-unit field) to world x.</summary>
-        public static float WX(float simX) => (simX - 400f) / 64f * 0.95f;
+        /// <summary>World metres per sim cell along the lane (EH_LANE; at 0.95 the 0.9 m-wide chibis stood inside the errors they fought).</summary>
+        public static readonly float LaneScale = EnvF("EH_LANE", 1.12f);
+        public static float WX(float simX) => (simX - 400f) / 64f * LaneScale;
 
         // a shallower stagger: the camera is low now and a deep row reads as floating
         static readonly float[] LaneZ = { 0.1f, 0.6f, -0.45f, 1.0f, -0.8f };
