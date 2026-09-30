@@ -57,6 +57,9 @@ Shader "ExcelHeroes/Toon"
         // the cast's colour lift (global, 0 = off): saturation added over the painted sheets, which came out
         // greyed by the repaint (the part cross-check: "increase albedo saturation")
         float _EhSatBoost;
+        // the cast's albedo lift (global, 0 = off): a gamma on the sheet that opens up its muddy mid-darks
+        // (the BA cross-check: "muddy textures, flat") without washing the whites
+        float _EhLift;
 
         struct Attributes
         {
@@ -116,6 +119,7 @@ Shader "ExcelHeroes/Toon"
             {
                 half4 t = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv) * i.color * _Color;
                 clip(t.a - _Cutoff);
+                t.rgb = pow(max(t.rgb, 0.0001), 1.0 / (1.0 + _EhLift));
                 float3 l = _EhLightDir.xyz;
                 l = dot(l, l) > 0.0001 ? normalize(l) : normalize(float3(-0.35, 0.85, -0.45));
                 float3 n = normalize(i.normalWS);
@@ -181,6 +185,7 @@ Shader "ExcelHeroes/Toon"
             {
                 half4 t = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv) * i.color * _Color;
                 clip(t.a - _Cutoff);
+                t.rgb = pow(max(t.rgb, 0.0001), 1.0 / (1.0 + _EhLift));
                 float3 l = _EhLightDir.xyz;
                 l = dot(l, l) > 0.0001 ? normalize(l) : normalize(float3(-0.35, 0.85, -0.45));
                 float3 n = normalize(i.normalWS);

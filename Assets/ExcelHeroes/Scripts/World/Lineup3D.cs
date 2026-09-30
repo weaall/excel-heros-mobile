@@ -68,7 +68,7 @@ namespace ExcelHeroes.World
             _cam.enabled = false;
             var data = _cam.GetUniversalAdditionalCameraData();
             data.renderPostProcessing = false;
-            Shader.SetGlobalFloat("_EhOutlinePx", 1.8f);   // crisp outlines at any distance (Toon.shader)
+            Shader.SetGlobalFloat("_EhOutlinePx", ToonLook.OutlinePx); Shader.SetGlobalFloat("_EhLift", ToonLook.Lift);   // crisp outlines at any distance (Toon.shader)
             data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
         }
 

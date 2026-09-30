@@ -77,7 +77,7 @@ namespace ExcelHeroes.World
 
             // light from the upper left, a little in front — the reference's key light
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
-            Shader.SetGlobalFloat("_EhOutlinePx", 1.8f);   // crisp outlines at any distance (Toon.shader)
+            Shader.SetGlobalFloat("_EhOutlinePx", ToonLook.OutlinePx); Shader.SetGlobalFloat("_EhLift", ToonLook.Lift);   // crisp outlines at any distance (Toon.shader)
             _mpb = new MaterialPropertyBlock();
         }
 
