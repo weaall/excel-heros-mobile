@@ -1028,6 +1028,13 @@ namespace ExcelHeroes.UI
                             // 업무 상성 says itself over the number: 효과적 (amber, bigger) / 저항 (grey, smaller)
                             var num = e.amount.ToString("N0");
                             var tag = e.affinity > 0 ? "<size=46%>효과적</size>\n" : e.affinity < 0 ? "<size=46%>저항</size>\n" : "";
+                            // said once per target a second and a half: on every hit the words stacked over the numbers
+                            // ("저항저항"); the colour of the number carries it after that
+                            if (tag.Length > 0 && e.target != null)
+                            {
+                                var nowT = Time.unscaledTime;
+                                if (_tagAt.TryGetValue(e.target, out var ta) && nowT - ta < 1.5f) tag = ""; else _tagAt[e.target] = nowT;
+                            }
                             var cls = e.crit ? "floater floater--crit"
                                 : e.target != null && e.target.side == Side.Hero ? "floater floater--taken"
                                 : e.affinity > 0 ? "floater floater--weak" : e.affinity < 0 ? "floater floater--resist" : "floater";
@@ -1629,6 +1636,7 @@ namespace ExcelHeroes.UI
             _floaters.Add((el, 0.9f, top));
         }
         readonly Dictionary<Combatant, (int n, float t)> _floatStack = new();
+        readonly Dictionary<Combatant, float> _tagAt = new();
 
         /// <summary>
         /// 캐릭터 대사 — one party member says something when a Phase falls, ported from the web
