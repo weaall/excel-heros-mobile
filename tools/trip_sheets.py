@@ -39,7 +39,7 @@ def main(argv):
             st = os.path.join(ART, "Standing", hid + ".png")
             a = fit(Image.open(st if os.path.exists(st) else os.path.join(ART, "Cards", hid + ".png")), W, H)
             b = fit(Image.open(os.path.join(sd, hid + ".png")), W, H)
-            r3 = os.path.join(ROOT, "tools", "out", "all3d", "strip_" + hid + ".png")
+            r3 = os.path.join(os.environ.get("ALL3D") or os.path.join(ROOT, "tools", "out", "all3d"), "strip_" + hid + ".png")
             c = Image.open(r3).convert("RGB").resize((W, H)) if os.path.exists(r3) else Image.new("RGB", (W, H), (106, 156, 214))
             sheet.paste(a, (i * W, 0)); sheet.paste(b, (i * W, H)); sheet.paste(c, (i * W, 2 * H)); d.text((i * W + 4, 3 * H + 6), hid, fill="black")
         sheet.save(os.path.join(out, f"trip_{k // 11}.png"))
