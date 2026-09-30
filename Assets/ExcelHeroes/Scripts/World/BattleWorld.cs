@@ -266,13 +266,24 @@ namespace ExcelHeroes.World
 
         // ------------------------------------------------------------------ cast --
 
+        /// <summary>A/B hook: the street's own SD proportion (SD_BATTLEHEAD / SD_BATTLELEG; default = the menus').</summary>
+        static readonly float BattleHead = EnvF("SD_BATTLEHEAD", SdSample.HeadScale), BattleLeg = EnvF("SD_BATTLELEG", SdSample.LegScale);
+
+        ChibiRig BuildSd(string heroId)
+        {
+            var (h0, l0) = (SdSample.HeadScale, SdSample.LegScale);
+            SdSample.HeadScale = BattleHead; SdSample.LegScale = BattleLeg;
+            try { return SdRef.Build(heroId, _root, Layer) ?? SdBase.Build(heroId, _root, Layer) ?? SdSprite.Build(heroId, _root, Layer); }
+            finally { SdSample.HeadScale = h0; SdSample.LegScale = l0; }
+        }
+
         Actor Ensure(Combatant c)
         {
             if (_actors.TryGetValue(c, out var a)) return a;
             a = new Actor { C = c };
             // 3D SD first (made from the 2D SD, World/SdModel), then the 2D SD sprite, then the built doll
             // the common SD base (World/SdBase) first: one body, one skeleton, one set of motions
-            if (c.side == Side.Hero && (SdRef.Build(c.heroId, _root, Layer) ?? SdBase.Build(c.heroId, _root, Layer) ?? SdSprite.Build(c.heroId, _root, Layer)) is { } sd)
+            if (c.side == Side.Hero && BuildSd(c.heroId) is { } sd)
             {
                 a.Rig = sd;
                 a.Rig.Root.name = c.name;
@@ -611,9 +622,12 @@ namespace ExcelHeroes.World
             return FxMats[name] = MeshKit.NewGlass(tex != null ? tex : MeshKit.Blob, Color.white);
         }
 
+        static readonly float ShotCardScale = EnvF("EH_SHOTCARD", 1f);
+
         Transform Card(Transform parent, string tex, float w, float h)
         {
             var q = MeshKit.Part("card", parent, Quad, FxMat(tex), Layer).transform;
+            if (tex.StartsWith("cell_") || tex is "result" or "formula") { w *= ShotCardScale; h *= ShotCardScale; }   // A/B hook (EH_SHOTCARD)
             q.localScale = new Vector3(w, h, 1f);
             q.gameObject.SetActive(false);
             return q;
@@ -1922,7 +1936,7 @@ namespace ExcelHeroes.World
                         // the win's close-up: the member's sheet rises to float over her head, small and tipped
                         // back like a halo, bobbing — the reference's squads are read by their halos (the BA
                         // cross-check: our silhouettes had nothing over the head); still one sheet per member
-                        var head = new Vector3(px, y + Rig.Height * root.localScale.y * 1.02f + Mathf.Sin(time * 2.2f + Z) * 0.03f, pz);
+                        var head = new Vector3(px, y + Rig.Height * root.localScale.y * (1.02f + Mathf.Max(0f, BattleHead / SdSample.HeadScale - 1f) * 0.6f) + Mathf.Sin(time * 2.2f + Z) * 0.03f, pz);   // over a bigger head too
                         Rig.Sheet.localPosition = head;
                         Rig.Sheet.localRotation = Quaternion.Euler(62f, 0f, Rig.SheetSide * 8f);
                         Rig.Sheet.localScale = Vector3.one * (closeUp > 0.5f ? 0.62f : 0.72f);

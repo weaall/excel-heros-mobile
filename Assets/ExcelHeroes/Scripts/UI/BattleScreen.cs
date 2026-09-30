@@ -30,7 +30,9 @@ namespace ExcelHeroes.UI
         // per EX card: [0] the charge still to fill, [1] its ready / poor state last painted
         readonly Dictionary<Combatant, float[]> _exCharge = new();
         // the EX cards lean like the reference's (the top edge this share of the height to the right)
-        const float ExSlant = 0.27f;   // 15°, the reference's card lean (part cross-check)
+        static float EnvF(string k, float d) => float.TryParse(System.Environment.GetEnvironmentVariable(k), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : d;
+        static readonly float ExSlant = EnvF("EH_EXSLANT", 0.27f);   // 15°, the reference's card lean (part cross-check)
+        static readonly bool ExColour = System.Environment.GetEnvironmentVariable("EH_EXCOLOR") == "1";   // A/B: saturated type colour, type-coloured cost rim, hairline white edge
         Button _overtimeButton;
         Label _forecastLabel;
         BattleFx _fx;
@@ -1937,7 +1939,7 @@ namespace ExcelHeroes.UI
                     var inner = UiPaint.Offset(outer, -2.2f);   // a hairline white edge, not a frame
                     var bandTop = r.yMax - r.height * 0.24f;
                     var art = UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMin - 20f, r.xMax + 60f, bandTop), 0f));
-                    UiPaint.Fill(ctx, art, UiPaint.Vertical(Color.Lerp(atkColour, Color.white, 0.78f), Color.Lerp(atkColour, Color.white, 0.35f), r.yMin, bandTop));
+                    UiPaint.Fill(ctx, art, ExColour ? UiPaint.Vertical(Color.Lerp(atkColour, Color.white, 0.5f), Color.Lerp(atkColour, Color.black, 0.08f), r.yMin, bandTop) : UiPaint.Vertical(Color.Lerp(atkColour, Color.white, 0.78f), Color.Lerp(atkColour, Color.white, 0.35f), r.yMin, bandTop));
                     for (var i = 0; i < 3; i++)
                     {
                         var x = r.xMin + r.width * (0.2f + i * 0.3f);
@@ -1962,7 +1964,7 @@ namespace ExcelHeroes.UI
                         var x = r.xMin + r.width * ph; var w2 = r.width * 0.16f; var sl = r.height * 0.35f;
                         UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(x + sl, r.yMin), new(x + sl + w2, r.yMin), new(x + w2, r.yMax), new(x, r.yMax) }, inner), UiPaint.C(255, 255, 255, 0.28f), 1f);
                     }
-                    UiPaint.Stroke(ctx, outer, ready ? UiPaint.C(170, 246, 255) : UiPaint.C(120, 200, 240, 0.9f), ready ? 4f : 3f);
+                    UiPaint.Stroke(ctx, outer, ready ? UiPaint.C(170, 246, 255) : ExColour ? UiPaint.C(255, 255, 255, 0.95f) : UiPaint.C(120, 200, 240, 0.9f), ready ? (ExColour ? 3f : 4f) : (ExColour ? 1.5f : 3f));
                     UiPaint.Stroke(ctx, inner, UiPaint.C(255, 255, 255, 0.85f), 1.5f);
                 });
                 card.schedule.Execute(() => { if (btn.ClassListContains("ex-button--ready")) card.MarkDirtyRepaint(); }).Every(40);
@@ -1976,7 +1978,7 @@ namespace ExcelHeroes.UI
                     // a small disc (the reference's), not a bulky hexagon
                     var hex = UiPaint.Ellipse(r.center, r.width * 0.46f, r.height * 0.46f, 28);
                     UiPaint.Shadow(ctx, hex, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.35f), 4f);
-                    UiPaint.Fill(ctx, hex, UiPaint.Vertical(UiPaint.C(120, 236, 255), UiPaint.C(0, 170, 230), r.yMin, r.yMax));   // cyan rim (r8 HUD redesign)
+                    UiPaint.Fill(ctx, hex, ExColour ? UiPaint.Vertical(Color.Lerp(atkColour, Color.white, 0.3f), atkColour, r.yMin, r.yMax) : UiPaint.Vertical(UiPaint.C(120, 236, 255), UiPaint.C(0, 170, 230), r.yMin, r.yMax));   // cyan rim (r8 HUD redesign)
                     UiPaint.Fill(ctx, UiPaint.Offset(hex, -3.5f), UiPaint.Vertical(UiPaint.C(46, 70, 118), UiPaint.C(22, 36, 70), r.yMin, r.yMax));
                 });
                 UiKit.Text("COST", "ex-button__costword", badge).pickingMode = PickingMode.Ignore;
