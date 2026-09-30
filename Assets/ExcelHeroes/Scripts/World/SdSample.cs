@@ -884,6 +884,9 @@ namespace ExcelHeroes.World
             // the upper arms, it rode up with every raised arm and showed its dark lining behind the back
             // (the strip audit on contract's victory); a hero who wants one asks for it (acc=shawl)
             if (!_raw && !(accEnv ?? "").Contains("shawl")) CutOwn(body, b => b.StartsWith("bone_shawl_"));
+            // the sample's own kit on the hip (Yuuka's magazine pouch, bone_Pocket): at the hand's height it read as a
+            // phone or a gun held by an office worker — cut from every body
+            if (!_raw) CutOwn(body, b => b.StartsWith("bone_Pocket", System.StringComparison.OrdinalIgnoreCase));
             if (!_raw && !string.IsNullOrEmpty(accEnv)) foreach (var acc in accEnv.Split(',')) Accessory(rig, body, acc.Trim(), k, root, layer);
             // the own skirt in the sample's pleats tinted to the bottom colour, not the painted sheet —
             // painting the illustration onto the skirt UVs left white belt squares and leg shading on it

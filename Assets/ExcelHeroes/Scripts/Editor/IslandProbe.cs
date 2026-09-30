@@ -24,6 +24,19 @@ namespace ExcelHeroes.EditorTools
                 SdPose.Apply(rig, ExcelHeroes.World.Pose.Rest);
                 foreach (var smr in rig.Root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
                 {
+                    // SD_BONES=1: every non-Biped bone the renderer's vertices ride, with its vertex count and centre
+                    if (System.Environment.GetEnvironmentVariable("SD_BONES") == "1" && smr.enabled && smr.gameObject.activeInHierarchy && smr.sharedMesh != null)
+                    {
+                        var bk = new Mesh(); smr.BakeMesh(bk); var vv = bk.vertices; var bww = smr.sharedMesh.boneWeights; var bb = smr.bones;
+                        var agg = new Dictionary<string, (int n, Vector3 c)>();
+                        for (var i = 0; i < vv.Length && i < bww.Length; i++)
+                        {
+                            var bi = bww[i].boneIndex0; if (bi >= bb.Length || bb[bi] == null) continue;
+                            var nm = bb[bi].name; if (nm.StartsWith("Bip001")) continue;
+                            agg.TryGetValue(nm, out var a); agg[nm] = (a.n + 1, a.c + rig.Root.InverseTransformPoint(smr.transform.TransformPoint(vv[i])));
+                        }
+                        foreach (var kv in agg.OrderBy(x => x.Key)) Debug.Log($"[BONE] {id} {smr.name} {kv.Key} v{kv.Value.n} at {kv.Value.c / kv.Value.n:F2}");
+                    }
                     if (!smr.enabled || smr.sharedMesh == null) continue;
                     var baked = new Mesh(); smr.BakeMesh(baked);
                     var v = baked.vertices; var bw = smr.sharedMesh.boneWeights; var bones = smr.bones;
