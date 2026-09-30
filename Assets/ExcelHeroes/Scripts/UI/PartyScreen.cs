@@ -394,8 +394,11 @@ namespace ExcelHeroes.UI
                     if (el.userData is not (System.Collections.Generic.List<float> cs, System.Collections.Generic.List<string> who, float sw, float fl)) return;
                     // a tall glass card behind every slot (the r5 party redesign, tools/out/design/r5_08-Party_0):
                         // each member stands in a frame of their own instead of on bare backdrop
+                    // (no glass card per member any more: the reference's squad stands free on the backdrop — the part
+                    // cross-check read the boxes as clutter; the empty slots keep a faint card so they read as slots)
                     for (var i = 0; i < cs.Count; i++)
                     {
+                        if (!string.IsNullOrEmpty(who[i])) continue;
                         var cw = sw * r.width * 0.9f; var cx = r.xMin + cs[i] * r.width;
                         var card = Rect.MinMaxRect(cx - cw * 0.5f, r.yMin, cx + cw * 0.5f, r.yMin + fl * r.height + 4f);
                         var poly = UiPaint.SkewRect(card, card.height * 0.035f, 6f);

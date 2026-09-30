@@ -204,6 +204,24 @@ namespace ExcelHeroes.World
         }
 
         /// <summary>
+        /// The sheet as a halo: small, floating over the head and tipped back, as the reference's line-up shows
+        /// each student's halo (the part cross-check: no head accessory, weak silhouettes). On the head bone,
+        /// so it rides the idle; still the member's one sheet.
+        /// </summary>
+        public static void HaloSheet(ChibiRig rig, float scale)
+        {
+            if (rig.Sheet == null || rig.Head == null) return;
+            var root = rig.Root;
+            var top = root.TransformPoint(new Vector3(0f, rig.Height * 1.04f, -0.04f));
+            rig.Sheet.SetParent(rig.Head, true);
+            var ls = rig.Head.lossyScale;
+            rig.Sheet.localScale = new Vector3(scale / ls.x, scale / ls.y, scale / ls.z);
+            rig.Sheet.position = top;
+            rig.Sheet.rotation = root.rotation * Quaternion.Euler(0f, 180f, 0f) * Quaternion.Euler(-62f, 0f, rig.SheetSide * 8f);
+            rig.SheetWorn = true;
+        }
+
+        /// <summary>
         /// In battle the sheet lies flat under the feet instead of behind the shoulder: from the
         /// quarter-view camera a sheet on the back is hidden by the body and tangles with the next
         /// member's, while one on the floor reads clearly, marks the member's cell in the formation

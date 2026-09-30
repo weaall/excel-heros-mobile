@@ -122,11 +122,12 @@ namespace ExcelHeroes.World
                 var owned = Game.Player?.Find(id);
                 var spec = BackSheet.For(def, owned);
                 if (!rig.Sprite) ChibiBuilder.AddSheet(rig, SheetTexture.For(spec, id), spec.Left ? 1 : -1, Layer);
-                if (rig.RefModel) SdRef.WearSheet(rig, 0.78f, back: 0.6f, side: 0.2f, up: 0.74f);   // well behind the squad: a presence, not a thing through the hair
+                // the sheet floats over the head as a halo (the reference's line-up); placed after the figure is scaled
+                var halo = rig.RefModel;
                 SetLayer(rig.Root, Layer);
                 rig.Root.localPosition = rig.Home = new Vector3((centres[i] - 0.5f) * worldW, feetY, 0f);
                 // 0.92 of the floor-to-top height: long hair no longer spills into the next member's card (ui_gate 08-Party)
-                var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 0.92f / rig.Height, slotW * worldW * 1.4f) : scale;
+                var s = rig.Sprite || rig.Model3D ? Mathf.Min(floor * worldH * 1.06f / rig.Height, slotW * worldW * 1.7f) : scale;   // larger: the reference's line-up fills its slots
                 rig.Root.localScale = Vector3.one * s;
                 rig.Root.localRotation = rig.Sprite ? Quaternion.identity : rig.Model3D ? Quaternion.Euler(0f, 180f + 20f, 0f) : Quaternion.Euler(0f, 68f, 0f);
                 // measured: a figure wider than its card (long hair, a flared coat) is scaled down until
@@ -140,6 +141,7 @@ namespace ExcelHeroes.World
                 var fit = slotW * worldW * 0.86f;
                 // skinned bounds are loose, so the correction is capped: at most 15 % smaller
                 if (any && bounds.size.x > fit) rig.Root.localScale = Vector3.one * s * Mathf.Max(0.85f, fit / bounds.size.x);
+                if (halo) SdRef.HaloSheet(rig, 0.7f);
                 _figs.Add((rig, i * 1.3f));
             }
             _cam.enabled = true;
