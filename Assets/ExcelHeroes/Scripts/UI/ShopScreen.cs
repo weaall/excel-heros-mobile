@@ -350,7 +350,7 @@ namespace ExcelHeroes.UI
             foreach (var fb in new[] { GameData.MainId, "hr_jung", "barista" }) if (ids.Count < 2 && !ids.Contains(fb)) ids.Add(fb);
             for (var k = 0; k < ids.Count && k < 2; k++)
             {
-                var sd = GameData.SdArt(ids[k]);
+                var sd = GameData.SdPoseArt(ids[k]);
                 if (sd == null) continue;
                 var chib = UiKit.Div("nboard__chibi nboard__chibi--" + k, grid); chib.pickingMode = PickingMode.Ignore;
                 chib.style.backgroundImage = new StyleBackground(sd);

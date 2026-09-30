@@ -118,7 +118,7 @@ namespace ExcelHeroes.UI
             for (var i = 0; i < pick.Count; i++)
             {
                 var sd = UiKit.Div("gstage__sd", line);
-                UiKit.SetArt(sd, GameData.SdArt(pick[i].id));
+                UiKit.SetArt(sd, GameData.SdPoseArt(pick[i].id));   // the persona pose, not the neutral stance
                 sd.style.translate = new Translate(0f, i % 2 == 0 ? 0f : -46f);
                 var id = pick[i].id;
                 sd.RegisterCallback<ClickEvent>(_ => OpenInfo(id));

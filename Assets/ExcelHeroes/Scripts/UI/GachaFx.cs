@@ -403,7 +403,7 @@ namespace ExcelHeroes.UI
 
             // the SD card
             var sdCard = UiKit.Div("gx-info__sd", panel);
-            var sd = GameData.SdArt(heroId);
+            var sd = GameData.SdPoseArt(heroId);   // the persona pose
             ModalFrame.Painted(sdCard, (ctx, r) =>
             {
                 var p = UiPaint.SkewRect(r, r.height * 0.1f, 8f);

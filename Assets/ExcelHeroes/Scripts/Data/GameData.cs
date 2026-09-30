@@ -219,6 +219,16 @@ namespace ExcelHeroes.Data
             return Resources.Load<Sprite>($"Art/Standing/{key}") ?? (heroId == MainId ? Resources.Load<Sprite>($"Art/Standing/{heroId}") : null);
         }
 
+        /// <summary>
+        /// The member's expressive SD — the same drawing in a persona pose (Art/SDPose, tools/sd2d_pose_gemini.py) —
+        /// for the recruit line-up, the pull reveal and the notice board; the neutral SD when there is none.
+        /// </summary>
+        public static Sprite SdPoseArt(string heroId)
+        {
+            var key = heroId == MainId ? "intern" : heroId;
+            return Resources.Load<Sprite>($"Art/SDPose/{key}") ?? SdArt(heroId);
+        }
+
         /// <summary>The SD (chibi) battle sprite, cut out and normalised (768x960, feet at 944), or null.</summary>
         public static Sprite SdArt(string heroId)
         {

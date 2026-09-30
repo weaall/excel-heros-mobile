@@ -40,6 +40,7 @@ namespace ExcelHeroes.EditorTools
 
         /// <summary>SD battle sprites and stage backdrops: seen small, so they keep mipmaps.</summary>
         const string SdRoot = ArtRoot + "SD/";
+        const string SdPoseRoot = ArtRoot + "SDPose/";   // the expressive SD poses (tools/sd2d_pose_gemini.py)
         const string BattleRoot = ArtRoot + "Battle/";
         const string SdMonRoot = ArtRoot + "SDMonsters/";
 
@@ -157,7 +158,7 @@ namespace ExcelHeroes.EditorTools
                 return;
             }
 
-            if (assetPath.StartsWith(SdRoot) || assetPath.StartsWith(BattleRoot) || assetPath.StartsWith(SdMonRoot))
+            if (assetPath.StartsWith(SdRoot) || assetPath.StartsWith(SdPoseRoot) || assetPath.StartsWith(BattleRoot) || assetPath.StartsWith(SdMonRoot))
             {
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
