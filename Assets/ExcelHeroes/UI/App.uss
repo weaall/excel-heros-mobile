@@ -7206,3 +7206,8 @@
 .bresult__band--win .bresult__title { -unity-text-outline-width: 5px; -unity-text-outline-color: rgb(92, 40, 6); text-shadow: 0 6px 0 rgba(60, 20, 0, 0.7); }
 .bhud__armor-text { color: rgb(255, 255, 255); -unity-font-style: bold; }
 .battle--result .fighter { display: none; }   /* the win close-up is the squad alone: no HP bars over it (part cross-check) */
+/* the result's MVP line, top left (the reference's) */
+.bresult__say { position: absolute; left: 60px; top: 40px; flex-direction: row; align-items: center; }
+.bresult__say-face { width: 150px; height: 118px; }
+.bresult__say-line { height: 70px; padding: 0 44px 0 30px; margin-left: 8px; justify-content: center; }
+.bresult__say-text { font-size: 30px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; }

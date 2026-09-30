@@ -2177,6 +2177,33 @@ namespace ExcelHeroes.UI
                 });
             }
 
+            // the reference's result speaks: the MVP's face at the top left in a slanted frame, her line beside it
+            var mvpDef = _sim.Won && mvp != null ? GameData.Hero(mvp) : null;
+            if (mvpDef != null && !string.IsNullOrEmpty(mvpDef.line))
+            {
+                var say = UiKit.Div("bresult__say", popup); say.pickingMode = PickingMode.Ignore;
+                var face = UiKit.Div("bresult__say-face", say);
+                var st = GameData.StandingArt(mvp);
+                ModalFrame.Painted(face, (ctx, r) =>
+                {
+                    var p = UiPaint.SkewRect(r, r.height * 0.2f, 6f);
+                    UiPaint.Shadow(ctx, p, new Vector2(0f, 4f), UiPaint.C(0, 20, 50, 0.3f), 8f);
+                    UiPaint.Fill(ctx, p, Color.white);
+                    var inner = UiPaint.Offset(p, -3f);
+                    UiPaint.Fill(ctx, inner, UiPaint.Vertical(UiPaint.C(200, 232, 255), UiPaint.C(150, 204, 248), r.yMin, r.yMax));
+                    if (st != null) UiKit.PaintPortrait(ctx, inner, st, mvp, r, UiKit.Crop.Face);
+                    UiPaint.Stroke(ctx, p, UiPaint.C(0, 190, 250), 2f);
+                });
+                var bubble = UiKit.Div("bresult__say-line", say);
+                ModalFrame.Painted(bubble, (ctx, r) =>
+                {
+                    var p = UiPaint.SkewRect(r, r.height * 0.25f, 5f);
+                    UiPaint.Fill(ctx, p, UiPaint.C(18, 30, 62, 0.86f));
+                    UiPaint.Fill(ctx, UiPaint.Clip(p, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 20f, r.yMax - 3f, r.xMax + 20f, r.yMax + 2f), 0f)), UiPaint.C(0, 214, 255), 0f);
+                });
+                UiKit.Text(mvpDef.line, "bresult__say-text", bubble).pickingMode = PickingMode.Ignore;
+            }
+
             var acts = UiKit.Div("bresult__acts", popup);
             UiKit.Btn("확인", "btn bresult__btn", Close, acts);
             var confirmBtn = UiKit.Btn(_sim.Won ? "다음 Phase" : "다시 도전", "btn btn--primary bresult__btn", Close, acts);
