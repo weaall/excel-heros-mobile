@@ -269,7 +269,13 @@ namespace ExcelHeroes.World
 
         static Mesh Cut(Mesh src, Matrix4x4 toWorld)
         {
-            if (float.IsNaN(_cutY)) return src;
+            if (float.IsNaN(_cutY))
+            {
+                // uncut (tails, a long fall): still no stray specks — the samples' tails carry a few loose tip pieces
+                var mm = Object.Instantiate(src); var vv = src.vertices;
+                for (var s2 = 0; s2 < mm.subMeshCount; s2++) mm.SetTriangles(Islands(new List<int>(mm.GetTriangles(s2)), vv), s2, false);
+                mm.RecalculateBounds(); return mm;
+            }
             var m = Object.Instantiate(src);
             var v = src.vertices;
             var wy = new float[v.Length];
