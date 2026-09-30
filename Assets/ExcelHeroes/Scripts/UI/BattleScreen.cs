@@ -174,11 +174,6 @@ namespace ExcelHeroes.UI
                 var sl = SkewPlate.SlantFor(r.height) * 0.7f;
                 var poly = UiPaint.SkewRect(r, sl, 2f);
                 UiPaint.Fill(ctx, poly, UiPaint.Horizontal(UiPaint.C(20, 32, 70, 0.78f), UiPaint.C(34, 50, 100, 0.72f), r.xMin, r.xMax));
-                foreach (var f in new[] { 0.33f, 0.62f })
-                {
-                    var x = r.xMin + r.width * f;
-                    UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2> { new(x + sl, r.yMin), new(x + sl + 3f, r.yMin), new(x + 3f, r.yMax), new(x, r.yMax) }, UiPaint.C(255, 255, 255, 0.35f), 0f);
-                }
                 UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMin, r.xMax + 10f, r.yMin + 2.5f), 0f)), UiPaint.C(120, 200, 255, 0.8f), 0f);
             });
             _waveLabel = UiKit.Text("", "battle__wave bhud__wave", pill);
@@ -193,10 +188,25 @@ namespace ExcelHeroes.UI
                 UiPaint.Fill(ctx, chip, col);   // solid on the navy HUD (a 22 % tint vanished on it)
             });
             _armorText = UiKit.Text("", "bhud__armor-text", _armorChip);
-            ModalFrame.Painted(UiKit.Div("bhud__icon", pill), DrawEnemyIcon);
-            _enemyLabel = UiKit.Text("", "bhud__num", pill);
-            ModalFrame.Painted(UiKit.Div("bhud__icon", pill), DrawClockIcon);
-            _timeLabel = UiKit.Text("", "bhud__num bhud__time", pill);
+            // the enemies left and the clock as the reference's own readouts: one navy slant each, clear on
+            // the left and deepening to the right, a cyan icon at the left and the number large, italic and
+            // right-aligned (ba_parts battle_hud 4.0: "a simple flat rectangle, generic type")
+            VisualElement Readout(System.Action<MeshGenerationContext, Rect> icon, out Label label)
+            {
+                var chip = UiKit.Div("bhud__chip", hud);
+                ModalFrame.Painted(chip, (ctx, r) =>
+                {
+                    var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.7f, 2f);
+                    UiPaint.Fill(ctx, poly, UiPaint.Horizontal(UiPaint.C(22, 40, 92, 0.34f), UiPaint.C(16, 30, 72, 0.86f), r.xMin, r.xMin + r.width * 0.7f), 0f);
+                    UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMax - 3f, r.xMax + 10f, r.yMax), 0f)), UiPaint.C(90, 190, 255, 0.55f), 0f);
+                });
+                ModalFrame.Painted(UiKit.Div("bhud__chip-icon", chip), (ctx, r) => icon(ctx, r));
+                label = UiKit.Text("", "bhud__num bhud__chip-num", chip);
+                return chip;
+            }
+            Readout(DrawEnemyIcon, out _enemyLabel);
+            Readout(DrawClockIcon, out _timeLabel).AddToClassList("bhud__chip--time");
+            _timeLabel.AddToClassList("bhud__time");
 
             _speedButton = Square(hud, DrawSpeedIcon, ToggleSpeed, out _speedLabel);
             _autoButton = Square(hud, null, ToggleAuto, out var autoLabel);
@@ -504,9 +514,11 @@ namespace ExcelHeroes.UI
         static void DrawEnemyIcon(MeshGenerationContext ctx, Rect r)
         {
             var c = r.center; var rad = r.height * 0.42f;
-            UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad * 0.92f), UiPaint.C(240, 90, 90));
-            UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(-rad * 0.35f, -rad * 0.1f), rad * 0.22f, rad * 0.26f), UiPaint.C(255, 255, 255));
-            UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(rad * 0.35f, -rad * 0.1f), rad * 0.22f, rad * 0.26f), UiPaint.C(255, 255, 255));
+            // cyan with navy eyes, the reference's enemy-count glyph
+            UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad * 0.92f), UiPaint.C(64, 170, 255));
+            UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2> { c + new Vector2(-rad * 0.5f, rad * 0.6f), c + new Vector2(rad * 0.5f, rad * 0.6f), c + new Vector2(rad * 0.4f, rad * 1.05f), c + new Vector2(-rad * 0.4f, rad * 1.05f) }, UiPaint.C(64, 170, 255));
+            UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(-rad * 0.36f, -rad * 0.05f), rad * 0.24f, rad * 0.28f), UiPaint.C(16, 30, 72));
+            UiPaint.Fill(ctx, UiPaint.Ellipse(c + new Vector2(rad * 0.36f, -rad * 0.05f), rad * 0.24f, rad * 0.28f), UiPaint.C(16, 30, 72));
         }
 
         /// <summary>Tracks the living boss: shows the bar, and drives the fill, the trail and the layer count.</summary>

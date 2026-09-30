@@ -7259,3 +7259,10 @@
 .nbanner--big .nbanner__title { font-size: 72px; -unity-font-style: normal; -unity-text-outline-width: 0; }
 .nbanner--side .nbanner__title { font-size: 52px; text-shadow: 0 0 0 rgba(0,0,0,0); max-width: 760px; overflow: hidden; text-overflow: ellipsis; }
 .nbanner--small .nbanner__title { font-size: 44px; }
+
+/* battle HUD r12: the enemies left and the clock as separate navy readout slants (BattleScreen.Readout) */
+.bhud__chip { flex-direction: row; align-items: center; justify-content: space-between; width: 230px; height: 72px; padding: 0 30px 0 26px; margin-right: 8px; }
+.bhud__chip-icon { width: 46px; height: 46px; flex-shrink: 0; }
+.bhud .bhud__chip-num { font-size: 52px; margin: 0; padding: 0; -unity-text-align: middle-right; flex-grow: 1; text-shadow: 0 2px 0 rgba(0, 10, 30, 0.45); }
+.bhud .bhud__chip-num.bhud__time { min-width: 0; }
+.bhud__chip--time { width: 260px; }
