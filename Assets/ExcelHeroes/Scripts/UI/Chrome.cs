@@ -218,8 +218,15 @@ namespace ExcelHeroes.UI
             {
                 var plate = top.Q<VisualElement>("playerPlate"); var gem = top.Q<VisualElement>("gemChip"); var gold = top.Q<VisualElement>("goldChip");
                 if (plate == null || gem == null || float.IsNaN(gem.layout.width)) return;
-                var x0 = plate.layout.xMin - 10f; var x1 = gem.layout.xMax + 26f;
-                var y0 = Mathf.Min(plate.layout.yMin, gem.layout.yMin); var y1 = Mathf.Max(plate.layout.yMax, gem.layout.yMax);
+                // the reference's lobby: the player on a dark navy slanted plate of her own (yellow "Lv.", white name,
+                // a cyan EXP line), and the currencies on a separate light glass bar
+                var pr = Rect.MinMaxRect(plate.layout.xMin - 40f, plate.layout.yMin - 6f, plate.layout.xMax + 10f, plate.layout.yMax + 2f);
+                var pq = UiPaint.SkewRect(pr, SkewPlate.SlantFor(pr.height) * 0.8f, 6f);
+                UiPaint.Shadow(ctx, pq, new Vector2(0f, 4f), C(0, 10, 40, 0.3f), 10f);
+                UiPaint.Fill(ctx, pq, UiPaint.Horizontal(C(18, 30, 62, 0.95f), C(34, 56, 104, 0.9f), pr.xMin, pr.xMax), 0f);
+                UiPaint.Fill(ctx, UiPaint.Clip(UiPaint.RoundRect(Rect.MinMaxRect(pr.xMin - 20f, pr.yMax - 4f, pr.xMax + 20f, pr.yMax), 0f), pq), C(64, 196, 240), 0f);
+                var x0 = (gold ?? gem).layout.xMin - 40f; var x1 = gem.layout.xMax + 26f;
+                var y0 = gem.layout.yMin - 4f; var y1 = gem.layout.yMax + 4f;
                 var bar = Rect.MinMaxRect(x0, y0, x1, y1);
                 var slant = SkewPlate.SlantFor(bar.height) * 0.8f;
                 var poly = UiPaint.SkewRect(bar, slant, 8f);
@@ -231,7 +238,7 @@ namespace ExcelHeroes.UI
                 UiPaint.Fill(ctx, UiPaint.Clip(gloss, inner), C(255, 255, 255, 0.35f), 1f);
                 UiPaint.Fill(ctx, UiPaint.Clip(UiPaint.RoundRect(Rect.MinMaxRect(bar.xMin - 20f, bar.yMax - 5f, bar.xMax + 20f, bar.yMax), 0f), inner), C(64, 196, 240, 0.85f), 0f);
                 // the slashes between the sections
-                foreach (var el in new[] { gold, gem })
+                foreach (var el in new[] { gem })
                 {
                     if (el == null) continue;
                     var x = el.layout.xMin - 4f; var h = bar.height * 0.5f; var cy = bar.center.y;

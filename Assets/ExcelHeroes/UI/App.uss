@@ -7469,3 +7469,21 @@
 .overlay--page .detail__sheet.backsheet--left, .overlay--page .detail__sheet.backsheet--right { left: 43%; }
 .overlay--page .detail__figure--standing { top: 7%; bottom: -30%; }
 .overlay--page .detail__sheet { top: 1%; height: 17%; }
+
+/* lobby player plate r21 — the reference's: a dark navy plate, "Lv." in small yellow italic over a big white
+   number, the name in white, a thin cyan EXP line (it was a white bar with navy type) */
+.shell--lobby .plate { padding-right: 90px; }
+.shell--lobby .plate__avatar { border-color: rgb(255, 255, 255); }
+.shell--lobby .plate__rank-word { color: rgb(255, 214, 90); font-size: 28px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); }
+.shell--lobby .plate__rank-num { color: rgb(255, 255, 255); font-size: 40px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); }
+.shell--lobby .plate__name { color: rgb(255, 255, 255); }
+.shell--lobby .plate__bar { background-color: rgba(255, 255, 255, 0.18); }
+
+/* lobby player plate r21 — the reference's: a dark navy plate, "Lv." in small yellow italic over a big white
+   number, the name in white, a thin cyan EXP line (it was a white bar with navy type) */
+.shell--lobby .plate { padding-right: 90px; }
+.shell--lobby .plate__avatar { border-color: rgb(255, 255, 255); }
+.shell--lobby .plate__rank-word { color: rgb(255, 214, 90); font-size: 28px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); }
+.shell--lobby .plate__rank-num { color: rgb(255, 255, 255); font-size: 40px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); }
+.shell--lobby .plate__name { color: rgb(255, 255, 255); }
+.shell--lobby .plate__bar { background-color: rgba(255, 255, 255, 0.18); }
