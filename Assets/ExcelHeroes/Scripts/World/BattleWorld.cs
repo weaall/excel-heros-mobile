@@ -152,6 +152,8 @@ namespace ExcelHeroes.World
         }
 
         bool _entering;
+        /// <summary>The member's sheet floats over her head as a halo in the fight, not flat on the street under her.</summary>
+        public static bool HaloInFight = System.Environment.GetEnvironmentVariable("EH_FLOORSHEET") != "1";
         Transform _props;
 
         const float BackdropDistance = 40f;
@@ -1902,7 +1904,9 @@ namespace ExcelHeroes.World
                 {
                     // flat on the street under the member, square to the camera's turn, gone when down
                     Rig.Sheet.gameObject.SetActive(C.Alive && Dying <= 0f);
-                    if (closeUp > 0.5f)
+                    // in the fight too (the BA part check, battle_chars: "intrusive UI clipping" — the neon sheet on the
+                    // street under every member read as clutter; the reference's squads carry only halos)
+                    if (closeUp > 0.5f || HaloInFight)
                     {
                         // the win's close-up: the member's sheet rises to float over her head, small and tipped
                         // back like a halo, bobbing — the reference's squads are read by their halos (the BA
@@ -1910,7 +1914,7 @@ namespace ExcelHeroes.World
                         var head = new Vector3(px, y + Rig.Height * root.localScale.y * 1.02f + Mathf.Sin(time * 2.2f + Z) * 0.03f, pz);
                         Rig.Sheet.localPosition = head;
                         Rig.Sheet.localRotation = Quaternion.Euler(62f, 0f, Rig.SheetSide * 8f);
-                        Rig.Sheet.localScale = Vector3.one * 0.62f;
+                        Rig.Sheet.localScale = Vector3.one * (closeUp > 0.5f ? 0.62f : 0.72f);
                     }
                     else
                     {
