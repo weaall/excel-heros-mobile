@@ -1816,7 +1816,7 @@ namespace ExcelHeroes.World
                     var atkOn = _atkT < SdPose.AttackLen; var hitOn = _hitT < SdPose.HitLen; var sklOn = _sklT < SdPose.SkillLen;
                     if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / SdPose.DeadLen) : 1f);
                     else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(Pid), _winT);
-                    else if (sklOn) _pose = SdPose.SkillAt(SdPose.AttackOf(Pid, C.role), _sklT / SdPose.SkillLen);
+                    else if (sklOn) _pose = SdPose.SkillAt(SdPose.SkillOf(Pid, C.role), _sklT / SdPose.SkillLen);
                     else if (hitOn) _pose = SdPose.Hit(1f - _hitT / SdPose.HitLen);
                     else if (atkOn) _pose = SdPose.AttackAt(AttackPose(C), _atkT / SdPose.AttackLen);
                     else if (walking) _pose = _speed > RunSpeed * Rig.Root.localScale.x ? SdPose.Run(_walk) : SdPose.Walk(_walk);

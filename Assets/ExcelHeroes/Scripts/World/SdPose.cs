@@ -201,6 +201,10 @@ namespace ExcelHeroes.World
             new[] { 0f, 0f, 0.5f, 0.7f, 0.8f, 0.74f, 1f, 1f },
             new[] { 0f, 0f, 0.5f, 0.7f, 0.66f, 0.8f, 0.86f, 0.9f, 1f, 1f },
             new[] { 0f, 0f, 0.5f, 0.7f, 0.8f, 0.8f, 1f, 1f },
+            new[] { 0f, 0f, 1f, 1f },   // 3 spin slash (its own timing inside)
+            new[] { 0f, 0f, 1f, 1f },   // 4 dash thrust
+            new[] { 0f, 0f, 1f, 1f },   // 5 rapid fire
+            new[] { 0f, 0f, 1f, 1f },   // 6 power-up
         };
 
         static float Remap(float[] k, float u)
@@ -235,6 +239,17 @@ namespace ExcelHeroes.World
         public static int IdleOf(string id) { var k = SdLook.For(id); if (k.Idle >= 0) return k.Idle % IdleCount; var pp = SdPersona.For(id); return pp.Has ? pp.Idles[Hash(id) % pp.Idles.Length] : Hash(id) % IdleCount; }
         public static int WinOf(string id) { var k = SdLook.For(id); if (k.Win >= 0) return k.Win % WinCount; var pp = SdPersona.For(id); return pp.Has ? pp.Wins[(Hash(id) / 7) % pp.Wins.Length] : (Hash(id) / 7) % WinCount; }
         public static int AttackOf(string role) => role switch { "ranged" => 1, "healer" => 2, "caster" => 2, _ => 0 };
+        /// <summary>
+        /// The member's EX body motion (the user: "no attack motion of their own"), from the role's pool: melee and
+        /// tank a jump smash, a spin slash or a dash thrust; ranged a hurled spin or a rapid volley; support a floating
+        /// cast or a power-up. Picked per member, so two of one role no longer cast alike.
+        /// </summary>
+        public static int SkillOf(string id, string role)
+        {
+            var baseKind = AttackOf(id, role);
+            int[] pool = baseKind switch { 1 => new[] { 1, 5 }, 2 => new[] { 2, 6 }, _ => new[] { 0, 3, 4 } };
+            return pool[(Hash(id) / 3) % pool.Length];
+        }
         /// <summary>The attack kind for a character: the spec's, else by role.</summary>
         public static int AttackOf(string id, string role) { var k = SdLook.For(id); return AttackOf(k.Attack is { Length: > 0 } ? k.Attack : role); }
 
@@ -865,6 +880,75 @@ namespace ExcelHeroes.World
                         p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 25f, up) - hurl * 15f; p.FistL = p.FistR = 0.6f;
                         p.Yaw = spin * 360f; p.Y = Mathf.Sin(spin * Mathf.PI) * 0.3f + hurl * 0.08f; p.Lean = -6f * up + hurl * 22f;
                         p.KneeL = p.KneeR = Mathf.Sin(spin * Mathf.PI) * 30f + hurl * 20f; p.HeadPitch = -8f * up + hurl * 12f;
+                        break;
+                    }
+                case 3:
+                    {
+                        // spin slash: a crouch, then two full turns with the striking arm out straight at shoulder
+                        // height, low and leaning into it; it ends facing the foe, arm extended, held
+                        var c0 = EaseInOut(Mathf.Clamp01(k / 0.18f));
+                        var spin = EaseInOut(Mathf.Clamp01((k - 0.16f) / 0.5f));
+                        var rec = EaseInOut(Mathf.Clamp01((k - 0.85f) / 0.15f));
+                        var arm = Mathf.Clamp01((k - 0.14f) / 0.08f) * (1f - rec);
+                        p.Yaw = spin * 720f;
+                        p.KneeL = p.KneeR = (30f * c0 + 10f * spin) * (1f - rec); p.Squash = -0.08f * c0 * (1f - spin);
+                        p.Lean = (8f * c0 + 10f * Mathf.Sin(spin * Mathf.PI)) * (1f - rec);
+                        p.RaiseR = Mathf.Lerp(-36f, 0f, arm); p.SwingR = Mathf.Lerp(3f, 90f, arm); p.ElbowR = Mathf.Lerp(14f, 4f, arm); p.FistR = 1f; p.ReachR = 10f * arm;
+                        p.RaiseL = Mathf.Lerp(-36f, -10f, arm); p.SwingL = Mathf.Lerp(3f, -40f, arm); p.ElbowL = 40f * arm; p.FistL = 1f;
+                        p.Y = Mathf.Sin(spin * Mathf.PI) * 0.12f; p.HeadPitch = 6f * arm; p.Step = 0.1f * spin * (1f - rec);
+                        break;
+                    }
+                case 4:
+                    {
+                        // dash thrust: drawn back low (weight on the back foot, the arm cocked), a burst forward far past
+                        // the line with the fist driven straight out, the body flat along it; held, then back
+                        var draw = EaseInOut(Mathf.Clamp01(k / 0.28f));
+                        var dash = EaseOutBack(Mathf.Clamp01((k - 0.28f) / 0.14f), 1.1f);
+                        var rec = EaseInOut(Mathf.Clamp01((k - 0.78f) / 0.22f));
+                        var d = dash * (1f - rec);
+                        p.Step = Mathf.Lerp(-0.08f * draw, 0.55f, dash) * (1f - rec);
+                        p.KneeL = (22f * draw + 34f * d) * (1f - rec * 0.5f); p.KneeR = 30f * draw * (1f - dash) + 8f * d;
+                        p.Lean = Mathf.Lerp(-8f * draw, 26f, dash) * (1f - rec); p.SpineBend = 8f * d;
+                        p.SwingR = Mathf.Lerp(Mathf.Lerp(3f, -50f, draw), 78f, dash); p.SwingR = Mathf.Lerp(p.SwingR, 3f, rec);   // level: past 90 the fist rose to the head
+                        p.ElbowR = Mathf.Lerp(Mathf.Lerp(14f, 110f, draw), 2f, dash); p.ElbowR = Mathf.Lerp(p.ElbowR, 14f, rec);
+                        p.RaiseR = Mathf.Lerp(-36f, -24f, Mathf.Max(draw, dash)) * (1f - rec) - 36f * rec; p.ReachR = 16f * d; p.FistR = 1f;   // the fist at the chest, driven forward (at -6 it rose to the head)
+                        p.SwingL = Mathf.Lerp(3f, -30f, d); p.RaiseL = -30f; p.ElbowL = 60f; p.FistL = 1f;
+                        p.Twist = Mathf.Lerp(-16f * draw, 18f, dash) * (1f - rec); p.SpineTwist = Mathf.Lerp(-14f * draw, 20f, dash) * (1f - rec);
+                        p.Squash = -0.06f * draw * (1f - dash) + 0.05f * Impulse(Mathf.Clamp01((k - 0.28f) / 0.2f), 0.3f);
+                        p.HeadPitch = 6f * d;
+                        break;
+                    }
+                case 5:
+                    {
+                        // rapid fire: down on one knee, both hands out at the target, five sharp recoils, the last a big one
+                        var set = EaseOutBack(Mathf.Clamp01(k / 0.16f), 1.2f);
+                        var rec = EaseInOut(Mathf.Clamp01((k - 0.84f) / 0.16f));
+                        var on = set * (1f - rec);
+                        var t = Mathf.Clamp01((k - 0.18f) / 0.6f) * 5f;
+                        var kick = k > 0.18f && k < 0.78f ? Mathf.Pow(1f - Mathf.Repeat(t, 1f), 3f) * (Mathf.FloorToInt(t) == 4 ? 1.6f : 1f) : 0f;
+                        p.KneeL = 70f * on; p.KneeR = 100f * on; p.ThighR = -20f * on; p.Y = -0.12f * on;
+                        p.RaiseL = p.RaiseR = Mathf.Lerp(-36f, -4f, on); p.SwingL = p.SwingR = Mathf.Lerp(3f, 86f, on) - kick * 18f;
+                        p.ElbowL = p.ElbowR = Mathf.Lerp(14f, 8f, on) + kick * 26f; p.InL = p.InR = 18f * on; p.FistL = p.FistR = 0.7f;
+                        p.Lean = 6f * on - kick * 6f; p.SpineBend = -kick * 4f; p.HeadPitch = 4f * on + kick * 2f; p.Squash = -0.03f * kick;
+                        break;
+                    }
+                case 6:
+                    {
+                        // power-up: arms swept out and up, rising off the street, head back, a beat held high, then one
+                        // arm brought down to point at the foe on the landing
+                        p.Expr = "smile";
+                        var rise = EaseInOut(Mathf.Clamp01(k / 0.35f));
+                        var point = EaseOutBack(Mathf.Clamp01((k - 0.62f) / 0.14f), 1.3f);
+                        var rec = EaseInOut(Mathf.Clamp01((k - 0.86f) / 0.14f));
+                        var up = rise * (1f - point);
+                        p.Y = (0.4f * rise - 0.36f * point) * (1f - rec) + Mathf.Sin(k * 18f) * 0.015f * up;
+                        p.RaiseL = Mathf.Lerp(-36f, 70f, rise) * (1f - rec) - 36f * rec; p.SwingL = Mathf.Lerp(3f, -30f, rise) * (1f - rec); p.ElbowL = 10f; p.FistL = 0f; p.HandFlexL = -30f * rise;
+                        p.RaiseR = Mathf.Lerp(Mathf.Lerp(-36f, 70f, rise), -4f, point); p.RaiseR = Mathf.Lerp(p.RaiseR, -36f, rec);
+                        p.SwingR = Mathf.Lerp(Mathf.Lerp(3f, -30f, rise), 92f, point); p.SwingR = Mathf.Lerp(p.SwingR, 3f, rec);
+                        p.ElbowR = Mathf.Lerp(10f, 4f, point); p.FistR = Mathf.Lerp(0f, 0.8f, point); p.ReachR = 12f * point * (1f - rec);
+                        p.HeadPitch = -16f * up + 6f * point; p.SpineBend = -10f * up; p.Lean = -6f * up + 10f * point * (1f - rec);
+                        p.KneeL = p.KneeR = 20f * up + 26f * point * (1f - rec); p.ToeL = p.ToeR = 30f * up;
+                        p.Squash = 0.06f * up - 0.08f * Impulse(Mathf.Clamp01((k - 0.7f) / 0.2f), 0.3f);
                         break;
                     }
                 case 2:
