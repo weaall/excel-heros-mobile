@@ -1846,9 +1846,23 @@ namespace ExcelHeroes.World
                 if (Rig.SheetFloor && Rig.Sheet != null)
                 {
                     // flat on the street under the member, square to the camera's turn, gone when down
-                    Rig.Sheet.gameObject.SetActive(C.Alive && Dying <= 0f && closeUp < 0.05f);   // the win's close-up is the squad alone
-                    Rig.Sheet.localPosition = new Vector3(X + lunge, 0.02f, Z) + facing;
-                    Rig.Sheet.localRotation = Quaternion.Euler(90f, QuarterYaw * (1f - closeUp), 0f);
+                    Rig.Sheet.gameObject.SetActive(C.Alive && Dying <= 0f);
+                    if (closeUp > 0.5f)
+                    {
+                        // the win's close-up: the member's sheet rises to float over her head, small and tipped
+                        // back like a halo, bobbing — the reference's squads are read by their halos (the BA
+                        // cross-check: our silhouettes had nothing over the head); still one sheet per member
+                        var head = new Vector3(px, y + Rig.Height * root.localScale.y * 1.02f + Mathf.Sin(time * 2.2f + Z) * 0.03f, pz);
+                        Rig.Sheet.localPosition = head;
+                        Rig.Sheet.localRotation = Quaternion.Euler(62f, 0f, Rig.SheetSide * 8f);
+                        Rig.Sheet.localScale = Vector3.one * 0.62f;
+                    }
+                    else
+                    {
+                        Rig.Sheet.localPosition = new Vector3(X + lunge, 0.02f, Z) + facing;
+                        Rig.Sheet.localRotation = Quaternion.Euler(90f, QuarterYaw * (1f - closeUp), 0f);
+                        Rig.Sheet.localScale = Vector3.one * 1.8f;
+                    }
                 }
                 var flash = Hit > 0.11f ? 1f : Hit > 0.08f ? 0.45f : 0f;
                 SetFlash(flash, mpb);
