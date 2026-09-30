@@ -401,8 +401,8 @@ namespace ExcelHeroes.World
                 case 1:
                     p.RaiseR = -6f; p.SwingR = 62f; p.ElbowR = 55f; p.InR = 35f; p.HandFlexR = 10f; p.FistR = 0.6f;
                     p.RaiseL = -10f; p.SwingL = 55f; p.ElbowL = 70f; p.InL = 45f; p.HandFlexL = 20f; p.FistL = 0.6f;
-                    p.KneeL = 20f; p.KneeR = 12f; p.Lean = 7f; p.Twist = 16f + br * 1.5f; p.SpineTwist = 8f; p.HeadPitch = 3f; p.Sway = 0.012f; p.ReachR = 8f; p.Squash = -0.03f + Mathf.Abs(br) * 0.015f;
-                    p.Spread = 8f;   // feet apart, knees soft: a stance, not a queue
+                    p.KneeL = 30f; p.KneeR = 22f; p.Lean = 11f; p.Twist = 16f + br * 1.5f; p.SpineTwist = 8f; p.HeadPitch = 3f; p.Sway = 0.012f; p.ReachR = 8f; p.Squash = -0.03f + Mathf.Abs(br) * 0.015f;
+                    p.Spread = 12f;   // feet wide, knees deep: the weight low (part cross-check: "lower the centre of gravity")
                     break;
                 case 2:
                     p.RaiseR = -14f; p.SwingR = 45f; p.ElbowR = 100f; p.InR = 15f; p.HandFlexR = 0f; p.FistR = 0.7f;
@@ -793,8 +793,8 @@ namespace ExcelHeroes.World
             p.Y = Mathf.Max(0f, air - 0.3f) * 0.2f;
             var land = Mathf.Pow(1f - air, 3f);                 // the contact is short and hard: squash only right at it
             p.Squash = (air - 0.5f) * 0.06f - land * 0.07f;     // stretched in the air, squashed at the landing
-            p.Lean = 22f + land * 5f;                           // well into the run, a dip at each landing
-            p.HeadPitch = -13f - land * 3f;                     // the head up against the lean, so the face still reads
+            p.Lean = 26f + land * 5f;                           // well into the run, a dip at each landing
+            p.HeadPitch = -16f - land * 3f;                     // the head up against the lean, so the face still reads
             p.Sway = -pass * 0.008f; p.HipRoll = pass * 5f; p.Twist = sw * 8f;
             p.SpineTwist = -sw * 10f; p.ReachL = sw * 6f; p.ReachR = -sw * 6f;
             p.HeadYaw = -sw * 2.5f;                             // p.Y is the flight: SdPose.Apply plants the lowest foot, Y lifts it off

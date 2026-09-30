@@ -54,6 +54,9 @@ Shader "ExcelHeroes/Toon"
         // the outline's floor in screen pixels (global; 0 = the world width only): a crisp edge of the
         // same weight at any distance, as the reference's models keep (the BA cross-check: "no crisp outlines")
         float _EhOutlinePx;
+        // the cast's colour lift (global, 0 = off): saturation added over the painted sheets, which came out
+        // greyed by the repaint (the part cross-check: "increase albedo saturation")
+        float _EhSatBoost;
 
         struct Attributes
         {
@@ -126,6 +129,8 @@ Shader "ExcelHeroes/Toon"
                 float band = 1 - smoothstep(0.035, 0.06, abs(n.y - 0.58));
                 float facing = smoothstep(0.25, 0.5, dot(n, normalize(i.viewWS)));
                 col += band * facing * _Spec * 0.34;
+                float lum = dot(col, float3(0.299, 0.587, 0.114));
+                col = max(0, lerp(lum.xxx, col, 1 + _EhSatBoost));
                 col = lerp(col, float3(1,1,1), _Flash);
                 return half4(col, 1);
             }
@@ -189,6 +194,8 @@ Shader "ExcelHeroes/Toon"
                 float band = 1 - smoothstep(0.035, 0.06, abs(n.y - 0.58));
                 float facing = smoothstep(0.25, 0.5, dot(n, normalize(i.viewWS)));
                 col += band * facing * _Spec * 0.34;
+                float lum = dot(col, float3(0.299, 0.587, 0.114));
+                col = max(0, lerp(lum.xxx, col, 1 + _EhSatBoost));
                 col = lerp(col, float3(1,1,1), _Flash);
                 return half4(col, 1);
             }
