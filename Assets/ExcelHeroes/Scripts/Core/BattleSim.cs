@@ -58,7 +58,8 @@ namespace ExcelHeroes.Core
         public float hasteLeft, hasteAmount;
         public float slowLeft, slowAmount;
         public float tauntLeft;
-        public float burnAcc, regenAcc;   // the damage / healing fractions carried between steps
+        public float burnAcc, regenAcc;
+        public float atkBuffLeft, atkBuffAmount, shieldLeft;   // the damage / healing fractions carried between steps
         public float guardLeft;         // timed damage reduction (보스 방어막, 총대 메기)
         public float dmgReduction;      // the timed part, cleared when those timers run out
         public float baseReduction;     // standing part (철벽 멘탈); never cleared
@@ -323,6 +324,8 @@ namespace ExcelHeroes.Core
                 // 스킬 레벨 takes 3% off the charge time per level, on top of the tech perk.
                 var cooldown = hasSkill
                     ? skill.cooldown * (1f - Perk("cooldown")) * StatMath.SkillCooldownMult(owned)
+                      // 인사's perk (쓰러진 영웅 복귀 시간 -30 %): the revive's own charge — nothing had read it
+                      * (def.skillType == "revive" ? 1f - Perk("revive") : 1f)
                     : 0f;
                 var traitValue = StatMath.TraitValue(owned);   // already scaled by ★
 
@@ -352,6 +355,9 @@ namespace ExcelHeroes.Core
 
                 // 빠른 손놀림 shortens this hero's own swing; 철벽 멘탈 is a standing damage cut.
                 if (c.traitId == "swift") c.interval /= 1f + traitValue;
+                // the 사원증 slot's attack speed (and its set bonus): summed by EquipService, never read here before
+                var eqSpeed = EquipService.Stats(player, owned.id).Speed;
+                if (eqSpeed > 0f) c.interval /= 1f + eqSpeed / 100f;
                 if (c.traitId == "sturdy") c.baseReduction = traitValue;
 
                 c.hp = c.maxHp;
@@ -364,7 +370,9 @@ namespace ExcelHeroes.Core
             // 영업 마인드 / 행운의 셀 pay out at the end of the run rather than per swing.
             _goldBonus = Heroes.Where(h => h.traitId == "greedy").Sum(h => h.traitValue) + Perk("gold")
                          + TeamUpgrades.Gold(player);
-            _gemBonus = (int)Heroes.Where(h => h.traitId == "lucky").Sum(h => h.traitValue);
+            // the ★ scaling (1 → 1.48) as the odds of one more gem: cast to int, it never paid anything
+            var lucky = Heroes.Where(h => h.traitId == "lucky").Sum(h => h.traitValue);
+            _gemBonus = (int)lucky + (Random.value < lucky - (int)lucky ? 1 : 0);
             _gemDropBonus = TeamUpgrades.GemChance(player);
 
             SpawnWave();
@@ -666,6 +674,8 @@ namespace ExcelHeroes.Core
                 if (bd > 0) Damage(null, c, bd, silent: true);
             }
             if (c.hasteLeft > 0f) c.hasteLeft -= dt;
+            if (c.atkBuffLeft > 0f && (c.atkBuffLeft -= dt) <= 0f) c.atkBuffAmount = 0f;
+            if (c.shieldLeft > 0f && (c.shieldLeft -= dt) <= 0f) c.shield = 0f;
             if (c.slowLeft > 0f) c.slowLeft -= dt;
             if (c.tauntLeft > 0f) c.tauntLeft -= dt;
             if (c.guardLeft > 0f) c.guardLeft -= dt;
@@ -956,7 +966,7 @@ namespace ExcelHeroes.Core
                 case "drain":
                     return hurt >= 0.25f;                         // hold it until there is damage to undo
                 case "revive":
-                    return Heroes.Any(a => !a.Alive) || hurt >= 0.4f;  // or bank the 재고용 보장 before it is needed
+                    return Heroes.Any(a => !a.Alive);                   // only with someone down: cast early it did nothing and spent the cost and the 20 s charge
                 case "barrier":
                 case "taunt":
                     return live >= 2 || Monsters.Any(m => m.boss != null);
@@ -1036,6 +1046,8 @@ namespace ExcelHeroes.Core
         {
             if (!to.Alive || amount <= 0) return;
             if (from != null && from.side == Side.Monster) amount = (int)(amount * EnrageMultiplier);
+            // 팀 워크: the party's attack up while it lasts (it had been given as attack speed, not what it says)
+            if (from != null && from.atkBuffLeft > 0f) amount = StatMath.Sat(amount * (1.0 + from.atkBuffAmount));
             // 업무 상성: a hero's attack against the error's armour
             var affinity = 0;
             if (from != null && from.side == Side.Hero && to.side == Side.Monster && from.atkType >= 0 && to.armorType >= 0)
@@ -1070,7 +1082,7 @@ namespace ExcelHeroes.Core
                     Fx(FxKind.Sparkle, to.x, to.y - 20f, new Color(0.98f, 0.85f, 0.45f));
                     AddShake(to.boss != null ? 10f : to.elite ? 5f : 2f);
 
-                    var worth = StatMath.StageGold(Stage) * (to.elite ? 3f : to.atk == 0 ? 5f : 1f);
+                    var worth = StatMath.StageGold(Stage) * (to.boss != null ? 4f : to.elite ? 3f : to.atk == 0 ? 5f : 1f);   // a boss had paid a third of an elite (8× doubled a run's gold: every stage ends in one)
                     GoldEarned += (int)(worth * (1f + _goldBonus));
 
                     // 보석 드롭 — a small chance per kill, tripled on elites, and the only thing
@@ -1198,7 +1210,7 @@ namespace ExcelHeroes.Core
                     }
                     break;
                 case "buff":
-                    foreach (var a in allies) { a.hasteLeft = 5f; a.hasteAmount = Math.Max(a.hasteAmount, power / 100f); }
+                    foreach (var a in allies) { a.atkBuffLeft = 5f; a.atkBuffAmount = Math.Max(a.atkBuffAmount, power / 100f); }
                     break;
                 case "haste":
                     foreach (var a in allies) { a.hasteLeft = skill.duration > 0 ? skill.duration : 5f; a.hasteAmount = Math.Max(a.hasteAmount, power / 100f); }
@@ -1206,7 +1218,8 @@ namespace ExcelHeroes.Core
                 case "barrier":
                 {
                     var pool = allies.Sum(a => a.maxHp) * power / 100f;
-                    foreach (var a in allies) a.shield += pool / Math.Max(1, allies.Count);
+                    // for its 6 s, as it says, and not stacking past one cast (it had lasted for ever, across waves)
+                    foreach (var a in allies) { a.shield = Math.Max(a.shield, pool / Math.Max(1, allies.Count)); a.shieldLeft = skill.duration > 0 ? skill.duration : 6f; }
                     break;
                 }
                 case "taunt":

@@ -270,6 +270,7 @@ namespace ExcelHeroes.Core
         public int overtimes;        // 야근 모드 runs
         public long playSeconds;
         public int maxCleared;       // the deepest stage actually cleared, which `stage` is not
+        public int bestCleared;      // the deepest ever, through prestige: the first-clear drop pays once per stage, not once per prestige
 
         /// <summary>업적 id -> how many tiers have been claimed.</summary>
         public List<string> achievementIds = new();

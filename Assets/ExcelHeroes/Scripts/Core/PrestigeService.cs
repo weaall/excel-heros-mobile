@@ -48,6 +48,7 @@ namespace ExcelHeroes.Core
             p.prestigeCount++;
 
             p.stage = 1;
+            p.bestCleared = Math.Max(p.bestCleared, p.maxCleared);   // the first-clear drops stay paid
             p.maxCleared = 0;
             p.gold = 0;
             foreach (var o in p.owned) o.level = 1;

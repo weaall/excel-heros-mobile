@@ -1833,12 +1833,15 @@ namespace ExcelHeroes.UI
 
             if (_sim.Won)
             {
-                Game.Player.gems += 5 + _sim.GemBonus;   // 행운의 셀 holders pay out here
+                // a clear pays a gem more per Phase (it was a flat 5, so farming stage 1 at ×3 paid the most per hour)
+                var phaseGems = System.Math.Min(20, (_sim.Stage - 1) / System.Math.Max(1, GameData.Balance.bossEvery));
+                Game.Player.gems += 5 + phaseGems + _sim.GemBonus;   // 행운의 셀 holders pay out here
 
                 // 비품 — the one growth axis that comes out of playing rather than out of a
                 // currency. The first clear of a stage is the boss's first clear too, which is why
                 // the deepest stage reached is checked before it is advanced.
-                var firstClear = _sim.Stage > Game.Player.maxCleared;
+                Game.Player.bestCleared = System.Math.Max(Game.Player.bestCleared, Game.Player.maxCleared);
+                var firstClear = _sim.Stage > Game.Player.bestCleared;   // not maxCleared: prestige zeroes that
                 var drop = EquipService.Drop(Game.Player, _sim.Stage, boss: true, firstBoss: firstClear);
                 if (drop != null) Log($"비품 획득 — {EquipService.Label(drop)}");
 
@@ -1847,6 +1850,7 @@ namespace ExcelHeroes.UI
                 // far have you got" reads this one, so parking on a Phase must never look like
                 // losing ground.
                 if (_sim.Stage > Game.Player.maxCleared) Game.Player.maxCleared = _sim.Stage;
+                if (_sim.Stage > Game.Player.bestCleared) Game.Player.bestCleared = _sim.Stage;
 
                 var held = AutoPlayService.HeldBack(Game.Player, _sim.Stage);
                 if (held.Length == 0)
