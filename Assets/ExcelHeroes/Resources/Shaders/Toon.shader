@@ -13,6 +13,7 @@ Shader "ExcelHeroes/Toon"
         _ShadeStrength ("Shade Strength", Range(0,1)) = 0.26
         _ShadeTint ("Shade Tint", Color) = (0.78,0.8,1,1)
         _Rim ("Rim", Range(0,1)) = 0.18
+        _Spec ("Hair Spec Band", Range(0,1)) = 0
         _Flash ("Hit Flash", Range(0,1)) = 0
         _Cutoff ("Alpha Cutoff", Range(0,1)) = 0.5
         _OutlineWidth ("Outline Width", Float) = 0.012
@@ -39,6 +40,7 @@ Shader "ExcelHeroes/Toon"
             float _ShadeStrength;
             float4 _ShadeTint;
             float _Rim;
+            float _Spec;
             float _Flash;
             float _Cutoff;
             float _OutlineWidth;
@@ -119,6 +121,11 @@ Shader "ExcelHeroes/Toon"
                 float3 col = lerp(shade, t.rgb, lit);
                 float rim = pow(1 - saturate(dot(n, normalize(i.viewWS))), 3) * _Rim;
                 col += rim;
+                // the anime hair's angel ring: a crisp bright band where the key light glints (hair materials only)
+                // a horizontal band round the upper head: normals tipped ~35° up, facing the lens
+                float band = 1 - smoothstep(0.035, 0.06, abs(n.y - 0.58));
+                float facing = smoothstep(0.25, 0.5, dot(n, normalize(i.viewWS)));
+                col += band * facing * _Spec * 0.34;
                 col = lerp(col, float3(1,1,1), _Flash);
                 return half4(col, 1);
             }
@@ -177,6 +184,11 @@ Shader "ExcelHeroes/Toon"
                 float3 col = lerp(shade, t.rgb, lit);
                 float rim = pow(1 - saturate(dot(n, normalize(i.viewWS))), 3) * _Rim;
                 col += rim;
+                // the anime hair's angel ring: a crisp bright band where the key light glints (hair materials only)
+                // a horizontal band round the upper head: normals tipped ~35° up, facing the lens
+                float band = 1 - smoothstep(0.035, 0.06, abs(n.y - 0.58));
+                float facing = smoothstep(0.25, 0.5, dot(n, normalize(i.viewWS)));
+                col += band * facing * _Spec * 0.34;
                 col = lerp(col, float3(1,1,1), _Flash);
                 return half4(col, 1);
             }

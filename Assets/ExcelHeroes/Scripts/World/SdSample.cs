@@ -815,7 +815,7 @@ namespace ExcelHeroes.World
                     {
                         m.SetFloat("_ShadeStrength", n.Contains("face") ? 0.06f : 0.44f);   // a clearer two-tone (the BA cross-check)
                         m.SetColor("_ShadeTint", n.Contains("hair") ? SdRefLook.ShadeOf(k.Hair) : SdRefLook.WarmShade);
-                        m.SetFloat("_Rim", 0.14f);
+                        m.SetFloat("_Rim", 0.14f); if (n.Contains("hair")) m.SetFloat("_Spec", 0.7f);
                     }
                     SdFace.Configure(m, parts[i], SdRef.Height);
                     if (System.Environment.GetEnvironmentVariable("SD_FACEDBG") == "1")

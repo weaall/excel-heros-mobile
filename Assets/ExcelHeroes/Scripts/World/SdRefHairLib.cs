@@ -341,6 +341,7 @@ namespace ExcelHeroes.World
             if (rig.Head == null || !Has(name)) return false;
             var mat = MeshKit.NewToon(0.0028f, SdRefTex.Hair(k, Sheets[name]));
             mat.SetFloat("_ShadeStrength", 0.22f);
+            mat.SetFloat("_Spec", 0.7f);   // the glint band (Toon.shader)
             if (Bones.TryGetValue(name, out var lib) && Skinned(rig, name, lib, mat, layer)) return true;
             var go = MeshKit.Part("hair:" + name, rig.Head, Meshes[name], mat, layer);
             go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.identity; go.transform.localScale = Vector3.one;

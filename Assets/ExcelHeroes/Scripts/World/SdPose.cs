@@ -509,6 +509,16 @@ namespace ExcelHeroes.World
                         p.Lean = 16f * nod; p.HeadPitch = 10f * nod - 2f; p.Spread = 0f; break;
                     }
             }
+            // contrapposto over every victory (the part cross-check: "stiff, symmetrical"): the weight on one leg,
+            // the hips rolled toward it and the shoulders the other way, the head tipped, the free knee soft —
+            // sided by the variant so a lined-up squad does not lean in unison
+            if (variant % WinCount is not 3 and not 5 and not 11)
+            {
+                var sd = variant % 2 == 0 ? 1f : -1f;
+                p.HipRoll += 6f * sd; p.SpineSide -= 4f * sd; p.Sway += 0.014f * sd; p.HeadTilt += 4f * sd;
+                if (sd > 0f) p.KneeL += 12f; else p.KneeR += 12f;
+                p.Twist += 5f * sd; p.Spread += 3f;
+            }
             // the entry: a quick crouch (anticipation), then the body pops up into the pose — the spring
             // overshoots it a little — instead of drifting into it from the fight stance
             var pre = t < 0.12f ? EaseOut(t / 0.12f) : t < 0.26f ? 1f - EaseOut((t - 0.12f) / 0.14f) : 0f;
