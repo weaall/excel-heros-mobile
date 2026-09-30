@@ -778,7 +778,7 @@ namespace ExcelHeroes.EditorTools
 
             // Levelled first: at base stats a D card attacks for 6, and +10% of 6 floors straight
             // back to 6. The bonus is real, just invisible at integer scale.
-            var fresh = new OwnedHero(def.id) { level = 40 };
+            var fresh = new OwnedHero(def.id) { level = 90 };   // high enough that +10 % survives integer rounding on the compressed curve
             var atk0 = StatMath.Atk(fresh);
             fresh.affection = b.affectionMax;
             var atkMax = StatMath.Atk(fresh);
