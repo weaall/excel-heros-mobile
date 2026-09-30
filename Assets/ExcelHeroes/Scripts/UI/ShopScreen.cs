@@ -201,24 +201,70 @@ namespace ExcelHeroes.UI
             app.OpenOverlay(panel);
         }
 
+        static Color TagColour(string tag) => tag switch { "이벤트" => UiPaint.C(255, 92, 150), "업데이트" => UiPaint.C(46, 150, 246), "신규" => UiPaint.C(250, 170, 40), _ => UiPaint.C(90, 104, 130) };
+        static string TagWord(string tag) => tag switch { "이벤트" => "EVENT", "업데이트" => "UPDATE", "신규" => "NEW", _ => "NOTICE" };
+
+        /// <summary>
+        /// 공지 as the reference's UPDATE INFO board (the BA cross-check, 24-Notice 4.5: "rigid boxy
+        /// list vs asymmetrical overlapping slanted banners, plain type, characters only inside one
+        /// banner"): a full page on the menu scene, the latest date as a big outlined headline with two
+        /// SD chibis standing on the banner under it, and every notice as an illustrated slanted banner
+        /// — the newest large on the left, two stacked on the right, the rest in a row on a glass shelf —
+        /// each with its tag as a ribbon over its top edge. A banner opens the article as a card.
+        /// </summary>
         public static void OpenNotice(AppRoot app, System.Action changed)
         {
             var p = Game.Player;
-            var body = UiKit.Modal("공지", app.CloseOverlay, out var panel, "modal--wide");
-            var cols = UiKit.Div("notice", body);
-            var list = UiKit.Div("notice__list", cols);
-            var view = UiKit.Div("notice__view", cols);
-            NoticeService.Notice current = null;
-            void Show(NoticeService.Notice n)
+            var all = NoticeService.All.OrderByDescending(x => x.date).ToList();
+            var page = UiKit.Div("nboard");
+            Chrome.PaintScene(page);
+
+            var head = UiKit.Div("nboard__head", page);
+            var back = new Button(() => { AudioService.Play("back", 0.55f); app.CloseOverlay(); }) { text = "" };
+            back.AddToClassList("nboard__back");
+            ModalFrame.Painted(back, (ctx, r) =>
             {
-                current = n; NoticeService.Read(p, n); Game.Touch(); changed?.Invoke();
-                view.Clear();
-                // a banner heading the article, in the tag's colour with its English word large and
-                // faint across it (ui_score 24-Notice #1 — the body stood in a bare white box)
-                var col = n.tag switch { "이벤트" => UiPaint.C(255, 92, 150), "업데이트" => UiPaint.C(46, 150, 246), "신규" => UiPaint.C(250, 170, 40), _ => UiPaint.C(90, 104, 130) };
-                // the notice's own illustration (tools/notice_banners_gemini.py) when it has one, the
-                // tag's colour washing in from the left under the English word (the BA cross-check:
-                // the reference's notices are illustrated banners, ours was a flat colour bar)
+                var c = r.center; var rad = Mathf.Min(r.width, r.height) * 0.5f;
+                UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad, rad), UiPaint.C(255, 255, 255));
+                UiPaint.Fill(ctx, UiPaint.Ellipse(c, rad - 5f, rad - 5f), UiPaint.C(30, 48, 84));
+                var k = rad * 0.36f; var t = rad * 0.09f;
+                UiPaint.Fill(ctx, new List<Vector2> { new(c.x - k, c.y - t), new(c.x + k, c.y - t), new(c.x + k, c.y + t), new(c.x - k, c.y + t) }, Color.white);
+                foreach (var sgn in new[] { 1f, -1f })
+                {
+                    var a0 = new Vector2(c.x - k, c.y); var a1 = new Vector2(c.x - k * 0.1f, c.y + sgn * k * 0.9f);
+                    var n = new Vector2(-(a1 - a0).y, (a1 - a0).x).normalized * t;
+                    UiPaint.Fill(ctx, new List<Vector2> { a0 - n, a1 - n, a1 + n, a0 + n }, Color.white);
+                }
+            });
+            Juice.Press(back);
+            head.Add(back);
+            UiKit.Text("공지", "nboard__ko", head);
+            UiKit.Text("NOTICE", "nboard__en", head);
+
+            var top = all.FirstOrDefault();
+            var md = top != null && System.DateTime.TryParse(top.date, out var d) ? $"{d.Month}.{d.Day:00}" : "";
+            var title = UiKit.Text($"{md} UPDATE INFO", "nboard__title", page);
+            title.pickingMode = PickingMode.Ignore;
+
+            var grid = UiKit.Div("nboard__grid", page);
+            // the glass shelf under the bottom row (the reference's frosted panel behind its small banners)
+            var shelf = UiKit.Div("nboard__shelf", grid); shelf.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(shelf, (ctx, r) =>
+            {
+                var q = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.35f, 14f);
+                UiPaint.Fill(ctx, q, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.62f), UiPaint.C(236, 246, 255, 0.4f), r.yMin, r.yMax), 0f);
+                UiPaint.Stroke(ctx, q, UiPaint.C(255, 255, 255, 0.9f), 2f);
+            });
+
+            VisualElement card = null;
+            void Article(NoticeService.Notice n)
+            {
+                NoticeService.Read(p, n); Game.Touch(); changed?.Invoke();
+                card?.RemoveFromHierarchy();
+                card = UiKit.Div("nboard__dim", page);
+                card.RegisterCallback<ClickEvent>(e => { if (e.target == card) { card.RemoveFromHierarchy(); card = null; Refresh(); } });
+                var view = UiKit.Div("notice__view nboard__card", card);
+                var col = TagColour(n.tag);
                 var art = Resources.Load<Sprite>("Art/Notice/" + n.id);
                 var banner = UiKit.Div("notice__banner" + (art != null ? " notice__banner--art" : ""), view);
                 ModalFrame.Painted(banner, (ctx, r) =>
@@ -233,14 +279,8 @@ namespace ExcelHeroes.UI
                         return;
                     }
                     UiPaint.Fill(ctx, box, UiPaint.Horizontal(col, Color.Lerp(col, Color.white, 0.55f), r.xMin, r.xMax));
-                    for (var i = 0; i < 7; i++)
-                    {
-                        var x = r.xMax - 60f - i * 46f;
-                        UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(x, r.yMin), new(x + 16f, r.yMin), new(x - r.height * 0.5f + 16f, r.yMax), new(x - r.height * 0.5f, r.yMax) }, box), UiPaint.C(255, 255, 255, 0.16f - i * 0.02f), 0f);
-                    }
                 });
-                var en = n.tag switch { "이벤트" => "EVENT", "업데이트" => "UPDATE", "신규" => "NEW", _ => "NOTICE" };
-                UiKit.Text(en, "notice__banner-en", banner).pickingMode = PickingMode.Ignore;
+                UiKit.Text(TagWord(n.tag), "notice__banner-en", banner).pickingMode = PickingMode.Ignore;
                 UiKit.Text("EXCEL HEROES  ·  사내 공지", "notice__banner-sub", banner).pickingMode = PickingMode.Ignore;
                 var tagRow = UiKit.Div("notice__tagrow", view);
                 Tag(tagRow, n.tag);
@@ -249,37 +289,82 @@ namespace ExcelHeroes.UI
                 UiKit.Div("notice__rule", view);
                 var sc = new ScrollView(ScrollViewMode.Vertical); sc.AddToClassList("notice__scroll"); view.Add(sc);
                 UiKit.Text(n.body, "notice__body", sc);
-                BuildList();
+                var close = new Button(() => { AudioService.Play("tap", 0.5f); card.RemoveFromHierarchy(); card = null; Refresh(); }) { text = "닫기" };
+                close.AddToClassList("nboard__close");
+                SkewPlate.Apply(close, SkewPlate.Kind.Navy);
+                view.Add(close);
+                Juice.PressAll(card);
             }
-            void BuildList()
+
+            // slot boxes in the grid (2200 x 800 design px): big left, two stacked right, three on the shelf
+            var slots = new[] { new Rect(0, 0, 1080, 440), new Rect(1120, 0, 1080, 205), new Rect(1120, 235, 1080, 205),
+                                new Rect(30, 500, 690, 280), new Rect(755, 500, 690, 280), new Rect(1480, 500, 690, 280) };
+            var tiles = new List<VisualElement>();
+            void Refresh() { foreach (var t in tiles) t.Q(className: "nbanner__new")?.EnableInClassList("hidden", !(t.userData is NoticeService.Notice nn) || p.readNotices.Contains(nn.id)); }
+            for (var i = 0; i < all.Count && i < slots.Length; i++)
             {
-                list.Clear();
-                foreach (var n in NoticeService.All.OrderByDescending(x => x.date))
+                var n = all[i]; var s = slots[i]; var big = i == 0; var side = i is 1 or 2;
+                var tile = UiKit.Div("nbanner" + (big ? " nbanner--big" : side ? " nbanner--side" : " nbanner--small"), grid);
+                tile.userData = n; tiles.Add(tile);
+                tile.style.left = s.x; tile.style.top = s.y; tile.style.width = s.width; tile.style.height = s.height;
+                var col = TagColour(n.tag);
+                var art = Resources.Load<Sprite>("Art/Notice/" + n.id);
+                ModalFrame.Painted(tile, (ctx, r) =>
                 {
-                    var on = n == current;
-                    var row = UiKit.Div("nrow nrow--thumb" + (on ? " nrow--on" : ""), list);
-                    var thumbArt = Resources.Load<Sprite>("Art/Notice/" + n.id);
-                    if (thumbArt != null)
-                    {
-                        var th = UiKit.Div("nrow__thumb", row); th.pickingMode = PickingMode.Ignore;
-                        ModalFrame.Painted(th, (ctx, r) => { var q = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.4f, 4f); UiPaint.Image(ctx, q, thumbArt, r, 0.4f); });
-                    }
-                    Tag(row, n.tag);
-                    UiKit.Text(n.title, "nrow__title", row);
-                    if (!p.readNotices.Contains(n.id)) UiKit.Div("nrow__new", row);
-                    row.RegisterCallback<ClickEvent>(_ => { AudioService.Play("tap", 0.5f); Show(n); });
-                }
+                    var sl = SkewPlate.SlantFor(r.height) * 0.42f;
+                    var outer = UiPaint.SkewRect(r, sl, 12f);
+                    UiPaint.Shadow(ctx, outer, new Vector2(0f, 8f), UiPaint.C(20, 40, 90, 0.28f), 16f);
+                    UiPaint.Fill(ctx, outer, Color.white);
+                    var ir = new Rect(r.x + 6f, r.y + 6f, r.width - 12f, r.height - 12f);
+                    var inner = UiPaint.SkewRect(ir, sl * ir.height / r.height, 9f);
+                    if (art != null) UiPaint.Image(ctx, inner, art, ir, 0.35f);
+                    else UiPaint.Fill(ctx, inner, UiPaint.Horizontal(col, Color.Lerp(col, Color.white, 0.6f), ir.xMin, ir.xMax), 0f);
+                    // a white wash where the words sit: from the left on the side banners (the reference's
+                    // 드럼통 게), from the bottom on the others
+                    if (side) UiPaint.Fill(ctx, inner, UiPaint.Horizontal(UiPaint.C(255, 255, 255, 0.96f), UiPaint.C(255, 255, 255, 0f), ir.xMin, ir.xMin + ir.width * 0.62f), 0f);
+                    else UiPaint.Fill(ctx, inner, UiPaint.Vertical(UiPaint.C(10, 24, 60, 0f), UiPaint.C(10, 24, 60, 0.62f), ir.yMin + ir.height * 0.45f, ir.yMax), 0f);
+                    // a thin tag-coloured edge along the bottom
+                    UiPaint.Fill(ctx, UiPaint.Clip(new List<Vector2> { new(ir.xMin - sl, ir.yMax - 7f), new(ir.xMax + sl, ir.yMax - 7f), new(ir.xMax + sl, ir.yMax), new(ir.xMin - sl, ir.yMax) }, inner), col, 0f);
+                });
+                // the tag ribbon over the top edge, right
+                var rib = UiKit.Div("nbanner__ribbon", tile); rib.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(rib, (ctx, r) =>
+                {
+                    var q = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height), 3f);
+                    UiPaint.Shadow(ctx, q, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.2f), 6f);
+                    UiPaint.Fill(ctx, q, UiPaint.Vertical(Color.Lerp(col, Color.white, 0.18f), col, r.yMin, r.yMax), 0f);
+                });
+                UiKit.Text(big || n.tag == "이벤트" ? TagWord(n.tag) : n.tag, "nbanner__ribbon-text", rib);
+                var words = UiKit.Div("nbanner__words", tile); words.pickingMode = PickingMode.Ignore;
+                UiKit.Text(n.title.Replace("[이벤트] ", ""), "nbanner__title", words).pickingMode = PickingMode.Ignore;
+                var date = UiKit.Div("nbanner__date", words); date.pickingMode = PickingMode.Ignore;
+                ModalFrame.Painted(date, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, r.height * 0.3f), side ? UiPaint.C(30, 70, 140) : UiPaint.C(30, 48, 84, 0.9f)));
+                UiKit.Text(n.date.Replace("-", ".").Substring(5) + (n.tag == "이벤트" ? " ~ 10.13" : " 업데이트"), "nbanner__date-text", date).pickingMode = PickingMode.Ignore;
+                UiKit.Div("nbanner__new", tile).pickingMode = PickingMode.Ignore;
+                tile.RegisterCallback<ClickEvent>(_ => { AudioService.Play("tap", 0.5f); Article(n); });
+                Juice.Press(tile);
             }
-            static void Tag(VisualElement parent, string tag)
+            // two SD chibis standing on the upper right banner, under the headline (the reference's
+            // characters peeking over its top banners)
+            var ids = p.party != null ? p.party.Where(x => !string.IsNullOrEmpty(x)).Take(2).ToList() : new List<string>();
+            foreach (var fb in new[] { GameData.MainId, "hr_jung", "barista" }) if (ids.Count < 2 && !ids.Contains(fb)) ids.Add(fb);
+            for (var k = 0; k < ids.Count && k < 2; k++)
             {
-                var col = tag switch { "이벤트" => UiPaint.C(255, 92, 150), "업데이트" => UiPaint.C(46, 150, 246), "신규" => UiPaint.C(250, 170, 40), _ => UiPaint.C(90, 104, 130) };
-                var chip = UiKit.Div("ntag", parent);
-                ModalFrame.Painted(chip, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 3f), col));
-                UiKit.Text(tag, "ntag__text", chip).pickingMode = PickingMode.Ignore;
+                var sd = GameData.SdArt(ids[k]);
+                if (sd == null) continue;
+                var chib = UiKit.Div("nboard__chibi nboard__chibi--" + k, grid); chib.pickingMode = PickingMode.Ignore;
+                chib.style.backgroundImage = new StyleBackground(sd);
             }
-            var first = NoticeService.All.OrderByDescending(x => x.date).FirstOrDefault();
-            if (first != null) Show(first); else BuildList();
-            app.OpenOverlay(panel);
+            Refresh();
+            app.OpenOverlay(page);
+        }
+
+        static void Tag(VisualElement parent, string tag)
+        {
+            var col = TagColour(tag);
+            var chip = UiKit.Div("ntag", parent);
+            ModalFrame.Painted(chip, (ctx, r) => UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 3f), col));
+            UiKit.Text(tag, "ntag__text", chip).pickingMode = PickingMode.Ignore;
         }
     }
 }

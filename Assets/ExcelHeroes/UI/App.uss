@@ -7211,3 +7211,51 @@
 .bresult__say-face { width: 150px; height: 118px; }
 .bresult__say-line { height: 70px; padding: 0 44px 0 30px; margin-left: 8px; justify-content: center; }
 .bresult__say-text { font-size: 30px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; }
+
+/* 공지 r11: the UPDATE INFO board (ShopScreen.OpenNotice) — a full page of slanted illustrated banners */
+.nboard { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.nboard__head { flex-direction: row; align-items: center; height: 112px; padding-left: 22px; flex-shrink: 0; }
+.nboard__back { width: 84px; height: 84px; padding: 0; margin: 0 22px 0 0; border-width: 0; background-color: rgba(0, 0, 0, 0); }
+.nboard__ko { font-size: 44px; -unity-font-style: bold; color: rgb(24, 36, 60); padding: 0; margin: 0 16px 0 0; }
+.nboard__en { font-size: 28px; -unity-font-style: bold; color: rgb(46, 120, 210); padding: 0; margin: 8px 0 0 0; letter-spacing: 2px; }
+.nboard__title { position: absolute; left: 110px; top: 96px; font-size: 118px; -unity-font-style: bold-and-italic; color: rgb(255, 64, 140);
+    -unity-text-outline-width: 5px; -unity-text-outline-color: rgb(255, 255, 255); text-shadow: 4px 7px 0 rgba(40, 50, 110, 0.35); padding: 0; margin: 0; letter-spacing: -2px; }
+.nboard__grid { position: absolute; left: 50%; top: 250px; width: 2200px; height: 800px; translate: -1100px 0; }
+.nboard__shelf { position: absolute; left: -20px; top: 470px; width: 2240px; height: 330px; }
+.nbanner { position: absolute; }
+.nbanner__ribbon { position: absolute; right: 70px; top: -20px; height: 52px; padding: 0 36px; justify-content: center; }
+.nbanner--side .nbanner__ribbon { right: 50px; }
+.nbanner__ribbon-text { font-size: 30px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; letter-spacing: 1px; }
+.nbanner__words { position: absolute; left: 54px; bottom: 30px; right: 40px; align-items: flex-start; }
+.nbanner--side .nbanner__words { left: 70px; top: 26px; bottom: auto; }
+.nbanner__title { font-size: 44px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0 0 10px 0;
+    -unity-text-outline-width: 2px; -unity-text-outline-color: rgba(10, 20, 50, 0.7); white-space: nowrap; }
+.nbanner--big .nbanner__title { font-size: 64px; -unity-font-style: bold-and-italic; -unity-text-outline-width: 3px; }
+.nbanner--side .nbanner__title { font-size: 50px; color: rgb(24, 36, 60); -unity-text-outline-width: 0; }
+.nbanner--small .nbanner__title { font-size: 38px; }
+.nbanner__date { height: 46px; padding: 0 26px; justify-content: center; }
+.nbanner__date-text { font-size: 26px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; }
+.nbanner__new { position: absolute; left: 30px; top: 18px; width: 22px; height: 22px; border-radius: 11px; background-color: rgb(255, 60, 90);
+    border-width: 3px; border-color: rgb(255, 255, 255); }
+.nboard__chibi { position: absolute; width: 230px; height: 288px; -unity-background-scale-mode: scale-to-fit; top: -272px; }
+.nboard__chibi--0 { left: 1500px; }
+.nboard__chibi--1 { left: 1690px; }
+.nboard__dim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(10, 20, 40, 0.5); align-items: center; justify-content: center; }
+.nboard__card { flex-grow: 0; width: 1500px; height: 900px; border-width: 3px; border-color: rgb(255, 255, 255); }
+.nboard__close { position: absolute; right: 30px; bottom: 26px; width: 240px; height: 78px; font-size: 30px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+.nboard__title, .nbanner__ribbon-text, .nbanner__date-text, .nboard__en {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset");
+    -unity-font-style: normal;
+}
+.nboard__title { font-size: 150px; top: 78px; letter-spacing: 0; -unity-text-outline-width: 6px; -unity-text-outline-color: rgb(255, 255, 255); text-shadow: 5px 8px 2px rgba(40, 50, 110, 0.4); }
+.nbanner__ribbon-text { font-size: 36px; }
+.nbanner__date-text { font-size: 32px; }
+.nboard__en { font-size: 34px; }
+.nbanner__title, .nboard__ko {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset");
+    -unity-font-style: normal;
+}
+.nbanner__title { -unity-text-outline-width: 0; text-shadow: 2px 3px 0 rgba(10, 20, 50, 0.55); letter-spacing: 1px; }
+.nbanner--big .nbanner__title { font-size: 72px; -unity-font-style: normal; -unity-text-outline-width: 0; }
+.nbanner--side .nbanner__title { font-size: 52px; text-shadow: 0 0 0 rgba(0,0,0,0); max-width: 760px; overflow: hidden; text-overflow: ellipsis; }
+.nbanner--small .nbanner__title { font-size: 44px; }
