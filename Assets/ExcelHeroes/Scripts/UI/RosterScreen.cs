@@ -178,10 +178,11 @@ namespace ExcelHeroes.UI
                     "party" => p.party.Contains(h.id),
                     _ => true,
                 }))
-                // Best grade first and owned before locked, so the cards worth looking at are on
-                // the first page — the order the grade sections used to give for free.
-                .OrderByDescending(h => GameData.GradeRank(h.grade))
-                .ThenByDescending(h => p.Owns(h.id))
+                // The hired first (the reference's student list is the students you have), best grade
+                // first within each; the not-yet-hired after them — so the first page is your team, not a
+                // wall of veiled cards with yours scattered through it.
+                .OrderByDescending(h => p.Owns(h.id))
+                .ThenByDescending(h => GameData.GradeRank(h.grade))
                 .ThenBy(h => h.name)
                 .ToList();
 
