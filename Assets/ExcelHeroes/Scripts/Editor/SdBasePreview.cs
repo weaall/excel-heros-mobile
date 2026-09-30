@@ -110,7 +110,7 @@ namespace ExcelHeroes.EditorTools
                         var at = len * f / Mathf.Max(1, nf - 1) * (c.isLooping ? (nf - 1f) / nf : 1f);
                         while (t < at - 1e-4f) { var dt = Mathf.Min(1f / 60f, at - t); cl.Tick(dt); rig.Root.localPosition = new Vector3(0f, rig.FootDrop, 0f); sec?.Step(dt); t += dt; }
                         cl.Tick(0f); rig.Root.localPosition = new Vector3(0f, rig.FootDrop, 0f);
-                        var img = Shoot(SdBase.Height, W, H, 0.72f, 0.58f);
+                        var img = Shoot(SdBase.Height, W, H, 0.72f, float.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPCENTRE"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var stc) ? stc : 0.58f);
                         sheet.SetPixels(W * f, H * (clips.Length - 1 - r), W, H, img.GetPixels());
                         Object.DestroyImmediate(img);
                     }
@@ -140,7 +140,7 @@ namespace ExcelHeroes.EditorTools
             if (!ExcelHeroes.Data.GameData.Loaded) ExcelHeroes.Data.GameData.Load();
             // SD_STRIPSCALE=2: twice the size, for the defect audit (150 px figures hid what broke)
             var sc = int.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPSCALE"), out var sc0) ? sc0 : 1;
-            int W = 150 * sc, H = 220 * sc;
+            int W = (int.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPW"), out var sw0) ? sw0 : 150) * sc, H = 220 * sc;   // SD_STRIPW: wider cells (a lying pose)
             foreach (var id in ids)
             {
                 var holder = new GameObject("preview").transform;
@@ -149,6 +149,16 @@ namespace ExcelHeroes.EditorTools
                 if (rig.FaceRenderer is SkinnedMeshRenderer smr) smr.forceMatrixRecalculationPerRender = true;
                 var sec = rig.Root.GetComponent<SdSecondary>();
                 if (System.Environment.GetEnvironmentVariable("SD_NOSEC") == "1") sec = null;   // debug: the chains left rigid
+                // debug: SD_LISTR=1 prints every renderer; SD_HIDE=a,b hides those whose name contains one
+                if (System.Environment.GetEnvironmentVariable("SD_LISTR") == "1")
+                    foreach (var rr in rig.Root.GetComponentsInChildren<Renderer>(true)) Debug.Log($"[R] {id} {rr.name} {rr.GetType().Name} {rr.enabled} {rr.bounds.size}");
+                var only = System.Environment.GetEnvironmentVariable("SD_ONLY");   // debug: only the renderers whose name contains this
+                if (!string.IsNullOrEmpty(only))
+                    foreach (var rr in rig.Root.GetComponentsInChildren<Renderer>(true)) if (!rr.name.Contains(only)) rr.enabled = false;
+                var hide = System.Environment.GetEnvironmentVariable("SD_HIDE");
+                if (!string.IsNullOrEmpty(hide))
+                    foreach (var rr in rig.Root.GetComponentsInChildren<Renderer>(true))
+                        foreach (var hname in hide.Split(',')) if (rr.name.Contains(hname)) rr.enabled = false;
                 var yaw0 = float.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPYAW"), out var y0) ? y0 : 215f;
                 var kind = SdPose.AttackOf(id, SdRef.RoleOf(id));
                 var pers = SdPersona.For(id);
@@ -233,11 +243,12 @@ namespace ExcelHeroes.EditorTools
                         var lift = float.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPLIFT"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var lf) ? lf : 0f;
                         rig.Root.localPosition = new Vector3(p.Step, p.Y + rig.FootDrop + lift, 0f);
                         rig.Root.rotation = Quaternion.Euler(0f, yaw0 + p.Yaw, 0f) * Quaternion.Euler(p.Pitch, 0f, 0f);
+                        if (p.Free) { var gl = SdPose.GroundLift(rig, lift); if (gl > 0f) rig.Root.position += Vector3.up * gl; }   // as BattleWorld: lying, nothing under the floor
                         if (dt < 0f) { sec?.Step(1f / 60f); continue; }
                         if (rig.EyeSub >= 0) { var eb = new MaterialPropertyBlock(); eb.SetTexture("_MainTex", SdRefLook.For(id).EyeSheet(p.Expr ?? "")); rig.FaceRenderer.SetPropertyBlock(eb, rig.EyeSub); }
                         var steps = Mathf.Max(1, Mathf.RoundToInt(dt * 60f));
                         for (var k = 0; k < steps; k++) sec?.Step(1f / 60f);
-                        var img = Shoot(SdBase.Height, W, H, 0.72f, 0.58f);
+                        var img = Shoot(SdBase.Height, W, H, 0.72f, float.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPCENTRE"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var stc) ? stc : 0.58f);
                         sheet.SetPixels(W * col, H * (rows.Count - 1 - r), W, H, img.GetPixels());
                         Object.DestroyImmediate(img);
                         col++;

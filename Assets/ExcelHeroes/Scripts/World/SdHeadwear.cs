@@ -172,8 +172,10 @@ namespace ExcelHeroes.World
                         break;
                     case "beret":
                         {
-                            var p = On(new Vector3(-sx * 0.25f, 1f, -0.1f), 0.84f);
-                            b.M = Matrix4x4.TRS(p, Quaternion.Euler(-8f, 0f, sx * 16f), Vector3.one);
+                            // seated INTO the hair (0.84 of the crown's reach floated clear of a full, waved head: the
+                            // fragment scan), tipped to one side
+                            var p = On(new Vector3(-sx * 0.25f, 1f, -0.1f), 0.66f);
+                            b.M = Matrix4x4.TRS(p, Quaternion.Euler(-10f, 0f, sx * 18f), Vector3.one);
                             b.Ellipsoid(Vector3.zero, new Vector3(R * 1.0f, R * 0.32f, R * 0.95f), col, 20);
                             b.Frustum(new Vector3(0f, R * 0.28f, 0f), R * 0.04f, R * 0.1f, R * 0.02f, MeshKit.Shade(col, 0.85f), 1f, 8);
                         }

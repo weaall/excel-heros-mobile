@@ -124,6 +124,10 @@ namespace ExcelHeroes.World
         {
             foreach (var r in kept)
             {
+                // the sample's own hair also has a few locks in the BODY mesh, on its hair bones with the body's
+                // sheet: hiding the hair material left them floating beside the shoulders (the fragment scan,
+                // 13 of the cast) — cut them out with the rest of her hair
+                if (r.sharedMesh != null && !r.name.StartsWith("hair:")) CutOwn(r, b => b.StartsWith("bone_hair"));
                 var mats = r.sharedMaterials;
                 for (var i = 0; i < mats.Length; i++)
                     if (mats[i] != null && mats[i].mainTexture != null && mats[i].mainTexture.name.Contains("+hair")) mats[i].SetFloat("_Cutoff", 2f);
@@ -494,6 +498,37 @@ namespace ExcelHeroes.World
             body.sharedMesh = cut;
         }
 
+        /// <summary>Drops the mesh's connected pieces (welded by position) for which drop(dominant bone, triangles) holds.</summary>
+        static void DropIslands(Mesh m, BoneWeight[] bw, Transform[] bones, System.Func<string, int, bool> drop)
+        {
+            var v = m.vertices;
+            var weld = new Dictionary<Vector3Int, int>(); var key = new int[v.Length];
+            for (var i = 0; i < v.Length; i++) { var q = Vector3Int.RoundToInt(v[i] * 20000f); if (!weld.TryGetValue(q, out var id)) { id = weld.Count; weld[q] = id; } key[i] = id; }
+            var par = new int[weld.Count]; for (var i = 0; i < par.Length; i++) par[i] = i;
+            int F(int a) { while (par[a] != a) { par[a] = par[par[a]]; a = par[a]; } return a; }
+            var subs = Enumerable.Range(0, m.subMeshCount).Select(m.GetTriangles).ToArray();
+            foreach (var tris in subs)
+                for (var t = 0; t < tris.Length; t += 3) { var a = F(key[tris[t]]); var b = F(key[tris[t + 1]]); if (a != b) par[b] = a; var c = F(key[tris[t + 2]]); a = F(a); if (a != c) par[c] = a; }
+            var count = new Dictionary<int, int>(); var bone = new Dictionary<int, Dictionary<string, int>>();
+            foreach (var tris in subs)
+                for (var t = 0; t < tris.Length; t += 3)
+                {
+                    var r = F(key[tris[t]]); count[r] = count.TryGetValue(r, out var z) ? z + 1 : 1;
+                    if (!bone.TryGetValue(r, out var d)) bone[r] = d = new Dictionary<string, int>();
+                    var name = tris[t] < bw.Length ? Dominant(bw[tris[t]], bones).ToLowerInvariant() : "";
+                    d[name] = d.TryGetValue(name, out var zz) ? zz + 1 : 1;
+                }
+            var gone = new HashSet<int>(count.Keys.Where(r => drop(bone[r].OrderByDescending(x => x.Value).First().Key, count[r])));
+            if (gone.Count == 0) return;
+            for (var si = 0; si < subs.Length; si++)
+            {
+                var keep = new List<int>(subs[si].Length);
+                for (var t = 0; t < subs[si].Length; t += 3)
+                    if (!gone.Contains(F(key[subs[si][t]]))) { keep.Add(subs[si][t]); keep.Add(subs[si][t + 1]); keep.Add(subs[si][t + 2]); }
+                m.SetTriangles(keep, si, false);
+            }
+        }
+
         static string Dominant(BoneWeight w, Transform[] bones)
         {
             var i = w.boneIndex0; var m = w.weight0;
@@ -660,6 +695,9 @@ namespace ExcelHeroes.World
             var bind = new Matrix4x4[newBones.Length];
             for (var i = 0; i < newBones.Length; i++) bind[i] = newBones[i].worldToLocalMatrix * toMesh;
             part.bindposes = bind;
+            // the donor's loose bits: a tail far behind, and small pieces hanging from its skirt chains above the
+            // hem (a holster strap) that floated at the hip once on our body (the fragment scan)
+            if (!accessory) DropIslands(part, dbw, dbones, (bone, n) => bone.Contains("tail") || (bone.Contains("skirt") && n < 50));
             smr.sharedMesh = part; smr.bones = newBones; smr.rootBone = rig.Pelvis;
             var tex = SdSampleTex.For(donorKey, k, Sheet(donorKey, "body"), Sheet(donorKey, "hair"), Sheet(donorKey, "eyemouth"), null, paintedOk: false);
             // a lower is the hero's SKIRT: its cloth all in the bottom colour, the pleats' shading kept

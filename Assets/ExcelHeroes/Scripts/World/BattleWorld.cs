@@ -1843,6 +1843,13 @@ namespace ExcelHeroes.World
                 var px = X; var pz = Z;
                 if (hero && closeUp > 0f && C.Alive) { var kk = Mathf.SmoothStep(0f, 1f, closeUp); px = Mathf.Lerp(X, LineX, kk); pz = Mathf.Lerp(Z, LineZ, kk); }
                 root.localPosition = new Vector3(px + lunge, y, pz) + facing;
+                // lying down, nothing under the street: lift by what the big head would sink (SdPose.GroundLift)
+                if (Rig.RefModel && hero && (Dying > 0f || !C.Alive))
+                {
+                    var g = root.parent != null ? root.parent.position.y : 0f;
+                    var lift = SdPose.GroundLift(Rig, g);
+                    if (lift > 0f) root.position += Vector3.up * lift;
+                }
                 if (Rig.SheetFloor && Rig.Sheet != null)
                 {
                     // flat on the street under the member, square to the camera's turn, gone when down

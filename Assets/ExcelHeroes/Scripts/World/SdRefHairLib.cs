@@ -288,10 +288,46 @@ namespace ExcelHeroes.World
                     // every crossing triangle left the ends a hand's width past the cut
                     if ((wy[tris[t]] + wy[tris[t + 1]] + wy[tris[t + 2]]) / 3f > _cutY)
                     { keep.Add(tris[t]); keep.Add(tris[t + 1]); keep.Add(tris[t + 2]); }
-                m.SetTriangles(keep, s, false);
+                m.SetTriangles(Islands(keep, v), s, false);
             }
             m.RecalculateBounds();
             return m;
+        }
+
+        /// <summary>
+        /// The cut leaves the odd strand tip whose centre sat just above the line: a speck or two of hair
+        /// floating beside the shoulders, apart from the rest (the fragment scan found them on 13 of the
+        /// cast). Triangles are joined by shared positions (the mesh splits vertices at UV seams); any
+        /// piece smaller than 2 % of the part — at least 24 triangles — goes.
+        /// </summary>
+        static List<int> Islands(List<int> tris, Vector3[] v)
+        {
+            var n = tris.Count / 3;
+            if (n == 0) return tris;
+            var weld = new Dictionary<Vector3Int, int>();
+            var key = new int[v.Length];
+            for (var i = 0; i < v.Length; i++)
+            {
+                var q = new Vector3Int(Mathf.RoundToInt(v[i].x * 1e5f), Mathf.RoundToInt(v[i].y * 1e5f), Mathf.RoundToInt(v[i].z * 1e5f));
+                if (!weld.TryGetValue(q, out var id)) { id = weld.Count; weld[q] = id; }
+                key[i] = id;
+            }
+            var parent = new int[weld.Count];
+            for (var i = 0; i < parent.Length; i++) parent[i] = i;
+            int Find(int a) { while (parent[a] != a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; }
+            for (var t = 0; t < tris.Count; t += 3)
+            {
+                var a = Find(key[tris[t]]);
+                var b = Find(key[tris[t + 1]]); if (a != b) parent[b] = a;
+                var c = Find(key[tris[t + 2]]); if (Find(a) != c) parent[c] = Find(a);
+            }
+            var size = new Dictionary<int, int>();
+            for (var t = 0; t < tris.Count; t += 3) { var r = Find(key[tris[t]]); size[r] = size.TryGetValue(r, out var z) ? z + 1 : 1; }
+            var min = Mathf.Max(24, Mathf.RoundToInt(n * 0.02f));
+            var outList = new List<int>(tris.Count);
+            for (var t = 0; t < tris.Count; t += 3)
+                if (size[Find(key[tris[t]])] >= min) { outList.Add(tris[t]); outList.Add(tris[t + 1]); outList.Add(tris[t + 2]); }
+            return outList;
         }
 
         public static bool Mount(ChibiRig rig, string name, SdLook k, int layer)

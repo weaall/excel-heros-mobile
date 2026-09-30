@@ -765,7 +765,7 @@ namespace ExcelHeroes.World
             p.InL = p.InR = 12f; p.FistL = p.FistR = 0.7f; p.HandFlexL = p.HandFlexR = 10f;
             // flight: up in the middle of each stride, down at each contact (two a cycle)
             var air = Mathf.Abs(sw);
-            p.Y = Mathf.Max(0f, air - 0.3f) * 0.16f;
+            p.Y = Mathf.Max(0f, air - 0.3f) * 0.2f;
             var land = Mathf.Pow(1f - air, 3f);                 // the contact is short and hard: squash only right at it
             p.Squash = (air - 0.5f) * 0.06f - land * 0.07f;     // stretched in the air, squashed at the landing
             p.Lean = 22f + land * 5f;                           // well into the run, a dip at each landing
@@ -786,8 +786,8 @@ namespace ExcelHeroes.World
             var f = t < 0.07f ? EaseOut(t / 0.07f) : t < 0.34f ? 1f : 1f - EaseInOut((t - 0.34f) / 0.66f);   // in within ~2 frames, held, out slowly
             p.RaiseL = p.RaiseR = -36f + 44f * f; p.SwingL = p.SwingR = -18f * f; p.ElbowL = p.ElbowR = 14f + 60f * f;
             p.ShrugL = p.ShrugR = 16f * f; p.ReachL = p.ReachR = -8f * f;
-            p.Lean = -7f * f; p.SpineBend = -11f * f; p.HeadPitch = -3f * f; p.HeadTilt = 11f * f; p.Twist = -8f * f;   // the body jolts back and turns off the blow; the head barely tips — tipped back ~40° the big fringe fell over the eyes
-            p.KneeL = p.KneeR = 22f * f; p.Step = -0.14f * f; p.Spread = 5f * f;   // knocked back a step, knees giving
+            p.Lean = -9f * f; p.SpineBend = -15f * f; p.HeadPitch = -3f * f; p.HeadTilt = 11f * f; p.Twist = -8f * f;   // the body jolts back and turns off the blow; the head barely tips — tipped back ~40° the big fringe fell over the eyes
+            p.KneeL = p.KneeR = 24f * f; p.Step = -0.22f * f; p.Spread = 6f * f;   // knocked back a step, knees giving
             p.Squash = -0.1f * f + 0.04f * Mathf.Sin(Mathf.Clamp01((t - 0.12f) / 0.3f) * Mathf.PI);
             return p;
         }
@@ -860,33 +860,56 @@ namespace ExcelHeroes.World
         public const float DeadLen = 0.95f;
 
         /// <summary>
-        /// k 0 → 1 over <see cref="DeadLen"/>: going down the way a chibi reads it (the user: the old fold —
-        /// feet planted, the trunk bent 74° over them, hands at the face — looked like a floating
-        /// kneel and tore the mesh). The blow snaps the knees and throws the head and arms back; she
-        /// tips over backwards about her heels (Pitch, falling faster as she goes), lands on her back
-        /// with one bounce, and lies face up, arms out, one knee raised, the spiral eyes on.
+        /// k 0 → 1 over <see cref="DeadLen"/>: going down the way a chibi reads it. The blow snaps the head and
+        /// arms back; the knees give and she drops to kneel, sitting back on her heels, the trunk slumping
+        /// forward a little and the head drooping to one side, hands loose on the thighs, the spiral eyes on.
+        /// (Falling flat on the back was tried: from the fight's camera it showed the soles first, a skirt
+        /// lying on its back flipped up like a bowl, and the big head sank into the street — the user's
+        /// "the model breaks when it dies".) The feet stay planted, so nothing goes under the floor.
         /// </summary>
         public static Pose Dead(float k)
         {
-            var p = Pose.Rest; p.Free = true;
+            var p = Pose.Rest;
             p.Expr = k > 0.3f ? "dizzy" : "hurt";
-            var jolt = k < 0.16f ? EaseOut(k / 0.16f) : 1f;
-            var fall = k < 0.16f ? 0f : EaseIn(Mathf.Clamp01((k - 0.16f) / 0.36f));
-            var land = Mathf.Clamp01((k - 0.52f) / 0.48f);
-            var bounce = k > 0.52f && k < 0.78f ? Mathf.Sin((k - 0.52f) / 0.26f * Mathf.PI) : 0f;
-            p.Pitch = -82f * fall + 9f * bounce;
-            p.Y = 0.1f * fall + 0.04f * bounce;                 // the back on the floor, not the spine in it
-            p.RaiseL = Mathf.Lerp(-36f, 10f, jolt) + 46f * fall; p.RaiseR = Mathf.Lerp(-36f, 18f, jolt) + 40f * fall;
-            p.SwingL = p.SwingR = Mathf.Lerp(3f, 24f, jolt) - 18f * fall;
-            p.ElbowL = 16f + 34f * jolt - 16f * land; p.ElbowR = 16f + 26f * jolt - 8f * land;
-            p.HandFlexL = p.HandFlexR = 12f; p.FistL = p.FistR = 0.25f;
-            p.KneeL = 28f * jolt * (1f - fall) + 12f * fall; p.KneeR = 22f * jolt * (1f - fall) + 44f * fall;
-            p.ThighR = 26f * fall; p.Spread = 7f * fall;
-            p.Lean = 10f * jolt * (1f - fall); p.SpineBend = -8f * jolt * (1f - land * 0.5f);
-            p.HeadPitch = -9f * jolt * (1f - fall) + 4f * fall; p.HeadTilt = 10f * land; p.HeadYaw = 16f * land;
-            p.ShrugL = p.ShrugR = 10f * jolt * (1f - land);
-            p.Squash = -0.06f * jolt * (1f - fall) - 0.05f * bounce;
+            var jolt = k < 0.14f ? EaseOut(k / 0.14f) : 1f - EaseInOut(Mathf.Clamp01((k - 0.14f) / 0.3f)) * 0.7f;
+            var drop = k < 0.12f ? 0f : EaseOut(Mathf.Clamp01((k - 0.12f) / 0.24f));   // the knees go at once (the motion critique: snap it)
+            var settle = k > 0.48f ? Mathf.Sin(Mathf.Clamp01((k - 0.48f) / 0.3f) * Mathf.PI) * (1f - Mathf.Clamp01((k - 0.48f) / 0.3f)) : 0f;
+            // the knees: bent all the way, thighs down, shins folded back along the street under her
+            p.KneeL = p.KneeR = Mathf.Lerp(18f * jolt, 128f, drop);
+            p.ThighL = p.ThighR = Mathf.Lerp(0f, -6f, drop);
+            p.ToeL = p.ToeR = 40f * drop;                                    // the insteps flat on the ground
+            p.Spread = 9f * drop;
+            // the trunk: jolted back, then slumping forward over the knees, a small bounce on landing
+            p.Lean = -8f * jolt * (1f - drop) + (16f + 4f * settle) * drop;
+            p.SpineBend = -6f * jolt * (1f - drop) + 8f * drop;
+            p.HeadPitch = -8f * jolt * (1f - drop) + 7f * drop;
+            p.HeadTilt = 14f * drop; p.HeadYaw = 6f * drop;
+            p.ShrugL = p.ShrugR = 10f * jolt * (1f - drop) - 4f * drop;
+            // the arms: thrown out by the blow, then hanging, the hands on the thighs
+            p.RaiseL = Mathf.Lerp(Mathf.Lerp(-36f, 8f, jolt), -34f, drop); p.RaiseR = Mathf.Lerp(Mathf.Lerp(-36f, 14f, jolt), -32f, drop);
+            p.SwingL = Mathf.Lerp(Mathf.Lerp(3f, 20f, jolt), 26f, drop); p.SwingR = Mathf.Lerp(Mathf.Lerp(3f, 20f, jolt), 22f, drop);
+            p.ElbowL = Mathf.Lerp(16f + 30f * jolt, 26f, drop); p.ElbowR = Mathf.Lerp(16f + 24f * jolt, 30f, drop);
+            p.InL = p.InR = 18f * drop;
+            p.HandFlexL = p.HandFlexR = 20f; p.FistL = p.FistR = 0.3f;
+            p.Squash = -0.07f * jolt * (1f - drop) - 0.04f * settle;
             return p;
+        }
+
+        /// <summary>
+        /// How far a figure lying on the ground has to rise so no part of it is under the street (world
+        /// units, ≥ 0): a fall pivots about the heels, and a chibi's head is so big that tipped over it
+        /// sank through the floor (the user: "the model breaks when it dies"). Measured on the posed
+        /// bones: the head as a ball on the head bone, the pelvis, the hands and the feet.
+        /// </summary>
+        public static float GroundLift(ChibiRig rig, float groundY)
+        {
+            if (rig?.Head == null) return 0f;
+            var r = rig.Height * rig.Root.lossyScale.y * 0.2f;           // the head's radius, about a fifth of the figure
+            var centre = rig.Head.position + rig.Root.up * 0f + rig.Head.up * (r * 0.9f);
+            var low = centre.y - r;
+            foreach (var t in new[] { rig.Pelvis, rig.HandL, rig.HandR, rig.FootL, rig.FootR })
+                if (t != null) low = Mathf.Min(low, t.position.y - r * 0.18f);
+            return Mathf.Max(0f, groundY - low);
         }
 
         /// <summary>
