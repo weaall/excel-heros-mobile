@@ -91,7 +91,7 @@ namespace ExcelHeroes.World
 
         static float EnvF(string k, float d) => float.TryParse(System.Environment.GetEnvironmentVariable(k), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : d;
         /// <summary>The win's close-up: the camera's distance and aim height, the members' spacing and the depth of the back row.</summary>
-        public static float WinDist = EnvF("EH_WINDIST", 5.3f), WinAimY = EnvF("EH_WINAIM", 0.76f), WinSpacing = EnvF("EH_WINSPACE", 1.02f), WinStagger = EnvF("EH_WINSTAGGER", 0.5f);
+        public static float WinDist = EnvF("EH_WINDIST", 5.0f), WinAimY = EnvF("EH_WINAIM", 0.76f), WinSpacing = EnvF("EH_WINSPACE", 1.02f), WinStagger = EnvF("EH_WINSTAGGER", 0.5f);
         /// <summary>The squad's turn toward the enemies (the user: "they keep looking ahead, not at the enemy"): -32 had them
         /// 32° off the lens; -78 is ~40° off the line to the enemies — at the fight, the face still in view.</summary>
         public static float HeroFace = EnvF("EH_HEROFACE", -68f);
@@ -1995,10 +1995,10 @@ namespace ExcelHeroes.World
                         // the win's close-up: the member's sheet rises to float over her head, small and tipped
                         // back like a halo, bobbing — the reference's squads are read by their halos (the BA
                         // cross-check: our silhouettes had nothing over the head); still one sheet per member
-                        var head = new Vector3(px, y + Rig.Height * root.localScale.y * (1.02f + Mathf.Max(0f, BattleHead / SdSample.HeadScale - 1f) * 0.6f) + Mathf.Sin(time * 2.2f + Z) * 0.03f, pz);   // over a bigger head too
+                        var head = new Vector3(px, y + Rig.Height * root.localScale.y * (closeUp > 0.5f ? 1.1f : 1.02f + Mathf.Max(0f, BattleHead / SdSample.HeadScale - 1f) * 0.6f) + Mathf.Sin(time * 2.2f + Z) * 0.03f, pz);   // over a bigger head too
                         Rig.Sheet.localPosition = head;
                         Rig.Sheet.localRotation = Quaternion.Euler(62f, 0f, Rig.SheetSide * 8f);
-                        Rig.Sheet.localScale = Vector3.one * (closeUp > 0.5f ? 0.62f : 0.72f);
+                        Rig.Sheet.localScale = Vector3.one * (closeUp > 0.5f ? 0.95f : 0.72f);   // the win: a big halo over each head, as the reference's
                     }
                     else
                     {
