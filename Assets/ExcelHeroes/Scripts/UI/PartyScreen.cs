@@ -23,7 +23,9 @@ namespace ExcelHeroes.UI
 
         public VisualElement Build()
         {
-            _root = UiKit.Div("screen-body");
+            _root = UiKit.Div("screen-body party-screen");
+            // the reference's 부대 편성 stands the squad on its bright sky with the light lattice, not in a blurred room
+            ModalFrame.Painted(_root, Chrome.DrawBackdrop);
             Refresh();
             return _root;
         }
@@ -44,6 +46,7 @@ namespace ExcelHeroes.UI
             for (var t = 1; t <= 4; t++)
             {
                 var tab = UiKit.Btn($"{t}부대", t == 1 ? "party-tab party-tab--on" : "party-tab", () => { }, tabs);
+                SkewPlate.Apply(tab, t == 1 ? SkewPlate.Kind.Navy : SkewPlate.Kind.Light);   // the reference's slanted plates
                 if (t > 1) tab.SetEnabled(false);
             }
             var left = UiKit.Div("party-cols__left", cols);
