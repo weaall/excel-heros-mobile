@@ -123,6 +123,7 @@ namespace ExcelHeroes.UI
             _cutInAt = -999f;
             PlayCutIn(h, null);
         }
+        public void DebugExFocus() { var h = _sim?.Heroes.FirstOrDefault(x => x.Alive); if (h != null) _world?.DebugFocus(h); }
 
         // 홈 리본: the two things a player reaches for mid-run, in Excel's words for them.
         public IEnumerable<RibbonItem> Ribbon()
@@ -885,7 +886,8 @@ namespace ExcelHeroes.UI
                 Debug.Log($"[shots] boss on: wave {_sim.Wave}/{_sim.WaveCount}, boss alive {_sim.Monsters.Any(m => m.boss != null && m.Alive)}");
             }
             if (_hitStop > 0f) _hitStop -= dt;
-            else if (!_sim.Finished) _sim.Tick(dt * _speedMultiplier);
+            // the EX beat: the fight at a third of its speed for the push-in's first moment (BattleWorld.InExBeat)
+            else if (!_sim.Finished) _sim.Tick(dt * _speedMultiplier * (_world != null && _world.InExBeat ? 0.33f : 1f));
 
             // 자동 강화 runs off the screen's tick, not the sim's, so gold keeps being spent while
             // the player is on another sheet — which is the whole point of a setting that spends
@@ -1380,7 +1382,7 @@ namespace ExcelHeroes.UI
             }
             if (_backdropView != null) _backdropView.style.display = DisplayStyle.None;
 
-            _world.Sync(dt, DrawX, _sim.Shake);
+            _world.Sync(dt * (_world.InExBeat ? 0.45f : 1f), DrawX, _sim.Shake);
 
             if (_fx != null)
             {

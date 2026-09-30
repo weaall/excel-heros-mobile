@@ -115,6 +115,14 @@ namespace ExcelHeroes.World
             var pitch = Mathf.Lerp(QuarterPitch, 14f, k) * Mathf.Deg2Rad;
             var yaw = Mathf.Lerp(QuarterYaw, 0f, k);
             var dist = Mathf.Lerp(QuarterDist * _camZoom * (1f - 0.035f * _punch), WinDist, k);
+            var fw = FocusW() * (1f - k);
+            if (fw > 0f)
+            {
+                var fp = _focus.Rig.Root.localPosition + new Vector3(0.6f, _focus.Rig.Height * _focus.Scale * 0.55f, 0f);   // a little ahead of her, toward the foe
+                target = Vector3.Lerp(target, fp, fw * 0.85f);
+                dist = Mathf.Lerp(dist, dist * 0.6f, fw);
+                pitch = Mathf.Lerp(pitch, pitch - 5f * Mathf.Deg2Rad, fw);
+            }
             var pos = target + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
@@ -1063,7 +1071,25 @@ namespace ExcelHeroes.World
             var def = GameData.Hero(actor.heroId);
             if (def == null || def.skillName != text) return;   // 엄호 (the tank covering) is a Skill event too, not an EX
             _cast = (a, def.skillType, a, 0);
+            // the reference's EX beat: the camera pushes in on the caster for a second (at most once in 4.5 s, so an
+            // auto run casting back to back does not rock the view)
+            if (_time - _focusAt > 4.5f && _closeUpTarget <= 0f) { _focus = a; _focusAt = _time; }
         }
+
+        Actor _focus; float _focusAt = -99f;
+        public void DebugFocus(Combatant c) { if (c != null && _actors.TryGetValue(c, out var a)) { _focus = a; _focusAt = _time; } }
+        /// <summary>The EX push-in's weight now, 0..1: in over 0.18 s, held, out over the last 0.35 s of 1.25 s.</summary>
+        float FocusW()
+        {
+            if (_focus == null || !FocusOn) return 0f;
+            var t = _time - _focusAt;
+            if (t > 1.25f || !_focus.C.Alive) { _focus = null; return 0f; }
+            return Mathf.SmoothStep(0f, 1f, Mathf.Min(t / 0.18f, (1.25f - t) / 0.35f));
+        }
+        /// <summary>A/B hook: the EX camera push-in (EH_EXCAM=0 off).</summary>
+        public static readonly bool FocusOn = System.Environment.GetEnvironmentVariable("EH_EXCAM") != "0";
+        /// <summary>True for the first ~0.35 s of an EX push-in: the screen slows the fight for the beat.</summary>
+        public bool InExBeat => FocusOn && _focus != null && _time - _focusAt < 0.35f;
 
         public void EndSkillBatch() => _cast = default;
 

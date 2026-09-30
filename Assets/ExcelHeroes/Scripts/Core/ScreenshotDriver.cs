@@ -206,6 +206,10 @@ namespace ExcelHeroes.Core
                         BattleScreen.Current?.DebugCutIn();
                         yield return new WaitForSecondsRealtime(0.4f);
                         yield return Shoot($"{n:00}-CutIn");
+                        yield return new WaitForSecondsRealtime(1.2f);
+                        BattleScreen.Current?.DebugExFocus();
+                        yield return new WaitForSeconds(0.4f);
+                        yield return Shoot($"{n:00}-ExCam");
                         // a win: the result over the party's close-up cheer (the BA cross-check's "result")
                         BattleScreen.Current?.DebugWin();
                         yield return new WaitForSeconds(2.4f);   // past the entry, into the held victory poses
