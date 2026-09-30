@@ -58,6 +58,9 @@ namespace ExcelHeroes.World
         /// </summary>
         static readonly Dictionary<string, (Color[] px, int n, float mean)> HairSrcs = new();
 
+        /// <summary>0..1: how far the hair's strand shading is folded to two flat tones (EH_HAIRCEL; A/B hook).</summary>
+        public static readonly float HairCel = float.TryParse(System.Environment.GetEnvironmentVariable("EH_HAIRCEL"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var hc) ? hc : 1f;   // on: the flat two-tone hair read cleaner (the judge split 5/10 with both sides praising it)
+
         public static Texture2D Hair(SdLook k, Texture2D source = null)
         {
             var srcName = source != null ? source.name : "base_hair";
@@ -91,6 +94,14 @@ namespace ExcelHeroes.World
                 Color.RGBToHSV(hair, out var hh, out var hs, out var hv);
                 var baseV = Mathf.Min(hv, 0.9f);
                 var f = Mathf.Clamp(Mathf.Pow(ratio, 2.6f), hv > 0.85f ? 0.62f : 0.5f, 1.5f);
+                // cel hair (HairCel): the strands' continuous shading folded to two tones — the lit tone and one
+                // shadow tone, a soft edge between — as BA's hair reads: flat colour, a shadow shape, one shine band
+                if (HairCel > 0f)
+                {
+                    var shadowT = hv > 0.85f ? 0.8f : 0.74f;
+                    var lit = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((f - 0.8f) / 0.14f));
+                    f = Mathf.Lerp(f, Mathf.Lerp(shadowT, 1.02f, lit), HairCel);
+                }
                 var shadowSat = f < 1f ? Mathf.Lerp(1.15f, 1f, f) : 1f;
                 var c = Color.HSVToRGB(hh, Mathf.Clamp01(hs * shadowSat), Mathf.Clamp01(baseV * f)); c.a = 1f;
                 var u = Mathf.Clamp01((ratio - 1.08f) / 0.1f);
