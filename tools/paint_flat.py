@@ -23,6 +23,8 @@ def flat(src, dst, k, sp, sr):
     a = im[..., 3] if im.shape[2] == 4 else None
     bgr = np.ascontiguousarray(im[..., :3])
     sm = cv2.pyrMeanShiftFiltering(bgr, sp, sr)
+    if k <= 0:   # --k 0: the smoothing only, no palette (keeps every colour, removes the brush noise)
+        out = sm if a is None else np.dstack([sm, a]); cv2.imwrite(dst, out); return
     mask = (a > 16) if a is not None else np.ones(bgr.shape[:2], bool)
     px = sm[mask].reshape(-1, 3).astype(np.float32)
     if len(px) > k * 10:
