@@ -40,8 +40,10 @@ namespace ExcelHeroes.World
         /// </summary>
         static Color Tights(SdLook k)
         {
-            var c = Color.Lerp(k.Socks, k.Skin, 0.06f);
-            return new Color(c.r * 0.72f, c.g * 0.74f, c.b * 0.82f, 1f);
+            // black sheer tights, the office look of the illustrations: near-black with a cool cast and a
+            // trace of the skin through them (the consistency audit read the old brownish mix as "no tights")
+            var c = Color.Lerp(new Color(0.09f, 0.09f, 0.12f), k.Skin, 0.1f);
+            return Color.Lerp(c, k.Socks, 0.12f);
         }
 
         /// <summary>The group key of the own skirt's triangles (drawn with rig.SkirtSheet, UVs kept).</summary>
