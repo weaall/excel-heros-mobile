@@ -202,7 +202,7 @@ namespace ExcelHeroes.World
             _backdropAspect = _cam.aspect;
         }
 
-        const float SuperSample = 1f;   // BattleScreen.Layout3D already asks for 1.25x
+        static readonly float SuperSample = EnvF("EH_SS", 1f);   // BattleScreen.Layout3D already asks for 1.25x (A/B hook)
 
         public void SetVisible(bool on) => _cam.enabled = on && _rt != null;
 

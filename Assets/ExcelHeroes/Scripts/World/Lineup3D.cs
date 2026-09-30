@@ -80,8 +80,9 @@ namespace ExcelHeroes.World
         {
             _host = host;
             // a quarter over the slots' pixels with 4x MSAA (crisp outlines; the BA cross-check's "muddy")
-            pxW = Mathf.Clamp(Mathf.RoundToInt(pxW * 1.25f), 64, 4096);
-            pxH = Mathf.Clamp(Mathf.RoundToInt(pxH * 1.25f), 64, 4096);
+            var ss = float.TryParse(System.Environment.GetEnvironmentVariable("EH_SS_LINEUP"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ssv) ? ssv : 1.25f;   // A/B hook
+            pxW = Mathf.Clamp(Mathf.RoundToInt(pxW * ss), 64, 4096);
+            pxH = Mathf.Clamp(Mathf.RoundToInt(pxH * ss), 64, 4096);
             if (_rt == null || _rt.width != pxW || _rt.height != pxH)
             {
                 if (_rt != null) { _cam.targetTexture = null; _rt.Release(); Destroy(_rt); }
