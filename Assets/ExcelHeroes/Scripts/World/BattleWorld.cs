@@ -141,7 +141,7 @@ namespace ExcelHeroes.World
                 _set = bg != null ? Backdrop(bg) : OfficeStage.Build(_root, Layer, sim.Stage);
                 _street = bg != null ? StreetSet.Build(_root, Layer, mood) : null;
                 StreetSet.Paint(_street, mood);   // the painted street projected onto the set (Plate.shader)
-                if (_street != null) StreetSet.Props(_street, Layer, mood);
+                _props = _street != null ? StreetSet.Props(_street, Layer, mood) : null;
                 _setMood = mood;
                 _cam.backgroundColor = mood == 2 ? new Color(0.16f, 0.18f, 0.32f) : new Color(0.86f, 0.93f, 1f);
             }
@@ -152,6 +152,7 @@ namespace ExcelHeroes.World
         }
 
         bool _entering;
+        Transform _props;
 
         const float BackdropDistance = 40f;
 
@@ -427,6 +428,7 @@ namespace ExcelHeroes.World
             _time += dt;
             _closeUp = Mathf.MoveTowards(_closeUp, _closeUpTarget, dt * 1.4f);
             Shader.SetGlobalFloat("_EhGroundY", _root.position.y + 0.036f);   // the street's plane for the cast shadows
+            if (_props != null) _props.gameObject.SetActive(_closeUp < 0.05f);   // the win's close-up: no cover in front of the squad
             // (loops, not LINQ: this runs every frame)
             float cx = 0f, cz = 0f; var alive = 0;
             foreach (var a in _actors.Values) if (a.C.side == Side.Hero && a.C.Alive) { cx += a.X; cz += a.Z; alive++; }

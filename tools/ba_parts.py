@@ -19,10 +19,10 @@ REF = os.path.join(OUT, "ba_ref")
 MODEL = os.environ.get("CROSS_MODEL", "gemini-3.1-pro-preview")
 # part: (our shot, our crop, BA ref, BA crop, what)
 PARTS = {
-    "battle_chars": ("07-Fight2.png", (0.06, 0.25, 0.48, 0.78), "ref02.png", (0.14, 0.37, 0.62, 0.96), "the SD characters fighting on the street (3D models, poses, shading)"),
-    "battle_cards": ("07-Fight2.png", (0.6, 0.68, 0.99, 0.99), "ref02.png", (0.67, 0.75, 1.0, 0.98), "the skill cards and cost gauge at the bottom right (UI)"),
-    "battle_env":   ("07-Fight2.png", (0.0, 0.0, 0.6, 0.45), "ref02.png", (0.0, 0.0, 0.62, 0.5), "the city street environment (buildings, props, road)"),
-    "battle_hud":   ("07-Fight2.png", (0.62, 0.0, 1.0, 0.12), "ref02.png", (0.78, 0.0, 1.0, 0.13), "the top HUD bar (timer, counters, buttons)"),
+    "battle_chars": ("07-Fight3.png", (0.06, 0.25, 0.48, 0.78), "ref02.png", (0.14, 0.37, 0.62, 0.96), "the SD characters fighting on the street (3D models, poses, shading)"),
+    "battle_cards": ("07-Fight3.png", (0.6, 0.68, 0.99, 0.99), "ref02.png", (0.67, 0.75, 1.0, 0.98), "the skill cards and cost gauge at the bottom right (UI)"),
+    "battle_env":   ("07-Fight3.png", (0.0, 0.0, 0.6, 0.45), "ref02.png", (0.0, 0.0, 0.62, 0.5), "the city street environment (buildings, props, road)"),
+    "battle_hud":   ("07-Fight3.png", (0.62, 0.0, 1.0, 0.12), "ref02.png", (0.78, 0.0, 1.0, 0.13), "the top HUD bar (timer, counters, buttons)"),
     "result_chars": ("07-Win.png", (0.05, 0.12, 0.95, 0.72), "ref04.png", (0.15, 0.2, 0.9, 0.85), "the squad posing after winning (3D models, victory poses)"),
     "result_title": ("07-Win.png", (0.3, 0.0, 0.7, 0.2), "ref04.png", (0.3, 0.05, 0.7, 0.2), "the 'Battle Complete' title"),
     "formation_chars": ("08-Party.png", (0.1, 0.12, 0.8, 0.62), "ref06.png", (0.0, 0.1, 0.9, 0.62), "the squad standing in the formation slots (3D models, idle poses)"),

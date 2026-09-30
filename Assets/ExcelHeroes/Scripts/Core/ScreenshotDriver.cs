@@ -193,6 +193,9 @@ namespace ExcelHeroes.Core
                         for (var f = 0; f < 6; f++)
                         {
                             yield return new WaitForSeconds(0.45f);
+                            // a fight frame is a live fight: past a result, wait for the next run's squad to be at it
+                            for (var w = 0f; BattleScreen.Current?.DebugFinished == true && w < 8f; w += 0.25f) yield return new WaitForSeconds(0.25f);
+                            if (f == 0) BattleSim.DebugTanky = 25;
                             yield return Shoot($"{n:00}-Fight{f}");
                         }
                         // a win: the result over the party's close-up cheer (the BA cross-check's "result")

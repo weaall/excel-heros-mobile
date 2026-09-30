@@ -26,7 +26,7 @@ MODEL = os.environ.get("CROSS_MODEL", "gemini-3.1-pro-preview")
 # name: (our image, relative to SHOTS unless absolute-ish with a folder; BA refs; what the screen is)
 PAIRS = {
     "lobby":     ("05-Home.png", ["ref01.png", "ref03.png", "ref13.png"], "the main lobby"),
-    "battle":    ("07-Fight2.png", ["ref02.png", "ref14.png"], "a battle in progress"),
+    "battle":    ("07-Fight3.png", ["ref02.png", "ref14.png"], "a battle in progress"),
     "result":    ("07-Win.png", ["ref04.png"], "the battle result"),
     "formation": ("08-Party.png", ["ref06.png"], "the squad formation screen"),
     "profile":   ("17-Detail.png", ["ref10.png"], "a character profile page"),

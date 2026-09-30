@@ -7205,3 +7205,4 @@
 /* the win title r11: a thick dark edge and a drop, like the reference's */
 .bresult__band--win .bresult__title { -unity-text-outline-width: 5px; -unity-text-outline-color: rgb(92, 40, 6); text-shadow: 0 6px 0 rgba(60, 20, 0, 0.7); }
 .bhud__armor-text { color: rgb(255, 255, 255); -unity-font-style: bold; }
+.battle--result .fighter { display: none; }   /* the win close-up is the squad alone: no HP bars over it (part cross-check) */

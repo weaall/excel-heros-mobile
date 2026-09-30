@@ -120,6 +120,22 @@ namespace ExcelHeroes.World
             return true;
         }
 
+        public static float HeadScale = float.TryParse(System.Environment.GetEnvironmentVariable("SD_HEADSCALE"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var hs0) ? hs0 : 1.1f;
+        public static float LegScale = float.TryParse(System.Environment.GetEnvironmentVariable("SD_LEGSCALE"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var ls0) ? ls0 : 0.9f;
+
+        static void Proportion(ChibiRig rig)
+        {
+            if (rig.Head != null && Mathf.Abs(HeadScale - 1f) > 0.001f) rig.Head.localScale = rig.Head.localScale * HeadScale;
+            if (Mathf.Abs(LegScale - 1f) > 0.001f)
+                foreach (var t in new[] { rig.LegL, rig.LegR })
+                    if (t != null)
+                    {
+                        // along the thigh only (Biped bones run along their own X): the leg shorter, not thinner;
+                        // the calf under it is scaled back on X so its length follows but its girth is kept
+                        t.localScale = new Vector3(t.localScale.x * LegScale, t.localScale.y, t.localScale.z);
+                    }
+        }
+
         static void HideOwnHair(List<SkinnedMeshRenderer> kept)
         {
             foreach (var r in kept)
@@ -881,6 +897,9 @@ namespace ExcelHeroes.World
             if (k.Glasses || k.Sunglasses) SdRefProps.Glasses(rig, body, root, k.Sunglasses, k.GlassesStyle, k.GlassesColor, layer);
             if (!_raw) SdRefProps.HandProp(rig, root, SdRef.RoleOf(heroId), k, layer);
             if (!_raw) SdRefProps.BackGear(rig, root, SdRef.RoleOf(heroId), k, layer);
+            // the reference's SD proportion (the part cross-check: "too tall — 2.5 heads"): the head a size up,
+            // the legs shorter. Scaled on the bones, so the skin, the hair and the head props follow
+            if (!_raw) Proportion(rig);
 
             SdPose.Apply(rig, Pose.Rest);
             if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
