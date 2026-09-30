@@ -32,16 +32,16 @@ namespace ExcelHeroes.World
         {
             //                                   lean  bend pitch tilt  spread shrug hip  twist  in   tempo  idles                  wins
             ["confident"] = new("confident",    -3f,  -3f, -3f,   0f,   4f,   0f,   2f,   0f,   0f,  0.95f, new[] { 1, 2, 9 },    new[] { 1, 8, 10 }),
-            ["elegant"]   = new("elegant",       0f,  -1f,  1f,   4f,  -3f,   0f,   3f,   0f,   4f,  0.85f, new[] { 10, 0, 6 },   new[] { 3, 2, 11 }),
+            ["elegant"]   = new("elegant",       0f,  -1f,  1f,   4f,  -3f,   0f,   3f,   0f,   4f,  0.85f, new[] { 10, 0, 6 },   new[] { 2, 6, 10 }),
             ["shy"]       = new("shy",           3f,   2f,  6f,   3f,  -4f,   5f,   0f,   0f,   8f,  0.9f,  new[] { 10, 3 },      new[] { 4, 7 }),
             ["energetic"] = new("energetic",     1f,  -1f, -2f,   0f,   3f,   0f,   0f,   0f,   0f,  1.35f, new[] { 12, 0, 5 },   new[] { 0, 5, 6 }),
             ["lazy"]      = new("lazy",          5f,   4f,  3f,   6f,   2f,  -3f,   4f,   0f,   0f,  0.65f, new[] { 13, 4, 9 },   new[] { 4, 8 }),
-            ["stern"]     = new("stern",        -1f,  -1f, -1f,   0f,   4f,   0f,   0f,   0f,   0f,  0.8f,  new[] { 8, 2 },       new[] { 9, 3, 11 }),
+            ["stern"]     = new("stern",        -1f,  -1f, -1f,   0f,   4f,   0f,   0f,   0f,   0f,  0.8f,  new[] { 8, 2 },       new[] { 9, 1, 8 }),
             ["nerdy"]     = new("nerdy",         3f,   2f,  4f,   2f,   0f,   2f,   0f,   0f,   4f,  1.0f,  new[] { 6, 3, 11 },   new[] { 2, 10 }),
             ["cool"]      = new("cool",          0f,  -1f, -2f,  -4f,   3f,   0f,   5f,   6f,   0f,  0.8f,  new[] { 9, 4 },       new[] { 8, 10 }),
             ["cheerful"]  = new("cheerful",      0f,  -1f, -1f,   6f,   1f,   2f,   2f,   0f,   0f,  1.15f, new[] { 0, 5, 12 },   new[] { 6, 2, 4 }),
             ["caring"]    = new("caring",        1f,   0f,  2f,   5f,  -2f,   0f,   2f,   0f,   4f,  0.9f,  new[] { 10, 1 },      new[] { 7, 4 }),
-            ["executive"] = new("executive",    -4f,  -4f, -4f,   0f,   3f,   0f,   0f,   0f,   0f,  0.75f, new[] { 8, 2 },       new[] { 11, 3, 9 }),
+            ["executive"] = new("executive",    -4f,  -4f, -4f,   0f,   3f,   0f,   0f,   0f,   0f,  0.75f, new[] { 8, 2 },       new[] { 9, 10, 1 }),
             ["playful"]   = new("playful",       0f,   0f,  0f,   7f,   1f,   0f,   6f,  -4f,   0f,  1.1f,  new[] { 5, 11, 1 },   new[] { 2, 6, 10 }),
         };
 
@@ -54,6 +54,8 @@ namespace ExcelHeroes.World
             return !string.IsNullOrEmpty(s) && Table.TryGetValue(s, out var p) ? p : Neutral;
         }
 
+        // (the result screen's wins: the bow and the hand on the heart dropped from the elegant / stern / executive pools —
+        // at the result camera they read as a squad sinking, not celebrating; BA's result is all joy)
         static readonly SdPersona Neutral = new("", 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 1f, null, null);
 
         public bool Has => Idles != null;

@@ -95,6 +95,19 @@ namespace ExcelHeroes.World
         /// <summary>The squad's turn toward the enemies (the user: "they keep looking ahead, not at the enemy"): -32 had them
         /// 32° off the lens; -78 is ~40° off the line to the enemies — at the fight, the face still in view.</summary>
         public static float HeroFace = EnvF("EH_HEROFACE", -68f);
+        /// <summary>
+        /// The result's cheer, read from the close-up camera: a win aimed AT the lens (point 10, thumbs-up 8) foreshortens
+        /// to a hand in front of the chest, and the bow (3), the clap (7) and the hand on the heart (11) sink the body —
+        /// at the result they read as a squad crouching (the user: "the victory looks slumped"). Those become a
+        /// side-silhouette cheer (arms up 0, fist pump 1, V by the cheek 2, wave 4, double V 6), picked by the member.
+        /// </summary>
+        static int ResultWin(string id, int w)
+        {
+            if (w is not (3 or 7 or 8 or 10 or 11)) return w;
+            int[] pool = { 0, 1, 4, 6, 2 };
+            return pool[(SdPose.Hash(id) / 5) % pool.Length];
+        }
+
         public static float HeroScale = EnvF("EH_HEROSCALE", 1.08f);   // 1.08: A/B vs BA 33/48 over two runs against 1.18 (1.3: 9/24)
         public static float QuarterPitch = EnvF("EH_PITCH", 26f), QuarterYaw = EnvF("EH_YAW", 28f), QuarterDist = EnvF("EH_DIST", 9f);   // 9 m: the squad larger in frame (part cross-check)   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
         float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN, _punch;
@@ -1524,7 +1537,8 @@ namespace ExcelHeroes.World
         public string DebugFacing()
         {
             var sb = new System.Text.StringBuilder($"cam {_cam.transform.position} fwd {_cam.transform.forward} | ");
-            foreach (var a in _actors.Values) if (a.C.side == Side.Hero) sb.Append($"{a.C.heroId} yaw {a.Rig.Root.eulerAngles.y:0} fwd {a.Rig.Root.forward} model {(a.Rig.Model != null ? a.Rig.Model.forward.ToString() : "-")}; ");
+            sb.Append($"closeUp {_closeUp:F2} | ");
+            foreach (var a in _actors.Values) if (a.C.side == Side.Hero) sb.Append($"{a.C.heroId} alive {a.C.Alive} hp {a.C.hp} cheer {a.Cheer:F2} winT {a.DebugWinT:F2} win {SdPose.WinOf(a.C.heroId)} ref {a.Rig.RefModel}; ");
             return sb.ToString();
         }
 
@@ -1797,6 +1811,7 @@ namespace ExcelHeroes.World
             /// for EX, a hop and wave for the win.
             /// </summary>
             Pose _pose, _shown; bool _shownInit; float _winT; float[] _vel;
+            public float DebugWinT => _winT;
             // the pose's own clocks: the sim's Attack (0.32 s) and Hit (0.16 s) are too short for a body to
             // read — the wind-up, the held extension and the settle need about half a second (BA's
             // blows snap out in two or three frames and then HOLD) — so the SD's pose runs on its own
@@ -1844,7 +1859,7 @@ namespace ExcelHeroes.World
                     var pers = SdPersona.For(Pid);
                     var atkOn = _atkT < SdPose.AttackLen; var hitOn = _hitT < SdPose.HitLen; var sklOn = _sklT < SdPose.SkillLen;
                     if (Dying > 0f || !C.Alive) _pose = SdPose.Dead(Dying > 0f ? Mathf.Clamp01(Dying / SdPose.DeadLen) : 1f);
-                    else if (cheering) _pose = SdPose.Victory(SdPose.WinOf(Pid), _winT);
+                    else if (cheering) _pose = SdPose.Victory(ResultWin(Pid, SdPose.WinOf(Pid)), _winT);
                     else if (sklOn) _pose = SdPose.SkillAt(SdPose.SkillOf(Pid, C.role), _sklT / SdPose.SkillLen);
                     else if (hitOn) _pose = SdPose.Hit(1f - _hitT / SdPose.HitLen);
                     else if (atkOn) _pose = SdPose.AttackAt(AttackPose(C), _atkT / SdPose.AttackLen);
@@ -2312,6 +2327,9 @@ namespace ExcelHeroes.World
             public void Update(float dt, float time, float targetX, Transform cam, MaterialPropertyBlock mpb, float closeUp)
             {
                 var hero = C.side == Side.Hero;
+                // back on her feet: a hero revived (재고용 보장, or the run's end) stood up again — Dying was never cleared, so
+                // she stayed kneeling in the down pose, without her halo, for the rest of the run and through the win
+                if (hero && Dying > 0f && C.Alive) Dying = 0f;
                 var drawn = targetX - Mathf.SmoothStep(0f, 1f, Enter) * 4.5f;
                 var moved = Mathf.Abs(drawn - _lastX);
                 _lastX = drawn;

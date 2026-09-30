@@ -213,6 +213,7 @@ namespace ExcelHeroes.Core
                         // a win: the result over the party's close-up cheer (the BA cross-check's "result")
                         BattleScreen.Current?.DebugWin();
                         yield return new WaitForSeconds(2.4f);   // past the entry, into the held victory poses
+                        Debug.Log("[shots] win: " + ExcelHeroes.World.BattleWorld.Instance?.DebugFacing());
                         yield return Shoot($"{n:00}-Win");
                         yield return new WaitForSeconds(4f);   // the next run starts on its own
 
