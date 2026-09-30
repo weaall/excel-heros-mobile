@@ -63,12 +63,18 @@ namespace ExcelHeroes.UI
             var nav = root.Q<VisualElement>("navbar");
             if (nav != null)
             {
-                ModalFrame.Painted(nav, DrawBottomStrip);
-                // every tab its own slanted glass tile, the lit one cyan (target_1)
+                ModalFrame.Painted(nav, DrawBottomStripLight);
+                // the icons float free on the light strip, no card behind each (part cross-check vs the
+                // reference's lobby menu); the open tab gets a cyan slant under its label only
                 foreach (var tab in nav.Query<Button>(className: "navtab").ToList())
                 {
                     var t = tab;
-                    ModalFrame.Painted(t, (ctx, r) => DrawGlassTile(ctx, r, t.ClassListContains("navtab--active")));
+                    ModalFrame.Painted(t, (ctx, r) =>
+                    {
+                        if (!t.ClassListContains("navtab--active")) return;
+                        var bar = Rect.MinMaxRect(r.xMin + r.width * 0.12f, r.yMax - 8f, r.xMax - r.width * 0.12f, r.yMax - 2f);
+                        UiPaint.Fill(ctx, UiPaint.SkewRect(bar, 4f, 1f), C(0, 200, 250));
+                    });
                 }
             }
 
@@ -281,6 +287,17 @@ namespace ExcelHeroes.UI
                          UiPaint.Vertical(C(18, 30, 58, 0f), C(18, 30, 58, 0.3f), band.yMin - 14f, band.yMin), 0f);
             UiPaint.Fill(ctx, UiPaint.RoundRect(band, 0f), UiPaint.Vertical(C(26, 40, 74, 0.94f), C(14, 24, 48, 0.97f), band.yMin, band.yMax), 0f);
             UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(band.xMin, band.yMin, band.xMax, band.yMin + 2f), 0f), C(90, 200, 240, 0.5f), 0f);
+        }
+
+        /// <summary>The lobby's bottom menu: a light, translucent, angled strip the icons float on.</summary>
+        public static void DrawBottomStripLight(MeshGenerationContext ctx, Rect r)
+        {
+            var band = Rect.MinMaxRect(r.xMin - 60f, r.yMin + r.height * 0.18f, r.xMax + 400f, r.yMax + 200f);
+            var slant = band.height * 0.2f;
+            var poly = new List<Vector2> { new(band.xMin + slant, band.yMin), new(band.xMax, band.yMin), new(band.xMax, band.yMax), new(band.xMin, band.yMax) };
+            UiPaint.Shadow(ctx, poly, new Vector2(0f, -2f), C(20, 50, 90, 0.12f), 12f);
+            UiPaint.Fill(ctx, poly, UiPaint.Vertical(C(255, 255, 255, 0.82f), C(232, 244, 252, 0.74f), band.yMin, band.yMax), 0f);
+            UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(band.xMin - 20f, band.yMin, band.xMax, band.yMin + 2.5f), 0f)), C(0, 200, 250, 0.7f), 0f);
         }
 
         public static void DrawBottomStripWhite(MeshGenerationContext ctx, Rect r)

@@ -72,6 +72,53 @@ namespace ExcelHeroes.World
             for (var r = 0; r < 3; r++) for (var c = 0; c < 4; c++)
                 k.Box(new Vector3(5.33f + c * 0.18f, 0.92f + r * 0.28f, 3.81f), new Vector3(0.12f, 0.18f, 0.03f), c % 2 == 0 ? C(0.2f, 0.6f, 0.95f) : C(1f, 0.7f, 0.2f));
             k.Box(new Vector3(5.6f, 0.4f, 3.84f), new Vector3(0.6f, 0.16f, 0.04f), black);
+            // cover along the fight's lane, as the reference's streets are set up for a gunfight (the BA
+            // cross-check: our road was an empty plane): yellow-and-black jersey barriers, concrete blocks, a
+            // knocked-over road sign and a work fence — just off the lane (z −2.3 foreground, z 2.0 by the
+            // curb), so nobody walks through them
+            void Jersey(float x, float z, float yaw)
+            {
+                // the reference's yellow road barrier: a tall slab on two feet, black diagonal stripes across its face
+                k.M = Matrix4x4.TRS(new Vector3(x, 0f, z), Quaternion.Euler(0f, yaw, 0f), Vector3.one);
+                k.Box(new Vector3(0f, 0.34f, 0f), new Vector3(0.7f, 0.44f, 0.12f), yellow);
+                foreach (var sx in new[] { -0.26f, 0.26f }) k.Box(new Vector3(sx, 0.06f, 0f), new Vector3(0.12f, 0.12f, 0.36f), C(0.2f, 0.21f, 0.24f));
+                for (var i2 = 0; i2 < 3; i2++)
+                {
+                    var m0 = k.M;
+                    k.M = m0 * Matrix4x4.TRS(new Vector3(-0.22f + i2 * 0.22f, 0.34f, -0.062f), Quaternion.Euler(0f, 0f, 38f), Vector3.one);
+                    k.Box(Vector3.zero, new Vector3(0.09f, 0.52f, 0.01f), black);
+                    k.M = m0;
+                }
+                k.M = Matrix4x4.identity;
+            }
+            void Block(float x, float z, float yaw, float w)
+            {
+                k.M = Matrix4x4.TRS(new Vector3(x, 0f, z), Quaternion.Euler(0f, yaw, 0f), Vector3.one);
+                k.Box(new Vector3(0f, 0.19f, 0f), new Vector3(w, 0.38f, 0.34f), C(0.78f, 0.79f, 0.8f));
+                k.Box(new Vector3(0f, 0.395f, 0f), new Vector3(w * 0.92f, 0.03f, 0.3f), C(0.86f, 0.87f, 0.88f));
+                k.Box(new Vector3(-w * 0.3f, 0.2f, -0.172f), new Vector3(w * 0.18f, 0.06f, 0.01f), C(0.95f, 0.5f, 0.15f));
+                k.M = Matrix4x4.identity;
+            }
+            void Sign(float x, float z, float yaw)
+            {
+                // a triangular warning sign on its stand, knocked over flat
+                k.M = Matrix4x4.TRS(new Vector3(x, 0.03f, z), Quaternion.Euler(-84f, yaw, 0f), Vector3.one);
+                k.Box(new Vector3(0f, 0.36f, 0f), new Vector3(0.05f, 0.72f, 0.05f), C(0.62f, 0.64f, 0.68f));
+                k.Frustum(new Vector3(0f, 0.72f, 0f), 0.26f, 0.42f, 0.02f, C(0.97f, 0.97f, 0.97f), 0.12f, 3);
+                k.Frustum(new Vector3(0f, 0.76f, 0.02f), 0.2f, 0.33f, 0.02f, C(0.92f, 0.16f, 0.2f), 0.12f, 3);
+                k.M = Matrix4x4.identity;
+            }
+            void Fence(float x, float z, float w)
+            {
+                for (var i = 0; i <= 2; i++) k.Box(new Vector3(x - w * 0.5f + w * i / 2f, 0.4f, z), new Vector3(0.05f, 0.8f, 0.05f), C(0.55f, 0.58f, 0.62f));
+                k.Box(new Vector3(x, 0.72f, z), new Vector3(w, 0.2f, 0.02f), white);
+                for (var i = 0; i < 6; i++) k.Box(new Vector3(x - w * 0.5f + w * (i + 0.5f) / 6f, 0.72f, z - 0.012f), new Vector3(w / 12f, 0.2f, 0.005f), orange);
+                k.Box(new Vector3(x, 0.32f, z), new Vector3(w, 0.2f, 0.02f), white);
+                foreach (var sx in new[] { -0.5f, 0.5f }) k.Box(new Vector3(x + sx * w, 0.03f, z), new Vector3(0.3f, 0.06f, 0.14f), black);
+            }
+            Jersey(-3.6f, -2.35f, 8f); Jersey(-2.85f, -2.3f, -4f); Block(1.6f, -2.4f, 12f, 0.9f); Jersey(4.3f, -2.35f, -10f);
+            Cone(-0.4f, -2.45f); Cone(0.2f, -2.2f); Cone(0.6f, -2.5f); Block(6.6f, -2.3f, -6f, 1.1f);
+            Jersey(-1.5f, 2.05f, 3f); Block(2.8f, 2.0f, -8f, 0.8f); Fence(7.2f, 2.1f, 1.6f); Jersey(9.6f, 2.0f, 6f);
             MeshKit.Part("props", root, k.Bake("props"), MeshKit.Toon, layer);
             return root;
         }

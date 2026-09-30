@@ -462,7 +462,7 @@ namespace ExcelHeroes.World
             SdPose.Apply(rig, Pose.Rest);
             if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
             var sh = new MeshKit.Builder();
-            sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
+            sh.Quad(new Vector3(0f, 0.03f, 0f), new Vector3(0.3f, 0f, 0f), new Vector3(0f, 0f, 0.22f), new Color(0.06f, 0.08f, 0.16f, 0.62f));   // above the floor sheet (0.02), which had covered it: the squad floated (part cross-check)
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
             root.SetParent(parent, false);
             return rig;
@@ -727,7 +727,7 @@ namespace ExcelHeroes.World
             for (var i = 0; i < mats.Length; i++)
             {
                 var m = MeshKit.NewToon(0.005f, skirtSub[i] ? sheetL : tex.Body);
-                m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.32f); m.SetColor("_ShadeTint", SdRefLook.WarmShade); m.SetFloat("_Rim", 0.14f);
+                m.SetFloat("_Cutoff", 0f); m.SetFloat("_ShadeStrength", 0.44f); m.SetColor("_ShadeTint", SdRefLook.WarmShade); m.SetFloat("_Rim", 0.14f);
                 mats[i] = m;
             }
             smr.sharedMaterials = mats;
@@ -813,7 +813,7 @@ namespace ExcelHeroes.World
                     if (eye) { m.SetFloat("_OutlineWidth", 0f); m.SetFloat("_ShadeStrength", 0.02f); m.SetFloat("_Rim", 0f); }
                     else
                     {
-                        m.SetFloat("_ShadeStrength", n.Contains("face") ? 0.06f : 0.32f);   // a clearer two-tone (the BA cross-check)
+                        m.SetFloat("_ShadeStrength", n.Contains("face") ? 0.06f : 0.44f);   // a clearer two-tone (the BA cross-check)
                         m.SetColor("_ShadeTint", n.Contains("hair") ? SdRefLook.ShadeOf(k.Hair) : SdRefLook.WarmShade);
                         m.SetFloat("_Rim", 0.14f);
                     }
@@ -876,7 +876,7 @@ namespace ExcelHeroes.World
             if (!_raw) SdHeadwear.Apply(rig, k, root, layer, hairEnv.Contains("len=short") || hairEnv.Contains("len=bob"));
 
             var sh = new MeshKit.Builder();
-            sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
+            sh.Quad(new Vector3(0f, 0.03f, 0f), new Vector3(0.3f, 0f, 0f), new Vector3(0f, 0f, 0.22f), new Color(0.06f, 0.08f, 0.16f, 0.62f));   // above the floor sheet (0.02), which had covered it: the squad floated (part cross-check)
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
             if (k.Glasses || k.Sunglasses) SdRefProps.Glasses(rig, body, root, k.Sunglasses, k.GlassesStyle, k.GlassesColor, layer);
             if (!_raw) SdRefProps.HandProp(rig, root, SdRef.RoleOf(heroId), k, layer);

@@ -89,7 +89,7 @@ namespace ExcelHeroes.World
         /// <summary>Victory: bring the camera down onto the party, who turn to it and cheer.</summary>
         public void Celebrate(bool on) => _closeUpTarget = on ? 1f : 0f;
 
-        public static float QuarterPitch = 26f, QuarterYaw = 28f, QuarterDist = 10.5f;   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
+        public static float QuarterPitch = 26f, QuarterYaw = 28f, QuarterDist = 9f;   // 9 m: the squad larger in frame (part cross-check)   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
         float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN, _punch;
 
         void PlaceCamera(float shake)
@@ -277,6 +277,7 @@ namespace ExcelHeroes.World
                 ChibiBuilder.AddSheet(a.Rig, SheetTexture.For(spec, c.heroId), spec.Left ? 1 : -1, Layer);
                 if (a.Rig.Model3D) a.Rig.Sheet.localScale = Vector3.one * 0.9f;
                 if (a.Rig.RefModel) SdRef.FloorSheet(a.Rig, 1.8f);
+                if (a.Rig.RefModel) CastShadow(a.Rig);
                 // the squad a size up (the BA cross-check: the members read small against the street)
                 a.Scale = (c.role == "tank" ? 1.06f : 1f) * (a.Rig.RefModel ? 1.18f : 1f);
                 a.Accent = spec.Accent;
@@ -425,6 +426,7 @@ namespace ExcelHeroes.World
             if (_sim == null) return;
             _time += dt;
             _closeUp = Mathf.MoveTowards(_closeUp, _closeUpTarget, dt * 1.4f);
+            Shader.SetGlobalFloat("_EhGroundY", _root.position.y + 0.036f);   // the street's plane for the cast shadows
             // (loops, not LINQ: this runs every frame)
             float cx = 0f, cz = 0f; var alive = 0;
             foreach (var a in _actors.Values) if (a.C.side == Side.Hero && a.C.Alive) { cx += a.X; cz += a.Z; alive++; }
@@ -1442,6 +1444,32 @@ namespace ExcelHeroes.World
             return sb.ToString();
         }
 
+        static Material _castMat;
+
+        /// <summary>
+        /// The figure's cast shadow on the street (PlanarShadow.shader): each of its skinned meshes drawn once
+        /// more on the same bones, flattened along the key light onto the ground. The shadow blob stays for the
+        /// contact under the feet.
+        /// </summary>
+        static void CastShadow(ChibiRig rig)
+        {
+            var sh = Shader.Find("ExcelHeroes/PlanarShadow");
+            if (sh == null || rig?.Root == null) return;
+            _castMat ??= new Material(sh) { name = "cast" };
+            foreach (var smr in rig.Root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (!smr.enabled || smr.sharedMesh == null || smr.name.Contains("Outline") || smr.name.StartsWith("face") || smr.name.Contains("Eyebrow")) continue;
+                var go = new GameObject("cast:" + smr.name) { layer = smr.gameObject.layer };
+                go.transform.SetParent(smr.transform.parent, false);
+                go.transform.localPosition = smr.transform.localPosition; go.transform.localRotation = smr.transform.localRotation; go.transform.localScale = smr.transform.localScale;
+                var c = go.AddComponent<SkinnedMeshRenderer>();
+                c.sharedMesh = smr.sharedMesh; c.bones = smr.bones; c.rootBone = smr.rootBone;
+                c.sharedMaterials = Enumerable.Repeat(_castMat, smr.sharedMesh.subMeshCount).ToArray();
+                c.updateWhenOffscreen = true;
+                c.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; c.receiveShadows = false;
+            }
+        }
+
         public bool DebugTelegraph(string kind)
         {
             foreach (var t in _teles) Drop(t);
@@ -1737,7 +1765,12 @@ namespace ExcelHeroes.World
                     else if (hitOn) _pose = SdPose.Hit(1f - _hitT / SdPose.HitLen);
                     else if (atkOn) _pose = SdPose.AttackAt(AttackPose(C), _atkT / SdPose.AttackLen);
                     else if (walking) _pose = _speed > RunSpeed * Rig.Root.localScale.x ? SdPose.Run(_walk) : SdPose.Walk(_walk);
-                    else _pose = SdPose.Ready(SdPose.AttackOf(Pid, C.role), time * pers.Tempo, Z * 2f);   // in a fight: the combat stance, not the lobby idle
+                    else
+                    {
+                        // in a fight: the combat stance, not the lobby idle; every other ranged member kneels to shoot
+                        var rk = SdPose.AttackOf(Pid, C.role);
+                        _pose = rk == 1 && SdPose.Hash(Pid) % 2 == 0 ? SdPose.ReadyKneel(time * pers.Tempo, Z * 2f) : SdPose.Ready(rk, time * pers.Tempo, Z * 2f);
+                    }
                     // the character's own bearing over it (SdPersona): full in the guard, less on the run or celebrating, none mid-blow
                     pers.Shape(ref _pose, Dying > 0f || !C.Alive || sklOn || hitOn || atkOn ? 0f : cheering ? 0.4f : walking ? 0.45f : 0.7f);
                     // the chin up to the camera above (the BA cross-check: seen from 33° up, a forward lean and a

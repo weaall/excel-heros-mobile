@@ -159,7 +159,7 @@ namespace ExcelHeroes.World
                 if (body.sharedMaterials[i] == look.MaterialFor("eyemouth")) rig.EyeSub = i;
 
             var sh = new MeshKit.Builder();
-            sh.Quad(new Vector3(0f, 0.004f, 0f), new Vector3(0.26f, 0f, 0f), new Vector3(0f, 0f, 0.18f), new Color(0.1f, 0.14f, 0.25f, 0.4f));
+            sh.Quad(new Vector3(0f, 0.03f, 0f), new Vector3(0.3f, 0f, 0f), new Vector3(0f, 0f, 0.22f), new Color(0.06f, 0.08f, 0.16f, 0.62f));   // above the floor sheet (0.02), which had covered it: the squad floated (part cross-check)
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
             if (look.Glasses || look.Sunglasses) { var gk = SdLook.For(heroId); SdRefProps.Glasses(rig, body, root, look.Sunglasses, gk.GlassesStyle, gk.GlassesColor, layer); }
             var k = SdLook.For(heroId);

@@ -7191,3 +7191,17 @@
 .bresult__band--win .bresult__title { font-size: 128px; color: rgb(255, 228, 92); text-shadow: 0 5px 0 rgba(170, 70, 0, 0.85);
     -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(196, 96, 10); }
 .bresult__band--win .bresult__kicker { color: rgb(255, 255, 255); text-shadow: 0 2px 0 rgba(0, 40, 90, 0.6); }
+/* battle HUD r11 (part cross-check vs BA): white italic numbers on the navy slants */
+.bhud__wave, .bhud__num, .bhud__time { color: rgb(255, 255, 255); }
+.bhud__num, .bhud__time { font-size: 40px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+.ex-button__cost { width: 52px; height: 52px; left: 2px; top: -16px; }
+.ex-button__costword { display: none; }
+.ex-button__cost .ex-button__label { font-size: 30px; margin: 0; }
+/* lobby menu r11: duotone navy icons floating on the light strip */
+.navtab__icon.art-icon { -unity-background-image-tint-color: rgb(38, 58, 96); }
+.navtab--active .navtab__icon.art-icon { -unity-background-image-tint-color: rgb(0, 150, 220); }
+.navtab__label { color: rgb(38, 58, 96); }
+.navtab--active .navtab__label { color: rgb(0, 140, 210); }
+/* the win title r11: a thick dark edge and a drop, like the reference's */
+.bresult__band--win .bresult__title { -unity-text-outline-width: 5px; -unity-text-outline-color: rgb(92, 40, 6); text-shadow: 0 6px 0 rgba(60, 20, 0, 0.7); }
+.bhud__armor-text { color: rgb(255, 255, 255); -unity-font-style: bold; }

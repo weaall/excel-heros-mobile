@@ -370,6 +370,21 @@ namespace ExcelHeroes.World
         /// toes; 1 ranged — the tablet raised in both hands at chest height, sighting; 2 healer —
         /// the cup held up, the other hand ready. Held while waiting between actions in a fight.
         /// </summary>
+        /// <summary>
+        /// The kneeling shot, the reference's rifle stance: down on the right knee, the left foot planted
+        /// forward, the tablet raised to the eye in both hands and levelled at the errors. For some of the
+        /// ranged members (BattleWorld picks by the id), so a squad does not stand in one pose.
+        /// </summary>
+        public static Pose ReadyKneel(float t, float phase)
+        {
+            var p = Ready(1, t, phase);
+            var br = Mathf.Sin(t * 3f + phase);
+            p.ThighL = 80f; p.KneeL = 95f; p.ThighR = -5f; p.KneeR = 115f; p.ToeR = 50f; p.ToeL = -6f;
+            p.Spread = 6f; p.Lean = 10f + br * 1.2f; p.SpineBend = 4f; p.HeadPitch = -2f;
+            p.Squash = -0.01f + Mathf.Abs(br) * 0.008f;
+            return p;
+        }
+
         public static Pose Ready(int kind, float t, float phase)
         {
             var p = Pose.Rest;

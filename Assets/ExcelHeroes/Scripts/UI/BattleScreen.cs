@@ -30,7 +30,7 @@ namespace ExcelHeroes.UI
         // per EX card: [0] the charge still to fill, [1] its ready / poor state last painted
         readonly Dictionary<Combatant, float[]> _exCharge = new();
         // the EX cards lean like the reference's (the top edge this share of the height to the right)
-        const float ExSlant = 0.16f;
+        const float ExSlant = 0.27f;   // 15°, the reference's card lean (part cross-check)
         Button _overtimeButton;
         Label _forecastLabel;
         BattleFx _fx;
@@ -166,12 +166,18 @@ namespace ExcelHeroes.UI
             var pill = UiKit.Div("bhud__pill", hud);
             ModalFrame.Painted(pill, (ctx, r) =>
             {
-                // a slanted navy-glass plate with a cyan foot, the family of the objective panel
-                var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 6f);
-                UiPaint.Ring(ctx, poly, UiPaint.C(0, 214, 255, 0.3f), UiPaint.C(0, 214, 255, 0f), 8f);
-                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.9f), UiPaint.C(224, 242, 252, 0.86f), r.yMin, r.yMax));
-                UiPaint.Stroke(ctx, poly, UiPaint.C(0, 200, 250, 0.9f), 2f);
-                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMax - 4f, r.xMax + 10f, r.yMax + 2f), 0f)), UiPaint.C(0, 214, 255, 0.9f), 0f);
+                // the reference's battle HUD exactly: a strip of dark navy translucent slants, one per readout, a
+                // hairline gap between them, a bright edge along the top (the part cross-check scored our white
+                // glass pill 3.5 against it)
+                var sl = SkewPlate.SlantFor(r.height) * 0.7f;
+                var poly = UiPaint.SkewRect(r, sl, 2f);
+                UiPaint.Fill(ctx, poly, UiPaint.Horizontal(UiPaint.C(20, 32, 70, 0.78f), UiPaint.C(34, 50, 100, 0.72f), r.xMin, r.xMax));
+                foreach (var f in new[] { 0.33f, 0.62f })
+                {
+                    var x = r.xMin + r.width * f;
+                    UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2> { new(x + sl, r.yMin), new(x + sl + 3f, r.yMin), new(x + 3f, r.yMax), new(x, r.yMax) }, UiPaint.C(255, 255, 255, 0.35f), 0f);
+                }
+                UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMin, r.xMax + 10f, r.yMin + 2.5f), 0f)), UiPaint.C(120, 200, 255, 0.8f), 0f);
             });
             _waveLabel = UiKit.Text("", "battle__wave bhud__wave", pill);
             // this Phase's error armour as its own coloured chip (업무 상성), not text run into the wave
@@ -1910,7 +1916,7 @@ namespace ExcelHeroes.UI
                     }
                     UiPaint.Shadow(ctx, outer, new Vector2(0f, 4f), UiPaint.C(0, 10, 30, 0.35f), 8f);
                     UiPaint.Fill(ctx, outer, UiPaint.C(250, 253, 255));
-                    var inner = UiPaint.Offset(outer, -4f);
+                    var inner = UiPaint.Offset(outer, -2.2f);   // a hairline white edge, not a frame
                     var bandTop = r.yMax - r.height * 0.24f;
                     var art = UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMin - 20f, r.xMax + 60f, bandTop), 0f));
                     UiPaint.Fill(ctx, art, UiPaint.Vertical(Color.Lerp(atkColour, Color.white, 0.78f), Color.Lerp(atkColour, Color.white, 0.35f), r.yMin, bandTop));
@@ -1949,8 +1955,8 @@ namespace ExcelHeroes.UI
                 // a hexagon with a gold rim, COST over the number (target_3)
                 ModalFrame.Painted(badge, (ctx, r) =>
                 {
-                    var hex = new List<Vector2>();
-                    for (var h = 0; h < 6; h++) { var an = Mathf.PI / 6f + h * Mathf.PI / 3f; hex.Add(r.center + new Vector2(Mathf.Cos(an) * r.width * 0.5f, Mathf.Sin(an) * r.height * 0.5f)); }
+                    // a small disc (the reference's), not a bulky hexagon
+                    var hex = UiPaint.Ellipse(r.center, r.width * 0.46f, r.height * 0.46f, 28);
                     UiPaint.Shadow(ctx, hex, new Vector2(0f, 2f), UiPaint.C(0, 0, 0, 0.35f), 4f);
                     UiPaint.Fill(ctx, hex, UiPaint.Vertical(UiPaint.C(120, 236, 255), UiPaint.C(0, 170, 230), r.yMin, r.yMax));   // cyan rim (r8 HUD redesign)
                     UiPaint.Fill(ctx, UiPaint.Offset(hex, -3.5f), UiPaint.Vertical(UiPaint.C(46, 70, 118), UiPaint.C(22, 36, 70), r.yMin, r.yMax));
@@ -1983,21 +1989,19 @@ namespace ExcelHeroes.UI
             // the frame starts under the disc, so number and gauge are one piece (ui_gate 07-BattleHud)
             var frame = UiPaint.SkewRect(Rect.MinMaxRect(r.xMin + r.height * 0.5f, bar.yMin, bar.xMax, bar.yMax), slant, 4f);
             UiPaint.Shadow(ctx, frame, new Vector2(0f, 3f), UiPaint.C(0, 0, 0, 0.35f), 6f);
-            UiPaint.Fill(ctx, frame, UiPaint.Vertical(UiPaint.C(250, 253, 255, 0.92f), UiPaint.C(222, 240, 252, 0.9f), bar.yMin, bar.yMax));
-            UiPaint.Stroke(ctx, frame, UiPaint.C(0, 214, 255, 0.45f), 1.5f);
+            UiPaint.Fill(ctx, frame, UiPaint.C(14, 24, 52, 0.72f));   // a dark slot under flat neon cells (part cross-check: the white frame looked clunky)
             var cells = (int)BattleSim.MaxCost;
             var inner = new Rect(bar.xMin + 6f, bar.yMin + 5f, bar.width - 12f, bar.height - 10f);
             var cw = inner.width / cells;
             for (var i = 0; i < cells; i++)
             {
-                var c = new Rect(inner.xMin + i * cw + 2f, inner.yMin, cw - 4f, inner.height);
+                var c = new Rect(inner.xMin + i * cw + 1f, inner.yMin, cw - 2f, inner.height);
                 var poly = UiPaint.SkewRect(c, slant * (inner.height / bar.height), 2f, 2);
                 UiPaint.Fill(ctx, poly, UiPaint.C(40, 64, 104, 0.85f));
                 var lit = Mathf.Clamp01(cost - i);
                 if (lit >= 1f)
                 {
-                    UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(140, 242, 255), UiPaint.C(20, 170, 240), c.yMin, c.yMax));
-                    UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(c.xMin - 10f, c.yMin, c.xMax + 10f, c.yMin + c.height * 0.35f), 0f)), UiPaint.C(255, 255, 255, 0.35f), 0f);
+                    UiPaint.Fill(ctx, poly, UiPaint.C(40, 214, 255));
                 }
                 else if (lit > 0f)
                 {
