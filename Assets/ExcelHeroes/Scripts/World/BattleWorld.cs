@@ -89,6 +89,9 @@ namespace ExcelHeroes.World
         /// <summary>Victory: bring the camera down onto the party, who turn to it and cheer.</summary>
         public void Celebrate(bool on) => _closeUpTarget = on ? 1f : 0f;
 
+        static float EnvF(string k, float d) => float.TryParse(System.Environment.GetEnvironmentVariable(k), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : d;
+        /// <summary>The win's close-up: the camera's distance and aim height, the members' spacing and the depth of the back row.</summary>
+        public static float WinDist = EnvF("EH_WINDIST", 5.3f), WinAimY = EnvF("EH_WINAIM", 0.76f), WinSpacing = EnvF("EH_WINSPACE", 1.02f), WinStagger = EnvF("EH_WINSTAGGER", 0.5f);
         public static float QuarterPitch = 26f, QuarterYaw = 28f, QuarterDist = 9f;   // 9 m: the squad larger in frame (part cross-check)   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
         float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN, _punch;
 
@@ -104,10 +107,10 @@ namespace ExcelHeroes.World
             // on the right. The close-up swings back square onto the party.
             // the fight, not a fixed point: between the squad and the nearest errors (tools/out/action_critique.md
             // #5 — the enemies stood small at the top-right edge), a little further out when they are far apart
-            var target = Vector3.Lerp(new Vector3(_camFocusX, 0.4f, 0.1f), _partyCentre + new Vector3(0.2f, 0.55f, 0f), k);
+            var target = Vector3.Lerp(new Vector3(_camFocusX, 0.4f, 0.1f), _partyCentre + new Vector3(0.2f, WinAimY, WinStagger * 0.5f), k);
             var pitch = Mathf.Lerp(QuarterPitch, 14f, k) * Mathf.Deg2Rad;
             var yaw = Mathf.Lerp(QuarterYaw, 0f, k);
-            var dist = Mathf.Lerp(QuarterDist * _camZoom * (1f - 0.035f * _punch), 5.8f, k);
+            var dist = Mathf.Lerp(QuarterDist * _camZoom * (1f - 0.035f * _punch), WinDist, k);
             var pos = target + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
             if (shake > 0f) pos += new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake * 0.04f;
             _cam.transform.localPosition = pos;
@@ -439,7 +442,14 @@ namespace ExcelHeroes.World
             // members up (the BA cross-check: ours stood scattered down the diagonal, one huge in front)
             var slot = 0;
             foreach (var a in _actors.Values)
-                if (a.C.side == Side.Hero && a.C.Alive) { a.LineX = _partyCentre.x + (slot - (alive - 1) * 0.5f) * 1.25f; a.LineZ = _partyCentre.z; slot++; }
+                if (a.C.side == Side.Hero && a.C.Alive)
+                {
+                    // closer together and staggered in depth, every other member half a step back (the reference's
+                    // result: the squad large in frame at a few depths, not a flat police line-up)
+                    a.LineX = _partyCentre.x + (slot - (alive - 1) * 0.5f) * WinSpacing;
+                    a.LineZ = _partyCentre.z + (slot % 2 == 1 ? WinStagger : 0f);
+                    slot++;
+                }
             if (!float.IsNaN(_lastEnemyX) && !float.IsNaN(_lastHeroX))
             {
                 var squadX = alive > 0 ? cx / alive : _lastHeroX;
