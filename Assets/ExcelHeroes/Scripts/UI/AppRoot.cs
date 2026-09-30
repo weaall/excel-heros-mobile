@@ -341,6 +341,7 @@ namespace ExcelHeroes.UI
                 Overlay.AddToClassList("hidden");
             }
 
+            var from = _sheet;
             _sheet = sheet;
             _current = _screens[sheet];
             _content.Clear();
@@ -372,6 +373,8 @@ namespace ExcelHeroes.UI
             // In a fight the reference shows no currencies: the band is the back arrow and the
             // title only, so the field reads (ui_critique round 1, 07-BattleHud #2)
             var battle = sheet == Sheet.Battle;
+            // into a fight from elsewhere: the reference's Now Loading, the cast's gag panels for a beat
+            if (battle && from != Sheet.Battle && !LoadingScreen.Suppress) LoadingScreen.Show(_doc.rootVisualElement, 1.4f);
             _doc.rootVisualElement.Q<VisualElement>("root")?.EnableInClassList("shell--battle", battle);
             if (_screenTitle != null) _screenTitle.text = TitleOf(sheet);
             if (_screenEn != null) _screenEn.text = EnOf(sheet);

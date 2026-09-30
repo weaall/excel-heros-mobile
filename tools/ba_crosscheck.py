@@ -34,6 +34,7 @@ PAIRS = {
     "notice":    ("24-Notice.png", ["ref00.png"], "the notice / event board"),
     "sd2d":      ("@sd_lineup.png", ["ref07.png", "ref09.png"], "2D SD (chibi) character illustrations"),
     "model3d":   ("@model_lineup.png", ["ref11.png", "ref06.png"], "3D SD character models"),
+    "loading":   ("25-Loading.png", ["ref09.png"], "the loading screen with SD (chibi) comic panels"),
 }
 AXES = ["graphics", "layout", "ui", "motion"]
 ANCHOR = ("Image(s) 1..{n} are from Blue Archive — the benchmark; they define 10/10. The LAST image is from our game, the same kind of "

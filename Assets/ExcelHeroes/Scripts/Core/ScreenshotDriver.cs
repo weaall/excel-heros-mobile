@@ -31,6 +31,7 @@ namespace ExcelHeroes.Core
             // them compares the change, not the luck of the frame (it had: a pitch change "won" the victory
             // close-up it does not touch, 6/6)
             Time.captureFramerate = 60;
+            UI.LoadingScreen.Suppress = true;   // shot on its own (24-Loading), never over another screen
             Random.InitState(20260930);
             var go = new GameObject("ScreenshotDriver");
             Object.DontDestroyOnLoad(go);
@@ -376,6 +377,10 @@ namespace ExcelHeroes.Core
                 yield return null; yield return null;
                 yield return Shoot($"{n++:00}-Notice");
                 app.CloseOverlay();
+                var lp = UI.LoadingScreen.Show(FindFirstObjectByType<UnityEngine.UIElements.UIDocument>()?.rootVisualElement, 1000f);
+                yield return new WaitForSeconds(0.8f);
+                yield return Shoot($"{n++:00}-Loading");
+                lp?.RemoveFromHierarchy();
 
                 app.OpenOverlay(UiGallery.BuildSheets(app.CloseOverlay));
                 yield return null;

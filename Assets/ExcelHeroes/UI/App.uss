@@ -7270,3 +7270,21 @@
 .detail__mark { position: absolute; left: 0; right: 0; bottom: 150px; -unity-text-align: middle-center; font-size: 230px; letter-spacing: 12px;
     color: rgba(255, 255, 255, 0.42); -unity-text-outline-width: 2px; -unity-text-outline-color: rgba(120, 190, 240, 0.55); padding: 0; margin: 0; white-space: nowrap;
     -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+
+/* Now Loading (LoadingScreen): the reference's loading page with the cast's SD gag panels */
+.loading { position: absolute; left: 0; top: 0; right: 0; bottom: 0; padding: 26px 110px 30px 110px; }
+.loading__top { flex-direction: row; align-items: center; height: 70px; flex-shrink: 0; }
+.loading__logo { font-size: 40px; color: rgb(255, 255, 255); padding: 0; margin: 0 40px 0 0;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+.loading__bar { flex-grow: 1; height: 14px; border-radius: 7px; background-color: rgba(255, 255, 255, 0.28); overflow: hidden; }
+.loading__fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background-color: rgb(120, 222, 255); border-radius: 7px; }
+.loading__now { font-size: 34px; color: rgb(255, 255, 255); margin: 0 0 0 36px; padding: 0;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-SemiBold%20SDF.asset"); -unity-font-style: normal; }
+.loading__grid { flex-grow: 1; justify-content: center; }
+.loading__row { flex-direction: row; justify-content: center; margin: 14px 0; }
+.loading__card { width: 600px; height: 420px; margin: 0 18px; padding: 14px 16px 16px 16px; border-radius: 14px; background-color: rgb(255, 255, 255);
+    border-width: 2px; border-color: rgba(200, 220, 245, 1); }
+.loading__title { font-size: 28px; color: rgb(24, 36, 60); -unity-text-align: middle-center; padding: 0; margin: 2px 0 8px 0; -unity-font-style: bold; }
+.loading__rule { height: 2px; background-color: rgb(200, 214, 232); margin: 0 30px 10px 30px; flex-shrink: 0; }
+.loading__pic { flex-grow: 1; border-radius: 8px; -unity-background-scale-mode: scale-and-crop; }
+.loading__foot { position: absolute; bottom: 14px; left: 0; right: 0; -unity-text-align: middle-center; font-size: 18px; color: rgba(255, 255, 255, 0.6); padding: 0; margin: 0; }
