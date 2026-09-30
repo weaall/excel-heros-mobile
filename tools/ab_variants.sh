@@ -9,7 +9,7 @@ ROOT=/c/Users/minds/excel-heros-mobile; cd $ROOT
 for spec in "$@"; do
   n=${spec%%:*}; e=${spec#*:}; out=$ROOT/tools/out/v_$n
   if [ ! -f $out/07-Win.png ]; then rm -rf $out; mkdir -p $out
-    (cd Build/${BUILD:-Windows2} && env $e timeout 300 ./ExcelHeroes.exe -screenshots "C:\Users\minds\excel-heros-mobile\tools\out\v_$n" -shotsuntil 08-Party -screen-width 2400 -screen-height 1080 -screen-fullscreen 0 > /dev/null 2>&1); fi
+    (cd Build/${BUILD:-Windows3} && env $e timeout 300 ./ExcelHeroes.exe -screenshots "C:\Users\minds\excel-heros-mobile\tools\out\v_$n" -shotsuntil 08-Party -screen-width 2400 -screen-height 1080 -screen-fullscreen 0 > /dev/null 2>&1); fi
   r=""; t=0
   for f in 07-Fight2 07-Fight3 07-Fight4; do
     w=$(python tools/ab_judge.py tools/out/shots2/$f.png $out/$f.png tools/out/ba_ref/ref02.png "the SD squad fighting" --n 3 --crop 0.05,0.25,0.55,0.95 | head -1 | awk '{print $3}'); r="$r $f=$w"; t=$((t+${w%%/*}))
