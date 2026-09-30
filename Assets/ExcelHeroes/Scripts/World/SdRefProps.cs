@@ -170,7 +170,7 @@ namespace ExcelHeroes.World
         /// floating past the cheek in a three-quarter view (too flat) or turned the lenses sideways
         /// into rings on the cheeks (too round); the real profile does neither.
         /// </summary>
-        static float[] FaceProfile(SkinnedMeshRenderer body, Vector3 centre, Quaternion frame, float halfW, int bins)
+        static float[] FaceProfile(SkinnedMeshRenderer body, Vector3 centre, Quaternion frame, float halfW, int bins, Transform rigRoot = null)
         {
             var prof = new float[bins]; for (var i = 0; i < bins; i++) prof[i] = float.NaN;
             var mesh = body.sharedMesh; var faceSub = -1;
@@ -179,15 +179,28 @@ namespace ExcelHeroes.World
             var most = 0;
             for (var i = 0; i < mats.Length && i < mesh.subMeshCount; i++)
                 if (mats[i] && mats[i].mainTexture && mats[i].mainTexture.name.StartsWith("face:") && mesh.GetTriangles(i).Length > most) { most = mesh.GetTriangles(i).Length; faceSub = i; }
-            if (faceSub < 0) { Debug.LogWarning("[glasses] no face submesh found"); return prof; }
-            var verts = mesh.vertices; var inv = Quaternion.Inverse(frame);
+            // the sample bodies have no "face:" sheet: then every triangle around the eye line of the body AND of the
+            // model's other skinned parts but the hair counts — on some samples the face is a renderer of its own, and
+            // the body alone gave the back of the head (the frames went inside the face)
+            var inv = Quaternion.Inverse(frame);
             var band = halfW * 0.3f;
-            foreach (var idx in mesh.GetTriangles(faceSub))
+            void Scan(SkinnedMeshRenderer r, int[] tris)
             {
-                var p = inv * (body.transform.TransformPoint(verts[idx]) - centre);
-                if (Mathf.Abs(p.y) > band || Mathf.Abs(p.x) >= halfW) continue;
-                var bi = Mathf.Clamp((int)((p.x / halfW * 0.5f + 0.5f) * bins), 0, bins - 1);
-                if (float.IsNaN(prof[bi]) || p.z > prof[bi]) prof[bi] = p.z;
+                var verts = r.sharedMesh.vertices;
+                foreach (var idx in tris)
+                {
+                    var p = inv * (r.transform.TransformPoint(verts[idx]) - centre);
+                    if (Mathf.Abs(p.y) > band || Mathf.Abs(p.x) >= halfW || p.z < -halfW) continue;
+                    var bi = Mathf.Clamp((int)((p.x / halfW * 0.5f + 0.5f) * bins), 0, bins - 1);
+                    if (float.IsNaN(prof[bi]) || p.z > prof[bi]) prof[bi] = p.z;
+                }
+            }
+            if (faceSub >= 0) Scan(body, mesh.GetTriangles(faceSub));
+            else
+            {
+                var model = rigRoot != null ? rigRoot : body.transform.parent != null ? body.transform.parent : body.transform;   // the rig: a swapped face lives beside the model
+                foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>(false))
+                    if (r.sharedMesh != null && !r.name.StartsWith("hair") && r.sharedMesh.isReadable) Scan(r, r.sharedMesh.triangles);
             }
             // fill empty bins from their neighbours, then smooth
             for (var pass = 0; pass < bins; pass++)
@@ -247,8 +260,16 @@ namespace ExcelHeroes.World
         /// stub temples that vanish into the hair, CLEAR lenses carrying only a glint (sunglasses
         /// stay dark). On the head bone, counter-scaled.
         /// </summary>
-        /// <summary>Off (user, 2026-09-28: "the glasses still look silly — take them all off"). The illustrations keep theirs.</summary>
-        public static bool Enabled = false;
+        /// <summary>
+        /// On again (SD_NOGLASSES=1 off). Taken off on 2026-09-28 (user: "the glasses still look silly"): they were
+        /// placed by the old base body's eye constants, which on the sample bodies put the frames on the forehead
+        /// or inside the face. Now fitted to each model's measured eyes and laid on the face surface; the audit
+        /// against the illustrations had 13 members "missing glasses".
+        /// </summary>
+        public static bool Enabled = System.Environment.GetEnvironmentVariable("SD_NOGLASSES") != "1";
+
+        /// <summary>The eyes of the model being built, world centre + width + height (set by SdSample.EyeBones, cleared per build).</summary>
+        public static readonly System.Collections.Generic.List<(Vector3 c, float w, float h)> EyeHint = new();
 
         public static void Glasses(ChibiRig rig, SkinnedMeshRenderer body, Transform root, bool dark, string style, Color frame, int layer)
         {
@@ -256,15 +277,34 @@ namespace ExcelHeroes.World
             if (rig.Head == null) return;
             var s = body.transform.lossyScale.x;
             var centre = body.transform.TransformPoint(new Vector3(0f, -0.00128f, 0.00752f));
+            float ex = 0.00075f * s, w = 0.00027f * s, h = 0.00021f * s;
+            // on the model's OWN eyes when the build measured them (SdSample.EyeBones): the constants above are the
+            // old base body's, and on the sample bodies they put the frames on the forehead
+            if (System.Environment.GetEnvironmentVariable("SD_GLASSDUMP") == "1") Debug.Log($"[glasses] eyes {EyeHint.Count}: {string.Join(" | ", EyeHint.ConvertAll(e => $"{e.c.x:F3},{e.c.y:F3},{e.c.z:F3} w{e.w:F4} h{e.h:F4}"))} base {centre.x:F3},{centre.y:F3},{centre.z:F3}");
+            if (EyeHint.Count == 2)
+            {
+                var (c0, w0, h0) = EyeHint[0]; var (c1, w1, h1) = EyeHint[1];
+                centre = (c0 + c1) * 0.5f;
+                ex = Mathf.Abs(Vector3.Dot(c1 - c0, root.right)) * 0.5f;
+                w = Mathf.Max((w0 + w1) * 0.5f * 0.62f, ex * 0.34f);
+                h = Mathf.Max((h0 + h1) * 0.5f * 0.6f, w * 0.72f);
+            }
             frame.a = 1f;
             if (dark) frame = Color.Lerp(frame, Color.black, 0.5f);
             var rimless = style == "rimless";
             // the face's measured depth across the eyes (see FaceProfile); the glasses sit on it
-            var profile = (FaceProfile(body, centre, root.rotation, 0.0013f * s, 26), 0.0013f * s, 0.00004f * s);
+            var halfW = EyeHint.Count == 2 ? (ex + w) * 1.15f : 0.0013f * s;
+            var profile = (FaceProfile(body, centre, root.rotation, halfW, 26, root), halfW, 0.00004f * s + w * 0.12f);
+            // measured off the eyes, the anchor is at the eyes' depth — behind the skin of the face: out onto the surface
+            if (EyeHint.Count == 2)
+            {
+                var pr = profile.Item1; var mid = pr.Length > 0 ? pr[pr.Length / 2] : float.NaN;
+                if (!float.IsNaN(mid)) { centre += root.rotation * new Vector3(0f, 0f, mid); for (var i = 0; i < pr.Length; i++) pr[i] -= mid; }
+            }
             var b = new MeshKit.Builder();
-            float ex = 0.00075f * s, w = 0.00027f * s, h = 0.00021f * s, tube = (dark ? 0.000036f : 0.000028f) * s;
-            if (style == "round") { w = 0.00025f * s; h = 0.00025f * s; }
-            if (style == "oval") { w = 0.00029f * s; h = 0.00019f * s; }
+            float tube = (dark ? 0.000036f : 0.000028f) * s;
+            if (style == "round") { w *= 0.93f; h = w; }
+            if (style == "oval") { w *= 1.07f; h *= 0.9f; }
             foreach (var sx in new[] { -1f, 1f })
             {
                 var cx = sx * ex;
@@ -609,12 +649,23 @@ namespace ExcelHeroes.World
             rig.Renderers.Add(go.GetComponent<MeshRenderer>());
         }
 
-        /// <summary>Whether BackGear builds (on by default).</summary>
-        public static bool Gear = System.Environment.GetEnvironmentVariable("SD_NOGEAR") != "1";
+        /// <summary>
+        /// Whether BackGear builds — OFF by default (SD_GEAR=1 turns it on): the consistency audit against the
+        /// illustrations (tools/sd_consistency_gemini.py, 2026-09-30) flagged the binder / pen on the back on
+        /// nearly every member as "not in the illustration" — it made the model a different design from its art.
+        /// </summary>
+        public static bool Gear = System.Environment.GetEnvironmentVariable("SD_GEAR") == "1";
+
+        /// <summary>
+        /// Off by default (SD_HANDPROP=1 on): hanging at the hip, edge-on to the camera, every slab — tablet,
+        /// clipboard, phone, folder — read as a gun or a blade, and on a dozen members the illustration holds
+        /// nothing (the consistency audit, 2026-09-30: "holds weapon, not tablet", "clipboard not in illustration").
+        /// </summary>
+        public static bool HandProps = System.Environment.GetEnvironmentVariable("SD_HANDPROP") == "1";
 
         public static void HandProp(ChibiRig rig, Transform root, string role, SdLook k, int layer)
         {
-            if (rig.HandR == null) return;
+            if (!HandProps || rig.HandR == null) return;
             var b = new MeshKit.Builder();
             var paper = new Color(0.96f, 0.96f, 0.94f);
             var ink = new Color(0.2f, 0.22f, 0.3f);

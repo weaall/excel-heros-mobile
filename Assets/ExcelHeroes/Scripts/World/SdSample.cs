@@ -250,6 +250,7 @@ namespace ExcelHeroes.World
                 var w = mine.Select(i => l2w.MultiplyPoint3x4(v[i])).ToList();
                 var low = w.Min(p => p.y); var top = w.Max(p => p.y); var ctr = w.Aggregate(Vector3.zero, (a, p) => a + p) / w.Count;
                 var x0 = w.Min(p => Vector3.Dot(p, root.right)); var x1 = w.Max(p => Vector3.Dot(p, root.right));
+                SdRefProps.EyeHint.Add((new Vector3(ctr.x, (low + top) * 0.5f, ctr.z), x1 - x0, top - low));   // where the glasses go
                 // the upper lid: the bone (other than the head) most of the skin just over this eye rides —
                 // BA closes an eye by sliding that skin down over it
                 var eh = top - low; var votes = new Dictionary<int, float>();
@@ -805,6 +806,7 @@ namespace ExcelHeroes.World
             }
             var face = tex.Face;
             var blinkBones = new List<(Transform bone, Transform lid, Vector3 drop)>();
+            SdRefProps.EyeHint.Clear();
             Vector3? mouthAt = null;
             var bodyTex = tex;
             foreach (var r in kept)
