@@ -63,6 +63,7 @@ Shader "ExcelHeroes/Toon"
         // the cast's shading multipliers as offsets from 1 (global; unset = 0 = the materials' own): shadow, rim, hair ring
         float _EhShadeD, _EhRimD, _EhSpecD;
         float _EhHairSoft;
+        float _EhLineTint;
 
         struct Attributes
         {
@@ -256,10 +257,15 @@ Shader "ExcelHeroes/Toon"
 
             half4 frag (Varyings i) : SV_Target
             {
-                half a = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).a * i.color.a * _Color.a;
-                clip(a - _Cutoff);
+                half4 t = SAMPLE_TEXTURE2D_BIAS(_MainTex, sampler_MainTex, i.uv, 2.0) * i.color * _Color;
+                clip(t.a - _Cutoff);
                 clip(_OutlineWidth - 0.0001);
-                return half4(_OutlineColor.rgb, 1);
+                // anime lines (the reference's): the colour under the line, deep and saturated, not one flat near-black —
+                // red hair gets a dark red line, a white shirt a grey-blue one (global _EhLineTint, 0 = the flat colour)
+                float3 deep = t.rgb * t.rgb * 0.55;
+                float lum = dot(deep, float3(0.299, 0.587, 0.114));
+                deep = saturate(lerp(lum.xxx, deep, 1.35));
+                return half4(lerp(_OutlineColor.rgb, deep * 0.85 + _OutlineColor.rgb * 0.15, _EhLineTint), 1);
             }
             ENDHLSL
         }

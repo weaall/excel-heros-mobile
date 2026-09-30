@@ -13,6 +13,7 @@ namespace ExcelHeroes.World
         // rim 0 / 2.2, hair ring 0 / 2, saturation 40 / 8, contrast 25, bloom 1.0 all tied or lost
         public static readonly float ShadeMul = Env("EH_SHADE", 0.6f), RimMul = Env("EH_RIM", 1f), SpecMul = Env("EH_SPEC", 1f);
         public static readonly float HairSoft = Env("EH_HAIRSOFT", 0f);   // mip bias on the hair sheets (A/B hook)
+        public static readonly float LineTint = Env("EH_LINETINT", 1f);   // outline colour from the texture under it — the anime line (EH_LINETINT=0: flat near-black)
         public static readonly float Bloom = Env("EH_BLOOM", 0.55f), Saturation = Env("EH_SAT", 22f), Contrast = Env("EH_CONTRAST", 10f);
 
         /// <summary>Sets the Toon.shader globals.</summary>
@@ -24,6 +25,7 @@ namespace ExcelHeroes.World
             UnityEngine.Shader.SetGlobalFloat("_EhRimD", RimMul - 1f);
             UnityEngine.Shader.SetGlobalFloat("_EhSpecD", SpecMul - 1f);
             UnityEngine.Shader.SetGlobalFloat("_EhHairSoft", HairSoft);
+            UnityEngine.Shader.SetGlobalFloat("_EhLineTint", LineTint);
         }
     }
 }
