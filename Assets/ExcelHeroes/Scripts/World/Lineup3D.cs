@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using ExcelHeroes.Core;
 using ExcelHeroes.Data;
@@ -25,6 +26,7 @@ namespace ExcelHeroes.World
         RenderTexture _rt;
         Transform _cast;
         readonly List<(ChibiRig rig, float phase)> _figs = new();
+        readonly Dictionary<ChibiRig, int> _rowIdles = new();
         readonly Dictionary<ChibiRig, SdClips> _clips = new();
         readonly Dictionary<string, GameObject> _templates = new();
         Transform _templateRoot;
@@ -89,6 +91,7 @@ namespace ExcelHeroes.World
             }
 
             foreach (var f in _figs) if (f.rig?.Root != null) Destroy(f.rig.Root.gameObject);
+            _rowIdles.Clear();
             foreach (var c in _clips.Values) c.Dispose();
             _clips.Clear();
             _figs.Clear();
@@ -143,6 +146,21 @@ namespace ExcelHeroes.World
                 if (any && bounds.size.x > fit) rig.Root.localScale = Vector3.one * s * Mathf.Max(0.85f, fit / bounds.size.x);
                 if (halo) SdRef.HaloSheet(rig, 0.7f);
                 _figs.Add((rig, i * 1.3f));
+                // one idle per member in the row: two executives both crossing their arms stood as clones (the part
+                // cross-check: "repetitive arms crossed") — a repeat takes the next idle of the member's own persona
+                // pool, else the first idle nobody in the row has
+                if (rig.RefModel)
+                {
+                    var want = SdPose.IdleOf(id);
+                    if (_rowIdles.ContainsValue(want))
+                    {
+                        var pp = SdPersona.For(id);
+                        var alt = pp.Has ? pp.Idles.Where(x => !_rowIdles.ContainsValue(x)).DefaultIfEmpty(-1).First() : -1;
+                        if (alt < 0) alt = Enumerable.Range(0, SdPose.IdleCount).First(x => !_rowIdles.ContainsValue(x) && x != 7);
+                        want = alt;
+                    }
+                    _rowIdles[rig] = want;
+                }
             }
             _cam.enabled = true;
             return _rt;
@@ -202,7 +220,7 @@ namespace ExcelHeroes.World
                             var pp = SdPersona.For(id);
                             // her own idle and bearing (SdPersona): tried the combat stance here, but with a squad of
                             // four ranged members it stood four identical tablet poses in a row
-                            var ip = SdPose.Idle(SdPose.IdleOf(id), _t * pp.Tempo, phase);
+                            var ip = SdPose.Idle(_rowIdles.TryGetValue(rig, out var ri) ? ri : SdPose.IdleOf(id), _t * pp.Tempo, phase);
                             pp.Shape(ref ip, 1f);
                             SdPose.Apply(rig, ip);
                             rig.Root.localPosition = rig.Home + Vector3.up * ((ip.Y + rig.FootDrop) * rig.Root.localScale.y);

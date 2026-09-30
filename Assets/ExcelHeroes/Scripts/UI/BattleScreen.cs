@@ -187,9 +187,8 @@ namespace ExcelHeroes.UI
                 // outlined in the armour colour with a faint tint inside: a status, not a button
                 var col = _armorChip.userData is Color c0 ? c0 : Color.gray;
                 var chip = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 3f);
-                var tint = col; tint.a = 0.22f;
-                UiPaint.Fill(ctx, chip, tint);
-                UiPaint.Stroke(ctx, chip, col, 2f);
+                col.a = 1f;
+                UiPaint.Fill(ctx, chip, col);   // solid on the navy HUD (a 22 % tint vanished on it)
             });
             _armorText = UiKit.Text("", "bhud__armor-text", _armorChip);
             ModalFrame.Painted(UiKit.Div("bhud__icon", pill), DrawEnemyIcon);

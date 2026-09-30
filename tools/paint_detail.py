@@ -32,10 +32,17 @@ def detail(painted, raw, amt):
     pb = p[..., :3]; rb = cv2.resize(r[..., :3], (pb.shape[1], pb.shape[0]), interpolation=cv2.INTER_AREA)
     base = cv2.bilateralFilter(pb, 9, 40, 7)
     lab = cv2.cvtColor(base, cv2.COLOR_BGR2LAB).astype(np.float32)
-    rl = cv2.cvtColor(rb, cv2.COLOR_BGR2LAB)[..., 0].astype(np.float32)
-    hf = rl - cv2.GaussianBlur(rl, (0, 0), 3.0)          # the sample's lines and folds, not its broad tones
-    hf = np.clip(hf, -60, 30)                             # dark lines strong, highlights gentle
-    lab[..., 0] = np.clip(lab[..., 0] + hf * amt, 0, 255)
+    rl = cv2.cvtColor(rb, cv2.COLOR_BGR2LAB)[..., 0].astype(np.float32) + 8.0
+    if os.environ.get("DETAIL_MODE") == "mul":
+        # the sample's shading structure (folds, cel shadow shapes) as a RATIO over its own broad tone, laid
+        # onto the painted tone: out = painted × (raw / blur(raw)) at a mid scale
+        ratio = rl / np.maximum(cv2.GaussianBlur(rl, (0, 0), float(os.environ.get("DETAIL_SIGMA", "10"))), 1.0)
+        ratio = np.clip(1.0 + (ratio - 1.0) * amt, 0.45, 1.3)
+        lab[..., 0] = np.clip(lab[..., 0] * ratio, 0, 255)
+    else:
+        hf = rl - cv2.GaussianBlur(rl, (0, 0), 3.0)          # the sample's lines and folds, not its broad tones
+        hf = np.clip(hf, -60, 30)                             # dark lines strong, highlights gentle
+        lab[..., 0] = np.clip(lab[..., 0] + hf * amt, 0, 255)
     out = cv2.cvtColor(lab.astype(np.uint8), cv2.COLOR_LAB2BGR)
     if a is not None: out = np.dstack([out, a])
     cv2.imwrite(painted, out)

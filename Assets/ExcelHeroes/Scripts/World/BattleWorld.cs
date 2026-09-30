@@ -472,6 +472,19 @@ namespace ExcelHeroes.World
                 a._enemyX = nearestEnemyX; a._heroX = nearestHeroX;
                 a.Update(dt, _time, WX(drawX(c)), _cam.transform, _mpb, _closeUp);
                 if (a.Rig.RefModel && c.side == Side.Monster && a.Dying > 0.7f && !a.Popped) { a.Popped = true; DeathPop(a); }
+                // footfall dust on the run: a puff kicked back at every contact (the part cross-check: the frames
+                // showed no motion — nothing to say the squad was moving)
+                if (a.Running && _closeUp < 0.05f)
+                {
+                    if (!float.IsNaN(a.LastStride) && Mathf.Floor(a.Stride / Mathf.PI) != Mathf.Floor(a.LastStride / Mathf.PI))
+                    {
+                        var dir = c.side == Side.Hero ? 1f : -1f;
+                        var foot = a.Rig.Root.position + new Vector3(-dir * 0.12f, 0.06f, Random.Range(-0.06f, 0.06f));
+                        FxCard("blob", foot, 0.34f, 0.2f, 0.5f, new Vector3(-dir * 0.5f, 0.3f, 0f), new Color(0.92f, 0.93f, 0.97f, 0.55f), 0f, 0.5f, 1.6f);
+                    }
+                    a.LastStride = a.Stride;
+                }
+                else a.LastStride = float.NaN;
             }
 
             SyncShots();
@@ -2217,6 +2230,10 @@ namespace ExcelHeroes.World
             public float LastRing = -1f;     // world time of the last hit ring on this actor (HitRing throttle)
             public float Enter;             // 1 → 0: running in from the left at the start of a run
             float _walk, _lastX, _speed;
+            /// <summary>Running (above RunSpeed) and the stride's phase, for the footfall dust (BattleWorld.Sync).</summary>
+            public bool Running => Rig.RefModel && _speed > RunSpeed * Rig.Root.localScale.x && C.Alive;
+            public float Stride => _walk;
+            public float LastStride = float.NaN;
             const float RunSpeed = 1.6f;   // world units a second at root scale 1: faster than this, the SD runs
 
             public void Update(float dt, float time, float targetX, Transform cam, MaterialPropertyBlock mpb, float closeUp)
