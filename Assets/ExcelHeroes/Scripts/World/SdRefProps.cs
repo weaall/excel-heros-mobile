@@ -556,6 +556,62 @@ namespace ExcelHeroes.World
         /// SdPose.Apply holds whatever the pose). A rod or a cup lies across the palm at the finger
         /// roots and the fist wraps it; a tablet or a board rests on the palm under a light grip.
         /// </summary>
+        /// <summary>
+        /// The member's signature gear slung across the back on the diagonal, the office's answer to the
+        /// reference's rifles (the part cross-check: "add oversized props to break the vertical lines"):
+        /// ranged a stylus as long as she is tall, melee a steel ruler, tank a ring binder carried like a
+        /// shield, healer a big thermos. Built in the figure's own space, then hung on the chest bone.
+        /// </summary>
+        public static void BackGear(ChibiRig rig, Transform root, string role, SdLook k, int layer)
+        {
+            if (!Gear || rig.Spine == null) return;
+            var h = rig.Height;
+            var accent = k.Accent; accent.a = 1f;
+            var dark = new Color(0.16f, 0.18f, 0.24f); var steel = new Color(0.78f, 0.8f, 0.84f); var white = new Color(0.96f, 0.96f, 0.95f);
+            var b = new MeshKit.Builder();
+            var centre = new Vector3(0f, h * 0.5f, -h * 0.12f);
+            switch (role)
+            {
+                case "tank":
+                    // a fat ring binder on the back, spine out, slightly tipped
+                    b.M = Matrix4x4.TRS(centre + new Vector3(0f, 0.02f * h, -0.03f * h), Quaternion.Euler(0f, 0f, 12f), Vector3.one);
+                    b.Box(Vector3.zero, new Vector3(h * 0.36f, h * 0.44f, h * 0.07f), accent);
+                    b.Box(new Vector3(0f, 0f, -h * 0.001f), new Vector3(h * 0.33f, h * 0.41f, h * 0.075f), white);
+                    b.Box(new Vector3(-h * 0.17f, 0f, 0f), new Vector3(h * 0.04f, h * 0.45f, h * 0.08f), MeshKit.Shade(accent, 0.75f));
+                    b.Box(new Vector3(0.02f * h, h * 0.08f, -h * 0.04f), new Vector3(h * 0.16f, h * 0.06f, h * 0.004f), white);
+                    break;
+                case "healer":
+                    b.M = Matrix4x4.TRS(centre + new Vector3(h * 0.08f, 0f, 0f), Quaternion.Euler(0f, 0f, -24f), Vector3.one);
+                    b.Frustum(new Vector3(0f, -h * 0.22f, 0f), h * 0.07f, h * 0.4f, h * 0.07f, accent, 1f, 16);
+                    b.Frustum(new Vector3(0f, h * 0.18f, 0f), h * 0.06f, h * 0.07f, h * 0.06f, steel, 1f, 16);
+                    b.Frustum(new Vector3(0f, -h * 0.05f, 0f), h * 0.072f, h * 0.05f, h * 0.072f, white, 1f, 16);
+                    break;
+                case "melee":
+                    // a steel ruler, the ticks along one edge, a black grip wrap at the end
+                    b.M = Matrix4x4.TRS(centre, Quaternion.Euler(0f, 0f, 38f), Vector3.one);
+                    b.Box(Vector3.zero, new Vector3(h * 0.08f, h * 0.9f, h * 0.012f), steel);
+                    for (var i = 0; i < 12; i++) b.Box(new Vector3(h * 0.03f, -h * 0.4f + i * h * 0.07f, -h * 0.007f), new Vector3(h * (i % 2 == 0 ? 0.03f : 0.018f), h * 0.005f, h * 0.002f), dark);
+                    b.Box(new Vector3(0f, -h * 0.38f, 0f), new Vector3(h * 0.09f, h * 0.14f, h * 0.02f), dark);
+                    break;
+                default:
+                    // a stylus as long as a rifle: the barrel in the accent colour, a white grip band, a steel nib, the clip
+                    b.M = Matrix4x4.TRS(centre, Quaternion.Euler(0f, 0f, 40f), Vector3.one);
+                    b.Frustum(new Vector3(0f, -h * 0.42f, 0f), h * 0.034f, h * 0.72f, h * 0.034f, accent, 1f, 12);
+                    b.Frustum(new Vector3(0f, -h * 0.2f, 0f), h * 0.037f, h * 0.12f, h * 0.037f, white, 1f, 12);
+                    b.Frustum(new Vector3(0f, h * 0.3f, 0f), h * 0.034f, h * 0.12f, h * 0.006f, steel, 1f, 12);
+                    b.Box(new Vector3(h * 0.036f, -h * 0.32f, 0f), new Vector3(h * 0.01f, h * 0.18f, h * 0.014f), steel);
+                    break;
+            }
+            b.M = Matrix4x4.identity;
+            var go = MeshKit.Part("gear", root, b.Bake("gear"), MeshKit.Toon, layer);
+            go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.identity; go.transform.localScale = Vector3.one;
+            go.transform.SetParent(rig.Spine, true);
+            rig.Renderers.Add(go.GetComponent<MeshRenderer>());
+        }
+
+        /// <summary>Whether BackGear builds (on by default).</summary>
+        public static bool Gear = System.Environment.GetEnvironmentVariable("SD_NOGEAR") != "1";
+
         public static void HandProp(ChibiRig rig, Transform root, string role, SdLook k, int layer)
         {
             if (rig.HandR == null) return;

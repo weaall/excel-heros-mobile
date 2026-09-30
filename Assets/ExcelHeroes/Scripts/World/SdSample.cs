@@ -880,6 +880,7 @@ namespace ExcelHeroes.World
             MeshKit.Part("shadow", root, sh.Bake("shadow"), ChibiBuilder.ShadowMat, layer);
             if (k.Glasses || k.Sunglasses) SdRefProps.Glasses(rig, body, root, k.Sunglasses, k.GlassesStyle, k.GlassesColor, layer);
             if (!_raw) SdRefProps.HandProp(rig, root, SdRef.RoleOf(heroId), k, layer);
+            if (!_raw) SdRefProps.BackGear(rig, root, SdRef.RoleOf(heroId), k, layer);
 
             SdPose.Apply(rig, Pose.Rest);
             if (rig.FootL != null && rig.FootR != null) rig.RestFootY = Mathf.Min(root.InverseTransformPoint(rig.FootL.position).y, root.InverseTransformPoint(rig.FootR.position).y);
