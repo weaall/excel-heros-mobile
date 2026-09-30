@@ -144,7 +144,9 @@ namespace ExcelHeroes.EditorTools
             foreach (var id in ids)
             {
                 var holder = new GameObject("preview").transform;
-                var rig = SdRef.Build(id, holder, 0);
+                // SD_RAWKEY=1: the ids are sample keys, built UNTOUCHED (their own sheets, hair and face) through our
+                // renderer — the diagnostic: does the source model itself score like the reference under our shading?
+                var rig = System.Environment.GetEnvironmentVariable("SD_RAWKEY") == "1" ? SdSample.BuildRaw(id, holder, 0) : SdRef.Build(id, holder, 0);
                 if (rig == null) { Debug.LogWarning("[SdBasePreview] no figure for " + id); Object.DestroyImmediate(holder.gameObject); continue; }
                 if (rig.FaceRenderer is SkinnedMeshRenderer smr) smr.forceMatrixRecalculationPerRender = true;
                 var sec = rig.Root.GetComponent<SdSecondary>();
