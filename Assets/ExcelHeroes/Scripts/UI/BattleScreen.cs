@@ -1597,12 +1597,13 @@ namespace ExcelHeroes.UI
 
             var flash = UiKit.Div("xcut__flash", view); flash.pickingMode = PickingMode.Ignore;
             view.schedule.Execute(() => { view.AddToClassList("xcut--in"); flash.AddToClassList("xcut__flash--out"); }).ExecuteLater(16);
-            view.schedule.Execute(() => view.AddToClassList("xcut--out")).ExecuteLater(980);
+            // short: in BA the band is a beat, and then the 3D action is what you watch (BattleWorld's push-in follows)
+            view.schedule.Execute(() => view.AddToClassList("xcut--out")).ExecuteLater(620);
             view.schedule.Execute(() =>
             {
                 view.RemoveFromHierarchy();
                 if (_cutIn == view) _cutIn = null;
-            }).ExecuteLater(1320);
+            }).ExecuteLater(950);
         }
 
         VisualElement _cutIn;

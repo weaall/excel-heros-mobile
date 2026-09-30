@@ -7400,3 +7400,6 @@
 /* the toast's pill in plain style (a painted pill on the label drew over its own text) */
 .statusbar { background-color: rgba(22, 40, 84, 0.94); border-radius: 38px; border-left-width: 10px; border-left-color: rgb(64, 200, 255);
     border-top-width: 0; border-right-width: 0; border-bottom-width: 0; }
+.xcut__band { top: 30%; height: 24%; }
+.xcut__skill { font-size: 90px; }
+.xcut__tag { top: 55%; }

@@ -118,9 +118,11 @@ namespace ExcelHeroes.World
             var fw = FocusW() * (1f - k);
             if (fw > 0f)
             {
-                var fp = _focus.Rig.Root.localPosition + new Vector3(0.6f, _focus.Rig.Height * _focus.Scale * 0.55f, 0f);   // a little ahead of her, toward the foe
+                // between her and the nearest foe (a third of the way), so a back-row shooter's push-in still shows what she hits
+                var fp = _focus.Rig.Root.localPosition + new Vector3(0f, _focus.Rig.Height * _focus.Scale * 0.55f, 0f);
+                if (!float.IsNaN(_lastEnemyX)) fp.x = Mathf.Lerp(fp.x, _lastEnemyX, 0.38f); else fp.x += 0.6f;
                 target = Vector3.Lerp(target, fp, fw * 0.85f);
-                dist = Mathf.Lerp(dist, dist * 0.6f, fw);
+                dist = Mathf.Lerp(dist, dist * 0.66f, fw);
                 pitch = Mathf.Lerp(pitch, pitch - 5f * Mathf.Deg2Rad, fw);
             }
             var pos = target + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * dist;
@@ -1082,14 +1084,15 @@ namespace ExcelHeroes.World
         float FocusW()
         {
             if (_focus == null || !FocusOn) return 0f;
+            // after the cut-in's band has gone (it covers the first ~0.55 s): in over 0.25 s, held, out over 0.4 s
             var t = _time - _focusAt;
-            if (t > 1.25f || !_focus.C.Alive) { _focus = null; return 0f; }
-            return Mathf.SmoothStep(0f, 1f, Mathf.Min(t / 0.18f, (1.25f - t) / 0.35f));
+            if (t > 1.7f || !_focus.C.Alive) { _focus = null; return 0f; }
+            return Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.Min((t - 0.3f) / 0.25f, (1.7f - t) / 0.4f)));
         }
         /// <summary>A/B hook: the EX camera push-in (EH_EXCAM=0 off).</summary>
         public static readonly bool FocusOn = System.Environment.GetEnvironmentVariable("EH_EXCAM") != "0";
         /// <summary>True for the first ~0.35 s of an EX push-in: the screen slows the fight for the beat.</summary>
-        public bool InExBeat => FocusOn && _focus != null && _time - _focusAt < 0.35f;
+        public bool InExBeat => FocusOn && _focus != null && _time - _focusAt < 0.5f;
 
         public void EndSkillBatch() => _cast = default;
 

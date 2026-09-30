@@ -208,7 +208,7 @@ namespace ExcelHeroes.Core
                         yield return Shoot($"{n:00}-CutIn");
                         yield return new WaitForSecondsRealtime(1.2f);
                         BattleScreen.Current?.DebugExFocus();
-                        yield return new WaitForSeconds(0.4f);
+                        yield return new WaitForSeconds(0.85f);
                         yield return Shoot($"{n:00}-ExCam");
                         // a win: the result over the party's close-up cheer (the BA cross-check's "result")
                         BattleScreen.Current?.DebugWin();
@@ -242,7 +242,15 @@ namespace ExcelHeroes.Core
                         BattleScreen.Current?.DebugAutoSkill(false);
                         foreach (var kind in new[] { "volley", "stomp", "throw", "sweep", "slow" })
                         {
-                            if (ExcelHeroes.World.BattleWorld.Instance?.DebugTelegraph(kind) != true) break;
+                            if (ExcelHeroes.World.BattleWorld.Instance?.DebugTelegraph(kind) != true)
+                            {
+                                // the EX barrage above can finish the boss now that it fights back: bring one on again, once
+                                for (var w = 0f; BattleScreen.Current?.DebugFinished == true && w < 10f; w += 0.25f) yield return new WaitForSeconds(0.25f);
+                                BattleSim.DebugTanky = 25;
+                                BattleScreen.Current?.DebugBoss(0.9f);
+                                yield return new WaitForSeconds(1.5f);
+                                if (ExcelHeroes.World.BattleWorld.Instance?.DebugTelegraph(kind) != true) { Debug.Log("[shots] no boss for telegraphs"); break; }
+                            }
                             if (kind == "stomp")
                                 for (var sf = 0; sf < 8; sf++) { yield return new WaitForSeconds(0.1f); yield return Shoot($"{n:00}-Stomp{sf}"); }
                             yield return new WaitForSeconds(0.35f);
