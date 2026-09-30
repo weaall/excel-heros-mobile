@@ -7501,3 +7501,12 @@
 .scard { width: 15.2%; height: 380px; margin-right: 1.4%; }
 /* the mission rows' progress bars: a later align-self: center had collapsed them to nothing */
 .qrow .qrow__track { align-self: stretch; width: auto; height: 10px; margin: 8px 30px 0 0; flex-shrink: 0; }
+
+/* battle r23 — the reference's field is quiet: a small stage tag top-left, a modest combo under the HUD,
+   thin HP lines over the heads */
+.bkill { height: 52px; padding: 0 26px 0 20px; top: 18px; }
+.bkill .bkill__kicker, .bkill .bkill__glyph { display: none; }
+.bkill .bkill__num { font-size: 30px; color: rgb(255, 255, 255); -unity-text-outline-width: 0; }
+.combo { font-size: 44px; top: 128px; right: 60px; -unity-text-outline-width: 2px; text-shadow: 0 3px 0 rgba(10, 28, 64, 0.6); opacity: 0.9; }
+.combo--low { top: 128px; }
+.fighter--3d .fighter__hpbar { height: 9px; width: 96px; border-width: 1.5px; }

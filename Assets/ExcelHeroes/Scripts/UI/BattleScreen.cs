@@ -233,9 +233,8 @@ namespace ExcelHeroes.UI
             {
                 // light glass with a cyan rim and glow (the par_07-BattleHud reference)
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 6f);
-                UiPaint.Ring(ctx, poly, UiPaint.C(0, 214, 255, 0.35f), UiPaint.C(0, 214, 255, 0f), 8f);
-                UiPaint.Fill(ctx, poly, UiPaint.Vertical(UiPaint.C(255, 255, 255, 0.9f), UiPaint.C(224, 242, 252, 0.86f), r.yMin, r.yMax));
-                UiPaint.Stroke(ctx, poly, UiPaint.C(0, 200, 250, 0.9f), 2f);
+                // the reference's stage tag: dark translucent navy, fading to the right, no rim
+                UiPaint.Fill(ctx, poly, UiPaint.Horizontal(UiPaint.C(16, 28, 60, 0.82f), UiPaint.C(16, 28, 60, 0.35f), r.xMin, r.xMax), 0f);
                 UiPaint.Fill(ctx, UiPaint.Clip(poly, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMax - 4f, r.xMax + 10f, r.yMax + 2f), 0f)), UiPaint.C(0, 214, 255, 0.9f), 0f);
             });
             UiKit.Text("OBJECTIVE", "bkill__kicker", kills).pickingMode = PickingMode.Ignore;
@@ -954,7 +953,7 @@ namespace ExcelHeroes.UI
             if (_killLabel != null && (_sim.Kills != _hudKills || _sim.EnemyTotal != _hudTotal))
             {
                 _hudKills = _sim.Kills; _hudTotal = _sim.EnemyTotal;
-                _killLabel.text = _sim.EnemyTotal > 0 ? $"격파: {_sim.Kills} / {_sim.EnemyTotal}" : $"격파: {_sim.Kills}";
+                _killLabel.text = $"Phase {_sim.Stage}  ·  {_sim.Kills}/{Mathf.Max(_sim.Kills, _sim.EnemyTotal)}";   // the reference's small stage tag (Normal 1-1)
             }
             if (_timeLabel != null)
             {
