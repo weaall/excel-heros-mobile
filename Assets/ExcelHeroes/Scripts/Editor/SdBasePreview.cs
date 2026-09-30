@@ -138,6 +138,7 @@ namespace ExcelHeroes.EditorTools
             var actions = (System.Environment.GetEnvironmentVariable("SD_ACTIONS") ?? "idle0,idle1,ready0,attack0,attack1,attack2,hit,walk,win0,win1,win3,skill0,skill1,skill2,dead").Split(',');
             Shader.SetGlobalVector("_EhLightDir", new Vector4(-0.45f, 0.85f, -0.5f, 0f));
             if (!ExcelHeroes.Data.GameData.Loaded) ExcelHeroes.Data.GameData.Load();
+            ToonLook.Apply();   // the game's toon globals (outline floor, shade, rim, hair ring), so the strip renders as the game does
             // SD_STRIPSCALE=2: twice the size, for the defect audit (150 px figures hid what broke)
             var sc = int.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPSCALE"), out var sc0) ? sc0 : 1;
             int W = (int.TryParse(System.Environment.GetEnvironmentVariable("SD_STRIPW"), out var sw0) ? sw0 : 150) * sc, H = 220 * sc;   // SD_STRIPW: wider cells (a lying pose)
