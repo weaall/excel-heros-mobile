@@ -289,7 +289,7 @@ namespace ExcelHeroes.UI
             var art = Div("card__art", card);
             // An owned hero wears what they have equipped; a locked one has nothing equipped
             // and falls straight through to the base art.
-            SetPortrait(art, def.id, Crop.Bust, owned != null, Color.Lerp(gradeColor, Color.white, 0.72f));
+            SetPortrait(art, def.id, (extraClasses ?? "").Contains("card--face") ? Crop.Face : Crop.Bust, owned != null, Color.Lerp(gradeColor, Color.white, 0.72f));   // card--face: the reference's list, a tight face
 
             // A card you do not own is DARKENED by a scrim over the art. Opacity composites
             // against the white card behind and bleaches towards white instead.

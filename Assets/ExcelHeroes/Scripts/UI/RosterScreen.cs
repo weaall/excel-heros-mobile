@@ -194,9 +194,9 @@ namespace ExcelHeroes.UI
             var offset = _scroll.scrollOffset;
             _grid.Clear();
             foreach (var def in shown)
-                _grid.Add(UiKit.Card(def, p.Find(def.id), () => _app.OpenDetail(def.id)));
+                _grid.Add(UiKit.Card(def, p.Find(def.id), () => _app.OpenDetail(def.id), "card--face"));
             // the last row padded so a short row keeps the grid's columns
-            for (var i = shown.Count; i % 5 != 0; i++) UiKit.Div("card card--ghost", _grid);
+            for (var i = shown.Count; i % 6 != 0; i++) UiKit.Div("card card--ghost", _grid);
             _scroll.schedule.Execute(() => _scroll.scrollOffset = offset);
 
             _pageLabel.text = "조건에 맞는 사원이 없습니다";

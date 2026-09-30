@@ -7453,3 +7453,9 @@
 .party-tab:disabled { opacity: 1; color: rgb(110, 126, 150); }
 /* the result: the MVP's line is in the box at the top left; the same words again in a bubble over the squad was noise */
 .battle--result .saybubble { display: none; }
+
+/* 사원 r19: the reference's student list — six across, tight faces, all inside one white panel */
+.roster .roster-scroll { background-color: rgba(255, 255, 255, 0.9); border-radius: 10px; border-width: 2px; border-color: rgb(214, 228, 244); margin: 0 60px 24px 60px; padding-top: 14px; }
+.roster .roster-grid { padding-left: 18px; padding-right: 18px; }
+.roster .card { width: 330px; height: 300px; margin: 9px; }
+.roster .card__name { font-size: 26px; }
