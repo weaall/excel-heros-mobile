@@ -276,6 +276,9 @@ namespace ExcelHeroes.UI
 
             var nameRow = UiKit.Div("dplate__namerow", plate);
             UiKit.Text(def.name, "dplate__name", nameRow);
+            // the English name beside it, as the reference sets its students' (시로코 SHIROKO)
+            if (!string.Equals(def.name, def.id, System.StringComparison.OrdinalIgnoreCase))
+                UiKit.Text(def.id.Replace('_', ' ').ToUpperInvariant(), "dplate__en", nameRow).pickingMode = PickingMode.Ignore;
             if (owned != null) UiKit.Text("♥", "dplate__heart", nameRow);
 
             var metaRow = UiKit.Div("dplate__meta", plate);

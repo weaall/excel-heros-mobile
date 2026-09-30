@@ -7459,3 +7459,13 @@
 .roster .roster-grid { padding-left: 18px; padding-right: 18px; }
 .roster .card { width: 330px; height: 300px; margin: 9px; }
 .roster .card__name { font-size: 26px; }
+/* profile r20: the member full size, running off the foot; her sheet a small halo over the head, not a big frame beside her */
+.overlay--page .detail__figure--standing { left: 4%; right: 0; top: -4%; bottom: -26%; }
+.overlay--page .detail__sheet { top: -1%; width: 24%; height: 22%; }
+.overlay--page .detail__sheet.backsheet--left, .overlay--page .detail__sheet.backsheet--right { left: 32%; }
+.dplate__en { font-size: 30px; color: rgb(46, 132, 220); padding: 0; margin: 14px 0 0 16px; letter-spacing: 2px;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-SemiBold%20SDF.asset"); -unity-font-style: normal; }
+.overlay--page .detail__sheet { top: 0%; width: 20%; height: 18%; }
+.overlay--page .detail__sheet.backsheet--left, .overlay--page .detail__sheet.backsheet--right { left: 43%; }
+.overlay--page .detail__figure--standing { top: 7%; bottom: -30%; }
+.overlay--page .detail__sheet { top: 1%; height: 17%; }
