@@ -100,8 +100,8 @@ namespace ExcelHeroes.UI
                 UiPaint.Fill(ctx, box, UiPaint.Vertical(UiPaint.C(255, 255, 255), UiPaint.C(238, 244, 250), r.yMin, r.yMax));
                 // the item in a square slot of its own, the grade only in the slot's rim and a thin
                 // band on its top (ui_critique r5 16-Shop #1 — the half-card colour wash read as a web card)
-                var sz = r.height - 36f;
-                var slot = Rect.MinMaxRect(r.xMin + 18f, r.yMin + 18f, r.xMin + 18f + sz, r.yMax - 18f);
+                // the reference's shop: a tall card, the item's slot across the top (it was a wide card with the slot at the left)
+                var slot = Rect.MinMaxRect(r.xMin + 14f, r.yMin + 14f, r.xMax - 14f, r.yMin + r.height * 0.56f);
                 var sbox = UiPaint.RoundRect(slot, 10f, 5);
                 UiPaint.Fill(ctx, sbox, UiPaint.Vertical(Color.Lerp(tint, Color.white, 0.82f), Color.Lerp(tint, Color.white, 0.6f), slot.yMin, slot.yMax));
                 UiPaint.Fill(ctx, UiPaint.Clip(sbox, UiPaint.RoundRect(Rect.MinMaxRect(slot.xMin, slot.yMin, slot.xMax, slot.yMin + 8f), 0f)), tint, 0f);

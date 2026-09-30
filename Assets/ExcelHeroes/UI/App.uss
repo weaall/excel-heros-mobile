@@ -7487,3 +7487,17 @@
 .shell--lobby .plate__rank-num { color: rgb(255, 255, 255); font-size: 40px; -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); }
 .shell--lobby .plate__name { color: rgb(255, 255, 255); }
 .shell--lobby .plate__bar { background-color: rgba(255, 255, 255, 0.18); }
+
+/* 상점 r22 — the reference's item cards: tall, five a row, the item large in the top slot, the name under it, the
+   price as the card's foot button (the wide cards left half the panel empty) */
+.scard { width: 18.4%; height: 360px; margin: 0 1.6% 22px 0; flex-direction: column; align-items: stretch; }
+.scard .scard__icon { position: absolute; left: 0; right: 0; top: 30px; height: 150px; width: auto; margin: 0; background-position-x: center; }
+.scard .scard__qty { left: 22px; top: 22px; }
+.scard .scard__body { position: absolute; left: 0; right: 0; top: 57%; bottom: 0; padding: 0 16px 16px 16px; justify-content: space-between; align-items: stretch; }
+.scard .scard__name { font-size: 28px; -unity-text-align: middle-center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+.scard .scard__left { font-size: 20px; -unity-text-align: middle-center; margin: 0; }
+.scard .scard__buy { height: 64px; margin: 0; }
+.scard .scard__price-text { font-size: 28px; }
+.scard { width: 15.2%; height: 380px; margin-right: 1.4%; }
+/* the mission rows' progress bars: a later align-self: center had collapsed them to nothing */
+.qrow .qrow__track { align-self: stretch; width: auto; height: 10px; margin: 8px 30px 0 0; flex-shrink: 0; }
