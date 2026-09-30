@@ -92,7 +92,7 @@ namespace ExcelHeroes.UI
                 var (count, gems, gold) = QuestService.ClaimEverything(p);
                 if (count == 0) { _app.SetStatus("수령할 보상이 없습니다"); return; }
                 AudioService.Play("victory", 0.6f);
-                _app.SetStatus($"한꺼번에 수령 {count}건: 보석 +{gems}" + (gold > 0 ? $" · 골드 +{gold:N0}" : ""));
+                _app.SetStatus($"한꺼번에 수령 {count}건: 보석 +{gems}" + (gold > 0 ? $" · 골드 +{UiKit.Num(gold)}" : ""));
                 Game.Touch();
             }, head);
             claimAll.SetEnabled(ready > 0);

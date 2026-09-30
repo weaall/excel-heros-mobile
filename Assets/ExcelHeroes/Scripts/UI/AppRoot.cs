@@ -259,7 +259,7 @@ namespace ExcelHeroes.UI
                 UiKit.Text(amount, "idle__amount idle__amount--" + kind, t);
                 UiKit.Text(label, "idle__label", t);
             }
-            Tile("gold", Icons.Gold, $"+{report.Gold:N0}", "골드", "gold");
+            Tile("gold", Icons.Gold, $"+{UiKit.Num(report.Gold)}", "골드", "gold");
             if (report.Gems > 0) Tile("gem", Icons.Gem, $"+{report.Gems:N0}", "보석", "gem");
             if (report.Capped)
                 UiKit.Text($"정산은 최대 {IdleService.CapSeconds / 3600}시간까지 쌓입니다", "idle__note", body);
@@ -269,7 +269,7 @@ namespace ExcelHeroes.UI
                 if (IdleService.Grant(Game.Player, report))
                 {
                     AudioService.Play("victory", 0.6f);
-                    SetStatus(report.Gems > 0 ? $"백그라운드 정산 · 골드 +{report.Gold:N0} · 보석 +{report.Gems}" : $"백그라운드 정산 · 골드 +{report.Gold:N0}");
+                    SetStatus(report.Gems > 0 ? $"백그라운드 정산 · 골드 +{UiKit.Num(report.Gold)} · 보석 +{report.Gems}" : $"백그라운드 정산 · 골드 +{UiKit.Num(report.Gold)}");
                     Game.Touch();
                 }
                 CloseOverlay();
@@ -337,7 +337,7 @@ namespace ExcelHeroes.UI
         {
             if (Game.Player == null) return;
             _gems.text = Game.Player.gems.ToString("N0");
-            _gold.text = Game.Player.gold.ToString("N0");
+            _gold.text = UiKit.Num(Game.Player.gold);
             if (_stage != null) _stage.text = Game.Player.stage.ToString();
             if (_plateSub != null) _plateSub.text = $"사원 {Game.Player.owned.Count}명";
             if (_dailyBadge == null) return;

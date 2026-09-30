@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Icons v4 — full colour (the user, 2026-09-30: "the icons are black-and-white, that's ugly"). v2 was flat
+Icons v5 (ICON_V=5) — one shared palette; v4 was full colour (the user, 2026-09-30: "the icons are black-and-white, that's ugly"). v2 was flat
 navy, v3 pastel sky-blue only; with the nav's navy tint on top the bar read as black silhouettes. Now each
 menu icon is a small glossy illustration with its OWN main colour, so the lobby's menus tell apart at a
 glance, in the bright anime-gacha UI finish: a clean dark outline, two-tone cel shading, a white gloss.

@@ -7408,3 +7408,19 @@
     border-radius: 6px; border-left-width: 6px; border-left-color: rgb(64, 200, 255); padding: 4px 18px 6px 14px;
     -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0); white-space: nowrap;
     -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); }
+
+/* fonts everywhere they fit (the user, 2026-10-01): numbers in Barlow Condensed Bold, English labels in its SemiBold,
+   Korean headings in Black Han Sans — Noto Sans KR stays for running text and falls back for missing glyphs */
+.bboss__count, .bboss__lv, .bhud__chip-num, .chart-row__pct, .cost-row__value, .filter-row__count, .grade-head__count, .gx-chip__value, .home__bond-level, .home__stat-value, .idle__amount, .kittile__val, .log-row__n, .minicard__lv, .mt__count, .pull-bar__value, .pull-btn__price, .reveal-points__value, .roster-bar__count, .rtile__count, .scard__price, .scard__qty, .sheet-head__count, .stamp-day__n, .stat-row__value, .statcell__val, .upgrade__cost, .xl-row__n, .xl-row__value, .nbanner__date-text, .dplate__lv, .card__level {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset");
+    -unity-font-style: normal;
+}
+.banner__kicker, .gstage__kicker, .gtab__en, .mt__title-en {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-SemiBold%20SDF.asset");
+    -unity-font-style: normal;
+    letter-spacing: 2px;
+}
+.banner__title, .battle-complete__title, .battle-empty__title, .block__title, .brace__title, .chart-obj__title, .chat__title, .growth__title, .loading__title, .modal__title, .mrow__title, .mt-chat__title, .mt-room__title, .nrow__title, .onboard__tip-title, .onboard__title, .pbox__title, .prologue__title, .qs-title, .result__title, .section-title, .sheet-head__title, .sheet-list__title, .spage__head, .stamp__title, .topbar__title, .xl-dialog__caption-title, .xl-dialog__title, .idle__label, .srow__name {
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset");
+    -unity-font-style: normal;
+}

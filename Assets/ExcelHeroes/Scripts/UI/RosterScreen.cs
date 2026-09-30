@@ -53,7 +53,7 @@ namespace ExcelHeroes.UI
             {
                 var (heroes, gold) = DismissService.ReclaimBench(Game.Player);
                 _app.SetStatus(heroes > 0
-                    ? $"대기 사원 {heroes}명 레벨 회수 · 골드 +{gold:N0} (전액 환급)"
+                    ? $"대기 사원 {heroes}명 레벨 회수 · 골드 +{UiKit.Num(gold)} (전액 환급)"
                     : "회수할 레벨이 없습니다");
                 if (heroes > 0) AudioService.Play("bond");
                 Game.Touch();
@@ -396,7 +396,7 @@ namespace ExcelHeroes.UI
                 if (!AffectionService.AtMax(owned))
                 {
                     var cost = AffectionService.GiftCost(Game.Player);
-                    var gift = UiKit.Btn($"간식 사주기 · ₩{cost:N0}", "btn", () =>
+                    var gift = UiKit.Btn($"간식 사주기 · ₩{UiKit.Num(cost)}", "btn", () =>
                     {
                         if (AffectionService.Gift(Game.Player, owned) >= 0)
                         {
@@ -503,7 +503,7 @@ namespace ExcelHeroes.UI
             var pane = UiKit.Div("onboard__card idle");
             UiKit.Text("사원 방출", "onboard__title", pane);
             UiKit.Text($"{def?.name}을(를) 방출하고 강화 카드 {cards}장" +
-                       (gold > 0 ? $", 레벨 골드 ₩{gold:N0}을 돌려받습니다." : "을 받습니다."),
+                       (gold > 0 ? $", 레벨 골드 ₩{UiKit.Num(gold)}을 돌려받습니다." : "을 받습니다."),
                 "muted", pane);
             UiKit.Text("★, 레벨, 조각은 사라집니다. 착용 중인 비품은 창고로 돌아갑니다.", "muted", pane);
 
@@ -514,7 +514,7 @@ namespace ExcelHeroes.UI
                 var (got, back) = DismissService.Release(Game.Player, heroId);
                 if (got <= 0) { _app.CloseOverlay(); return; }
                 AudioService.Play("tap", 0.6f);
-                _app.SetStatus($"방출 · 강화 카드 +{got}" + (back > 0 ? $" · 골드 +{back:N0}" : ""));
+                _app.SetStatus($"방출 · 강화 카드 +{got}" + (back > 0 ? $" · 골드 +{UiKit.Num(back)}" : ""));
                 Game.Touch();
                 _app.CloseOverlay();
                 Close(onClose);
@@ -560,7 +560,7 @@ namespace ExcelHeroes.UI
                     UiKit.Text($"{slot.label} +{EquipService.Pct(worn):0.#}%　·　" +
                                (worn.lv >= GameData.Balance.equipMaxLevel
                                    ? "최대 강화"
-                                   : $"강화 ₩{EquipService.UpgradeCost(p, worn):N0}"),
+                                   : $"강화 ₩{UiKit.Num(EquipService.UpgradeCost(p, worn))}"),
                         "arow__meta", text);
                 }
 
@@ -607,7 +607,7 @@ namespace ExcelHeroes.UI
                 var name = UiKit.Text(EquipService.Label(it), "arow__name", text);
                 var g = GameData.Grade(it.grade);
                 if (g != null) name.style.color = g.Color;
-                UiKit.Text($"{slot?.label} +{EquipService.Pct(it):0.#}%　·　분해 ₩{EquipService.DismantleGold(p, it):N0}",
+                UiKit.Text($"{slot?.label} +{EquipService.Pct(it):0.#}%　·　분해 ₩{UiKit.Num(EquipService.DismantleGold(p, it))}",
                     "arow__meta", text);
 
                 var id = it.id;
@@ -625,7 +625,7 @@ namespace ExcelHeroes.UI
                     var gold = EquipService.Dismantle(Game.Player, id);
                     if (gold <= 0) return;
                     AudioService.Play("tap", 0.5f);
-                    _app.SetStatus($"비품 분해 · 골드 +{gold:N0}");
+                    _app.SetStatus($"비품 분해 · 골드 +{UiKit.Num(gold)}");
                     Game.Touch();
                     _app.CloseOverlay();
                     OpenItemPicker(heroId, slotId, onClose);
@@ -690,11 +690,11 @@ namespace ExcelHeroes.UI
             var why = ScoutService.Blocked(p, owned);
             var reachable = ScoutService.PriceIsReachable(owned);
             var row = Row(body, $"스카우트 · 오늘 {ScoutService.Left(p)} / {GameData.Balance.scoutPerDay}회",
-                why.Length > 0 ? why : $"중복 1장 · ₩{cost:N0}");
+                why.Length > 0 ? why : $"중복 1장 · ₩{UiKit.Num(cost)}");
 
             // A clamped price is not a price. Showing ₩2,147,483,647 would read as a number the
             // player could save towards, and it is not one.
-            var go = UiKit.Btn(reachable ? $"₩{cost:N0}" : "—", "skin-row__btn skin-row__btn--buy", () =>
+            var go = UiKit.Btn(reachable ? $"₩{UiKit.Num(cost)}" : "—", "skin-row__btn skin-row__btn--buy", () =>
             {
                 if (!ScoutService.Scout(p, owned)) return;
                 AudioService.Play("bond");
@@ -727,7 +727,7 @@ namespace ExcelHeroes.UI
             }
 
             var cost = StatMath.LevelUpCost(owned);
-            var row = Row(body, $"레벨 {owned.level} / {cap}", $"다음 ₩{cost:N0} · 보유 ₩{p.gold:N0}", "levelup");
+            var row = Row(body, $"레벨 {owned.level} / {cap}", $"다음 ₩{UiKit.Num(cost)} · 보유 ₩{UiKit.Num(p.gold)}", "levelup");
             CostSlot(row, "gold", p.gold, cost);
 
             var one = UiKit.Btn("+1", "skin-row__btn skin-row__btn--narrow", () =>

@@ -135,7 +135,7 @@ namespace ExcelHeroes.UI
                 AudioService.Play("upgrade", 0.6f);
                 // The label had to shrink to fit the shape, so the sentence moves here — the
                 // status line is where this build already explains what a button just did.
-                _app.SetStatus($"편성 전원 일괄 강화 · 골드 -{before - Game.Player.gold:N0}");
+                _app.SetStatus($"편성 전원 일괄 강화 · 골드 -{UiKit.Num(before - Game.Player.gold)}");
                 Game.Touch();
             }, actions);
             bulk.SetEnabled(p.PartyCount() > 0);

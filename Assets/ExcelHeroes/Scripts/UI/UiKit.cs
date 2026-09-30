@@ -120,6 +120,16 @@ namespace ExcelHeroes.UI
         /// </summary>
         public static void SetBtnText(Button b, string text) => SkewPlate.SetText(b, text);
 
+        /// <summary>A currency amount in the units a Korean reader counts in: 99,999 as is, then 12.3만, 1.23억, 1.2조.</summary>
+        public static string Num(double v)
+        {
+            var a = System.Math.Abs(v); var sign = v < 0 ? "-" : "";
+            if (a < 100_000) return sign + a.ToString("N0");
+            if (a < 1e8) return sign + (a / 1e4).ToString(a < 1e6 ? "0.#" : "0") + "만";
+            if (a < 1e12) return sign + (a / 1e8).ToString(a < 1e9 ? "0.##" : a < 1e10 ? "0.#" : "0") + "억";
+            return sign + (a / 1e12).ToString("0.##") + "조";
+        }
+
         public static ScrollView Scroll(string classes = null, VisualElement parent = null)
         {
             var s = new ScrollView(ScrollViewMode.Vertical);

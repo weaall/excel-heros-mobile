@@ -2098,8 +2098,8 @@ namespace ExcelHeroes.UI
 
             var gems = _sim.GemsDropped + (_sim.Won ? 5 + _sim.GemBonus : 0);
             Log(_sim.Won
-                ? $"전 구간 처리 완료 — 골드 +{_sim.GoldEarned:N0} · 보석 +{gems}"
-                : $"처리 실패 — 골드 +{_sim.GoldEarned:N0} · 보석 +{gems}");
+                ? $"전 구간 처리 완료 — 골드 +{UiKit.Num(_sim.GoldEarned)} · 보석 +{gems}"
+                : $"처리 실패 — 골드 +{UiKit.Num(_sim.GoldEarned)} · 보석 +{gems}");
 
             // The reference game's result is not a window. The fight stays on screen, a large
             // yellow italic title lands top-left, the run's numbers sit in a navy plate
@@ -2151,7 +2151,7 @@ namespace ExcelHeroes.UI
             var secs = Mathf.FloorToInt(_sim.Elapsed);
             UiKit.Text($"소요 시간  {secs / 60:00}:{secs % 60:00}", "bresult__time", line);
             var gainRow = UiKit.Div("bresult__gains", info);
-            Gain(gainRow, "gold", Icons.Gold, $"+{_sim.GoldEarned:N0}");
+            Gain(gainRow, "gold", Icons.Gold, $"+{UiKit.Num(_sim.GoldEarned)}");
             Gain(gainRow, "gem", Icons.Gem, $"+{gems:N0}");
 
             var squad = UiKit.Div("bresult__squad", popup);
@@ -2321,7 +2321,7 @@ namespace ExcelHeroes.UI
                 row.Level.text = def.unit == "pct"
                     ? $"+{bonus * 100f:0.#}%p · Lv{lv}"
                     : $"+{bonus * 100f:0}% · Lv{lv}";
-                row.Cost.text = maxed ? "MAX" : $"₩{TeamUpgrades.Cost(p, def.id):N0}";
+                row.Cost.text = maxed ? "MAX" : $"₩{UiKit.Num(TeamUpgrades.Cost(p, def.id))}";
                 row.Button.EnableInClassList("upgrade--ready", TeamUpgrades.CanBuy(p, def.id));
                 row.Button.SetEnabled(!maxed);
                 row.Button.Q(className: "pmenu__pill-bg")?.MarkDirtyRepaint();
