@@ -2100,11 +2100,12 @@ namespace ExcelHeroes.UI
 
             // the title on a slanted band that fades out to the right, a cyan hairline under it and
             // the phase in small caps (ui_score 07-Fight1 #1) — a result, not a word on the street
-            var band = UiKit.Div("bresult__band" + (_sim.Won ? "" : " bresult__band--lose"), popup);
+            var band = UiKit.Div("bresult__band" + (_sim.Won ? " bresult__band--win" : " bresult__band--lose"), popup);
             band.pickingMode = PickingMode.Ignore;
             var won = _sim.Won;
             ModalFrame.Painted(band, (ctx, r) =>
             {
+                if (won) return;   // a win is the reference's bare yellow title centred over the squad (the BA cross-check)
                 var poly = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.6f, 0f);
                 var c0 = won ? UiPaint.C(16, 30, 60, 0.9f) : UiPaint.C(40, 20, 30, 0.9f);
                 UiPaint.Fill(ctx, poly, c0);   // a solid slanted band sized to the title — a fade under it read as the title being cut off

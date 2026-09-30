@@ -7186,3 +7186,8 @@
 .navtab { width: 152px; height: 138px; margin-right: 18px; }
 .navtab__icon.art-icon { width: 80px; height: 80px; }
 .navtab__label { font-size: 30px; }
+/* the win title (BA cross-check r5): centred over the lined-up squad, big warm yellow with a deep orange edge */
+.bresult__band--win { left: 0; right: 0; width: auto; top: 26px; padding-left: 0; align-items: center; }
+.bresult__band--win .bresult__title { font-size: 128px; color: rgb(255, 228, 92); text-shadow: 0 5px 0 rgba(170, 70, 0, 0.85);
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(196, 96, 10); }
+.bresult__band--win .bresult__kicker { color: rgb(255, 255, 255); text-shadow: 0 2px 0 rgba(0, 40, 90, 0.6); }

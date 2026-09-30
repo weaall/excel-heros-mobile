@@ -429,6 +429,11 @@ namespace ExcelHeroes.World
             float cx = 0f, cz = 0f; var alive = 0;
             foreach (var a in _actors.Values) if (a.C.side == Side.Hero && a.C.Alive) { cx += a.X; cz += a.Z; alive++; }
             if (alive > 0 && _closeUpTarget <= 0f) _partyCentre = new Vector3(cx / alive, 0f, cz / alive);
+            // the win: the squad lined up in one row facing the lens, as the reference's result lines its
+            // members up (the BA cross-check: ours stood scattered down the diagonal, one huge in front)
+            var slot = 0;
+            foreach (var a in _actors.Values)
+                if (a.C.side == Side.Hero && a.C.Alive) { a.LineX = _partyCentre.x + (slot - (alive - 1) * 0.5f) * 1.25f; a.LineZ = _partyCentre.z; slot++; }
             if (!float.IsNaN(_lastEnemyX) && !float.IsNaN(_lastHeroX))
             {
                 var squadX = alive > 0 ? cx / alive : _lastHeroX;
@@ -487,6 +492,7 @@ namespace ExcelHeroes.World
                     _shots[shot] = t;
                     if (shot.From != null && _actors.TryGetValue(shot.From, out var fa)) { fa.Attack = 0.32f; MuzzleFlash(fa, shot.Hostile); }
                 }
+                t.gameObject.SetActive(_closeUp < 0.05f);   // the win's close-up: no shots or trace arrows left hanging in it
                 if (shot.From == null || shot.To == null) continue;
                 _actors.TryGetValue(shot.From, out var from);
                 _actors.TryGetValue(shot.To, out var to);
@@ -1834,11 +1840,13 @@ namespace ExcelHeroes.World
                     var sq = Hit > 0f ? (hk < 0.3f ? -0.12f * Mathf.Sin(hk / 0.3f * Mathf.PI * 0.5f) : -0.12f * Mathf.Cos((hk - 0.3f) / 0.7f * Mathf.PI * 1.5f) * (1f - hk)) : 0f;
                     root.localScale = new Vector3(_baseScale.x * (1f - sq * 0.6f), _baseScale.y * (1f + sq), _baseScale.z * (1f - sq * 0.6f));
                 }
-                root.localPosition = new Vector3(X + lunge, y, Z) + facing;
+                var px = X; var pz = Z;
+                if (hero && closeUp > 0f && C.Alive) { var kk = Mathf.SmoothStep(0f, 1f, closeUp); px = Mathf.Lerp(X, LineX, kk); pz = Mathf.Lerp(Z, LineZ, kk); }
+                root.localPosition = new Vector3(px + lunge, y, pz) + facing;
                 if (Rig.SheetFloor && Rig.Sheet != null)
                 {
                     // flat on the street under the member, square to the camera's turn, gone when down
-                    Rig.Sheet.gameObject.SetActive(C.Alive && Dying <= 0f);
+                    Rig.Sheet.gameObject.SetActive(C.Alive && Dying <= 0f && closeUp < 0.05f);   // the win's close-up is the squad alone
                     Rig.Sheet.localPosition = new Vector3(X + lunge, 0.02f, Z) + facing;
                     Rig.Sheet.localRotation = Quaternion.Euler(90f, QuarterYaw * (1f - closeUp), 0f);
                 }
@@ -2143,7 +2151,7 @@ namespace ExcelHeroes.World
 
             public Combatant C;
             public ChibiRig Rig;
-            public float Scale = 1f, X, Z;
+            public float Scale = 1f, X, Z, LineX, LineZ;
             public Color Accent;
             public float Attack, Hit, Skill, Dying, Cheer, Knock;
             // hitstop: the clip all but stops for a few frames when a blow lands (the attacker's too, for a
