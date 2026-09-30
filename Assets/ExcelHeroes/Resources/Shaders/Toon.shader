@@ -62,6 +62,7 @@ Shader "ExcelHeroes/Toon"
         float _EhLift;
         // the cast's shading multipliers as offsets from 1 (global; unset = 0 = the materials' own): shadow, rim, hair ring
         float _EhShadeD, _EhRimD, _EhSpecD;
+        float _EhHairSoft;
 
         struct Attributes
         {
@@ -120,6 +121,9 @@ Shader "ExcelHeroes/Toon"
             half4 frag (Varyings i) : SV_Target
             {
                 half4 t = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv) * i.color * _Color;
+                // hair (the materials with a spec band) read flat, as painted anime hair: the sheet taken a few
+                // mips softer, so the sample's streaky gloss evens out (global _EhHairSoft, 0 = off; alpha stays sharp)
+                if (_Spec > 0 && _EhHairSoft > 0) t.rgb = (SAMPLE_TEXTURE2D_BIAS(_MainTex, sampler_MainTex, i.uv, _EhHairSoft) * i.color * _Color).rgb;
                 clip(t.a - _Cutoff);
                 t.rgb = pow(max(t.rgb, 0.0001), 1.0 / (1.0 + _EhLift));
                 float3 l = _EhLightDir.xyz;
@@ -187,6 +191,9 @@ Shader "ExcelHeroes/Toon"
             half4 frag (Varyings i) : SV_Target
             {
                 half4 t = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv) * i.color * _Color;
+                // hair (the materials with a spec band) read flat, as painted anime hair: the sheet taken a few
+                // mips softer, so the sample's streaky gloss evens out (global _EhHairSoft, 0 = off; alpha stays sharp)
+                if (_Spec > 0 && _EhHairSoft > 0) t.rgb = (SAMPLE_TEXTURE2D_BIAS(_MainTex, sampler_MainTex, i.uv, _EhHairSoft) * i.color * _Color).rgb;
                 clip(t.a - _Cutoff);
                 t.rgb = pow(max(t.rgb, 0.0001), 1.0 / (1.0 + _EhLift));
                 float3 l = _EhLightDir.xyz;
