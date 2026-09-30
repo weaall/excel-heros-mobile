@@ -22,8 +22,9 @@ namespace ExcelHeroes.World
 
         public static (Vector3 pos, Quaternion rot) PlatePose()
         {
-            var pitch = BattleWorld.QuarterPitch * Mathf.Deg2Rad;
-            var pos = PlateTarget + Quaternion.Euler(0f, BattleWorld.QuarterYaw, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * BattleWorld.QuarterDist;
+            // fixed at the pose the paintings were made from (40° down, 28° round, 10.5 m) — the battle camera may move
+            var pitch = 40f * Mathf.Deg2Rad;
+            var pos = PlateTarget + Quaternion.Euler(0f, 28f, 0f) * new Vector3(0f, Mathf.Sin(pitch), -Mathf.Cos(pitch)) * 10.5f;
             return (pos, Quaternion.LookRotation(PlateTarget - pos, Vector3.up));
         }
 

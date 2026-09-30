@@ -89,7 +89,7 @@ namespace ExcelHeroes.World
         /// <summary>Victory: bring the camera down onto the party, who turn to it and cheer.</summary>
         public void Celebrate(bool on) => _closeUpTarget = on ? 1f : 0f;
 
-        public static float QuarterPitch = 40f, QuarterYaw = 28f, QuarterDist = 10.5f;
+        public static float QuarterPitch = 26f, QuarterYaw = 28f, QuarterDist = 10.5f;   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
         float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN, _punch;
 
         void PlaceCamera(float shake)
@@ -1429,6 +1429,13 @@ namespace ExcelHeroes.World
         static Material DiscMat => _discMat != null ? _discMat : _discMat = MeshKit.NewGlass(MeshKit.Blob, Color.white);
 
         /// <summary>Capture pass only: the floor marks of `kind` for the boss on the field, replacing any shown.</summary>
+        public string DebugFacing()
+        {
+            var sb = new System.Text.StringBuilder($"cam {_cam.transform.position} fwd {_cam.transform.forward} | ");
+            foreach (var a in _actors.Values) if (a.C.side == Side.Hero) sb.Append($"{a.C.heroId} yaw {a.Rig.Root.eulerAngles.y:0} fwd {a.Rig.Root.forward} model {(a.Rig.Model != null ? a.Rig.Model.forward.ToString() : "-")}; ");
+            return sb.ToString();
+        }
+
         public bool DebugTelegraph(string kind)
         {
             foreach (var t in _teles) Drop(t);
@@ -1727,6 +1734,15 @@ namespace ExcelHeroes.World
                     else _pose = SdPose.Ready(SdPose.AttackOf(Pid, C.role), time * pers.Tempo, Z * 2f);   // in a fight: the combat stance, not the lobby idle
                     // the character's own bearing over it (SdPersona): full in the guard, less on the run or celebrating, none mid-blow
                     pers.Shape(ref _pose, Dying > 0f || !C.Alive || sklOn || hitOn || atkOn ? 0f : cheering ? 0.4f : walking ? 0.45f : 0.7f);
+                    // the chin up to the camera above (the BA cross-check: seen from 33° up, a forward lean and a
+                    // level chin put the big fringe over the face and the squad read as the backs of heads)
+                    // the tablet attacks drop the eyes 12° onto the screen, which from up here is the crown of the head:
+                    // the chin is kept at least a little up in the fight, the waist hardly folding
+                    if (hero && !cheering && C.Alive && Dying <= 0f)
+                    {
+                        _pose.HeadPitch = Mathf.Min(_pose.HeadPitch - 9f, -4f);
+                        _pose.Lean *= 0.7f; _pose.SpineBend = Mathf.Min(_pose.SpineBend, 2f);
+                    }
                     // the head looks at the fight: heroes toward the enemy line, enemies toward the squad
                     if (!cheering && !atkOn && C.Alive)
                     {
@@ -1748,7 +1764,7 @@ namespace ExcelHeroes.World
                 // turned with the quarter-view camera, so each keeps the same angle to the lens
                 // a mascot is a drawing given depth: its face is the drawing's front, so it turns only a
                 // little toward the squad (28° off the lens) — side-on it showed its thin plush seam
-                var yaw = (hero ? Mathf.Lerp(Rig.RefModel ? -55f : -75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 38f : 75f) + QuarterYaw * (1f - closeUp);   // the SD squad turned a three-quarter towards the lens as the reference's are (faces, not the backs of heads: the BA cross-check)
+                var yaw = (hero ? Mathf.Lerp(Rig.RefModel ? -32f : -75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 38f : 75f) + QuarterYaw * (1f - closeUp);   // the SD squad turned a three-quarter towards the lens as the reference's are (faces, not the backs of heads: the BA cross-check)
                 // (an SdEnemy wears the heroes' skeleton and its clips' half turn: mirrored from the heroes,
                 // toward the squad and a little toward the lens, so its face shows)
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad

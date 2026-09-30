@@ -27,7 +27,10 @@ ASK = ("This is a flat untextured 3D render of a city street set, seen from a hi
        "moved, added in the road or removed. ADD DETAIL AND MATERIAL: fine asphalt texture with subtle wear and patches, crisp "
        "painted lane lines, tiled sidewalk with joints, curb stones, detailed shop fronts (signs with simple generic shapes and no "
        "readable text or logos, display windows with reflections, window frames, sills, balconies, air conditioners), leafy tree "
-       "canopies, planters with flowers, soft ambient occlusion in corners, contact shadows under objects. Lighting: {light}. "
+       "canopies, planters with flowers, soft ambient occlusion in corners, contact shadows under objects. Make it VIVID and DENSE like a "
+       "lively Tokyo shopping street in a hit anime game: saturated clean colours (not pastel-washed), colourful shop signs and banners "
+       "(abstract shapes, no readable letters), striped awnings, neon accents, posters in windows, vending machines, bicycles parked on "
+       "the sidewalk, flower boxes, road signs, painted yellow curb markings and bright white crossings. Lighting: {light}. "
        "No people, no vehicles, no characters, no text, no watermark. Output the same framing, 16:9.")
 
 

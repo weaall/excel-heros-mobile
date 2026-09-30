@@ -48,7 +48,17 @@ BLIND = ("Two mobile game screenshots of the same kind of screen ({what}), A (im
          "director, score each 1-10 for overall visual quality (art, rendering, layout, UI polish). JSON only: {{\"a\": n, \"b\": n}}")
 
 
+MATCH = int(os.environ.get("MATCH", "0"))   # MATCH=<width>: every image shown at the same width (the refs are ~640-960 px)
+
+
 def img(path):
+    if MATCH:
+        from PIL import Image
+        import io
+        im = Image.open(path).convert("RGB")
+        if im.width != MATCH: im = im.resize((MATCH, round(MATCH * im.height / im.width)), Image.LANCZOS)
+        buf = io.BytesIO(); im.save(buf, "PNG")
+        return {"inlineData": {"mimeType": "image/png", "data": base64.b64encode(buf.getvalue()).decode("ascii")}}
     return {"inlineData": {"mimeType": "image/png", "data": base64.b64encode(open(path, "rb").read()).decode("ascii")}}
 
 
