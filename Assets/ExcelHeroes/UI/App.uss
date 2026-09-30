@@ -7198,8 +7198,9 @@
 .ex-button__costword { display: none; }
 .ex-button__cost .ex-button__label { font-size: 30px; margin: 0; }
 /* lobby menu r11: duotone navy icons floating on the light strip */
-.navtab__icon.art-icon { -unity-background-image-tint-color: rgb(38, 58, 96); }
-.navtab--active .navtab__icon.art-icon { -unity-background-image-tint-color: rgb(0, 150, 220); }
+/* full-colour icons (Icons v4, the user: "black-and-white icons look bad"): drawn as painted, the active tab a size up */
+.navtab__icon.art-icon { -unity-background-image-tint-color: rgb(255, 255, 255); }
+.navtab--active .navtab__icon.art-icon { -unity-background-image-tint-color: rgb(255, 255, 255); scale: 1.12 1.12; }
 .navtab__label { color: rgb(38, 58, 96); }
 .navtab--active .navtab__label { color: rgb(0, 140, 210); }
 /* the win title r11: a thick dark edge and a drop, like the reference's */
@@ -7291,3 +7292,111 @@
 .loading__card { background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 8px; padding-top: 16px; }
 .loading__title { color: rgb(30, 48, 90); }
 .loading__pic { border-radius: 4px; }
+
+/* 백그라운드 정산 (AppRoot.ShowIdleIfAny): a reward modal — tiles with the illustrated icon and a coloured amount */
+.modal--idle { width: 1100px; }
+.idle__away { font-size: 32px; color: rgb(40, 58, 92); -unity-text-align: middle-center; margin: 0 0 30px 0; }
+.idle__tiles { flex-direction: row; justify-content: center; }
+.idle__tile { width: 330px; height: 300px; margin: 0 22px; align-items: center; justify-content: center; }
+.idle__icon { width: 128px; height: 128px; -unity-background-scale-mode: scale-to-fit; margin-bottom: 10px; }
+.idle__glyph { font-size: 96px; margin-bottom: 10px; }
+.idle__amount { font-size: 64px; -unity-text-outline-width: 0; padding: 0; margin: 0;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+.idle__amount--gold { color: rgb(214, 142, 18); text-shadow: 0 2px 0 rgba(120, 70, 0, 0.25); }
+.idle__amount--gem { color: rgb(20, 132, 226); text-shadow: 0 2px 0 rgba(0, 50, 120, 0.25); }
+.idle__label { font-size: 24px; -unity-font-style: bold; color: rgb(100, 116, 140); margin-top: 2px; }
+.idle__note { font-size: 22px; color: rgb(120, 134, 156); -unity-text-align: middle-center; margin-top: 22px; }
+.idle__claim { align-self: center; width: 380px; height: 96px; margin-top: 34px; font-size: 38px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+
+/* the status line as a toast (AppRoot.SetStatus): a navy slanted pill low in the middle, fading out */
+.statusbar { position: absolute; bottom: 150px; left: 50%; translate: -50% 0; height: 76px; min-width: 560px; max-width: 1500px;
+    padding: 0 60px 0 64px; border-top-width: 0; background-color: rgba(0, 0, 0, 0); color: rgb(255, 255, 255);
+    font-size: 30px; -unity-text-align: middle-center; white-space: nowrap; opacity: 1;
+    transition-property: opacity, translate; transition-duration: 0.35s; }
+.statusbar--out { opacity: 0; translate: -50% 16px; }
+/* battle EX cards wider (the user: the SD faces were cut too hard) */
+.ex-button { width: 240px; height: 210px; margin-left: 16px; }
+.battle--3d .ex-bar { height: 214px; }
+/* 설정: one height for every tab, so switching tabs does not jump the panel; button text always inside its plate */
+.settings-modal { height: 960px; max-height: 96%; }
+.settings-modal .spage > * { flex-shrink: 0; }
+.settings-modal .srow { margin-bottom: 8px; }
+.settings-modal .modal__body { flex-grow: 1; }
+.settings-modal .spage { flex-grow: 1; }
+.settings-modal .srow__btn { min-width: 240px; font-size: 26px; -unity-font-style: bold; color: rgb(255, 255, 255); white-space: nowrap; overflow: hidden; }
+.settings-modal .srow__btn:disabled { color: rgb(120, 134, 156); }
+
+/* 모집 pick-up: the featured members as SD cards under the banner, tap for the details */
+.gstage__sdcards { flex-direction: row; margin-top: 26px; }
+.gstage__sdcard { width: 210px; height: 250px; margin-right: 22px; }
+.gstage__sdcard-grade { position: absolute; left: 10px; top: 10px; width: 44px; height: 38px; border-radius: 4px; align-items: center; justify-content: center; }
+.gstage__sdcard-grade-text { font-size: 26px; color: rgb(255, 255, 255); -unity-font-style: bold-and-italic; padding: 0; margin: 0; }
+.gstage__sdcard-name { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; -unity-text-align: middle-center; font-size: 24px;
+    -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; white-space: nowrap; }
+
+/* EX cut-in (BattleScreen.PlayCutIn): a dim, a tilted band with the eyes, the skill name, a quote tag */
+.xcut { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.xcut__dim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(6, 12, 32, 0); transition-property: background-color; transition-duration: 0.18s; }
+.xcut--in .xcut__dim { background-color: rgba(6, 12, 32, 0.42); }
+.xcut--out .xcut__dim { background-color: rgba(6, 12, 32, 0); }
+.xcut__band { position: absolute; left: -4%; right: -4%; top: 27%; height: 30%; rotate: -5deg; translate: 110% 0;
+    transition-property: translate; transition-duration: 0.24s; transition-timing-function: ease-out-cubic; }
+.xcut--in .xcut__band { translate: 0 0; }
+.xcut--out .xcut__band { translate: -110% 0; transition-duration: 0.3s; transition-timing-function: ease-in-cubic; }
+.xcut__words { position: absolute; left: 12%; top: 0; bottom: 0; justify-content: center; }
+.xcut__kicker { font-size: 30px; color: rgb(255, 214, 90); letter-spacing: 6px; padding: 0; margin: 0 0 -6px 6px;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+.xcut__skill { font-size: 104px; color: rgb(255, 255, 255); padding: 0; margin: 0; white-space: nowrap;
+    -unity-text-outline-width: 3px; -unity-text-outline-color: rgb(10, 18, 44); text-shadow: 5px 6px 0 rgba(0, 0, 0, 0.35);
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); -unity-font-style: normal; }
+.xcut__who { font-size: 30px; -unity-font-style: bold; color: rgb(200, 220, 250); padding: 0; margin: 4px 0 0 8px; }
+.xcut__tag { position: absolute; left: 24%; top: 58%; height: 64px; padding: 0 60px 0 50px; justify-content: center; rotate: -5deg;
+    opacity: 0; translate: 0 30px; transition-property: opacity, translate; transition-duration: 0.22s; transition-delay: 0.12s; }
+.xcut--in .xcut__tag { opacity: 1; translate: 0 0; }
+.xcut--out .xcut__tag { opacity: 0; transition-delay: 0s; }
+.xcut__line { font-size: 34px; -unity-font-style: bold; color: rgb(255, 255, 255); padding: 0; margin: 0; white-space: nowrap;
+    -unity-text-outline-width: 1px; -unity-text-outline-color: rgba(10, 18, 44, 0.6); }
+.xcut__flash { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.55); transition-property: opacity; transition-duration: 0.3s; }
+.xcut__flash--out { opacity: 0; }
+
+/* battle pause menu (BattleScreen: pmenu) — the field dimmed and paused, one centred panel */
+.pmenu { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(6, 12, 32, 0.55); align-items: center; justify-content: center; }
+.pmenu__panel { width: 1560px; height: 720px; padding: 0 56px 40px 56px; }
+.pmenu__head { flex-direction: row; align-items: center; height: 96px; margin-bottom: 34px; flex-shrink: 0; }
+.pmenu__en { font-size: 58px; color: rgb(120, 222, 255); padding: 0; margin: 0 22px 0 0;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-ExtraBoldItalic%20SDF.asset"); -unity-font-style: normal; }
+.pmenu .pmenu__title { position: relative; height: auto; margin: 6px 0 0 0; font-size: 40px; color: rgb(255, 255, 255); -unity-font-style: bold; }
+.pmenu .pmenu__forecast { position: relative; right: auto; top: auto; height: auto; font-size: 26px; color: rgb(200, 224, 250); margin: 0; }
+.pmenu__cols { flex-direction: row; flex-grow: 1; }
+.pmenu__left { width: 420px; margin-right: 56px; justify-content: center; }
+.pmenu__big { height: 130px; margin: 0 0 30px 0; font-size: 44px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+.pmenu__right { flex-grow: 1; }
+.pmenu__sub { font-size: 30px; -unity-font-style: bold; color: rgb(24, 40, 72); margin: 0 0 16px 0; padding: 0; }
+.pmenu .bmenu__row.pmenu__toggles { flex-direction: row; flex-wrap: wrap; margin-bottom: 30px; }
+.pmenu .pmenu__pill { width: 230px; height: 80px; margin: 0 16px 12px 0; padding-left: 36px; font-size: 28px; -unity-font-style: bold;
+    color: rgb(40, 58, 92); background-color: rgba(0, 0, 0, 0); border-width: 0; }
+.pmenu .pmenu__pill.auto-toggle--on { color: rgb(255, 255, 255); }
+.pmenu .pmenu__upgrades { flex-direction: row; flex-wrap: wrap; position: relative; left: auto; right: auto; top: auto; bottom: auto; }
+.pmenu .pup { width: 470px; height: 150px; margin: 0 20px 18px 0; background-color: rgba(0, 0, 0, 0); border-width: 0; padding: 14px 24px 0 28px;
+    align-items: flex-start; justify-content: flex-start; background-image: none; }
+.pmenu .pup .upgrade__name { font-size: 28px; -unity-font-style: bold; color: rgb(24, 40, 72); margin: 0; padding: 0; }
+.pmenu .pup .upgrade__level { font-size: 36px; color: rgb(0, 128, 210); margin: 2px 0 0 0; padding: 0;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BarlowCondensed-Bold%20SDF.asset"); -unity-font-style: normal; }
+.pmenu .pup .upgrade__cost { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; -unity-text-align: middle-center; font-size: 28px;
+    color: rgb(90, 64, 0); margin: 0; padding: 0; -unity-font-style: bold; }
+.pmenu__pill-bg { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.pmenu__panel { height: 790px; }
+.pmenu .pmenu__pill { width: 214px; margin-right: 14px; }
+.pmenu .pup { width: 452px; margin-right: 18px; }
+.pmenu__pill-text { font-size: 28px; -unity-font-style: bold; color: rgb(40, 58, 92); padding: 0; margin: 0; }
+.pmenu .pmenu__pill.auto-toggle--on .pmenu__pill-text { color: rgb(255, 255, 255); }
+.battle--paused .ex-bar, .battle--paused .ex-cost-bar { display: none; }
+.pmenu .pup { height: 130px; margin-bottom: 14px; }
+.pmenu .pmenu__pill .pmenu__pill-text { font-size: 28px; -unity-font-style: bold; color: rgb(40, 58, 92); position: relative; left: auto; right: auto; top: auto; bottom: auto; }
+.pmenu .pmenu__pill.auto-toggle--on .pmenu__pill-text { color: rgb(255, 255, 255); }
+.gstage__sdcards { margin-top: 18px; }
+.gstage__sdcard { width: 176px; height: 200px; margin-right: 18px; }
+.gstage__sdcard-name { font-size: 22px; height: 40px; }
+/* the toast's pill in plain style (a painted pill on the label drew over its own text) */
+.statusbar { background-color: rgba(22, 40, 84, 0.94); border-radius: 38px; border-left-width: 10px; border-left-color: rgb(64, 200, 255);
+    border-top-width: 0; border-right-width: 0; border-bottom-width: 0; }

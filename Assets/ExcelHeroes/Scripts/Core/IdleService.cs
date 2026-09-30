@@ -48,9 +48,10 @@ namespace ExcelHeroes.Core
             public readonly long Seconds;   // seconds paid for, after the cap
             public readonly bool Capped;
             public readonly long Gold;
+            public readonly int Gems;       // a few gems for the time away (GemsFor), paid with the gold
 
-            public Report(long elapsed, long seconds, bool capped, long gold)
-            { Elapsed = elapsed; Seconds = seconds; Capped = capped; Gold = gold; }
+            public Report(long elapsed, long seconds, bool capped, long gold, int gems = 0)
+            { Elapsed = elapsed; Seconds = seconds; Capped = capped; Gold = gold; Gems = gems; }
 
             public bool Worth => Gold > 0 && Seconds >= MinSeconds;
         }
@@ -65,8 +66,11 @@ namespace ExcelHeroes.Core
             if (p == null || elapsed <= 0) return new Report(0, 0, false, 0);
             var seconds = Math.Min(elapsed, CapSeconds);
             var gold = (long)Mathf.Floor(GoldPerSec(p, p.stage) * seconds * Efficiency);
-            return new Report(elapsed, seconds, elapsed > CapSeconds, gold);
+            return new Report(elapsed, seconds, elapsed > CapSeconds, gold, GemsFor(seconds));
         }
+
+        /// <summary>One gem per half hour away, so a night's absence (the 10 h cap) brings back 20 — a little, not a farm.</summary>
+        public static int GemsFor(long seconds) => (int)Math.Min(20, seconds / 1800);
 
         /// <summary>The gap since the save was last written, from the clock.</summary>
         public static Report SinceLastSeen(PlayerState p)
@@ -86,7 +90,8 @@ namespace ExcelHeroes.Core
             var paid = (int)Math.Min(r.Gold, Math.Max(0, room));
             p.gold += paid;
             p.totalGold += paid;
-            return paid > 0;
+            if (r.Gems > 0) p.gems = (int)Math.Min(int.MaxValue, (long)p.gems + r.Gems);
+            return paid > 0 || r.Gems > 0;
         }
 
         /// <summary>"8시간 12분" — the gap, in the units a player thinks in.</summary>

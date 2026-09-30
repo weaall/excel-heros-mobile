@@ -242,7 +242,8 @@ namespace ExcelHeroes.EditorTools
             // smallest size that does not visibly soften it.
             // 896x1200 halves cleanly to 448x600 — both multiples of 4, which DXT requires. Fitting
             // to 1024 instead lands on 765 wide and silently falls back to uncompressed RGBA32.
-            Apply(importer, 2048, TextureImporterFormat.DXT1);
+            // the prologue scenes fill the whole 2400x1080 screen (1080 tall, ~2544 wide): 4096, or they soften
+            Apply(importer, assetPath.StartsWith(ArtRoot + "Story/") ? 4096 : 2048, TextureImporterFormat.DXT1);
             importer.userData = Stamp;
         }
 

@@ -184,9 +184,6 @@ namespace ExcelHeroes.Core
                                 .ForEach(e => e.RemoveFromClassList("battle--result"));
                         yield return new WaitForSeconds(0.3f);
                         yield return Shoot($"{n:00}-BattleHud");
-                        BattleScreen.Current?.DebugCutIn();
-                        yield return new WaitForSeconds(0.35f);
-                        yield return Shoot($"{n:00}-CutIn");
 
                         // The fight itself: the next run starts on its own after the result, so
                         // wait it out and take a burst from the party's entrance onwards.
@@ -205,6 +202,10 @@ namespace ExcelHeroes.Core
                             if (f == 0) BattleSim.DebugTanky = 25;
                             yield return Shoot($"{n:00}-Fight{f}");
                         }
+                        // the EX cut-in, over the live fight (the UI's transitions run on real time; a capture runs faster)
+                        BattleScreen.Current?.DebugCutIn();
+                        yield return new WaitForSecondsRealtime(0.4f);
+                        yield return Shoot($"{n:00}-CutIn");
                         // a win: the result over the party's close-up cheer (the BA cross-check's "result")
                         BattleScreen.Current?.DebugWin();
                         yield return new WaitForSeconds(2.4f);   // past the entry, into the held victory poses
@@ -372,6 +373,14 @@ namespace ExcelHeroes.Core
                 UI.InboxPanels.OpenMail(app, null);
                 yield return null; yield return null;
                 yield return Shoot($"{n++:00}-Mail");
+                app.CloseOverlay();
+                app.ShowIdle(IdleService.For(Game.Player, 8 * 3600 + 30 * 60));
+                yield return null; yield return null;
+                yield return Shoot($"{n++:00}-Idle");
+                app.CloseOverlay();
+                app.SetStatus("한꺼번에 수령 3건: 보석 +80 · 골드 +1,200");
+                yield return new WaitForSeconds(0.5f);
+                yield return Shoot($"{n++:00}-Toast");
                 app.CloseOverlay();
                 UI.InboxPanels.OpenNotice(app, null);
                 yield return null; yield return null;

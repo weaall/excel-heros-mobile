@@ -92,6 +92,9 @@ namespace ExcelHeroes.World
         static float EnvF(string k, float d) => float.TryParse(System.Environment.GetEnvironmentVariable(k), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : d;
         /// <summary>The win's close-up: the camera's distance and aim height, the members' spacing and the depth of the back row.</summary>
         public static float WinDist = EnvF("EH_WINDIST", 5.3f), WinAimY = EnvF("EH_WINAIM", 0.76f), WinSpacing = EnvF("EH_WINSPACE", 1.02f), WinStagger = EnvF("EH_WINSTAGGER", 0.5f);
+        /// <summary>The squad's turn toward the enemies (the user: "they keep looking ahead, not at the enemy"): -32 had them
+        /// 32° off the lens; -78 is ~40° off the line to the enemies — at the fight, the face still in view.</summary>
+        public static float HeroFace = EnvF("EH_HEROFACE", -68f);
         public static float HeroScale = EnvF("EH_HEROSCALE", 1.08f);   // 1.08: A/B vs BA 33/48 over two runs against 1.18 (1.3: 9/24)
         public static float QuarterPitch = EnvF("EH_PITCH", 26f), QuarterYaw = EnvF("EH_YAW", 28f), QuarterDist = EnvF("EH_DIST", 9f);   // 9 m: the squad larger in frame (part cross-check)   // 33°: lower than the old 40, so a fighting squad shows faces, not crowns (the BA cross-check)
         float _camFocusX = -0.2f, _camZoom = 1f, _lastEnemyX = float.NaN, _lastHeroX = float.NaN, _punch;
@@ -607,11 +610,21 @@ namespace ExcelHeroes.World
         {
             if (c == null || c.side != Side.Hero) return Fire.Single;
             var div = GameData.Hero(c.heroId)?.division;
+            // each member their own move (the user: "no attack motion of their own") — the division's move as the
+            // starting point, stepped through the pool by the member's hash, so a squad from one division no longer
+            // swings as clones
+            var h = SdPose.Hash(c.heroId);
             if (kind == "slash")
-                return div switch { "finance" or "admin" or "exec" => Fire.Cut, "tech" => Fire.SlashX, "ops" => Fire.SlashD, _ => Fire.SlashH };
+            {
+                var melee = new[] { Fire.Cut, Fire.SlashX, Fire.SlashD, Fire.SlashH };
+                var d0 = div switch { "finance" or "admin" or "exec" => 0, "tech" => 1, "ops" => 2, _ => 3 };
+                return melee[(d0 + h % 3) % melee.Length];
+            }
             if (c.role == "healer") return Fire.Lob;
             if (kind != "shot") return Fire.Single;
-            return div switch { "tech" => Fire.Fill5, "market" => Fire.Paste5, "finance" => Fire.Sum, "exec" => Fire.Trace, _ => Fire.Type3 };
+            var ranged = new[] { Fire.Fill5, Fire.Paste5, Fire.Sum, Fire.Trace, Fire.Type3 };
+            var r0 = div switch { "tech" => 0, "market" => 1, "finance" => 2, "exec" => 3, _ => 4 };
+            return ranged[(r0 + h % 4) % ranged.Length];
         }
 
         static readonly Dictionary<string, Material> FxMats = new();
@@ -1845,7 +1858,7 @@ namespace ExcelHeroes.World
                 // turned with the quarter-view camera, so each keeps the same angle to the lens
                 // a mascot is a drawing given depth: its face is the drawing's front, so it turns only a
                 // little toward the squad (28° off the lens) — side-on it showed its thin plush seam
-                var yaw = (hero ? Mathf.Lerp(Rig.RefModel ? -32f : -75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 38f : 75f) + QuarterYaw * (1f - closeUp);   // the SD squad turned a three-quarter towards the lens as the reference's are (faces, not the backs of heads: the BA cross-check)
+                var yaw = (hero ? Mathf.Lerp(Rig.RefModel ? HeroFace : -75f, -10f, closeUp) : Rig.Mascot ? 28f : Rig.RefModel ? 38f : 75f) + QuarterYaw * (1f - closeUp);   // the SD squad turned a three-quarter towards the lens as the reference's are (faces, not the backs of heads: the BA cross-check)
                 // (an SdEnemy wears the heroes' skeleton and its clips' half turn: mirrored from the heroes,
                 // toward the squad and a little toward the lens, so its face shows)
                 // a limbless mascot (3D monster) attacks by lunging: a hop toward the squad

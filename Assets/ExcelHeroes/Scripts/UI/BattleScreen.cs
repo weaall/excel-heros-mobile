@@ -93,7 +93,7 @@ namespace ExcelHeroes.UI
         public void DebugWin() => _sim?.DebugWin();
         /// <summary>Capture pass: the run is over (its result is on screen).</summary>
         public bool DebugFinished => _sim == null || _sim.Finished || _resultView != null;
-        public void DebugMenu(bool open) { if (_menu == null) return; _menu.EnableInClassList("hidden", !open); if (open) { SyncAutoButton(); SyncOvertimeButton(); UpdateUpgrades(); } }
+        public void DebugMenu(bool open) { if (_menu == null) return; _menu.EnableInClassList("hidden", !open); _root?.EnableInClassList("battle--paused", open); if (open) { SyncAutoButton(); SyncOvertimeButton(); UpdateUpgrades(); } }
         public void DebugBoss(float hpFrac) { _pendingBoss = hpFrac; Debug.Log($"[shots] boss requested (sim {(_sim == null ? "none" : _sim.Finished ? "finished" : "live")})"); }
         float _pendingBoss;
         VisualElement _resultPopup;
@@ -241,31 +241,68 @@ namespace ExcelHeroes.UI
             UiKit.Text("", "icon bkill__glyph", kills);   // swords
             _killLabel = UiKit.Text("", "bkill__num", kills);
 
-            _menu = UiKit.Div("bmenu hidden", _root);
-            ModalFrame.Painted(_menu, (ctx, r) =>
+            // The pause menu (the user: the corner panel of flat cyan tiles looked cheap): the reference's — the field dimmed
+            // and PAUSED, one centred panel under a navy slanted header, the two big ways on at the left (계속하기 / 로비로),
+            // the run's switches as pills and the office upgrades as cards with a gold price plate at the right.
+            _menu = UiKit.Div("pmenu hidden", _root);
+            _menu.RegisterCallback<ClickEvent>(e => { if (e.target == _menu) ToggleMenu(); });
+            var mp = UiKit.Div("pmenu__panel", _menu);
+            ModalFrame.Painted(mp, (ctx, r) =>
             {
-                var poly = UiPaint.RoundRect(r, 16f, 6);
-                UiPaint.Shadow(ctx, poly, new Vector2(0f, 6f), UiPaint.C(0, 0, 0, 0.3f), 14f);
-                UiPaint.Fill(ctx, poly, UiPaint.C(255, 255, 255, 0.96f));
-                var head = UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + 64f), 16f, 6);
-                UiPaint.Fill(ctx, head, UiPaint.Vertical(UiPaint.C(40, 62, 108), UiPaint.C(26, 42, 78), r.yMin, r.yMin + 64f));
+                var box = UiPaint.RoundRect(r, 10f);
+                UiPaint.Shadow(ctx, box, new Vector2(0f, 12f), UiPaint.C(0, 8, 30, 0.45f), 24f);
+                UiPaint.Fill(ctx, box, UiPaint.Vertical(UiPaint.C(250, 252, 255), UiPaint.C(232, 242, 252), r.yMin, r.yMax));
+                // light bands leaning with the plates
+                for (var i = 0; i < 3; i++)
+                {
+                    var x = r.xMin + r.width * (0.55f + i * 0.14f);
+                    UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2> { new(x, r.yMax), new(x + 60f, r.yMax), new(x + 60f + r.height * 0.5f, r.yMin), new(x + r.height * 0.5f, r.yMin) }, box), UiPaint.C(255, 255, 255, 0.5f), 0f);
+                }
+                var head = UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMin, r.xMax + 10f, r.yMin + 96f), 0f));
+                UiPaint.Fill(ctx, head, UiPaint.Horizontal(UiPaint.C(22, 38, 80), UiPaint.C(36, 64, 124), r.xMin, r.xMax), 0f);
+                UiPaint.Fill(ctx, UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 10f, r.yMin + 92f, r.xMax + 10f, r.yMin + 96f), 0f)), UiPaint.C(0, 200, 255), 0f);
             });
-            UiKit.Text("업무 설정", "bmenu__title", _menu);
-            _forecastLabel = UiKit.Text("", "forecast bmenu__forecast", _menu);
-            var toggles = UiKit.Div("bmenu__row", _menu);
-
-            // 진행 — whether a win moves the party on, and whether 승산 gets a say.
-            _advanceButton = UiKit.Btn("자동 진행", "auto-toggle", ToggleAdvance, toggles);
-            _safeButton = UiKit.Btn("안전 진행", "auto-toggle", ToggleSafe, toggles);
-            _upgradeButton = UiKit.Btn("자동 강화", "auto-toggle", ToggleAutoUpgrade, toggles);
-            // 야근 — the one fight in this game a player chooses to start.
-            _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn", StartOvertime, toggles);
-            foreach (var t in toggles.Query<Button>(className: "auto-toggle").ToList()) SkewPlate.Apply(t, SkewPlate.Kind.Light);
+            var mhead = UiKit.Div("pmenu__head", mp);
+            UiKit.Text("PAUSE", "pmenu__en", mhead);
+            UiKit.Text("일시 정지", "bmenu__title pmenu__title", mhead);
+            UiKit.Div("spacer", mhead);
+            _forecastLabel = UiKit.Text("", "forecast bmenu__forecast pmenu__forecast", mhead);
+            var cols = UiKit.Div("pmenu__cols", mp);
+            var left = UiKit.Div("pmenu__left", cols);
+            var resume = UiKit.Btn("계속하기", "pmenu__big", ToggleMenu, left);
+            SkewPlate.Apply(resume, SkewPlate.Kind.Primary);
             // the fight has no top band (as in the reference), so the way back to the lobby is here
-            var leave = UiKit.Btn("로비로 나가기", "btn bmenu__leave", () => { AudioService.Play("back", 0.55f); _app.Show(AppRoot.Sheet.Home); }, _menu);
+            var leave = UiKit.Btn("로비로 나가기", "pmenu__big bmenu__leave", () => { AudioService.Play("back", 0.55f); _menu.AddToClassList("hidden"); _root.RemoveFromClassList("battle--paused"); _app.Show(AppRoot.Sheet.Home); }, left);
             SkewPlate.Apply(leave, SkewPlate.Kind.Navy);
-            UiKit.Text("사무실 개선", "bmenu__sub", _menu);
-            _upgradeBar = UiKit.Div("upgrades bmenu__upgrades", _menu);
+            var right = UiKit.Div("pmenu__right", cols);
+            UiKit.Text("진행 설정", "pmenu__sub", right);
+            var toggles = UiKit.Div("bmenu__row pmenu__toggles", right);
+            // 진행 — whether a win moves the party on, and whether 승산 gets a say.
+            _advanceButton = UiKit.Btn("자동 진행", "auto-toggle pmenu__pill", ToggleAdvance, toggles);
+            _safeButton = UiKit.Btn("안전 진행", "auto-toggle pmenu__pill", ToggleSafe, toggles);
+            _upgradeButton = UiKit.Btn("자동 강화", "auto-toggle pmenu__pill", ToggleAutoUpgrade, toggles);
+            // 야근 — the one fight in this game a player chooses to start.
+            _overtimeButton = UiKit.Btn("야근", "auto-toggle overtime-btn pmenu__pill", StartOvertime, toggles);
+            foreach (var t in toggles.Query<Button>(className: "auto-toggle").ToList())
+            {
+                var tb = t;
+                // painted on a layer UNDER the button's text (drawn on the button itself it covered its label)
+                var pbg = new VisualElement { pickingMode = PickingMode.Ignore }; pbg.AddToClassList("pmenu__pill-bg"); tb.Insert(0, pbg);
+                // the word as a child after the layer (a button's own text draws under its children)
+                var word = UiKit.Text(tb.text, "plate__label pmenu__pill-text", tb); word.pickingMode = PickingMode.Ignore; tb.text = "";
+                ModalFrame.Painted(pbg, (ctx, r) =>
+                {
+                    var on = tb.ClassListContains("auto-toggle--on");
+                    var q = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.5f, 6f);
+                    UiPaint.Fill(ctx, q, on ? UiPaint.Vertical(UiPaint.C(90, 226, 255), UiPaint.C(0, 170, 236), r.yMin, r.yMax) : UiPaint.Vertical(UiPaint.C(255, 255, 255), UiPaint.C(228, 236, 246), r.yMin, r.yMax));
+                    UiPaint.Stroke(ctx, q, on ? UiPaint.C(0, 150, 220) : UiPaint.C(196, 210, 228), 2f);
+                    // a lamp: lit when on
+                    var c = new Vector2(r.xMin + 30f, r.center.y);
+                    UiPaint.Fill(ctx, UiPaint.Ellipse(c, 9f, 9f), on ? Color.white : UiPaint.C(186, 198, 214));
+                });
+            }
+            UiKit.Text("사무실 개선", "bmenu__sub pmenu__sub", right);
+            _upgradeBar = UiKit.Div("upgrades bmenu__upgrades pmenu__upgrades", right);
 
             _costBar = UiKit.Div("ex-cost-bar", _root);
             ModalFrame.Painted(_costBar, DrawCost);
@@ -449,6 +486,7 @@ namespace ExcelHeroes.UI
             if (_menu == null) return;
             var open = _menu.ClassListContains("hidden");
             _menu.EnableInClassList("hidden", !open);
+            _root?.EnableInClassList("battle--paused", open);   // the EX cards and the gauge step back under the menu
             AudioService.Play(open ? "tap" : "back", 0.5f);
             if (open) { SyncAutoButton(); SyncOvertimeButton(); UpdateUpgrades(); }
         }
@@ -679,6 +717,7 @@ namespace ExcelHeroes.UI
 
             if (_safeButton == null) return;
             _safeButton.EnableInClassList("auto-toggle--on", p.safeAdvance);
+            foreach (var tb in new[] { _advanceButton, _upgradeButton, _safeButton, _overtimeButton }) tb?.Q(className: "pmenu__pill-bg")?.MarkDirtyRepaint();
             // 안전 진행 only has anything to gate while 자동 진행 is on. Left enabled it is a
             // switch that changes nothing, which reads as a bug rather than as a dependency.
             _safeButton.SetEnabled(p.autoAdvance);
@@ -819,6 +858,8 @@ namespace ExcelHeroes.UI
         {
             // 야근's clock runs on the screen's tick rather than the sim's, because the run is
             // sixty seconds of real time and not a number of waves.
+            // the pause menu stops the fight (and 야근's clock), as the reference's does
+            if (_menu != null && !_menu.ClassListContains("hidden")) return;
             if (OvertimeService.Active != null)
             {
                 UpdateOvertimeLabel();
@@ -1492,132 +1533,74 @@ namespace ExcelHeroes.UI
             // Inside the battlefield, not over the whole sheet. An EX skill is something that
             // happens on the field; taking the app's full height for it covered the chrome, the
             // upgrade strip and the log, none of which the skill has anything to do with.
-            var view = UiKit.Div("cutin clips", _stage ?? _root);
+            // The reference's EX cut-in (the user: the old flat pink band with floating spreadsheets looked cheap): the field
+            // dims for a beat, a TILTED band slides in from the right carrying a tight crop of the illustration across the
+            // eyes, and the skill's name lands on a second, thinner band under it — in and out in about a second.
+            var view = UiKit.Div("xcut", _stage ?? _root);
+            view.pickingMode = PickingMode.Ignore;
             _cutIn = view;
-
-            // The band: a slant across the field in the character's own colour, fading to navy,
-            // with speed lines running along it — the reference's EX band, not a grey strip.
             var accent = BackSheet.For(def, Game.Player?.Find(hero.heroId)).Accent;
-            var sweep = UiKit.Div("cutin__sweep", view);
-            ModalFrame.Painted(sweep, (ctx, r) =>
+            var standing = GameData.StandingArt(hero.heroId);
+            var dim = UiKit.Div("xcut__dim", view); dim.pickingMode = PickingMode.Ignore;
+
+            var band = UiKit.Div("xcut__band", view); band.pickingMode = PickingMode.Ignore;
+            var t0 = Time.realtimeSinceStartup;
+            ModalFrame.Painted(band, (ctx, r) =>
             {
-                var slant = r.height * 0.35f;
-                var band = new System.Collections.Generic.List<Vector2>
-                    { new(r.xMin + slant, r.yMin), new(r.xMax, r.yMin), new(r.xMax - slant, r.yMax), new(r.xMin, r.yMax) };
-                UiPaint.Fill(ctx, band, UiPaint.Horizontal(UiPaint.WithAlpha(Color.Lerp(accent, Color.white, 0.15f), 0.95f),
-                                                          UiPaint.C(20, 32, 64, 0.92f), r.xMin, r.xMax), 1f);
-                for (var i = 0; i < 14; i++)
+                var sl = r.height * 0.18f;
+                var q = new System.Collections.Generic.List<Vector2> { new(r.xMin + sl, r.yMin), new(r.xMax + sl, r.yMin), new(r.xMax - sl, r.yMax), new(r.xMin - sl, r.yMax) };
+                UiPaint.Shadow(ctx, q, new Vector2(0f, 10f), UiPaint.C(0, 8, 30, 0.45f), 18f);
+                UiPaint.Fill(ctx, q, UiPaint.Horizontal(UiPaint.C(16, 26, 58), Color.Lerp(accent, UiPaint.C(16, 26, 58), 0.35f), r.xMin, r.xMax), 0f);
+                // the eyes, from the illustration's detected face box: the head about 2.6 band heights tall, the eye line on the band's middle
+                if (standing != null)
                 {
-                    var y = r.yMin + r.height * ((i * 37) % 100) / 100f;
-                    var x = r.xMin + r.width * ((i * 53) % 100) / 100f;
-                    var len = r.width * (0.12f + (i % 4) * 0.05f);
-                    var line = new System.Collections.Generic.List<Vector2>
-                        { new(x, y), new(x + len, y), new(x + len - 6f, y + 3f), new(x - 6f, y + 3f) };
-                    UiPaint.Fill(ctx, UiPaint.Clip(line, band), UiPaint.C(255, 255, 255, 0.35f), 0f);
-                }
-                // thin white edges top and bottom
-                UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2>
-                    { new(r.xMin, r.yMin), new(r.xMax, r.yMin), new(r.xMax, r.yMin + 5f), new(r.xMin, r.yMin + 5f) }, band), UiPaint.C(255, 255, 255, 0.9f), 0f);
-                UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2>
-                    { new(r.xMin, r.yMax - 5f), new(r.xMax, r.yMax - 5f), new(r.xMax, r.yMax), new(r.xMin, r.yMax) }, band), UiPaint.C(255, 255, 255, 0.9f), 0f);
-            });
-            // manga focus lines over the whole field, from the edges toward the band (the Gemini action
-            // mock-up, tools/out/design/mock_action_0)
-            var focus = UiKit.Div("cutin__focus", view);
-            focus.pickingMode = PickingMode.Ignore;
-            ModalFrame.Painted(focus, (ctx, r) =>
-            {
-                var c = r.center; var R = Mathf.Max(r.width, r.height);
-                for (var i = 0; i < 46; i++)
-                {
-                    var a = i / 46f * Mathf.PI * 2f + ((i * 37) % 11) * 0.013f;
-                    var inner = R * (0.36f + ((i * 53) % 17) / 100f);
-                    var wdt = 0.012f + ((i * 29) % 7) * 0.003f;
-                    var p0 = c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * inner;
-                    var p1 = c + new Vector2(Mathf.Cos(a - wdt), Mathf.Sin(a - wdt)) * R;
-                    var p2 = c + new Vector2(Mathf.Cos(a + wdt), Mathf.Sin(a + wdt)) * R;
-                    UiPaint.Fill(ctx, new System.Collections.Generic.List<Vector2> { p0, p1, p2 }, UiPaint.C(20, 24, 40, 0.34f), 0f);
-                }
-            });
-            // floating spreadsheet windows: the Excel motif as the skill's energy
-            var sheets = UiKit.Div("cutin__sheets", view);
-            sheets.pickingMode = PickingMode.Ignore;
-            foreach (var (cls, formula, chart) in new[] { ("cutin__win cutin__win--a", "=SUM(A1:B10)", false), ("cutin__win cutin__win--b", "=VLOOKUP(\"EX\",A:F,3)", true) })
-            {
-                var win = UiKit.Div(cls, sheets);
-                win.pickingMode = PickingMode.Ignore;
-                var green = UiPaint.C(33, 163, 102);
-                ModalFrame.Painted(win, (ctx, r) =>
-                {
-                    var box = UiPaint.RoundRect(r, 8f);
-                    UiPaint.Ring(ctx, box, UiPaint.C(120, 255, 190, 0.55f), UiPaint.C(120, 255, 190, 0f), 14f);
-                    UiPaint.Fill(ctx, box, UiPaint.C(236, 252, 244, 0.9f));
-                    var title = UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + r.height * 0.13f), 0f));
-                    UiPaint.Fill(ctx, title, green, 0f);
-                    var fy0 = r.yMin + r.height * 0.13f; var fy1 = fy0 + r.height * 0.12f;
-                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 6f, fy0 + 4f, r.xMax - 6f, fy1 - 2f), 3f), Color.white);
-                    // the grid: column heads, row heads, cells
-                    var gx0 = r.xMin + r.width * 0.07f; var gy0 = fy1 + 4f; var cols = 6; var rows = 6;
-                    var cw = (r.xMax - 6f - gx0) / cols; var rh = (r.yMax - 6f - gy0) / (rows + 1);
-                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 6f, gy0, r.xMax - 6f, gy0 + rh), 0f), UiPaint.C(214, 236, 224));
-                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 6f, gy0, gx0, r.yMax - 6f), 0f), UiPaint.C(214, 236, 224));
-                    for (var i = 0; i <= cols; i++) UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(gx0 + i * cw - 0.6f, gy0, gx0 + i * cw + 0.6f, r.yMax - 6f), 0f), UiPaint.C(150, 190, 170, 0.8f));
-                    for (var j = 0; j <= rows + 1; j++) UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin + 6f, gy0 + j * rh - 0.6f, r.xMax - 6f, gy0 + j * rh + 0.6f), 0f), UiPaint.C(150, 190, 170, 0.8f));
-                    if (chart)
+                    var hb = UiKit.FaceBox(hero.heroId);
+                    var art = new System.Collections.Generic.List<Vector2> { new(r.xMin + r.width * 0.30f + sl, r.yMin + 5f), new(r.xMax + sl, r.yMin + 5f), new(r.xMax - sl, r.yMax - 5f), new(r.xMin + r.width * 0.30f - sl, r.yMax - 5f) };
+                    if (hb.HasValue)
                     {
-                        // a small bar chart over the cells
-                        var bx = gx0 + cw * 0.5f; var by = r.yMax - 10f;
-                        float[] hs = { 0.35f, 0.6f, 0.45f, 0.8f, 0.62f };
-                        for (var i = 0; i < hs.Length; i++)
-                        {
-                            var x = bx + i * cw * 1.05f; var top = by - (r.yMax - gy0 - rh * 1.5f) * hs[i];
-                            UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(x, top, x + cw * 0.6f, by), 2f), i % 2 == 0 ? UiPaint.C(70, 150, 230) : UiPaint.C(240, 140, 70));
-                        }
+                        var h = hb.Value; var eyes = new Vector2(h.center.x, h.yMin + h.height * 0.56f);
+                        UiPaint.ImageAt(ctx, art, standing, r.height * 2.6f / Mathf.Max(0.02f, h.height), eyes, new Vector2(r.xMin + r.width * 0.66f, r.center.y));
                     }
-                    UiPaint.Stroke(ctx, box, UiPaint.C(33, 163, 102, 0.9f), 2f);
-                });
-                var fx = UiKit.Text("fx  " + formula, "cutin__formula", win);
-                fx.pickingMode = PickingMode.Ignore;
-            }
-            var art = UiKit.Div("cutin__art", view);
-            UiKit.SetPortrait(art, def.id, UiKit.Crop.Cut, false, new Color(0f, 0f, 0f, 0f));
-            var flash = UiKit.Div("cutin__flash", view);
-            flash.pickingMode = PickingMode.Ignore;
-            view.schedule.Execute(() => flash.AddToClassList("cutin__flash--out")).ExecuteLater(40);
+                    else UiPaint.ImageFocus(ctx, art, standing, Rect.MinMaxRect(r.xMin + r.width * 0.3f, r.yMin, r.xMax, r.yMax), 3.2f, 0.16f);
+                    // the art fades in from the band's dark left, where the words sit
+                    UiPaint.Fill(ctx, art, UiPaint.Horizontal(UiPaint.C(16, 26, 58, 1f), UiPaint.C(16, 26, 58, 0f), r.xMin + r.width * 0.3f, r.xMin + r.width * 0.46f), 0f);
+                }
+                // speed lines running along it, drifting with time
+                var k = (Time.realtimeSinceStartup - t0) * 900f;
+                for (var i = 0; i < 9; i++)
+                {
+                    var y = r.yMin + r.height * (0.12f + ((i * 37) % 80) / 100f);
+                    var x = r.xMin + Mathf.Repeat(r.width * ((i * 53) % 100) / 100f - k * (0.6f + (i % 3) * 0.2f), r.width * 1.2f) - r.width * 0.1f;
+                    var len = r.width * (0.08f + (i % 4) * 0.04f);
+                    UiPaint.Fill(ctx, UiPaint.Clip(new System.Collections.Generic.List<Vector2> { new(x, y), new(x + len, y), new(x + len - 4f, y + 3f), new(x - 4f, y + 3f) }, q), UiPaint.C(255, 255, 255, 0.22f), 0f);
+                }
+                // bright edges: white above, the member's colour below
+                UiPaint.Fill(ctx, UiPaint.Clip(q, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMin, r.xMax + 60f, r.yMin + 5f), 0f)), UiPaint.C(255, 255, 255, 0.95f), 0f);
+                UiPaint.Fill(ctx, UiPaint.Clip(q, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, r.yMax - 7f, r.xMax + 60f, r.yMax), 0f)), accent, 0f);
+            });
+            band.schedule.Execute(() => band.MarkDirtyRepaint()).Every(33).Until(() => band.panel == null);
 
-            var plate = UiKit.Div("cutin__plate", view);
-            var namePlate = UiKit.Div("cutin__nameplate", plate);
-            ModalFrame.Painted(namePlate, (ctx, r) =>
-                UiPaint.Fill(ctx, UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height), 6f), UiPaint.C(20, 32, 64, 0.95f)));
-            UiKit.Text("EX", "cutin__ex", namePlate);
-            UiKit.Text(skillName ?? def.skillName, "cutin__skill", namePlate);
-            // the English sub-title under the name, as BA sets its EX names
-            UiKit.Text("EX-SKILL · " + def.id.Replace('_', ' ').ToUpperInvariant(), "cutin__sub", plate);
-            if (!string.IsNullOrEmpty(def.ult)) UiKit.Text($"“{def.ult}”", "cutin__line", plate);
+            var words = UiKit.Div("xcut__words", band); words.pickingMode = PickingMode.Ignore;
+            UiKit.Text("EX SKILL", "xcut__kicker", words);
+            UiKit.Text(skillName ?? def.skillName, "xcut__skill", words);
+            UiKit.Text(def.name, "xcut__who", words);
 
-            view.schedule.Execute(() =>
+            var tag = UiKit.Div("xcut__tag", view); tag.pickingMode = PickingMode.Ignore;
+            ModalFrame.Painted(tag, (ctx, r) =>
             {
-                sweep.AddToClassList("cutin__sweep--in");
-                art.AddToClassList("cutin__art--in");
-                plate.AddToClassList("cutin__plate--in");
-                sheets.AddToClassList("cutin__sheets--in");
-                focus.AddToClassList("cutin__focus--in");
-            }).ExecuteLater(16);
+                var q = UiPaint.SkewRect(r, r.height * 0.4f, 2f);
+                UiPaint.Fill(ctx, q, UiPaint.Horizontal(Color.Lerp(accent, Color.white, 0.2f), UiPaint.WithAlpha(accent, 0.2f), r.xMin, r.xMax), 0f);
+            });
+            if (!string.IsNullOrEmpty(def.ult)) UiKit.Text($"“{def.ult}”", "xcut__line", tag);
 
-            view.schedule.Execute(() =>
-            {
-                art.RemoveFromClassList("cutin__art--in");
-                plate.RemoveFromClassList("cutin__plate--in");
-                sweep.RemoveFromClassList("cutin__sweep--in");
-                sheets.RemoveFromClassList("cutin__sheets--in");
-                focus.RemoveFromClassList("cutin__focus--in");
-            }).ExecuteLater(880);
-
+            var flash = UiKit.Div("xcut__flash", view); flash.pickingMode = PickingMode.Ignore;
+            view.schedule.Execute(() => { view.AddToClassList("xcut--in"); flash.AddToClassList("xcut__flash--out"); }).ExecuteLater(16);
+            view.schedule.Execute(() => view.AddToClassList("xcut--out")).ExecuteLater(980);
             view.schedule.Execute(() =>
             {
                 view.RemoveFromHierarchy();
                 if (_cutIn == view) _cutIn = null;
-            }).ExecuteLater(1250);
+            }).ExecuteLater(1320);
         }
 
         VisualElement _cutIn;
@@ -1948,8 +1931,10 @@ namespace ExcelHeroes.UI
                     if (sd != null)
                     {
                         // the SD from the chest up: the head fills the top of the card
-                        var tr = sd.textureRect; var w = r.width * 0.98f; var h = w * tr.height / tr.width;
-                        UiPaint.Image(ctx, art, sd, new Rect(r.center.x - w * 0.5f + slant * 0.12f, r.yMin + r.height * 0.02f, w, h), 0f);
+                        // sized by the card's height so the whole head and the shoulders sit inside it, whatever the card's
+                        // width (the user: the faces were cut off; the SDs are 768x960 with the head in the top ~40 %)
+                        var tr = sd.textureRect; var h = r.height * 1.55f; var w = h * tr.width / tr.height;
+                        UiPaint.Image(ctx, art, sd, new Rect(r.center.x - w * 0.5f + slant * 0.25f, r.yMin - r.height * 0.02f, w, h), 0f);
                     }
                     else if (standing != null) UiKit.PaintPortrait(ctx, art, standing, combatant.heroId, Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, bandTop), UiKit.Crop.Face);
                     var band = UiPaint.Clip(inner, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 60f, bandTop, r.xMax + 60f, r.yMax + 20f), 0f));
@@ -2283,7 +2268,21 @@ namespace ExcelHeroes.UI
                     UpdateUpgrades();
                 });
                 cell.AddToClassList("upgrade");
+                cell.AddToClassList("pup");
                 _upgradeBar.Add(cell);
+                var cc = cell;
+                var cbg = new VisualElement { pickingMode = PickingMode.Ignore }; cbg.AddToClassList("pmenu__pill-bg"); cell.Add(cbg);
+                ModalFrame.Painted(cbg, (ctx, r) =>
+                {
+                    var ready = cc.ClassListContains("upgrade--ready");
+                    var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.25f, 8f);
+                    UiPaint.Shadow(ctx, box, new Vector2(0f, 4f), UiPaint.C(20, 40, 90, 0.18f), 8f);
+                    UiPaint.Fill(ctx, box, UiPaint.Vertical(UiPaint.C(255, 255, 255), UiPaint.C(236, 244, 252), r.yMin, r.yMax));
+                    UiPaint.Stroke(ctx, box, ready ? UiPaint.C(0, 190, 250) : UiPaint.C(200, 214, 232), ready ? 3f : 1.5f);
+                    // the price plate along the foot: gold when affordable, grey when not
+                    var foot = UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 30f, r.yMax - 46f, r.xMax + 30f, r.yMax), 0f));
+                    if (ready) UiPaint.Fill(ctx, foot, UiPaint.Vertical(UiPaint.C(255, 222, 90), UiPaint.C(246, 186, 40), r.yMax - 46f, r.yMax), 0f); else UiPaint.Fill(ctx, foot, UiPaint.C(214, 222, 234), 0f);
+                });
 
                 UiKit.Text(def.name, "upgrade__name", cell);
                 var level = UiKit.Text("", "upgrade__level", cell);
@@ -2314,6 +2313,7 @@ namespace ExcelHeroes.UI
                 row.Cost.text = maxed ? "MAX" : $"₩{TeamUpgrades.Cost(p, def.id):N0}";
                 row.Button.EnableInClassList("upgrade--ready", TeamUpgrades.CanBuy(p, def.id));
                 row.Button.SetEnabled(!maxed);
+                row.Button.Q(className: "pmenu__pill-bg")?.MarkDirtyRepaint();
             }
         }
     }

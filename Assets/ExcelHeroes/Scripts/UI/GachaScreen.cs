@@ -82,6 +82,36 @@ namespace ExcelHeroes.UI
             });
             UiKit.Text($"S 등급 {GameData.Grade("S")?.rate ?? 0.005f:P1} 중 절반이 픽업 사원으로 · 첫 10회 모집은 S 확정",
                        "gstage__note", noteBox);
+
+            // the pick-up members as SD cards under the banner (the user: an SD slot per member, tap it for the details —
+            // instead of a small "정보 보기" pill on the figure); S first, the grade on a corner chip
+            var cards = UiKit.Div("gstage__sdcards", block);
+            foreach (var def in new[] { featuredS, featuredA })
+            {
+                if (def == null) continue;
+                var id = def.id; var gcol = GameData.Grade(def.grade)?.Color ?? Color.gray;
+                var card = UiKit.Div("gstage__sdcard", cards);
+                var sd = GameData.SdPoseArt(id);
+                ModalFrame.Painted(card, (ctx, r) =>
+                {
+                    var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.3f, 8f);
+                    UiPaint.Shadow(ctx, box, new Vector2(0f, 5f), UiPaint.C(20, 40, 90, 0.25f), 10f);
+                    UiPaint.Fill(ctx, box, UiPaint.Vertical(Color.Lerp(gcol, Color.white, 0.82f), Color.Lerp(gcol, Color.white, 0.55f), r.yMin, r.yMax));
+                    if (sd != null)
+                    {
+                        var tr = sd.textureRect; var h = r.height * 1.25f; var w = h * tr.width / tr.height;
+                        UiPaint.Image(ctx, UiPaint.Offset(box, -3f), sd, new Rect(r.center.x - w * 0.5f, r.yMin + r.height * 0.02f, w, h), 0f);
+                    }
+                    UiPaint.Fill(ctx, UiPaint.Clip(box, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin - 30f, r.yMax - 46f, r.xMax + 30f, r.yMax), 0f)), UiPaint.C(22, 34, 64, 0.9f), 0f);
+                    UiPaint.Stroke(ctx, box, UiPaint.C(255, 255, 255), 3f);
+                });
+                var chip = UiKit.Div("gstage__sdcard-grade", card); chip.pickingMode = PickingMode.Ignore;
+                chip.style.backgroundColor = gcol;
+                UiKit.Text(def.grade, "gstage__sdcard-grade-text", chip).pickingMode = PickingMode.Ignore;
+                UiKit.Text(def.name, "gstage__sdcard-name", card).pickingMode = PickingMode.Ignore;
+                card.RegisterCallback<ClickEvent>(_ => { AudioService.Play("tap", 0.5f); OpenInfo(id); });
+                Juice.Press(card);
+            }
         }
 
         /// <summary>
@@ -96,8 +126,7 @@ namespace ExcelHeroes.UI
             var fig = UiKit.Div(standing != null ? "gstage__bust-art" : "gstage__bust-art gstage__bust-art--card", win);
             fig.pickingMode = PickingMode.Ignore;
             UiKit.SetArt(fig, standing ?? GameData.CardArt(id));
-            win.RegisterCallback<ClickEvent>(_ => OpenInfo(id));
-            var hint = UiKit.Text("정보 보기", "gstage__bust-hint", win); hint.pickingMode = PickingMode.Ignore;
+            win.RegisterCallback<ClickEvent>(_ => OpenInfo(id));   // (the SD cards under the banner are the obvious way in)
         }
 
         void OpenInfo(string id)

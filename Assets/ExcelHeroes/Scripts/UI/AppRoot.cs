@@ -232,28 +232,49 @@ namespace ExcelHeroes.UI
         {
             var report = Game.TakeIdle();
             if (!report.Worth) return;
+            ShowIdle(report);
+        }
 
-            var pane = UiKit.Div("onboard__card idle");
-            UiKit.Text("백그라운드 정산", "onboard__title", pane);
-            UiKit.Text($"{IdleService.Duration(report.Seconds)} 동안 자리를 비웠습니다.", "muted", pane);
+        /// <summary>The 백그라운드 정산 modal for a report (the capture driver shows one with a made-up absence).</summary>
+        public void ShowIdle(IdleService.Report report)
+        {
 
-            var value = UiKit.Div("power-readout", pane);
-            UiKit.Text($"₩{report.Gold:N0}", "power-readout__value", value);
-            UiKit.Text("골드", "power-readout__label", value);
-
+            // a reward modal (the user: the gold read as plain white text, and gems belong here too): the time away,
+            // then a tile per reward — the illustrated icon, the amount in its own colour — and one cyan plate
+            var body = UiKit.Modal("백그라운드 정산", null, out var pane, "modal--idle");
+            UiKit.Text($"{IdleService.Duration(report.Seconds)} 동안 사원들이 대신 일했습니다", "idle__away", body);
+            var tiles = UiKit.Div("idle__tiles", body);
+            void Tile(string icon, string glyph, string amount, string label, string kind)
+            {
+                var t = UiKit.Div("idle__tile idle__tile--" + kind, tiles);
+                ModalFrame.Painted(t, (ctx, r) =>
+                {
+                    var box = UiPaint.SkewRect(r, SkewPlate.SlantFor(r.height) * 0.35f, 10f);
+                    UiPaint.Shadow(ctx, box, new Vector2(0f, 5f), UiPaint.C(20, 40, 90, 0.18f), 10f);
+                    UiPaint.Fill(ctx, box, UiPaint.Vertical(UiPaint.C(255, 255, 255), kind == "gold" ? UiPaint.C(255, 244, 214) : UiPaint.C(224, 242, 255), r.yMin, r.yMax));
+                    UiPaint.Stroke(ctx, box, kind == "gold" ? UiPaint.C(240, 190, 70) : UiPaint.C(90, 190, 250), 2.5f);
+                });
+                var sp = GameData.Icon(icon);
+                if (sp != null) UiKit.SetArt(UiKit.Div("idle__icon", t), sp); else UiKit.Text(glyph, "icon idle__glyph", t);
+                UiKit.Text(amount, "idle__amount idle__amount--" + kind, t);
+                UiKit.Text(label, "idle__label", t);
+            }
+            Tile("gold", Icons.Gold, $"+{report.Gold:N0}", "골드", "gold");
+            if (report.Gems > 0) Tile("gem", Icons.Gem, $"+{report.Gems:N0}", "보석", "gem");
             if (report.Capped)
-                UiKit.Text($"정산은 최대 {IdleService.CapSeconds / 3600}시간까지 쌓입니다.", "muted", pane);
+                UiKit.Text($"정산은 최대 {IdleService.CapSeconds / 3600}시간까지 쌓입니다", "idle__note", body);
 
-            UiKit.Btn("수령", "btn btn--primary", () =>
+            var claim = UiKit.Btn("수령", "idle__claim", () =>
             {
                 if (IdleService.Grant(Game.Player, report))
                 {
                     AudioService.Play("victory", 0.6f);
-                    SetStatus($"백그라운드 정산 · 골드 +{report.Gold:N0}");
+                    SetStatus(report.Gems > 0 ? $"백그라운드 정산 · 골드 +{report.Gold:N0} · 보석 +{report.Gems}" : $"백그라운드 정산 · 골드 +{report.Gold:N0}");
                     Game.Touch();
                 }
                 CloseOverlay();
-            }, pane);
+            }, body);
+            SkewPlate.Apply(claim, SkewPlate.Kind.Primary);
 
             OpenOverlay(pane);
         }
@@ -421,9 +442,24 @@ namespace ExcelHeroes.UI
         public void SetStatus(string text)
         {
             if (_status == null) return;
+            // a toast, not a strip (the user: the flat bar that stayed along the bottom looked cheap): a navy slanted
+            // pill low in the middle, in for ~2.6 s and faded out
             _status.text = text ?? "";
-            _status.EnableInClassList("hidden", string.IsNullOrEmpty(_status.text));
+            var on = !string.IsNullOrEmpty(_status.text);
+            _status.EnableInClassList("hidden", !on);
+            _status.RemoveFromClassList("statusbar--out");
+            _statusHide?.Pause();
+            if (!on) return;
+            _status.style.color = Color.white;   // inline: the shell's label colour outranked the class
+            _status.MarkDirtyRepaint();
+            _statusHide = _status.schedule.Execute(() =>
+            {
+                _status.AddToClassList("statusbar--out");
+                _status.schedule.Execute(() => { if (_status.ClassListContains("statusbar--out")) _status.AddToClassList("hidden"); }).StartingIn(400);
+            }).StartingIn(2600);
         }
+        IVisualElementScheduledItem _statusHide;
+        bool _statusPainted;
 
         public void Rebuild() => Show(_sheet);
 
@@ -518,9 +554,13 @@ namespace ExcelHeroes.UI
             UiKit.Text($"오늘 남은 광고 {AdService.LeftToday(p)} / {GameData.Balance.adPerDay}회", "spage__meta", head);
             foreach (var offer in AdService.Offers(p))
             {
-                var row = SettingRow(page, $"{offer.Def.name}  {offer.Value}", $"{offer.Def.desc} · 오늘 {offer.Left} / {offer.Def.perDay}회");
+                // the value only when the name does not already say it ("보석 +15  보석 +15"), and a reason it cannot be
+                // watched in the line under the name, not squeezed into the button (it ran out of the plate)
+                var title = string.IsNullOrEmpty(offer.Value) || offer.Def.name.Contains(offer.Value) ? offer.Def.name : $"{offer.Def.name}  {offer.Value}";
+                var desc = offer.Can ? $"{offer.Def.desc} · 오늘 {offer.Left} / {offer.Def.perDay}회" : $"{offer.Reason} · 오늘 {offer.Left} / {offer.Def.perDay}회";
+                var row = SettingRow(page, title, desc);
                 var id = offer.Def.id;
-                var watch = UiKit.Btn(offer.Can ? "광고 보기" : offer.Reason, "arow__claim srow__btn srow__btn--go", () =>
+                var watch = UiKit.Btn(offer.Can ? "광고 보기" : "지금은 불가", "arow__claim srow__btn srow__btn--go", () =>
                 {
                     var told = AdService.Grant(Game.Player, id);
                     if (told == null) return;
@@ -545,7 +585,7 @@ namespace ExcelHeroes.UI
             field.AddToClassList("code-field");
             field.AddToClassList("srow__field");
             codeRow.Add(field);
-            UiKit.Btn("등록", "arow__claim srow__btn", () =>
+            var redeem = UiKit.Btn("등록", "arow__claim srow__btn", () =>
             {
                 var r = CodeService.Redeem(Game.Player, field.value);
                 if (!r.Ok) { SetStatus(r.Message); return; }
@@ -555,6 +595,7 @@ namespace ExcelHeroes.UI
                 CloseOverlay();
                 OpenSettings(2);
             }, codeRow);
+            SkewPlate.Apply(redeem, SkewPlate.Kind.Primary);   // it had no plate: white text on the pale row, invisible
             UiKit.Text("데이터", "spage__head", page);
         }
 
@@ -580,7 +621,7 @@ namespace ExcelHeroes.UI
             field.AddToClassList("code-field");
             text.Add(field);
 
-            UiKit.Btn("내보내기", "arow__claim", () =>
+            var export = UiKit.Btn("내보내기", "arow__claim srow__btn", () =>
             {
                 var code = SaveService.Export(Game.Player);
                 if (code.Length == 0) { SetStatus("세이브를 내보내지 못했습니다"); return; }
@@ -589,12 +630,14 @@ namespace ExcelHeroes.UI
                 SetStatus("세이브 코드를 복사했습니다");
             }, row);
 
-            UiKit.Btn("불러오기", "arow__claim", () =>
+            var import = UiKit.Btn("불러오기", "arow__claim srow__btn", () =>
             {
                 var result = SaveService.Import(field.value);
                 if (!result.Ok) { SetStatus(result.Error); return; }
                 ConfirmImport(result.State);
             }, row);
+            SkewPlate.Apply(export, SkewPlate.Kind.Primary);
+            SkewPlate.Apply(import, SkewPlate.Kind.Navy);
         }
 
         /// <summary>The one confirm in this menu, because this is the one action that destroys
