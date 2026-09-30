@@ -207,8 +207,38 @@ namespace ExcelHeroes.World
                 for (var i = 0; i < bins; i++)
                     if (float.IsNaN(prof[i])) { var l = i > 0 ? prof[i - 1] : float.NaN; var r = i < bins - 1 ? prof[i + 1] : float.NaN; prof[i] = float.IsNaN(l) ? r : float.IsNaN(r) ? l : (l + r) * 0.5f; }
             if (System.Environment.GetEnvironmentVariable("SD_GLASSDUMP") == "1") Debug.Log($"[glasses] faceSub {faceSub} profile/halfW: {string.Join(" ", System.Array.ConvertAll(prof, z => (z / halfW).ToString("F2")))}");
-            var sm = (float[])prof.Clone();
-            for (var i = 1; i < bins - 1; i++) sm[i] = (prof[i - 1] + prof[i] * 2f + prof[i + 1]) * 0.25f;
+            // a smooth arc, not the raw bins: a face is a curve, and the bins jump where hair strands or an ear
+            // cross the eye line (the frames came out wavy — the user: "the models break"). A quadratic fitted by
+            // least squares, then refitted without the bins that sit far off it.
+            var keep = new bool[bins]; for (var i = 0; i < bins; i++) keep[i] = !float.IsNaN(prof[i]);
+            float a2 = 0f, a1 = 0f, a0 = 0f;
+            for (var pass = 0; pass < 3; pass++)
+            {
+                double s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0, t0 = 0, t1 = 0, t2 = 0;
+                for (var i = 0; i < bins; i++)
+                {
+                    if (!keep[i]) continue;
+                    double x = (i + 0.5) / bins * 2.0 - 1.0, y = prof[i];
+                    s0 += 1; s1 += x; s2 += x * x; s3 += x * x * x; s4 += x * x * x * x; t0 += y; t1 += x * y; t2 += x * x * y;
+                }
+                if (s0 < 4) break;
+                // normal equations [s4 s3 s2; s3 s2 s1; s2 s1 s0] [a2 a1 a0] = [t2 t1 t0]
+                double det(double a, double b, double c, double d, double e, double f, double g, double h, double k) => a * (e * k - f * h) - b * (d * k - f * g) + c * (d * h - e * g);
+                var D = det(s4, s3, s2, s3, s2, s1, s2, s1, s0);
+                if (System.Math.Abs(D) < 1e-12) break;
+                a2 = (float)(det(t2, s3, s2, t1, s2, s1, t0, s1, s0) / D);
+                a1 = (float)(det(s4, t2, s2, s3, t1, s1, s2, t0, s0) / D);
+                a0 = (float)(det(s4, s3, t2, s3, s2, t1, s2, s1, t0) / D);
+                a2 = Mathf.Min(a2, 0f);   // a face bulges toward the lens, never away
+                for (var i = 0; i < bins; i++)
+                {
+                    if (float.IsNaN(prof[i])) continue;
+                    var x = (i + 0.5f) / bins * 2f - 1f;
+                    keep[i] = Mathf.Abs(prof[i] - (a2 * x * x + a1 * x + a0)) < halfW * 0.12f;
+                }
+            }
+            var sm = new float[bins];
+            for (var i = 0; i < bins; i++) { var x = (i + 0.5f) / bins * 2f - 1f; sm[i] = a2 * x * x + a1 * x * 0.3f + a0; }   // the tilt mostly out: the frames sit level
             return sm;
         }
 

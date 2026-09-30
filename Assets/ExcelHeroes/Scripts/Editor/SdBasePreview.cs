@@ -154,7 +154,7 @@ namespace ExcelHeroes.EditorTools
                 if (System.Environment.GetEnvironmentVariable("SD_NOSEC") == "1") sec = null;   // debug: the chains left rigid
                 // debug: SD_LISTR=1 prints every renderer; SD_HIDE=a,b hides those whose name contains one
                 if (System.Environment.GetEnvironmentVariable("SD_LISTR") == "1")
-                    foreach (var rr in rig.Root.GetComponentsInChildren<Renderer>(true)) Debug.Log($"[R] {id} {rr.name} {rr.GetType().Name} {rr.enabled} {rr.bounds.size}");
+                    foreach (var rr in rig.Root.GetComponentsInChildren<Renderer>(true)) Debug.Log($"[R] {id} {rr.name} {rr.GetType().Name} {rr.enabled} active={rr.gameObject.activeInHierarchy} {rr.bounds.size}");
                 var only = System.Environment.GetEnvironmentVariable("SD_ONLY");   // debug: only the renderers whose name contains this
                 if (!string.IsNullOrEmpty(only))
                     foreach (var rr in rig.Root.GetComponentsInChildren<Renderer>(true)) if (!rr.name.Contains(only)) rr.enabled = false;

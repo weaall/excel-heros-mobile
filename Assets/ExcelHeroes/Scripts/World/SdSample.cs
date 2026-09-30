@@ -568,7 +568,7 @@ namespace ExcelHeroes.World
         static readonly Dictionary<string, (string donor, string[] bones)> Accessories = new()
         {
             ["choker"] = ("kayoko_dress_ver_", new[] { "choker" }),
-            ["nameplate"] = ("hayase_yuuka", new[] { "nameplate", "pocket" }),
+            ["nameplate"] = ("hayase_yuuka", new[] { "nameplate" }),   // not "pocket": that bone carries her white magazine pouch on the hip (read as a phone / a gun in the hand)
             ["shawl"] = ("haruka", new[] { "shawl" }),
             ["ribbon"] = ("haruka", new[] { "ribborn" }),
             ["bag"] = ("hikari", new[] { "bag", "acc_01", "acc_02" }),
