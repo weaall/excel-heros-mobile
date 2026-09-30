@@ -1589,11 +1589,11 @@ namespace ExcelHeroes.World
             var s = at.Scale * (crit ? 1.3f : 1f);
             var floor = FxPart("hitring", FloorQuad, ring, Layer).transform;
             floor.position = at.Rig.Root.position + Vector3.up * 0.025f;
-            _fx.Add(new Fx { T = floor, Life = 0.3f, Max = 0.3f, Grow0 = 0.3f * s, Grow1 = 1.5f * s, Flat = true });
+            _fx.Add(new Fx { T = floor, Life = 0.48f, Max = 0.48f, Grow0 = 0.3f * s, Grow1 = 1.8f * s, Flat = true });
             var up = FxPart("hitring", Quad, ring, Layer).transform;
             var hitAt = at.Rig.Root.position + Vector3.up * at.Rig.Height * at.Scale * 0.55f + new Vector3(0f, 0f, -0.32f);
             up.position = hitAt;
-            _fx.Add(new Fx { T = up, Life = 0.22f, Max = 0.22f, Grow0 = 0.15f * s, Grow1 = 1.0f * s, Face = true });
+            _fx.Add(new Fx { T = up, Life = 0.36f, Max = 0.36f, Grow0 = 0.15f * s, Grow1 = 1.25f * s, Face = true });   // lives long enough to be seen (a frame of the fight caught it half the time)
             // the burst the reference mock throws off every hit: thin light streaks flying out
             // radially in the picture plane, yellow-white, gone in a fifth of a second
             var streakCol = crit ? new Color(1f, 0.9f, 0.45f) : new Color(1f, 0.97f, 0.75f);
@@ -1606,7 +1606,7 @@ namespace ExcelHeroes.World
                 var st = FxPart("streak", Quad, GlowMat(streakCol), Layer).transform;
                 st.position = hitAt + dir * 0.08f * s;
                 var speed = (crit ? 5.5f : 4f) * s * (0.7f + Random.value * 0.6f);
-                _fx.Add(new Fx { T = st, Life = 0.18f, Max = 0.18f, Grow0 = 0.9f * s, Grow1 = 0.5f * s, Face = true, Roll = ang, Aspect = new Vector2(0.09f, 0.55f), Vel = dir * speed });
+                _fx.Add(new Fx { T = st, Life = 0.28f, Max = 0.28f, Grow0 = 1.0f * s, Grow1 = 0.5f * s, Face = true, Roll = ang, Aspect = new Vector2(0.09f, 0.55f), Vel = dir * speed });
             }
         }
 
