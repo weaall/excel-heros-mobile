@@ -7403,3 +7403,8 @@
 .xcut__band { top: 30%; height: 24%; }
 .xcut__skill { font-size: 90px; }
 .xcut__tag { top: 55%; }
+/* a hero's skill name over her head: a small navy tag with a cyan edge, not bare grey text */
+.floater.floater--skill { font-size: 30px; -unity-font-style: bold; color: rgb(255, 255, 255); background-color: rgba(20, 34, 72, 0.92);
+    border-radius: 6px; border-left-width: 6px; border-left-color: rgb(64, 200, 255); padding: 4px 18px 6px 14px;
+    -unity-text-outline-width: 0; text-shadow: 0 0 0 rgba(0, 0, 0, 0); white-space: nowrap;
+    -unity-font-definition: url("project://database/Assets/ExcelHeroes/Fonts/OFL/BlackHanSans-Regular%20SDF.asset"); }
