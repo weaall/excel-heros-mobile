@@ -7288,3 +7288,6 @@
 .loading__rule { height: 2px; background-color: rgb(200, 214, 232); margin: 0 30px 10px 30px; flex-shrink: 0; }
 .loading__pic { flex-grow: 1; border-radius: 8px; -unity-background-scale-mode: scale-and-crop; }
 .loading__foot { position: absolute; bottom: 14px; left: 0; right: 0; -unity-text-align: middle-center; font-size: 18px; color: rgba(255, 255, 255, 0.6); padding: 0; margin: 0; }
+.loading__card { background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 8px; padding-top: 16px; }
+.loading__title { color: rgb(30, 48, 90); }
+.loading__pic { border-radius: 4px; }

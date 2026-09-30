@@ -31,7 +31,7 @@ namespace ExcelHeroes.UI
                     {
                         var ox = r.xMin + x * s + (y % 2) * s * 0.5f; var oy = r.yMin + y * s * 0.87f;
                         if (((x * 7 + y * 3) & 3) != 0) continue;
-                        UiPaint.Fill(ctx, new List<Vector2> { new(ox, oy + s * 0.87f), new(ox + s * 0.5f, oy), new(ox + s, oy + s * 0.87f) }, UiPaint.C(255, 255, 255, 0.05f), 0f);
+                        UiPaint.Fill(ctx, new List<Vector2> { new(ox, oy + s * 0.87f), new(ox + s * 0.5f, oy), new(ox + s, oy + s * 0.87f) }, UiPaint.C(255, 255, 255, 0.022f), 0f);   // faint: the pattern must not compete with the panels
                     }
             });
             var top = UiKit.Div("loading__top", page);
@@ -48,6 +48,14 @@ namespace ExcelHeroes.UI
                 var art = Resources.Load<Sprite>("Art/Loading/panel_" + i) ?? (Sprite)null;
                 var tex = art == null ? Resources.Load<Texture2D>("Art/Loading/panel_" + i) : null;
                 var card = UiKit.Div("loading__card", rows[i < 2 ? 0 : 1]);
+                // a soft drop shadow and a faint top-to-bottom tint under the white card (the cross-check: "flat panels")
+                ModalFrame.Painted(card, (ctx, r) =>
+                {
+                    var box = UiPaint.RoundRect(r, 8f);
+                    UiPaint.Shadow(ctx, box, new Vector2(0f, 8f), UiPaint.C(6, 16, 50, 0.4f), 16f);
+                    UiPaint.Fill(ctx, box, UiPaint.Vertical(UiPaint.C(255, 255, 255), UiPaint.C(236, 243, 252), r.yMin, r.yMax));
+                    UiPaint.Fill(ctx, UiPaint.RoundRect(Rect.MinMaxRect(r.xMin, r.yMin, r.xMax, r.yMin + 5f), 2f), UiPaint.C(70, 170, 255), 0f);
+                });
                 UiKit.Text(Titles[i], "loading__title", card);
                 UiKit.Div("loading__rule", card);
                 var pic = UiKit.Div("loading__pic", card);
