@@ -60,7 +60,7 @@ namespace ExcelHeroes.EditorTools
         /// </summary>
         const string UiRoot = "Assets/ExcelHeroes/Art/UI/";
 
-        public const string Stamp = "excel-heroes-art-v10";
+        public const string Stamp = "excel-heroes-art-v12";
 
         /// <summary>
         /// Unity re-imports the assets a postprocessor handles only when this number changes.
@@ -75,7 +75,7 @@ namespace ExcelHeroes.EditorTools
         /// **Bump this AND `Stamp` together whenever the settings change.** The version makes Unity
         /// re-import; the stamp makes this code agree to touch the asset again.
         /// </summary>
-        public override uint GetVersion() => 9;
+        public override uint GetVersion() => 11;
 
         // the sample bodies are cut and split at runtime (SdFace, SdSample.StripKit): their meshes
         // must be readable in the player, where FBX meshes default to GPU-only
@@ -127,6 +127,21 @@ namespace ExcelHeroes.EditorTools
                 return;
             }
 
+            // the iris library: read pixel by pixel at runtime to pick and tint each member's eyes (SdRefTex)
+            if (assetPath.StartsWith(ArtRoot + "SDBase/irislib/"))
+            {
+                importer.textureType = TextureImporterType.Default;
+                importer.mipmapEnabled = false;
+                importer.alphaSource = TextureImporterAlphaSource.None;
+                importer.alphaIsTransparency = false;
+                importer.sRGBTexture = true;
+                importer.isReadable = true;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                ClearPlatformOverrides(importer);
+                importer.userData = Stamp;
+                return;
+            }
+
             if (assetPath.StartsWith(FxRoot))
             {
                 importer.textureType = TextureImporterType.Default;
@@ -167,7 +182,8 @@ namespace ExcelHeroes.EditorTools
                 importer.alphaIsTransparency = true;
                 importer.isReadable = false;
                 importer.wrapMode = TextureWrapMode.Clamp;
-                Apply(importer, 2048, TextureImporterFormat.DXT5);
+                // the street plates are projected across the whole 2400-wide screen: 4096 (tools/art_sr_hf.py)
+                Apply(importer, assetPath.StartsWith(BattleRoot + "plate_") ? 4096 : 2048, TextureImporterFormat.DXT5);
                 importer.userData = Stamp;
                 return;
             }
@@ -229,6 +245,8 @@ namespace ExcelHeroes.EditorTools
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.mipmapEnabled = false;      // everything is drawn 1:1 in UI Toolkit
             importer.isReadable = false;         // a CPU copy would double the cost for nothing
+            // except the sample hair library and base sheets, recoloured from their pixels at runtime (hikari_hair …)
+            if (assetPath.StartsWith(ArtRoot + "SDBase/")) importer.isReadable = true;
 
             // Every one of the 198 illustrations is fully opaque — checked, not assumed — so the
             // alpha channel is dropped rather than compressed. DXT5 carries alpha at 8bpp; DXT1
@@ -242,8 +260,9 @@ namespace ExcelHeroes.EditorTools
             // smallest size that does not visibly soften it.
             // 896x1200 halves cleanly to 448x600 — both multiples of 4, which DXT requires. Fitting
             // to 1024 instead lands on 765 wide and silently falls back to uncompressed RGBA32.
-            // the prologue scenes fill the whole 2400x1080 screen (1080 tall, ~2544 wide): 4096, or they soften
-            Apply(importer, assetPath.StartsWith(ArtRoot + "Story/") ? 4096 : 2048, TextureImporterFormat.DXT1);
+            // the prologue scenes fill the whole 2400x1080 screen (1080 tall, ~2544 wide): 4096, or they soften;
+            // so do the lobby / menu backdrops (3072 wide after tools/art_sr_hf.py)
+            Apply(importer, assetPath.StartsWith(ArtRoot + "Story/") || assetPath.StartsWith(ArtRoot + "Backdrop/") ? 4096 : 2048, TextureImporterFormat.DXT1);
             importer.userData = Stamp;
         }
 
